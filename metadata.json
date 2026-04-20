@@ -1,0 +1,5 @@
+{
+  "name": "Tone Translator (Guitar)",
+  "description": "Multimodal guitar tone designer for Amplitube 5. Translate audio or text into full signal chains and knob settings.",
+  "requestFramePermissions": []
+}
