@@ -11,6 +11,8 @@ export interface GearItem {
   category: string;
   name: string;
   knobs?: (string | KnobDefinition)[];
+  realId?: string;
+  paramSuffix?: string;
 }
 
 export const AMP_MANIFEST: GearItem[] = [
@@ -112,6 +114,8 @@ export const AMP_MANIFEST: GearItem[] = [
     id: "amp_brit_8000", 
     category: "amp", 
     name: "Brit 8000", 
+    realId: "8fe96936-5178-4950-9b80-d89c32534bad",
+    paramSuffix: "_JCM800AT4",
     knobs: [
       { name: "Presence", min: 0, max: 10, unit: "" },
       { name: "Bass", min: 0, max: 10, unit: "" },
@@ -127,7 +131,13 @@ export const AMP_MANIFEST: GearItem[] = [
   { id: "amp_british_blue_tube_30tb", category: "amp", name: "British Blue Tube 30TB" },
   { id: "amp_british_copper_tube_30tb", category: "amp", name: "British Copper Tube 30TB" },
   { id: "amp_british_lead_s100", category: "amp", name: "British Lead S100" },
-  { id: "amp_british_tube_lead_1", category: "amp", name: "British Tube Lead 1" },
+  { 
+    id: "amp_british_tube_lead_1", 
+    category: "amp", 
+    name: "British Tube Lead 1",
+    realId: "fb5fc82f-a926-4591-87d2-168906fd79d3",
+    paramSuffix: "_BritishTubeLead1"
+  },
   { id: "amp_british_tube_lead_2", category: "amp", name: "British Tube Lead 2" },
   { id: "amp_california_tweed", category: "amp", name: "California Tweed" },
   { id: "amp_champion_600", category: "amp", name: "Champion 600" },
@@ -407,7 +417,17 @@ export const STOMP_MANIFEST: GearItem[] = [
     ]
   },
   { id: "stomp_diode_overdrive", category: "stomp", name: "Diode Overdrive" },
-  { id: "stomp_distortion", category: "stomp", name: "Distortion" },
+  { 
+    id: "stomp_distortion", 
+    category: "stomp", 
+    name: "Distortion",
+    realId: "33671239-012b-4221-a3f2-870020188981",
+    knobs: [
+      { name: "Distortion", min: 0, max: 10, unit: "" },
+      { name: "Filter", min: 0, max: 10, unit: "" },
+      { name: "Volume", min: 0, max: 10, unit: "" }
+    ]
+  },
   { id: "stomp_echoman", category: "stomp", name: "EchoMan" },
   { id: "stomp_electric_flanger", category: "stomp", name: "Electric Flanger" },
   { id: "stomp_envelope_filter_1", category: "stomp", name: "Envelope Filter" },
@@ -440,6 +460,7 @@ export const STOMP_MANIFEST: GearItem[] = [
     id: "stomp_noise_gate", 
     category: "stomp", 
     name: "Noise Gate", 
+    realId: "0455f997-43ca-4c9b-9269-286a19d10d48",
     knobs: [
       { name: "Threshold", min: -100, max: 0, unit: "dB" },
       { name: "Release", min: 20, max: 1500, unit: "ms" },
@@ -457,8 +478,9 @@ export const STOMP_MANIFEST: GearItem[] = [
     id: "stomp_overscream", 
     category: "stomp", 
     name: "OverScream", 
+    realId: "fa1de2e2-102b-4edf-b3b5-23ceaeddedf0",
     knobs: [
-      { name: "Overdrive", min: 0, max: 10, unit: "" },
+      { name: "Drive", min: 0, max: 10, unit: "" },
       { name: "Tone", min: 0, max: 10, unit: "" },
       { name: "Level", min: 0, max: 10, unit: "" }
     ] 
@@ -537,6 +559,7 @@ export const CAB_MANIFEST: GearItem[] = [
     id: "cab_4x12_brit_8000", 
     category: "cab", 
     name: "4x12 Brit 8000",
+    realId: "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
     knobs: [
       { name: "Mic 1 Model", min: 0, max: 0, unit: "" }, // Selection
       { name: "Mic 1 Vol", min: -201, max: 6, unit: "dB" },
@@ -558,7 +581,20 @@ export const CAB_MANIFEST: GearItem[] = [
       { name: "Mic 2 Mute", min: 0, max: 1, unit: "" },
       { name: "Mic 2 Solo", min: 0, max: 1, unit: "" },
       { name: "Mic 2 Phase", min: 0, max: 1, unit: "" },
+      { name: "Cabinet Size", min: 0.8, max: 1.2, unit: "x" },
       { name: "Speakers", min: 0, max: 0, unit: "" } // Selection
+    ]
+  },
+  { 
+    id: "cab_custom_ir", 
+    category: "cab", 
+    name: "Custom IR Loader",
+    knobs: [
+      { name: "IR Slot 1", min: 0, max: 1, unit: "" },
+      { name: "IR Slot 2", min: 0, max: 1, unit: "" },
+      { name: "Mix", min: 0, max: 100, unit: "%" },
+      { name: "HPF", min: 20, max: 1000, unit: "Hz" },
+      { name: "LPF", min: 1, max: 20, unit: "kHz" }
     ]
   },
   { id: "cab_4x12_closed_vintage", category: "cab", name: "4x12 Closed Vintage" }
@@ -651,6 +687,7 @@ export const RACK_MANIFEST: GearItem[] = [
     id: "rack_black_76",
     category: "rack",
     name: "Black 76 (FET Limiter)",
+    realId: "e5a6190f-9031-4a30-8041-36ba95f9a2e1",
     knobs: [
       { name: "Input", min: 0, max: 100, unit: "" },
       { name: "Output", min: 0, max: 100, unit: "" },
@@ -663,6 +700,7 @@ export const RACK_MANIFEST: GearItem[] = [
     id: "rack_vintage_eq_1a",
     category: "rack",
     name: "Vintage EQ-1A (Tube EQ)",
+    realId: "7511f3f3-cac1-476f-a1da-089556f62f58",
     knobs: [
       { name: "Low Freq", min: 20, max: 100, unit: "Hz" },
       { name: "Low Boost", min: 0, max: 10, unit: "" },
@@ -693,6 +731,20 @@ export const RACK_MANIFEST: GearItem[] = [
       { name: "Mid Low Threshold", min: -60, max: 0, unit: "dB" },
       { name: "Mid High Threshold", min: -60, max: 0, unit: "dB" },
       { name: "High Threshold", min: -60, max: 0, unit: "dB" }
+    ]
+  },
+  {
+    id: "rack_parametric_eq",
+    category: "rack",
+    name: "Parametric EQ",
+    realId: "7511f3f3-cac1-476f-a1da-089556f62f58",
+    knobs: [
+      { name: "Freq 1", min: 20, max: 20000, unit: "Hz" },
+      { name: "Gain 1", min: -15, max: 15, unit: "dB" },
+      { name: "Q 1", min: 0.1, max: 10, unit: "" },
+      { name: "Freq 2", min: 20, max: 20000, unit: "Hz" },
+      { name: "Gain 2", min: -15, max: 15, unit: "dB" },
+      { name: "Q 2", min: 0.1, max: 10, unit: "" }
     ]
   }
 ];

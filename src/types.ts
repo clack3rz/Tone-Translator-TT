@@ -15,6 +15,8 @@ export interface GearLink {
 export interface ToneResult {
   signalChain: GearLink[];
   explanation: string;
+  technicalTips?: string[];
   matchConfidence: number;
   midiPC?: number; // Suggested MIDI Program Change number for this preset
+  topology?: 'Serial' | 'AB Parallel' | 'DI Blend';
 }

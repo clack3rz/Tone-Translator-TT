@@ -24,7 +24,8 @@ AMPLITUBE 5 ARCHITECTURE & STRATEGY:
 4. Rack effects (EQs, Compressors, Saturators) are used for "Post-Processing" and "Mastering" the recorded tone, similar to a high-end recording studio mixer.
 
 CRITICAL: You MUST use the exact model names and IDs from the provided Gear Manifest whenever possible. 
-If a specific gear is not in the manifest, suggest the closest equivalent from the manifest.
+If multiple pieces of gear seem applicable, prioritize those with clear GUIDs in the manifest (like 'stomp_overscream' for tube-style drive or 'stomp_distortion' for high-gain clipping).
+Always include 'stomp_noise_gate' (ID: 'stomp_noise_gate') as the first block in any high-gain or metal rig to ensure signal cleanliness.
 
 GEAR MANIFEST:
 - AMPS: ${JSON.stringify(filterManifest(AMP_MANIFEST))}
@@ -87,11 +88,33 @@ Advanced Guidelines:
 11. TONEX AI Modeling: 
    - For hyper-realistic AI captures of vintage or boutique gear, use 'tonex_amp_model' or 'tonex_stomp_model'.
    - This is the highest tier of modeling quality in the ecosystem.
-12. Advanced Workflow Heuristics (The "Complete Walkthrough" Expansion):
-   - Mixer Bus Processing: For professional results, process the 'DI' signal with a 'rack_black_76' (fast attack) to preserve transients, while processing the 'Cab' signal with 'rack_vintage_eq_1a' for tone shaping.
-   - VIR Phase Alignment: When using two mics on one cabinet (e.g., SM57 and R121), ALWAYS check for phase cancellation. Use the 'Phase' flip (0 or 1) in the Cab mixer if the low end sounds "thin".
-   - Room Presence: The 'Room' mics (Ambience) should be high-passed at 200Hz and low-passed at 5kHz in the rack EQ to keep the "mud" and "fizz" out of the spatial image.
-   - Dynamic Response: Use 'Amp Sag' and 'Bias' settings (if available in manifest) to control how the amp responds to pick attack. 'Higher Sag' = slower, more compressed response.
+12. Advanced Workflow Heuristics (Studio Workflow Expansion):
+   - Mixer Bus Processing: Process 'DI' with 'rack_black_76' (fast attack) for transients; process 'Cab' with 'rack_vintage_eq_1a' for shaping.
+   - VIR Phase Alignment: When using two mics (e.g., SM57/R121), check phase. Use 'Phase' flip in Cab mixer if low end is thin.
+   - Professional Tone Patterns (Sadites' Heuristics):
+      - Input Gain: Always recommend -12dB peaks on the input meter for the modeling engine's sweet spot.
+      - Mic "Sweet Spot": Move 'X' toward the edge (0.3-0.5) to avoid the harsh center "beam".
+      - Filtering: Apply High Pass (80-100Hz) and Low Pass (6-8kHz) surgical cuts in the Rack EQ to clear mud and fizz.
+      - Speaker Swap: Suggest swapping speakers in the Cab block to change the fundamental character of the amp.
+   - Realism & Dimension Hacks (Jason Sadites' "Sound Incredibly Real"):
+      - Proximity Control: Increase 'Mic Distance' (0.3-0.6) to reduce the muddy "proximity effect" and add air.
+      - Speaker Resizing: If the cab feels 'boxy', suggest resizing speakers (internally in Amplitube's speaker tab) to 12" vs 10" for a tighter or broader resonance.
+      - Room Width: Always set 'Room Width' to 100% and blend for a natural psychoacoustic space, even in mono-centered tracks.
+      - Power Amp Sag: Adjust 'Sag' and 'Bias' (in the Amp back-panel if modeled) to change the feel of the compression and pick-attack response.
+   - VIR™ (Volumetric Impulse Response):
+      - Remind the AI that every speaker uses 600 pulses per mic (2400 per cab).
+      - Advise using 'Mic Distance' (0.5-0.8) and 'X' (0.3) for a natural studio room feel. 
+      - If phase issues occur, suggest flipping 'Mic 1 Phase' or using 'VIR Cabinet HD' mode.
+   - Custom IRs: 
+      - For modern high-gain (Djent, Modern Metal), suggest the 'cab_custom_ir' Loader if the built-in VIR blocks lack the specific "bite" of 3rd party IRs (e.g., OwnHammer, York).
+   - Foot Controllers & Performance:
+      - For live players, suggest mapping 'midiCC' 7 (Volume) and CC 1 (Wah) for expressive control.
+      - Advise setting up 'Program Change' (midiPC) to switch between 'Clean', 'Crunch', and 'Lead' presets.
+   - Routing Topology (Amplitube 5 Complete Walkthrough):
+      - Support 'Serial' (Path 1), 'AB Parallel' (Split), and 'DI Blend' (Parallel path 2 for dry signal).
+      - For heavy bass, use Parallel Path 1 for Amp and Path 2 for DI to preserve low-end fundamental.
+   - Console Mixing: Always provide relative levels for 'Mic 1 Vol', 'Mic 2 Vol', and 'Room Vol' (-∞ to 6dB) to balance the final frequency spectrum.
+   - Room Environment: Blend Room mics at low levels (-18dB to -20dB) for spatial depth.
 13. Manifest Strictness: You are FORBIDDEN from omitting any knobs defined in the manifest for a selected gear item. This is especially critical for 'Cab' blocks (provide X, Y, Distance, Vol, Pan, Mute, Solo, Phase, Speaker for BOTH mics).
 14. Mic Models: For 'Mic 1 Model', 'Mic 2 Model', and 'Room Mic', suggest common microphones like 'Dynamic 57', 'Condenser 87', or 'Ribbon 121'.
 15. Interpretation: If a preset is provided, use your 'explanation' to justify gear translations (e.g., "I swapped your clean amp for a Brit 8000 to better match the crunch in the audio reference").
@@ -166,6 +189,16 @@ export async function translateTone(
                   },
                 },
                 explanation: { type: Type.STRING },
+                topology: { 
+                  type: Type.STRING, 
+                  enum: ["Serial", "AB Parallel", "DI Blend"],
+                  description: "The signal rail routing strategy used"
+                },
+                technicalTips: { 
+                  type: Type.ARRAY, 
+                  items: { type: Type.STRING },
+                  description: "Professional setup advice (e.g., gain staging, mic placement, oversampling) based on this specific tone"
+                },
                 matchConfidence: { type: Type.NUMBER },
                 midiPC: { type: Type.NUMBER, description: "Suggested MIDI Program Change slot" },
               },

@@ -27,8 +27,10 @@ import {
 import { translateTone } from './services/geminiService';
 import { ToneResult, GearLink } from './types';
 import { parseAt5p, comparePresets, PresetData } from './services/presetParser';
-import { exportAt5p } from './services/presetExporter';
+import { exportAt5p, getExportData } from './services/presetExporter';
 import { GearSilhouette } from './components/GearSilhouette';
+import { ConsoleMixer } from './components/ConsoleMixer';
+import { TopologyMap } from './components/TopologyMap';
 import { 
   AMP_MANIFEST, 
   STOMP_MANIFEST, 
@@ -250,10 +252,66 @@ export default function App() {
   const [isTranslating, setIsTranslating] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [result, setResult] = useState<ToneResult | null>(null);
+  const [activeGearId, setActiveGearId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [userPreset, setUserPreset] = useState<PresetData | null>(null);
   const [diffs, setDiffs] = useState<string[]>([]);
   const [isCopied, setIsCopied] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportFilename, setExportFilename] = useState('');
+
+  const activeGear = result?.signalChain.find(l => l.id === activeGearId) || result?.signalChain[0];
+
+  const initiateExport = () => {
+    if (!result) return;
+    const defaultName = `TT_${result.explanation.substring(0, 15).replace(/[^a-z0-9]/gi, '_')}`;
+    setExportFilename(defaultName);
+    setIsExportModalOpen(true);
+  };
+
+  const handleExport = async (customName: string) => {
+    if (!result) return;
+    
+    const finalName = customName.endsWith('.at5p') ? customName : `${customName}.at5p`;
+    const data = getExportData(result);
+
+    // Try File System Access API for "Browse to directory" experience
+    // Note: This API is often blocked in iframes (like AI Studio preview)
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: finalName,
+          types: [{
+            description: 'Amplitube 5 Preset',
+            accept: { 
+              'application/xml': ['.at5p'],
+              'text/xml': ['.at5p']
+            },
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(data);
+        await writable.close();
+        setIsExportModalOpen(false);
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        console.warn('Modern File Picker failed (likely blocked by iframe sandbox). Falling back to standard download.', err);
+      }
+    }
+
+    // Fallback: Standard Download
+    const blob = new Blob([data], { type: "application/xml" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = finalName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setIsExportModalOpen(false);
+  };
 
   const copyManifestAsText = () => {
     if (!result) return;
@@ -406,355 +464,406 @@ export default function App() {
     }
   };
 
+  const getSettingsString = (link: GearLink) => {
+    return link.knobs.slice(0, 4).map(k => `${k.name}: ${k.value}`).join(' | ');
+  };
+
   return (
-    <div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto">
-      <header className="mb-12 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gear-accent rounded-lg flex items-center justify-center shadow-lg shadow-gear-accent/20">
-            <Guitar className="text-black w-8 h-8" />
+    <div className="flex flex-col h-screen bg-[#050505] text-white overflow-hidden selection:bg-gear-accent/30 font-sans">
+      {/* 1. TOP-TIER: Header & Global Controls */}
+      <header className="h-[60px] border-b border-white/10 flex items-center justify-between px-6 bg-black/40 backdrop-blur-md shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gear-accent rounded flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+            <Guitar className="text-black w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-3xl font-display font-bold tracking-tight">Tone Translator</h1>
-            <p className="text-gray-400 text-sm">Amplitube 5 Preset Architect</p>
+            <h1 className="text-sm font-display font-bold tracking-tight leading-none">Tone Translator</h1>
+            <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Amplitube 5 Architect // V1.5</p>
           </div>
         </div>
-        
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gear-card border border-gear-border rounded-full text-xs font-mono text-gray-400">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          ENGINE READY: GEMINI 1.5 PRO
+
+        <div className="flex-1 max-w-2xl mx-12 flex items-center gap-3 px-6">
+          <div className="flex-1 relative">
+            <input 
+              type="text" 
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe the tone (e.g. Master of Puppets bridge...)"
+              className="w-full bg-white/5 border border-white/10 rounded-lg pl-4 pr-10 py-2 text-xs focus:border-gear-accent outline-none transition-all placeholder:text-gray-600 font-mono"
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Sliders className="w-3.5 h-3.5 text-gray-700" />
+            </div>
+          </div>
+          <button 
+            onClick={handleTranslate}
+            disabled={isTranslating}
+            className="px-6 py-2 bg-gear-accent hover:bg-yellow-500 text-black font-bold text-[10px] rounded-lg transition-all flex items-center gap-2 shrink-0 disabled:opacity-50 shadow-[0_0_20px_rgba(245,158,11,0.2)] uppercase tracking-widest"
+          >
+            {isTranslating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+            {isTranslating ? "ANALYZING..." : "GENERATE"}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {result && (
+            <button 
+              onClick={initiateExport}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gear-accent/30 text-gear-accent font-bold text-[10px] hover:bg-gear-accent hover:text-black transition-all uppercase tracking-widest"
+            >
+              <Download className="w-3.5 h-3.5" />
+              EXPORT .AT5P
+            </button>
+          )}
+          <div className="w-px h-4 bg-white/10" />
+          <div className="text-[9px] font-mono text-gray-500 uppercase flex items-center gap-2 pr-2">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            System Live
+          </div>
         </div>
       </header>
 
-      <main className="grid lg:grid-cols-12 gap-8">
-        {/* Input Section */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-gear-card border border-gear-border rounded-2xl p-6 shadow-2xl">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Music className="w-5 h-5 text-gear-accent" />
-              Input Source
-            </h2>
+      {/* 2. TOP-TIER: Signal Ribbon */}
+      <section className="h-[140px] border-b border-white/10 relative bg-[#0a0a0a] shrink-0">
+        <div className="absolute top-1/2 left-0 w-full h-[2.5px] bg-[#f59e0b] shadow-[0_0_20px_rgba(245,158,11,0.8)] -translate-y-1/2 pointer-events-none z-0" />
+        
+        <div className="flex items-center gap-12 px-12 h-full overflow-x-auto scrollbar-hide relative z-10">
+          {!result && (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-[10px] text-gray-700 uppercase tracking-[0.6em] animate-pulse font-mono">Awaiting Input Signal Initialization...</p>
+            </div>
+          )}
+          {result?.signalChain.map((link, i) => {
+            const isActive = (activeGearId === link.id) || (!activeGearId && i === 0);
+            const NodeIcon = {
+              Stomp: Waves,
+              Amp: Speaker,
+              Cab: Box,
+              Room: Home,
+              EQ: Sliders,
+              Rack: Server,
+              TONEX: Cpu
+            }[link.type as any] || Box;
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase mb-2">Description / Master Ref</label>
-                <textarea 
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g. Early 80's Metallica, high gain, tight low end..."
-                  className="w-full bg-gear-bg border border-gear-border rounded-xl p-4 text-sm focus:border-gear-accent focus:ring-1 focus:ring-gear-accent outline-none transition-all min-h-[100px] resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase mb-2">YouTube Reference (Optional)</label>
-                <div className="relative">
-                  <input 
-                    type="text"
-                    value={youtubeUrl}
-                    onChange={(e) => setYoutubeUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full bg-gear-bg border border-gear-border rounded-xl pl-10 pr-4 py-3 text-xs focus:border-gear-accent focus:ring-1 focus:ring-gear-accent outline-none transition-all"
-                  />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                    <Activity className="w-4 h-4 text-gray-600" />
-                  </div>
-                </div>
-              </div>
-
-              <div 
-                {...getRootProps()} 
-                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-                  isDragActive ? 'border-gear-accent bg-gear-accent/5' : 'border-gear-border hover:border-gray-600'
-                }`}
-              >
-                <input {...getInputProps()} />
-                <Upload className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                {audioFile ? (
-                  <div className="text-sm text-gear-accent font-medium truncate">
-                    {audioFile.name}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500">
-                    Drop isolated guitar audio or click to browse
-                  </p>
-                )}
-              </div>
-
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-xs p-3 rounded-lg">
-                  {error}
-                </div>
-              )}
-
-              <div className="flex flex-col gap-2">
+            return (
+              <div key={link.id} className="flex items-center gap-12 group h-full">
                 <button 
-                  onClick={handleTranslate}
-                  disabled={isTranslating}
-                  className="w-full bg-gear-accent hover:bg-yellow-500 text-black font-bold py-4 rounded-xl transition-all shadow-lg shadow-gear-accent/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isTranslating ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      ANALYZING TONE...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-5 h-5" />
-                      TRANSLATE TONE
-                    </>
-                  )}
-                </button>
-
-                {isTranslating && (
-                  <button 
-                    onClick={handleCancel}
-                    className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 font-mono text-[10px] py-2 rounded-lg transition-all border border-red-500/30 uppercase tracking-widest"
-                  >
-                    Abort Analysis
-                  </button>
-                )}
-              </div>
-              <div className="bg-gear-bg/30 border border-gear-border/50 rounded-xl p-4 mt-6">
-                <h4 className="text-[10px] font-mono text-gray-500 uppercase mb-3 flex items-center gap-2">
-                  <Info className="w-3 h-3" />
-                  Pro Tips
-                </h4>
-                <ul className="text-[10px] text-gray-500 space-y-2 list-disc pl-4">
-                  <li>Use isolated guitar tracks for best results.</li>
-                  <li>Enable "Oversampling" for high-gain chugs to reduce aliasing.</li>
-                  <li>Aim for -12dB to -6dB on your interface for the best tube-sag response.</li>
-                  <li>Check "Cabinet HD Mode" for the full VIR detail.</li>
-                </ul>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-gear-border">
-                <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
-                  <Settings2 className="w-4 h-4 text-gear-accent" />
-                  Compare with Preset
-                </h3>
-                <div 
-                  {...getPresetRootProps()} 
-                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
-                    isPresetDragActive ? 'border-gear-accent bg-gear-accent/5' : 'border-gear-border hover:border-gray-600'
+                  onClick={() => setActiveGearId(link.id)}
+                  className={`relative w-[75px] h-[75px] bg-[#111] border rounded-lg flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 group ${
+                    isActive 
+                      ? 'border-white shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-110 z-20 bg-[#1a1a1a]' 
+                      : 'border-white/10 hover:border-white/40'
                   }`}
                 >
-                  <input {...getPresetInputProps()} />
-                  <Upload className="w-6 h-6 text-gray-500 mx-auto mb-2" />
-                  {userPreset ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-xs text-gear-accent font-medium truncate w-full">
-                        {userPreset.metadata.presetName}
-                      </div>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setUserPreset(null);
-                          setDiffs([]);
-                        }}
-                        className="text-[10px] text-gray-500 hover:text-red-400 underline transition-colors"
-                      >
-                        Remove Preset
-                      </button>
-                    </div>
-                  ) : (
-                    <p className="text-[10px] text-gray-500">
-                      Drop .at5p file to compare
-                    </p>
-                  )}
-                </div>
+                  <div className={`absolute -top-3 -left-3 w-6 h-6 rounded-full bg-black border ${isActive ? 'border-gear-accent' : 'border-white/10'} flex items-center justify-center`}>
+                    <span className="text-[8px] font-mono text-gray-500">{i + 1}</span>
+                  </div>
+                  <NodeIcon className={`w-8 h-8 transition-all ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                  <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-mono text-gray-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {link.model}
+                  </div>
+                </button>
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
+      </section>
 
-        {/* Output Section */}
-        <div className="lg:col-span-8">
-          <AnimatePresence mode="wait">
-            {result ? (
-              <motion.div 
-                key="result"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-6"
-              >
-                <div className="bg-gear-card border border-gear-border rounded-2xl p-6 relative overflow-hidden">
-                  {/* High Visibility Export Header */}
-                  <div className="flex items-center justify-between mb-8 pb-6 border-b border-gear-border/50">
-                    <div>
-                      <h2 className="text-2xl font-display font-bold text-white tracking-tight uppercase">Architectural Result</h2>
-                      <p className="text-[10px] font-mono text-gray-400 mt-1 uppercase tracking-widest">Confidence Index: <span className="text-white font-bold">{(result.matchConfidence * 100).toFixed(0)}%</span> // V1.5_PRO</p>
+      <main className="flex-1 flex flex-col min-h-0">
+        {/* 3. MIDDLE-TIER: Technical Manifest */}
+        <section className="h-[200px] bg-black/40 border-b border-white/5 overflow-y-auto shrink-0 scrollbar-thin">
+          <table className="w-full text-left border-collapse table-fixed">
+            <thead className="sticky top-0 bg-[#050505] z-30 shadow-md">
+              <tr className="border-b border-white/10">
+                <th className="px-8 py-2 text-[10px] font-mono text-gray-600 uppercase tracking-widest w-24">Index</th>
+                <th className="px-8 py-2 text-[10px] font-mono text-gray-600 uppercase tracking-widest w-[30%]">Hardware Model</th>
+                <th className="px-8 py-2 text-[10px] font-mono text-gray-600 uppercase tracking-widest w-40">System Type</th>
+                <th className="px-8 py-2 text-[10px] font-mono text-gray-600 uppercase tracking-widest italic">Live Status / Parameter Digest</th>
+              </tr>
+            </thead>
+            <tbody>
+              {result && result.signalChain.map((link, i) => (
+                <tr 
+                  key={`manifest-${link.id}`}
+                  onClick={() => setActiveGearId(link.id)}
+                  className={`group border-b border-white/[0.03] cursor-pointer transition-colors ${
+                    (activeGearId === link.id || (!activeGearId && i === 0)) ? 'bg-gear-accent/[0.08]' : 'hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <td className="px-8 py-3 text-xs font-mono text-gray-600 tracking-tighter">0{i + 1} // AD_L</td>
+                  <td className="px-8 py-3 font-display font-bold text-xs uppercase group-hover:text-gear-accent transition-colors tracking-tight">
+                    {link.model}
+                  </td>
+                  <td className="px-8 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono border border-white/10 px-2 py-0.5 rounded text-gray-500 uppercase">
+                        {link.type}
+                      </span>
+                      {i === 0 && <span className="w-1.5 h-1.5 bg-gear-accent rounded-full animate-pulse shadow-[0_0_5px_var(--color-gear-accent)]" />}
+                    </div>
+                  </td>
+                  <td className="px-8 py-3 text-[10px] font-mono text-gray-500 tracking-tight truncate opacity-80 group-hover:opacity-100 italic">
+                    {getSettingsString(link)}
+                  </td>
+                </tr>
+              ))}
+              {!result && (
+                <tr>
+                  <td colSpan={4} className="px-8 py-12 text-center text-gray-800 text-[10px] font-mono uppercase tracking-[0.5em]">
+                    Rig architecture not initialized.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
+        {/* 4. BOTTOM-TIER: Gear Inspector */}
+        <section className="flex-1 bg-[#080808] relative min-h-0 flex overflow-hidden">
+          {/* Metadata Sidebar (Vertical Real Estate Utilization) */}
+          <div className="w-[320px] border-r border-white/5 p-8 bg-black/20 overflow-y-auto shrink-0 scrollbar-hide">
+             <div className="mb-10">
+               <h3 className="text-[10px] font-mono text-gray-600 uppercase mb-4 tracking-[0.25em] flex items-center gap-2">
+                 <Activity className="w-3.5 h-3.5 text-gear-accent" />
+                 Rig Intelligence
+               </h3>
+               <div className="bg-white/[0.02] rounded-xl p-5 border border-white/5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] text-gray-500 uppercase font-mono">Engine Version</span>
+                    <span className="text-[9px] font-bold text-gear-accent font-mono">PRO_1.5</span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] text-gray-500 uppercase font-mono">Confidence Level</span>
+                      <span className="text-[9px] font-bold text-white font-mono">
+                        {result ? (result.matchConfidence * 100).toFixed(0) : "0"}%
+                      </span>
+                    </div>
+                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        className="h-full bg-gear-accent" 
+                        initial={{ width: 0 }}
+                        animate={{ width: result ? `${result.matchConfidence * 100}%` : 0 }}
+                      />
+                    </div>
+                  </div>
+                  <div className="h-px bg-white/5" />
+                  <p className="text-[11px] text-gray-400 italic font-serif leading-relaxed line-clamp-6 opacity-70 hover:opacity-100 transition-opacity cursor-default">
+                    {result?.explanation || "Awaiting source analysis for tone architectural generation."}
+                  </p>
+               </div>
+             </div>
+
+             <div className="space-y-8">
+                <div>
+                  <h4 className="text-[10px] font-mono text-gray-600 uppercase mb-3 tracking-widest flex items-center gap-2">
+                    <Mic2 className="w-3 h-3" />
+                     Reference Studio
+                  </h4>
+                  <div 
+                    {...getRootProps()} 
+                    className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                      isDragActive ? 'border-gear-accent bg-gear-accent/[0.03]' : 'border-white/5 hover:border-white/10 active:border-gear-accent/40'
+                    }`}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3 border border-white/10 group-hover:border-gear-accent/20">
+                      <Upload className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tight truncate max-w-[200px] mx-auto">
+                      {audioFile ? audioFile.name : "Inject Raw Signal"}
+                    </p>
+                    <p className="text-[8px] text-gray-700 uppercase mt-2 font-mono">WAV / MP3 Supported</p>
+                  </div>
+                </div>
+
+                {userPreset && (
+                  <div className="pt-6 border-t border-white/5">
+                    <h4 className="text-[10px] font-mono text-gray-600 uppercase mb-4 tracking-widest flex items-center gap-2">
+                       <ArrowRight className="w-3 h-3 text-gear-accent" />
+                       Compare State
+                    </h4>
+                    <div className="bg-blue-500/5 rounded-lg p-3 border border-blue-500/10 mb-2">
+                      <p className="text-[10px] text-blue-400 font-bold uppercase truncate">Loaded: {userPreset.metadata.presetName}</p>
                     </div>
                     <button 
-                      onClick={() => exportAt5p(result)}
-                      className="group flex items-center gap-3 px-6 py-3 rounded-xl bg-gear-accent text-black font-bold text-xs tracking-widest hover:bg-white transition-all shadow-[0_0_20px_rgba(59,130,245,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                      onClick={() => { setUserPreset(null); setDiffs([]); }}
+                      className="text-[9px] text-gray-600 hover:text-red-400 transition-colors uppercase font-mono tracking-widest underline decoration-gray-800 underline-offset-4"
                     >
-                      <Download className="w-4 h-4" />
-                      EXPORT ENTIRE RIG (.AT5P)
+                      Clear Comparison
                     </button>
                   </div>
+                )}
+             </div>
+          </div>
 
-                  {/* Hero Signal Chain View */}
-                  <div className="mb-10 relative">
-                    <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gear-accent/20 to-transparent -translate-y-1/2 pointer-events-none" />
-                    <div className="relative flex items-center gap-2 overflow-x-auto pb-8 scrollbar-hide">
-                      {result.signalChain.map((link, i) => (
-                        <React.Fragment key={`chain-${link.id}`}>
-                          <GearCard link={link} />
-                          {i < result.signalChain.length - 1 && <SignalConnector />}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                    <div className="absolute right-0 top-0 h-full w-20 bg-gradient-to-l from-gear-card to-transparent pointer-events-none" />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div className="glass-panel p-6">
-                      <h4 className="text-[10px] font-mono text-gray-500 uppercase mb-4 tracking-[0.2em] flex items-center gap-2">
-                        <Activity className="w-3 h-3 text-gear-accent" />
-                        Technical Summary
-                      </h4>
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-300 leading-relaxed font-sans italic quote">
-                          "{result.explanation}"
-                        </p>
-                        
-                        {userPreset && diffs.length > 0 && (
-                          <div className="mt-6 pt-6 border-t border-white/5">
-                            <h5 className="text-[9px] text-gray-600 uppercase mb-3">Comparison Deltas</h5>
-                            <div className="space-y-2 max-h-[150px] overflow-y-auto pr-2 scrollbar-thin">
-                              {diffs.map((diff, i) => (
-                                <div key={i} className="flex gap-2 text-[10px] leading-tight border-b border-white/5 pb-2 last:border-0">
-                                  <span className="text-gear-accent font-bold">{diff.split(':')[0]}:</span>
-                                  <span className="text-gray-400">{diff.split(':').slice(1).join(':')}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="glass-panel p-6">
-                      <h4 className="text-[10px] font-mono text-gray-500 uppercase mb-4 tracking-[0.2em] flex items-center gap-2">
-                        <Settings2 className="w-3 h-3 text-gear-accent" />
-                        Routing Logic
-                      </h4>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-gray-500 border-b border-gear-border/30 pb-2">
-                          <span>PARALLEL PATHS</span>
-                          <span className="text-gear-accent">DETECTED: {result.signalChain.some(l => l.type === 'TONEX' || l.type === 'Rack') ? 'YES' : 'NO'}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[10px] font-mono text-gray-500 border-b border-gear-border/30 pb-2">
-                          <span>PHASE ALIGNMENT</span>
-                          <span className="text-green-500">LOCKED</span>
-                        </div>
-                        {result.midiPC !== undefined && (
-                          <div className="flex items-center justify-between text-[10px] font-mono text-gray-500">
-                            <span>MASTER MIDI PC</span>
-                            <span className="text-indigo-400 font-bold">{String(result.midiPC).padStart(3, '0')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Reference Manifest (Non-Graphical) */}
-                  <div className="mt-8 glass-panel p-6 overflow-hidden">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <Sliders className="w-3 h-3 text-gear-accent" />
-                        Quick Reference Manifest
-                      </h4>
-                      <button 
-                        onClick={copyManifestAsText}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 text-[10px] font-bold tracking-widest ${
-                          isCopied 
-                            ? 'bg-green-500/10 border-green-500/50 text-green-500' 
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                        {isCopied ? 'COPIED' : 'COPY TEXT'}
-                      </button>
-                    </div>
-                    <div className="space-y-6">
-                      {result.signalChain.map((link, idx) => {
-                        const manifest = {
-                          Stomp: STOMP_MANIFEST,
-                          Amp: AMP_MANIFEST,
-                          Cab: CAB_MANIFEST,
-                          Room: ROOM_MANIFEST,
-                          EQ: STOMP_MANIFEST,
-                          Rack: RACK_MANIFEST,
-                          TONEX: TONEX_MANIFEST
-                        }[link.type as any] || [];
-                        const gearInfo = (manifest as any[]).find(item => item.id === link.id);
-                        const identity = getGearIdentity(link.id);
-
-                        return (
-                          <div key={`ref-${idx}`} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-white uppercase tracking-tight">
-                                  {idx + 1}. {link.model}
-                                </span>
-                                {identity && (
-                                  <span className="text-[8px] text-gear-accent/80 font-mono italic">
-                                    MODEL: {identity}
-                                  </span>
-                                )}
+          {/* Large Focused Inspector View */}
+          <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.03)_0%,transparent_70%)] relative">
+             <div className="h-full flex items-center justify-center">
+               <AnimatePresence mode="wait">
+                 {activeGear ? (
+                   <motion.div
+                     key={activeGear.id}
+                     initial={{ opacity: 0, scale: 0.97, y: 15 }}
+                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                     exit={{ opacity: 0, scale: 0.97, y: 15 }}
+                     transition={{ duration: 0.3, ease: "easeOut" }}
+                     className="w-full max-w-2xl px-12 pb-24"
+                   >
+                     <div className="mb-8 flex items-center justify-between border-b border-white/5 pb-6">
+                        <div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-gray-800 font-mono text-3xl font-black">
+                              0{(result?.signalChain.findIndex(i => i.id === activeGear.id) || 0) + 1}
+                            </span>
+                            <div>
+                              <h2 className="text-3xl font-display font-bold text-white tracking-tighter uppercase mb-1">
+                                {activeGear.model}
+                              </h2>
+                              <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-mono text-gear-accent/80 uppercase tracking-[0.2em] font-bold">Hardware Focus</span>
+                                <div className="w-1 h-1 bg-white/20 rounded-full" />
+                                <span className="text-[10px] font-mono text-gray-600 uppercase tracking-widest italic">{activeGear.type} // {activeGear.id.substring(0, 12)}</span>
                               </div>
-                              <span className="text-[8px] font-mono text-gray-600 uppercase border border-gray-800 px-1.5 py-0.5 rounded leading-none">
-                                {link.type} // {link.id}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1">
-                              {link.knobs.map((knob, kIdx) => {
-                                const knobDef = gearInfo?.knobs?.find((def: any) => 
-                                  typeof def === 'object' && def.name.toLowerCase() === knob.name.toLowerCase()
-                                ) as KnobDefinition | undefined;
-                                const unit = knobDef?.unit || "";
-
-                                return (
-                                  <div key={kIdx} className="flex items-center justify-between border-b border-white/[0.02] py-0.5">
-                                    <span className="text-[9px] text-gray-500 font-mono uppercase truncate max-w-[80px]">{knob.name}</span>
-                                    <span className="text-[9px] text-white font-mono font-bold">
-                                      {knob.value}{!String(knob.value).includes(unit) && unit}
-                                    </span>
-                                  </div>
-                                );
-                              })}
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                        <div className="flex items-center gap-8">
+                           <div className="flex flex-col items-end">
+                              <span className="text-[9px] font-mono text-gray-700 uppercase leading-none mb-1.5 tracking-widest">Signal Unity</span>
+                              <div className="w-24 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                 <motion.div 
+                                    className="h-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: "92%" }}
+                                 />
+                              </div>
+                           </div>
+                           <button onClick={copyManifestAsText} className="p-3 bg-white/5 rounded-lg border border-white/10 hover:border-gear-accent/40 hover:bg-gear-accent/5 transition-all text-gray-500 hover:text-gear-accent">
+                             {isCopied ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                           </button>
+                        </div>
+                     </div>
+
+                     <div className="scale-110 origin-top">
+                        <GearCard link={activeGear} />
+                     </div>
+                   </motion.div>
+                 ) : (
+                   <div className="flex flex-col items-center justify-center text-center max-w-sm">
+                     <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/5 flex items-center justify-center mb-8 bg-black/40">
+                        <Cpu className="w-10 h-10 text-gray-800 animate-pulse" />
+                     </div>
+                     <h3 className="text-gray-600 font-display font-bold text-xl uppercase tracking-widest mb-3">Modular Isolation</h3>
+                     <p className="text-[10px] text-gray-700 uppercase leading-relaxed tracking-[0.25em] font-mono">Select a hardware node from the master signal ribbon above to initialize the gear inspector.</p>
+                   </div>
+                 )}
+               </AnimatePresence>
+             </div>
+          </div>
+        </section>
+      </main>
+
+
+      {/* FOOTER: System Status Bar */}
+      <footer className="h-[35px] border-t border-white/10 shrink-0 bg-[#050505] flex items-center justify-between px-8 z-40">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-[#f59e0b] rounded-full shadow-[0_0_8px_#f59e0b]" />
+            <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest">Signal Connection: Secured</span>
+          </div>
+          <div className="w-px h-3 bg-white/5" />
+          <div className="text-[9px] font-mono text-gray-700 uppercase tracking-tight flex items-center gap-2">
+            <Activity className="w-3 h-3" />
+            Core Clock: 128.00 BPM // Phase Locked
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="text-[9px] font-mono text-gray-800 uppercase tracking-[0.6em] font-bold">
+            Tone Translator // Pro Edition 2026
+          </div>
+        </div>
+      </footer>
+
+      {/* Export Modal */}
+      <AnimatePresence>
+        {isExportModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setIsExportModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative bg-gear-card border border-gear-accent/30 rounded-2xl p-8 w-full max-w-md shadow-[0_0_50px_rgba(255,165,0,0.15)]"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-10 h-10 bg-gear-accent/20 rounded-lg flex items-center justify-center border border-gear-accent/30">
+                  <Download className="text-gear-accent w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-bold text-white tracking-tight">Export Preset</h3>
+                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Amplitube 5 (.at5p) Specification</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div>
+                  <label className="block text-[10px] font-mono text-gray-500 uppercase mb-2 tracking-widest pl-1">Preset Filename</label>
+                  <div className="relative">
+                    <input 
+                      autoFocus
+                      type="text" 
+                      value={exportFilename}
+                      onChange={(e) => setExportFilename(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleExport(exportFilename)}
+                      className="w-full bg-gear-bg border border-gear-border rounded-xl px-4 py-3 text-sm focus:border-gear-accent focus:ring-1 focus:ring-gear-accent outline-none text-white font-mono"
+                      placeholder="My_Awesome_Tone"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono text-gray-600">.AT5P</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gear-accent/5 rounded-lg p-3 border border-gear-accent/10">
+                  <div className="flex gap-2">
+                    <Info className="w-3 h-3 text-gear-accent shrink-0 mt-0.5" />
+                    <div className="flex flex-col gap-1">
+                      <p className="text-[10px] text-gear-accent/80 leading-relaxed italic">
+                        { 'showSaveFilePicker' in window 
+                          ? "Modern Browser Detected: The system will attempt to show a location picker." 
+                          : "Legacy Browser: The file will save directly to your Downloads folder." }
+                      </p>
+                      <p className="text-[9px] text-gray-500 font-mono leading-tight">
+                        PRO TIP: If the location picker doesn't appear, try opening this app in a <strong>New Tab</strong> to bypass iframe security.
+                      </p>
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="h-full min-h-[400px] border-2 border-dashed border-gear-border rounded-2xl flex flex-col items-center justify-center text-gray-600 p-12 text-center"
-              >
-                <Settings2 className="w-16 h-16 mb-4 opacity-20" />
-                <h3 className="text-xl font-display font-bold mb-2">Ready for Analysis</h3>
-                <p className="text-sm max-w-md">
-                  Upload an audio file or describe the tone you want to achieve. 
-                  Gemini will architect the perfect Amplitube 5 signal chain for you.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </main>
+              </div>
 
-      <footer className="mt-12 pt-8 border-t border-gear-border text-center text-gray-600 text-[10px] uppercase tracking-widest">
-        Tone Translator &copy; 2026 // Powered by Google Gemini 1.5 Pro // Optimized for Amplitube 5
-      </footer>
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => setIsExportModalOpen(false)}
+                  className="px-4 py-3 rounded-xl border border-gear-border text-gray-400 font-bold text-xs uppercase tracking-widest hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => handleExport(exportFilename)}
+                  className="px-4 py-3 rounded-xl bg-gear-accent text-black font-bold text-xs uppercase tracking-widest hover:bg-yellow-500 transition-colors shadow-lg shadow-gear-accent/20"
+                >
+                  Save Preset
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
