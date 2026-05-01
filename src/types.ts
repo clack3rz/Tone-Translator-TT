@@ -12,11 +12,63 @@ export interface GearLink {
   description?: string;
 }
 
+export interface ToneSummary {
+  style: string;
+  gain_level: 'low' | 'medium' | 'medium-high' | 'high';
+  noise_level: 'low' | 'moderate' | 'high';
+}
+
+export interface SignalChainElement {
+  type: 'pedal' | 'amp' | 'cab' | 'rack';
+  name: string;
+  settings: Record<string, string | number>;
+}
+
+export interface EngineeringNotes {
+  gain_strategy: string;
+  noise_control: string;
+  eq_strategy: string;
+}
+
 export interface ToneResult {
-  signalChain: GearLink[];
-  explanation: string;
-  technicalTips?: string[];
-  matchConfidence: number;
-  midiPC?: number; // Suggested MIDI Program Change number for this preset
-  topology?: 'Serial' | 'AB Parallel' | 'DI Blend';
+  tone_summary: ToneSummary;
+  signal_chain: SignalChainElement[];
+  engineering_notes: EngineeringNotes;
+  confidence: number;
+  midiPC?: number;
+  
+  // Legacy fields for backward compatibility during transition if needed
+  // but we will primarily use the above
+  signalChain?: GearLink[]; 
+}
+
+export type AT5GearGroup =
+  | "amp"
+  | "cab"
+  | "stomp"
+  | "rack"
+  | "room"
+  | "tonex"
+  | string;
+
+export interface KnobMember {
+  name: string;
+  type: "range" | "switch" | "selector";
+  min?: number;
+  max?: number;
+  options?: string[];
+  default?: number | string;
+  unit?: string;
+}
+
+export interface AT5CatalogItem {
+  group: AT5GearGroup;
+  guid: string;
+  slot: string;
+  displayName: string;
+  otherNames?: string[];
+  usedInPresets?: number;
+  examplePresets?: string[];
+  knobs?: KnobMember[]; // Changed string[] to KnobMember[]
+  paramSuffix?: string;
 }

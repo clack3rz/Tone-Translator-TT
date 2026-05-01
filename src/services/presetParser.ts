@@ -129,59 +129,59 @@ export function parseAt5p(xmlContent: string): PresetData {
 export function comparePresets(aiResult: any, userPreset: PresetData) {
   const diffs: string[] = [];
   
-  const aiChain = aiResult.signalChain;
-  const userChain = userPreset.signalChain;
+  const aiChain = aiResult.signal_chain || [];
+  const userChain = userPreset.signalChain || [];
 
-  // Helper to find blocks by type
-  const getBlocksByType = (chain: any[], type: string) => chain.filter(b => b.type === type);
+  // Helper to map type names
+  const mapType = (type: string) => {
+    const t = type.toLowerCase();
+    if (t === 'pedal' || t === 'stomp') return 'stomp';
+    if (t === 'amp') return 'amp';
+    if (t === 'cab') return 'cab';
+    if (t === 'rack' || t === 'eq') return 'rack';
+    return t;
+  };
 
-  const types = ["Stomp", "Amp", "Cab", "Room", "EQ"];
+  const aiMapped = aiChain.map((g: any) => ({ ...g, mappedType: mapType(g.type) }));
+  const userMapped = userChain.map((g: any) => ({ ...g, mappedType: mapType(g.type) }));
+
+  const types = ["stomp", "amp", "cab", "rack"];
 
   types.forEach(type => {
-    const aiBlocks = getBlocksByType(aiChain, type);
-    const userBlocks = getBlocksByType(userChain, type);
+    const aiBlocks = aiMapped.filter((b: any) => b.mappedType === type);
+    const userBlocks = userMapped.filter((b: any) => b.mappedType === type);
 
     if (aiBlocks.length !== userBlocks.length) {
-      diffs.push(`${type} count mismatch: AI suggested ${aiBlocks.length}, Preset has ${userBlocks.length}.`);
+      diffs.push(`${type.toUpperCase()} count mismatch: AI suggested ${aiBlocks.length}, Preset has ${userBlocks.length}.`);
     }
 
-    // Compare models for each block of this type
     const maxLen = Math.max(aiBlocks.length, userBlocks.length);
     for (let i = 0; i < maxLen; i++) {
       const aiB = aiBlocks[i];
       const userB = userBlocks[i];
       
       if (aiB && userB) {
-        const isExactMatch = aiB.model.toLowerCase() === userB.model.toLowerCase();
-        // Simple fuzzy check for "translations" (e.g., Brit 8000 vs JCM 800)
-        const isTranslation = !isExactMatch && (
-          aiB.model.toLowerCase().includes(userB.model.toLowerCase().substring(0, 4)) ||
-          userB.model.toLowerCase().includes(aiB.model.toLowerCase().substring(0, 4))
-        );
-
-        if (!isExactMatch && !isTranslation) {
-          diffs.push(`${type} mismatch: AI suggested "${aiB.model}", Preset has "${userB.model}".`);
-        } else if (isTranslation) {
-          diffs.push(`${type} translation: AI chose "${aiB.model}" as an alternative to "${userB.model}".`);
+        const aiName = aiB.name || aiB.model || "";
+        const userName = userB.model || userB.name || "";
+        const isExactMatch = aiName.toLowerCase() === userName.toLowerCase();
+        
+        if (!isExactMatch) {
+          diffs.push(`${type.toUpperCase()} mismatch: AI suggested "${aiName}", Preset has "${userName}".`);
         }
 
-        // Compare knobs if models are at least a translation
-        if (isExactMatch || isTranslation) {
-          aiB.knobs.forEach((aiKnob: any) => {
-            const userKnob = userB.knobs.find((uk: any) => uk.name.toLowerCase() === aiKnob.name.toLowerCase());
+        // Compare settings/knobs
+        if (aiB.settings && userB.knobs) {
+          Object.entries(aiB.settings).forEach(([name, val]: [string, any]) => {
+            const userKnob = userB.knobs.find((uk: any) => uk.name.toLowerCase().includes(name.toLowerCase()));
             if (userKnob) {
-              const aiVal = parseFloat(aiKnob.value);
-              const userVal = parseFloat(userKnob.value);
-              if (!isNaN(aiVal) && !isNaN(userVal) && Math.abs(aiVal - userVal) > 1.0) {
-                diffs.push(`${aiB.model} ${aiKnob.name} delta: AI suggested ${aiVal}, Preset has ${userVal.toFixed(1)}.`);
+              const aiVal = parseFloat(String(val));
+              const userVal = parseFloat(String(userKnob.value));
+              if (!isNaN(aiVal) && !isNaN(userVal) && Math.abs(aiVal - userVal) > 1.5) {
+                diffs.push(`${aiName} ${name} delta: AI suggested ${aiVal}, Preset has ${userVal.toFixed(1)}.`);
               }
             }
           });
         }
-      } else if (aiB && !userB) {
-        diffs.push(`Extra ${type} in AI suggestion: "${aiB.model}"`);
-      } else if (!aiB && userB) {
-        diffs.push(`Missing ${type} in AI suggestion: "${userB.model}"`);
       }
     }
   });

@@ -179,7 +179,11 @@ export const GearSilhouette: React.FC<SilhouetteProps> = ({ type, model, classNa
         );
 
       default:
-        return <rect x="5" y="5" width="20" height="20" fill="currentColor" fillOpacity="0.1" />;
+        return (
+          <svg viewBox="0 0 30 30" className={`w-8 h-8 ${className}`}>
+            <rect x="5" y="5" width="20" height="20" fill="currentColor" fillOpacity="0.1" />
+          </svg>
+        );
     }
   };
 
