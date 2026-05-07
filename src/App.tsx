@@ -87,7 +87,7 @@ export default function App() {
     setIsTranslating(true);
 
     try {
-      const data = getExportData(toneResult, getCurrentChain());
+      const data = getExportData(toneResult, currentChain);
 
       const finalName = customName.endsWith(".at5p")
         ? customName
@@ -264,7 +264,7 @@ export default function App() {
 
   const copyExportDebug = () => {
     if (!toneResult) return;
-    const debug = getExportDebugData(toneResult, getCurrentChain());
+    const debug = getExportDebugData(toneResult, currentChain);
     navigator.clipboard.writeText(JSON.stringify(debug, null, 2));
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
@@ -272,7 +272,7 @@ export default function App() {
 
   const exportDebugJson = () => {
     if (!toneResult) return;
-    const debug = getExportDebugData(toneResult, getCurrentChain());
+    const debug = getExportDebugData(toneResult, currentChain);
     const data = JSON.stringify(debug, null, 2);
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
