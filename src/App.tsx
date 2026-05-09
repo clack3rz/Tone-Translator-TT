@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'motion/react';
 import AT5SignalChainView from "./components/AT5SignalChainView";
+import { AT5GearImportPanel } from './components/AT5GearImportPanel';
 import { 
   Music, 
   Upload, 
@@ -27,7 +28,8 @@ import {
   SlidersHorizontal,
   Gauge,
   Cable,
-  Cuboid
+  Cuboid,
+  X
 } from 'lucide-react';
 import { translateTone } from './services/geminiService';
 import { ToneResult } from './types';
@@ -73,6 +75,53 @@ export default function App() {
       return null;
     }
   }, [toneResult, currentChain]);
+
+  const handleGearClick = (link: any, index: number) => {
+    setActiveGearId(`${link.name}-${index}`);
+    
+    if (!exportDebugData) return;
+
+    // Match exactly by original index for stable debugging
+    const item = [...(exportDebugData.exported_chain || []), ...(exportDebugData.skipped_gear || [])].find(
+      (d) => d.original_index === index
+    );
+
+    if (item) {
+      const cardId = `at5-chain-card-${item.slot_section}-${item.slot_index}-${item.normalized_name}`;
+      const element = document.getElementById(cardId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Add a temporary highlight class or handling
+        element.classList.add('ring-2', 'ring-gear-accent', 'ring-offset-4', 'ring-offset-black');
+        setTimeout(() => {
+          element.classList.remove('ring-2', 'ring-gear-accent', 'ring-offset-4', 'ring-offset-black');
+        }, 2000);
+      }
+    }
+  };
+
+  const getGearStatus = useCallback((link: any, index: number) => {
+    if (!exportDebugData) return 'normal';
+    
+    // Match by original index for 1:1 parity with the debug chain
+    const item = [...(exportDebugData.exported_chain || []), ...(exportDebugData.skipped_gear || [])].find(
+      (d) => d.original_index === index
+    );
+    
+    if (!item) return 'normal';
+    if (!item.exported) return 'skipped';
+    
+    const isCheck = 
+      item.reason.toLowerCase().includes("check") ||
+      item.reason.toLowerCase().includes("warning") ||
+      item.reason.toLowerCase().includes("caution") ||
+      item.reason.toLowerCase().includes("fallback") ||
+      (item.exported_settings && item.exported_settings.includes("undefined")) ||
+      (!item.exported_settings && item.type !== "cab");
+      
+    if (isCheck) return 'check';
+    return 'pass';
+  }, [exportDebugData]);
 
   const initiateExport = () => {
     if (!toneResult) return;
@@ -306,9 +355,18 @@ export default function App() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe the tone (e.g. Master of Puppets bridge...)"
-              className="w-full bg-white/5 border border-white/10 rounded-lg pl-4 pr-10 py-2 text-xs focus:border-gear-accent outline-none transition-all placeholder:text-gray-600 font-mono"
+              className="w-full bg-white/5 border border-white/10 rounded-lg pl-4 pr-16 py-2 text-xs focus:border-gear-accent outline-none transition-all placeholder:text-gray-600 font-mono"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              {prompt && (
+                <button 
+                  onClick={() => setPrompt('')}
+                  className="p-1 hover:bg-white/10 rounded-full transition-all active:scale-90"
+                  title="Clear description"
+                >
+                  <X className="w-3 h-3 text-gray-500 hover:text-white" />
+                </button>
+              )}
               <Sliders className="w-3.5 h-3.5 text-gray-700" />
             </div>
           </div>
@@ -339,28 +397,6 @@ export default function App() {
         </div>
 
           <div className="flex items-center gap-4">
-            {toneResult && (
-              <>
-                <button 
-                  onClick={() => setIsChainViewOpen(!isChainViewOpen)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all uppercase tracking-widest font-bold text-[10px] ${
-                    isChainViewOpen 
-                      ? 'bg-white/10 border-white/20 text-white' 
-                      : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-                  }`}
-                >
-                  <Activity className="w-3.5 h-3.5" />
-                  Inspect Chain
-                </button>
-                <button 
-                  onClick={initiateExport}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gear-accent/30 text-gear-accent font-bold text-[10px] hover:bg-gear-accent hover:text-black transition-all uppercase tracking-widest"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  EXPORT .AT5P
-                </button>
-              </>
-            )}
             <div className="w-px h-4 bg-white/10" />
           <div className="text-[9px] font-mono text-gray-500 uppercase flex items-center gap-2 pr-2">
             <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
@@ -379,6 +415,29 @@ export default function App() {
           >
             Studio Reference
           </button>
+          
+          <div className="flex-1" />
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsChainViewOpen(!isChainViewOpen)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all uppercase tracking-widest font-bold text-[9px] ${
+                isChainViewOpen 
+                  ? 'bg-white/10 border-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
+                  : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+              }`}
+            >
+              <Activity className="w-3 h-3" />
+              Inspect Chain
+            </button>
+            <button 
+              onClick={initiateExport}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gear-accent/30 text-gear-accent font-bold text-[9px] hover:bg-gear-accent hover:text-black transition-all uppercase tracking-widest shadow-lg shadow-black/20"
+            >
+              <Download className="w-3 h-3" />
+              EXPORT .AT5P
+            </button>
+          </div>
         </div>
       )}
       <section className="min-h-[140px] border-b border-white/10 relative bg-[#0a0a0a] shrink-0 py-6">
@@ -394,7 +453,23 @@ export default function App() {
           )}
           {currentChain.map((link, i) => {
             const isActive = (activeGearId === `${link.name}-${i}`) || (!activeGearId && i === 0);
+            const status = getGearStatus(link, i);
             
+            // Status colors
+            const statusColorClass = {
+              pass: 'text-green-400',
+              check: 'text-amber-400',
+              skipped: 'text-red-400',
+              normal: 'text-gray-500 hover:text-white'
+            }[status];
+
+            const statusBorderClass = {
+              pass: 'border-green-500/30',
+              check: 'border-amber-500/30',
+              skipped: 'border-red-500/30',
+              normal: 'border-white/10 hover:border-white/40'
+            }[status];
+
             // Meaningful Gear Icons
             const nameL = link.name.toLowerCase();
             let NodeIcon = {
@@ -418,17 +493,17 @@ export default function App() {
                   <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">{link.type}</span>
                 </div>
                 <button 
-                  onClick={() => setActiveGearId(`${link.name}-${i}`)}
+                  onClick={() => handleGearClick(link, i)}
                   className={`relative w-[70px] h-[70px] bg-[#111] border rounded-lg flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 ${
                     isActive 
                       ? 'border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-110 z-20 bg-[#1a1a1a]' 
-                      : 'border-white/10 hover:border-white/40'
+                      : statusBorderClass
                   }`}
                 >
                   <div className={`absolute -top-2.5 -left-2.5 w-5 h-5 rounded bg-black border ${isActive ? 'border-gear-accent' : 'border-white/10'} flex items-center justify-center`}>
                     <span className="text-[8px] font-mono text-gray-500">{i + 1}</span>
                   </div>
-                  <NodeIcon className={`w-7 h-7 transition-all ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                  <NodeIcon className={`w-7 h-7 transition-all ${isActive ? 'text-white' : statusColorClass}`} />
                 </button>
               </div>
             );
@@ -441,6 +516,8 @@ export default function App() {
           {toneResult ? (
             <div className="max-w-6xl mx-auto space-y-12">
               {exportDebugData && <AT5SignalChainView debugData={exportDebugData} />}
+
+              <AT5GearImportPanel />
 
               {/* Engineering Strategy & Quick Debug (Always Visible) */}
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

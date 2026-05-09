@@ -411,6 +411,7 @@ export interface ExportDebugItem {
   resolved_guid: string;
   slot_section: string;
   slot_index: number;
+  original_index: number;
   original_settings: Record<string, unknown>;
   normalized_settings: Record<string, unknown>;
   exported_settings: string;
@@ -523,6 +524,7 @@ const makeDebugItem = (
     resolved_guid: guid,
     slot_section: section,
     slot_index: index,
+    original_index: pair.originalIndex,
     original_settings: pair.raw.settings ?? {},
     normalized_settings: gear.settings ?? {},
     exported_settings: attrs,
