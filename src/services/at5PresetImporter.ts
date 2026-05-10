@@ -2,12 +2,18 @@
 import { XMLParser } from "fast-xml-parser";
 import { AT5_CATALOG } from "./at5Catalog";
 import { 
+  VERIFIED_CAB_GUIDS, 
+  VERIFIED_MIC_GUIDS, 
+  VERIFIED_SPEAKER_GUIDS 
+} from "./at5VerifiedProtocols";
+import { 
   ImportResults, 
   DetectedGear, 
   CataloguePatch, 
   GearType, 
   CatalogueStatus,
-  ParameterImport
+  ParameterImport,
+  DetectedProtocol
 } from "../types/at5ImportTypes";
 
 const AT5_EMPTY_SLOT_GUID = "773b8ea7-b54a-4a3c-99df-ffbbf6d29271";
@@ -33,6 +39,7 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
     }
 
     const detectedGear: DetectedGear[] = [];
+    const detectedProtocols: DetectedProtocol[] = [];
     const warnings: string[] = [];
 
     // Sections to scan
@@ -77,14 +84,69 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
 
         if (!guid || guid === AT5_EMPTY_SLOT_GUID) continue;
 
-        const gear = analyzeGear(guid, slotNode, section.type as GearType, `${section.name}/Slot${i}`);
+        // For Cabs, we extract attributes from the parent node too (like SpeakerModel)
+        const cabContext = section.type === "cab" ? node : null;
+        const gear = analyzeGear(guid, slotNode, section.type as GearType, `${section.name}/Slot${i}`, cabContext);
         detectedGear.push(gear);
+
+        // Sub-scanning for Cabinet components (Mics, Speakers)
+        if (section.type === "cab") {
+          const mic0 = slotNode?.Mic0Model;
+          const mic1 = slotNode?.Mic1Model;
+          
+          if (!VERIFIED_CAB_GUIDS.some(c => c.guid === guid)) {
+            detectedProtocols.push({
+              type: "cab_alias",
+              guid: guid,
+              suggestedName: gear.displayName,
+              sourcePreset: file.name,
+              status: "new"
+            });
+          }
+
+          if (mic0 && !VERIFIED_MIC_GUIDS.some(m => m.guid === mic0)) {
+            detectedProtocols.push({
+              type: "mic",
+              guid: mic0,
+              suggestedName: slotNode.Mic0Name || `Unknown Mic (${mic0.substring(0, 8)})`,
+              sourcePreset: file.name,
+              status: "new"
+            });
+          }
+          if (mic1 && !VERIFIED_MIC_GUIDS.some(m => m.guid === mic1)) {
+            detectedProtocols.push({
+              type: "mic",
+              guid: mic1,
+              suggestedName: slotNode.Mic1Name || `Unknown Mic (${mic1.substring(0, 8)})`,
+              sourcePreset: file.name,
+              status: "new"
+            });
+          }
+
+          // Scan for speakers in BOTH nodes (AmpliTube uses both depending on preset version)
+          for (let s = 0; s < 4; s++) {
+            const spkInSlot = slotNode?.[`SpeakerModel${s}`];
+            const spkInNode = node?.[`SpeakerModel${s}`];
+            const spk = spkInSlot || spkInNode;
+            
+            if (spk && !VERIFIED_SPEAKER_GUIDS.some(v => v.guid === spk)) {
+              detectedProtocols.push({
+                type: "speaker",
+                guid: spk,
+                suggestedName: `Unknown Speaker (${spk.substring(0, 8)})`,
+                sourcePreset: file.name,
+                status: "new"
+              });
+            }
+          }
+        }
       }
     }
 
     return {
       sourceFileName: file.name,
-      detectedGear,
+      detectedGear: [...new Map(detectedGear.map(g => [g.modelGuid, g])).values()], // Deduplicate by GUID
+      detectedProtocols: [...new Map(detectedProtocols.map(p => [p.guid, p])).values()], // Deduplicate by GUID
       warnings,
       errors: [],
     };
@@ -99,15 +161,19 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
   }
 }
 
-function analyzeGear(guid: string, slotNode: any, gearType: GearType, xmlPath: string): DetectedGear {
+function analyzeGear(guid: string, slotNode: any, gearType: GearType, xmlPath: string, cabNode: any = null): DetectedGear {
   const catalogItem = AT5_CATALOG.find(item => item.guid.toLowerCase() === guid.toLowerCase());
   
   const parameters: ParameterImport[] = [];
-  if (slotNode) {
-    Object.entries(slotNode).forEach(([key, value]) => {
-      // Skip internal attributes
-      if (["Bypass", "FullScreen", "GUILoadComplete"].includes(key)) return;
-      if (typeof value === "object") return; // Skip Nested nodes
+  
+  // Combine attributes from both nodes if it's a cab
+  const combinedAttributes = cabNode ? { ...cabNode, ...slotNode } : slotNode;
+
+  if (combinedAttributes) {
+    Object.entries(combinedAttributes).forEach(([key, value]) => {
+      // Skip internal attributes or child objects
+      if (["Bypass", "FullScreen", "GUILoadComplete", "Cab", "Amp"].includes(key)) return;
+      if (typeof value === "object") return; 
 
       parameters.push({
         name: key,
@@ -167,6 +233,7 @@ function analyzeGear(guid: string, slotNode: any, gearType: GearType, xmlPath: s
 export function generateCataloguePatch(results: ImportResults): CataloguePatch {
   const newGear = results.detectedGear.filter(g => g.catalogueStatus === "new");
   const updatedGear = results.detectedGear.filter(g => g.catalogueStatus === "parameter_update" || g.catalogueStatus === "possible_match");
+  const newProtocols = results.detectedProtocols || [];
   
   // Checking for conflicts (same name but different GUID or vice-versa)
   const conflicts: DetectedGear[] = [];
@@ -187,8 +254,20 @@ export function generateCataloguePatch(results: ImportResults): CataloguePatch {
     newGear,
     updatedGear,
     conflicts: [...new Set(conflicts)],
-    requiresManualReview: [...newGear, ...updatedGear, ...conflicts]
+    newProtocols,
+    requiresManualReview: [...newGear, ...updatedGear, ...conflicts, ...newProtocols]
   };
+}
+
+export function generateProtocolSnippet(protocol: DetectedProtocol): string {
+  const listName = {
+    mic: "VERIFIED_MIC_GUIDS",
+    speaker: "VERIFIED_SPEAKER_GUIDS",
+    cab_alias: "VERIFIED_CAB_GUIDS"
+  }[protocol.type];
+
+  const comment = `// For ${listName} in at5VerifiedProtocols.ts`;
+  return `  ${comment}\n  { guid: "${protocol.guid}", aliases: ["${protocol.suggestedName.toLowerCase()}"] },`;
 }
 
 export function generateTypeScriptEntry(gear: DetectedGear): string {
@@ -203,7 +282,7 @@ export function generateTypeScriptEntry(gear: DetectedGear): string {
     slot: "${gear.slotType || ''}",
     paramSuffix: "_${suffix}", 
     knobs: [
-${gear.parameters.slice(0, 5).map(p => `      { name: "${p.name}", type: "range", min: 0, max: 10, default: ${typeof p.value === 'number' ? p.value : `"${p.value}"`} },`).join('\n')}
+${gear.parameters.slice(0, 8).map(p => `      { name: "${p.name}", type: "range", min: 0, max: 10, default: ${typeof p.value === 'number' ? p.value : `"${p.value}"`} },`).join('\n')}
     ]
   },`;
 }

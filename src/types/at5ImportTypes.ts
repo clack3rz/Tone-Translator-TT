@@ -32,6 +32,7 @@ export interface DetectedGear {
 export interface ImportResults {
   sourceFileName: string;
   detectedGear: DetectedGear[];
+  detectedProtocols?: DetectedProtocol[];
   warnings: string[];
   errors: string[];
 }
@@ -40,5 +41,16 @@ export interface CataloguePatch {
   newGear: DetectedGear[];
   updatedGear: DetectedGear[];
   conflicts: DetectedGear[];
-  requiresManualReview: DetectedGear[];
+  newProtocols: DetectedProtocol[]; // New: Mic/Speaker mappings
+  requiresManualReview: (DetectedGear | DetectedProtocol)[];
+}
+
+export type ProtocolType = "mic" | "speaker" | "cab_alias";
+
+export interface DetectedProtocol {
+  type: ProtocolType;
+  guid: string;
+  suggestedName: string;
+  sourcePreset?: string;
+  status: CatalogueStatus;
 }
