@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ToneResult } from "../types";
 import { AMP_MANIFEST, STOMP_MANIFEST, CAB_MANIFEST, ROOM_MANIFEST, RACK_MANIFEST, TONEX_MANIFEST } from "./gearManifest";
-import { AT5_CATALOG, findAT5Gear, AT5_EMPTY_SLOT_GUID } from "./at5Catalog";
+import { getAt5Catalog, findAT5Gear, AT5_EMPTY_SLOT_GUID } from "./at5Catalog";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -36,6 +36,9 @@ ENGINEERING PHILOSOPHY (Killer Rig Systematic Tone):
    - Harsh/Fizzy? Reduce Treble/Presence POST-distortion.
    - Lost in Mix? Increase Mids (700Hz-1.5kHz).
    - Messy Delay? Align to tempo and move to FX Loop/Rack.
+
+5. CABINET SERIATION: Cabinet settings MUST use standard keys: 'Speaker' (for speaker swap), 'Mic_1' (Primary microphone), 'Mic_2' (Secondary microphone), 'Room' (Room type/ambience).
+   - Do NOT use 'speaker_a' or 'speaker_b' for microphones.
 
 KNOWLEDGE BASE:
 

@@ -1,10 +1,10 @@
 
 import { XMLParser } from "fast-xml-parser";
-import { AT5_CATALOG } from "./at5Catalog";
+import { getAt5Catalog } from "./at5Catalog";
 import { 
-  VERIFIED_CAB_GUIDS, 
-  VERIFIED_MIC_GUIDS, 
-  VERIFIED_SPEAKER_GUIDS 
+  getVerifiedCabs, 
+  getVerifiedMics, 
+  getVerifiedSpeakers 
 } from "./at5VerifiedProtocols";
 import { 
   ImportResults, 
@@ -18,12 +18,19 @@ import {
 
 const AT5_EMPTY_SLOT_GUID = "773b8ea7-b54a-4a3c-99df-ffbbf6d29271";
 
+const normalizeGuid = (guid: any): string => {
+  if (typeof guid !== 'string') return String(guid || '').toLowerCase().replace(/-/g, '').trim();
+  return guid.toLowerCase().replace(/-/g, '').trim();
+};
+
 export async function parseAt5pPreset(file: File): Promise<ImportResults> {
   const text = await file.text();
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "",
   });
+
+  const catalog = getAt5Catalog();
 
   try {
     const jsonObj = parser.parse(text);
@@ -82,7 +89,15 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
           slotNode = node[`Slot${i}`];
         }
 
-        if (!guid || guid === AT5_EMPTY_SLOT_GUID) continue;
+        if (!guid || normalizeGuid(guid) === normalizeGuid(AT5_EMPTY_SLOT_GUID)) continue;
+
+        console.log(`[Import] Section: ${section.name}, Type: ${section.type}, Raw GUID: ${guid}`);
+
+        // Handle case where XML parser might return literal "null" or "undefined" as strings
+        if (String(guid).toLowerCase() === "null" || String(guid).toLowerCase() === "undefined") {
+          warnings.push(`Detected null/undefined GUID at ${section.name}/Slot${i}. This is usually a corrupt or placeholder slot.`);
+          continue;
+        }
 
         // For Cabs, we extract attributes from the parent node too (like SpeakerModel)
         const cabContext = section.type === "cab" ? node : null;
@@ -94,17 +109,22 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
           const mic0 = slotNode?.Mic0Model;
           const mic1 = slotNode?.Mic1Model;
           
-          if (!VERIFIED_CAB_GUIDS.some(c => c.guid === guid)) {
+          const normalizedGuid = normalizeGuid(guid);
+          if (!getVerifiedCabs().some(c => normalizeGuid(c.guid) === normalizedGuid)) {
+            const existingProto = getVerifiedCabs().find(c => normalizeGuid(c.guid) === normalizedGuid);
             detectedProtocols.push({
               type: "cab_alias",
               guid: guid,
               suggestedName: gear.displayName,
               sourcePreset: file.name,
-              status: "new"
+              status: "new",
+              existingAliases: existingProto?.aliases
             });
           }
 
-          if (mic0 && !VERIFIED_MIC_GUIDS.some(m => m.guid === mic0)) {
+          const normalizedMic0 = mic0 ? normalizeGuid(mic0) : "";
+          const existingMic0 = mic0 ? getVerifiedMics().find(m => normalizeGuid(m.guid) === normalizedMic0) : null;
+          if (mic0 && !existingMic0) {
             detectedProtocols.push({
               type: "mic",
               guid: mic0,
@@ -112,8 +132,13 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
               sourcePreset: file.name,
               status: "new"
             });
+          } else if (mic0 && existingMic0) {
+             // In expert mode we might want to see verified protocols too if we ever allow editing them here
           }
-          if (mic1 && !VERIFIED_MIC_GUIDS.some(m => m.guid === mic1)) {
+
+          const normalizedMic1 = mic1 ? normalizeGuid(mic1) : "";
+          const existingMic1 = mic1 ? getVerifiedMics().find(m => normalizeGuid(m.guid) === normalizedMic1) : null;
+          if (mic1 && !existingMic1) {
             detectedProtocols.push({
               type: "mic",
               guid: mic1,
@@ -129,7 +154,9 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
             const spkInNode = node?.[`SpeakerModel${s}`];
             const spk = spkInSlot || spkInNode;
             
-            if (spk && !VERIFIED_SPEAKER_GUIDS.some(v => v.guid === spk)) {
+            const normalizedSpk = spk ? normalizeGuid(spk) : "";
+            const existingSpk = spk ? getVerifiedSpeakers().find(v => normalizeGuid(v.guid) === normalizedSpk) : null;
+            if (spk && !existingSpk) {
               detectedProtocols.push({
                 type: "speaker",
                 guid: spk,
@@ -162,7 +189,9 @@ export async function parseAt5pPreset(file: File): Promise<ImportResults> {
 }
 
 function analyzeGear(guid: string, slotNode: any, gearType: GearType, xmlPath: string, cabNode: any = null): DetectedGear {
-  const catalogItem = AT5_CATALOG.find(item => item.guid.toLowerCase() === guid.toLowerCase());
+  const catalog = getAt5Catalog();
+  const normalizedGuid = normalizeGuid(guid);
+  const catalogItem = catalog.find(item => normalizeGuid(item.guid) === normalizedGuid);
   
   const parameters: ParameterImport[] = [];
   
@@ -204,7 +233,8 @@ function analyzeGear(guid: string, slotNode: any, gearType: GearType, xmlPath: s
       
       if (mostCommon) {
         // Try to match by suffix
-        const matchBySuffix = AT5_CATALOG.find(item => item.paramSuffix === `_${mostCommon}`);
+        const catalog = getAt5Catalog();
+        const matchBySuffix = catalog.find(item => item.paramSuffix === `_${mostCommon}`);
         if (matchBySuffix) {
           status = "possible_match";
           displayName = matchBySuffix.displayName;
@@ -226,11 +256,13 @@ function analyzeGear(guid: string, slotNode: any, gearType: GearType, xmlPath: s
     parameters,
     importRecommendation: recommendation,
     rawXmlPath: xmlPath,
-    isEnabled
+    isEnabled,
+    existingAliases: catalogItem?.otherNames
   };
 }
 
 export function generateCataloguePatch(results: ImportResults): CataloguePatch {
+  const catalog = getAt5Catalog();
   const newGear = results.detectedGear.filter(g => g.catalogueStatus === "new");
   const updatedGear = results.detectedGear.filter(g => g.catalogueStatus === "parameter_update" || g.catalogueStatus === "possible_match");
   const newProtocols = results.detectedProtocols || [];
@@ -238,13 +270,13 @@ export function generateCataloguePatch(results: ImportResults): CataloguePatch {
   // Checking for conflicts (same name but different GUID or vice-versa)
   const conflicts: DetectedGear[] = [];
   results.detectedGear.forEach(gear => {
-    const existing = AT5_CATALOG.find(c => c.displayName.toLowerCase() === gear.displayName.toLowerCase());
+    const existing = catalog.find(c => c.displayName.toLowerCase() === gear.displayName.toLowerCase());
     if (existing && existing.guid.toLowerCase() !== gear.modelGuid?.toLowerCase()) {
       conflicts.push(gear);
     }
     
     // Check for GUID conflict with a different name
-    const existingByGuid = AT5_CATALOG.find(c => c.guid.toLowerCase() === gear.modelGuid?.toLowerCase());
+    const existingByGuid = catalog.find(c => c.guid.toLowerCase() === gear.modelGuid?.toLowerCase());
     if (existingByGuid && existingByGuid.displayName.toLowerCase() !== gear.displayName.toLowerCase()) {
       conflicts.push(gear);
     }

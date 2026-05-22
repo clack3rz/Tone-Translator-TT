@@ -21,12 +21,13 @@ export interface DetectedGear {
   normalizedName: string;
   gearType: GearType;
   slotType?: string;
-  modelGuid?: string;
+  modelGuid: string;
   catalogueStatus: CatalogueStatus;
   parameters: ParameterImport[];
   importRecommendation: string;
   rawXmlPath?: string;
   isEnabled: boolean;
+  existingAliases?: string[];
 }
 
 export interface ImportResults {
@@ -53,4 +54,5 @@ export interface DetectedProtocol {
   suggestedName: string;
   sourcePreset?: string;
   status: CatalogueStatus;
+  existingAliases?: string[];
 }
