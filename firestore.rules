@@ -34,6 +34,17 @@ service cloud.firestore {
         && data.updatedBy == request.auth.uid;
     }
 
+    // Validation Blueprint for Parameter Mapping
+    function isValidParameterMapping(data) {
+      return data.keys().hasAll(['gearName', 'parameter', 'conversion', 'exportParameterName', 'updatedAt', 'updatedBy'])
+        && data.gearName is string && data.gearName.size() <= 128
+        && data.parameter is string && data.parameter.size() <= 128
+        && data.conversion is string && data.conversion.size() <= 64
+        && data.exportParameterName is string && data.exportParameterName.size() <= 128
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
     // --- Main Collections ---
 
     match /catalogue/{guid} {
@@ -85,6 +96,22 @@ service cloud.firestore {
         request.method == 'create' || (
           incoming().diff(existing()).affectedKeys().hasOnly(['aliases', 'updatedAt', 'updatedBy', 'guid'])
           && incoming().guid == existing().guid
+        )
+      );
+    }
+
+    match /parameter_mappings/{mappingId} {
+      allow read: if true;
+      allow delete: if isVerified();
+      allow create, update: if isVerified() && isValidId(mappingId) && isValidParameterMapping(incoming()) && (
+        isAdmin() ||
+        request.method == 'create' || (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'gearName', 'parameter', 'visualMin', 'visualMax', 'visualUnit',
+            'exportMin', 'exportMax', 'exportParameterName', 'conversion', 'formula',
+            'updatedAt', 'updatedBy', 'id'
+          ])
+          && incoming().id == existing().id
         )
       );
     }

@@ -42,6 +42,27 @@
         "updatedBy": { "type": "string" }
       },
       "required": ["guid", "aliases"]
+    },
+    "parameter_mapping": {
+      "title": "Gear Parameter Mapping",
+      "description": "Definition of visual to export conversion rules for a gear's parameter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "gearName": { "type": "string" },
+        "parameter": { "type": "string" },
+        "visualMin": { "type": "number" },
+        "visualMax": { "type": "number" },
+        "visualUnit": { "type": "string" },
+        "exportMin": { "type": "number" },
+        "exportMax": { "type": "number" },
+        "exportParameterName": { "type": "string" },
+        "conversion": { "type": "string" },
+        "formula": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["gearName", "parameter", "conversion", "exportParameterName"]
     }
   },
   "firestore": {
@@ -60,6 +81,10 @@
     "/verified_mics/{guid}": {
       "schema": "verified_mapping",
       "description": "Verified Microphone GUID mappings"
+    },
+    "/parameter_mappings/{mappingId}": {
+      "schema": "parameter_mapping",
+      "description": "A mapping for a gear parameter conversion rule"
     }
   }
 }

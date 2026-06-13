@@ -12,7 +12,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
-import { AT5CatalogItem } from '../types';
+import { AT5CatalogItem, ParameterMapping } from '../types';
 import { VerifiedMapping } from './at5VerifiedProtocols';
 
 // Enum for Operation Types (Mandatory for error logging)
@@ -201,6 +201,57 @@ export const at5DatabaseService = {
     } catch (error) {
        console.error("Batch seed failed:", error);
        handleFirestoreError(error, OperationType.WRITE, "BATCH_SEED");
+    }
+  },
+
+  /**
+   * Gear Discovery Parameter Mappings
+   */
+  async getParameterMappings(): Promise<ParameterMapping[]> {
+    const path = 'parameter_mappings';
+    try {
+      const snapshot = await getDocs(collection(db, path));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id
+        } as ParameterMapping;
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  },
+
+  async saveParameterMapping(mapping: ParameterMapping) {
+    if (!auth.currentUser) throw new Error("Must be signed in to save parameter mappings");
+    
+    // Generate a unique doc id: gearName_parameter (clean the string to be valid ID)
+    const rawId = `${mapping.gearName}_${mapping.parameter}`;
+    const mappingId = rawId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    
+    const path = `parameter_mappings/${mappingId}`;
+    try {
+      const data = sanitize({
+        ...mapping,
+        id: mappingId,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid
+      });
+      await setDoc(doc(db, 'parameter_mappings', mappingId), data);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
+  async deleteParameterMapping(id: string) {
+    if (!auth.currentUser) throw new Error("Must be signed in to delete parameter mappings");
+    const path = `parameter_mappings/${id}`;
+    try {
+      await deleteDoc(doc(db, 'parameter_mappings', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, path);
     }
   }
 };

@@ -476,6 +476,106 @@ const normaliseCabSettings = (
   return out;
 };
 
+const normaliseParametricEqSettings = (
+  settings: Record<string, any> = {}
+): Record<string, string | number> => {
+  const out: Record<string, string | number> = {};
+  const keys = Object.keys(settings);
+
+  // If we already have explicit Freq1, Gain1, Freq2, Gain2, write them directly:
+  const hasFreq1 = keys.some(k => ["freq 1", "freq1", "freq_1", "frequency_1", "frequency 1"].includes(k.toLowerCase()));
+  if (hasFreq1) {
+    for (const [key, value] of Object.entries(settings)) {
+      const k = normalise(key);
+      if (k === "freq 1" || k === "freq1" || k === "frequency 1" || k === "freq_1") out["Freq 1"] = value;
+      else if (k === "gain 1" || k === "gain1" || k === "gain_1") out["Gain 1"] = value;
+      else if (k === "q 1" || k === "q1" || k === "q_1") out["Q 1"] = value;
+      else if (k === "freq 2" || k === "freq2" || k === "frequency 2" || k === "freq_2") out["Freq 2"] = value;
+      else if (k === "gain 2" || k === "gain2" || k === "gain_2") out["Gain 2"] = value;
+      else if (k === "q 2" || k === "q2" || k === "q_2") out["Q 2"] = value;
+      else if (k === "low cut" || k === "lowcut" || k === "low_cut") out["Low Cut"] = value;
+      else if (k === "high cut" || k === "highcut" || k === "high_cut") out["High Cut"] = value;
+      else out[key] = value;
+    }
+    return out;
+  }
+
+  // Otherwise, extract up to 3 bands: Low, Mid, High
+  let lowCut: any = undefined;
+  let highCut: any = undefined;
+
+  for (const [key, value] of Object.entries(settings)) {
+    const k = normalise(key);
+    if (k === "low cut" || k === "lowcut" || k === "low_cut" || k === "high pass" || k === "highpass") {
+      lowCut = value;
+    } else if (k === "high cut" || k === "highcut" || k === "high_cut" || k === "low pass" || k === "lowpass") {
+      highCut = value;
+    }
+  }
+
+  let lowF: any = undefined, lowG: any = undefined, lowQ: any = undefined;
+  let midF: any = undefined, midG: any = undefined, midQ: any = undefined;
+  let higF: any = undefined, higG: any = undefined, higQ: any = undefined;
+
+  for (const [key, value] of Object.entries(settings)) {
+    const k = normalise(key);
+    if (k === "low freq" || k === "lowfreq" || k === "low_freq" || k === "frequency low") lowF = value;
+    else if (k === "low gain" || k === "lowgain" || k === "low_gain" || k === "gain low") lowG = value;
+    else if (k === "low q" || k === "lowq" || k === "low_q" || k === "q low") lowQ = value;
+    
+    else if (k === "mid freq" || k === "midfreq" || k === "mid_freq" || k === "frequency mid" || k === "midrange freq") midF = value;
+    else if (k === "mid gain" || k === "midgain" || k === "mid_gain" || k === "gain mid" || k === "midrange gain") midG = value;
+    else if (k === "mid q" || k === "midq" || k === "mid_q" || k === "q mid" || k === "midrange q") midQ = value;
+    
+    else if (k === "high freq" || k === "highfreq" || k === "high_freq" || k === "frequency high") higF = value;
+    else if (k === "high gain" || k === "highgain" || k === "high_gain" || k === "gain high") higG = value;
+    else if (k === "high q" || k === "highq" || k === "high_q" || k === "q high") higQ = value;
+  }
+
+  // Heuristic: If we have low-mid (Mid) and upper-mid (High), map Mid -> Freq 1, High -> Freq 2
+  if (midF !== undefined && higF !== undefined) {
+    out["Freq 1"] = midF;
+    if (midG !== undefined) out["Gain 1"] = midG;
+    if (midQ !== undefined) out["Q 1"] = midQ;
+
+    out["Freq 2"] = higF;
+    if (higG !== undefined) out["Gain 2"] = higG;
+    if (higQ !== undefined) out["Q 2"] = higQ;
+  } else if (lowF !== undefined && midF !== undefined) {
+    out["Freq 1"] = lowF;
+    if (lowG !== undefined) out["Gain 1"] = lowG;
+    if (lowQ !== undefined) out["Q 1"] = lowQ;
+
+    out["Freq 2"] = midF;
+    if (midG !== undefined) out["Gain 2"] = midG;
+    if (midQ !== undefined) out["Q 2"] = midQ;
+  } else {
+    if (midF !== undefined) {
+      out["Freq 1"] = midF;
+      if (midG !== undefined) out["Gain 1"] = midG;
+      if (midQ !== undefined) out["Q 1"] = midQ;
+    } else if (lowF !== undefined) {
+      out["Freq 1"] = lowF;
+      if (lowG !== undefined) out["Gain 1"] = lowG;
+      if (lowQ !== undefined) out["Q 1"] = lowQ;
+    }
+
+    if (higF !== undefined) {
+      out["Freq 2"] = higF;
+      if (higG !== undefined) out["Gain 2"] = higG;
+      if (higQ !== undefined) out["Q 2"] = higQ;
+    }
+  }
+
+  if (lowCut !== undefined) out["Low Cut"] = lowCut;
+  if (highCut !== undefined) out["High Cut"] = highCut;
+
+  if (out["Freq 1"] !== undefined && out["Q 1"] === undefined) out["Q 1"] = 0.9;
+  if (out["Freq 2"] !== undefined && out["Q 2"] === undefined) out["Q 2"] = 0.8;
+
+  return out;
+};
+
 const normaliseSettings = (
   gearName: string,
   gearType: string,
@@ -498,6 +598,10 @@ const normaliseSettings = (
 
   if (gearType === "cab") {
     return normaliseCabSettings(settings);
+  }
+
+  if (n === "parametric eq" || n === "parametric eq 3") {
+    return normaliseParametricEqSettings(settings);
   }
 
   if (n.includes("graphic") || n === "eq pg") {

@@ -1,0 +1,114 @@
+{
+  "tone_id": "acdc_jailbreak_malcolm_young_studio",
+  "profile_type": "validated_song_tone",
+  "validation_status": "validated_close",
+  "tested_against": "Spotify reference playback",
+  "user_feedback": "Generated TT preset is basically bang on when played alongside the original tone.",
+  "tone_profile": {
+    "source_type": "text",
+    "input_summary": "AC/DC Jailbreak Malcolm Young dry studio rhythm crunch",
+    "artist": "AC/DC",
+    "song": "Jailbreak",
+    "album": "Dirty Deeds Done Dirt Cheap",
+    "player": "Malcolm Young",
+    "era": "1970s",
+    "style": ["classic rock", "hard rock", "retro"],
+    "role": "rhythm",
+    "gain_level": "medium-low",
+    "distortion_type": "crunch",
+    "low_end": "controlled",
+    "midrange": "forward",
+    "highs": "bright",
+    "attack": "sharp",
+    "dynamics": "dynamic",
+    "effects_profile": "none",
+    "room": "small",
+    "width": "mono",
+    "production_style": "raw",
+    "confidence": "high"
+  },
+  "initial_family_guidance": {
+    "amp_family_likely": [
+      "vintage Marshall",
+      "Plexi",
+      "Super Lead",
+      "JMP-style British crunch",
+      "Brit 8000 low-gain British crunch"
+    ],
+    "amp_family_avoid": [
+      "modern metal",
+      "metal lead",
+      "Rectifier",
+      "ENGL",
+      "extreme high gain",
+      "Dimebag-style",
+      "Vintage Metal Lead",
+      "Metal Lead V",
+      "Modern Tube Lead",
+      "Red Pig"
+    ],
+    "cab_family_likely": ["British closed-back 4x12"],
+    "speaker_family_likely": ["Greenback", "Brit Green"],
+    "mic_strategy_likely": [
+      "Dynamic 57 close microphone for attack",
+      "Ribbon 121 for added warm body"
+    ],
+    "effects_likely": [],
+    "effects_avoid": [
+      "delay",
+      "reverb",
+      "modulation",
+      "boost overdrive",
+      "rack EQ unless corrective"
+    ]
+  },
+  "validated_chain_summary": {
+    "amp": "Brit 8000",
+    "amp_settings": {
+      "Sensitivity": 0,
+      "Presence": 5,
+      "Bass": 4.5,
+      "Middle": 7.5,
+      "Treble": 5.5,
+      "Master Volume": 8,
+      "Pre Amp Volume": 3.8
+    },
+    "cab": "4x12 Brit 8000",
+    "speaker": "Brit Green",
+    "mic_1": "Dynamic 57",
+    "mic_1_placement": "Cap Edge, 0.5 inches distance",
+    "mic_2": "Ribbon 121",
+    "mic_2_placement": "Cap Edge, 1.0 inches distance, blended -6dB",
+    "room": "Small Studio",
+    "room_level": 2,
+    "effects": []
+  },
+  "classification_reasoning": {
+    "style_reasoning": "AC/DC and Jailbreak imply classic 1970s British hard rock with no modern metal elements.",
+    "era_reasoning": "1970s analogue recording practices: dry, raw rhythm guitar driven by tube amp crunch.",
+    "role_reasoning": "Malcolm Young is strongly associated with tight, dry rhythm guitar.",
+    "gain_reasoning": "Low-to-medium crunch preserves chord separation and pick attack.",
+    "effects_reasoning": "The target tone is dry and direct, so delays, reverbs, modulation and rack effects should be avoided by default.",
+    "family_reasoning": "Vintage Marshall-style British crunch is the correct family. In TT testing, Brit 8000 with low PreAmp and high Master produced a very close result."
+  },
+  "learning_notes": [
+    "This profile was validated by playing the generated TT preset alongside the Spotify reference track.",
+    "Brit 8000 with low PreAmp and high Master works well as a Malcolm Young-style rhythm platform.",
+    "Brit Green / Greenback-style speakers are highly suitable for early AC/DC rhythm.",
+    "Dynamic 57 provides attack and upper-mid bite.",
+    "Ribbon 121 adds body and smooths the top end.",
+    "No rack EQ, boost, delay, reverb or modulation should be used by default.",
+    "Avoid choosing amp models because they contain words like vintage, metal or lead unless the full tone profile supports that choice."
+  ],
+  "negative_constraints": [
+    "Do not select Vintage Metal Lead for this tone.",
+    "Do not select Metal Lead V for this tone.",
+    "Do not select Modern Tube Lead for this tone.",
+    "Do not select Red Pig for this tone unless specifically requested.",
+    "Do not select Rectifier-style or ENGL-style amps for this tone unless specifically requested.",
+    "Do not add rack EQ by default.",
+    "Do not add boost pedals by default.",
+    "Do not add delay, reverb or modulation by default."
+  ],
+  "warnings": []
+}

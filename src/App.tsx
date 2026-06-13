@@ -2,8 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'motion/react';
 import AT5SignalChainView from "./components/AT5SignalChainView";
+import { ToneProfileView } from "./components/ToneProfileView";
 import { AT5GearImportPanel } from './components/AT5GearImportPanel';
 import { CatalogueManager } from './components/CatalogueManager';
+import { ParameterMappingManager } from './components/ParameterMappingManager';
 import { 
   Music, 
   Upload, 
@@ -50,6 +52,51 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { refreshCatalog } from './services/at5Catalog';
 import { refreshProtocols } from './services/at5VerifiedProtocols';
 
+const STATUS_CONFIG: Record<string, { solid: string; clearBg: string; clearBorder: string; pulse: boolean }> = {
+  pass: {
+    solid: "#4ade80",
+    clearBg: "rgba(74, 222, 128, 0.15)",
+    clearBorder: "rgba(74, 222, 128, 0.40)",
+    pulse: false
+  },
+  warn: {
+    solid: "#eab308",
+    clearBg: "rgba(234, 179, 8, 0.15)",
+    clearBorder: "rgba(234, 179, 8, 0.40)",
+    pulse: true
+  },
+  partial: {
+    solid: "#f97316",
+    clearBg: "rgba(249, 115, 22, 0.15)",
+    clearBorder: "rgba(249, 115, 22, 0.40)",
+    pulse: true
+  },
+  check: {
+    solid: "#ea580c",
+    clearBg: "rgba(234, 88, 12, 0.15)",
+    clearBorder: "rgba(234, 88, 12, 0.45)",
+    pulse: true
+  },
+  fail: {
+    solid: "#dc2626",
+    clearBg: "rgba(220, 38, 38, 0.15)",
+    clearBorder: "rgba(220, 38, 38, 0.45)",
+    pulse: true
+  },
+  skipped: {
+    solid: "#ef4444",
+    clearBg: "rgba(239, 68, 68, 0.15)",
+    clearBorder: "rgba(239, 68, 68, 0.40)",
+    pulse: true
+  },
+  normal: {
+    solid: "#9ca3af",
+    clearBg: "transparent",
+    clearBorder: "rgba(255, 255, 255, 0.1)",
+    pulse: false
+  }
+};
+
 export default function App() {
   const [prompt, setPrompt] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -70,7 +117,7 @@ export default function App() {
   const [isChainViewOpen, setIsChainViewOpen] = useState(false);
   const [isAdvancedDebugOpen, setIsAdvancedDebugOpen] = useState(false);
   const [isGearToolOpen, setIsGearToolOpen] = useState(false);
-  const [gearToolTab, setGearToolTab] = useState<'discovery' | 'catalogue'>('discovery');
+  const [gearToolTab, setGearToolTab] = useState<'discovery' | 'catalogue' | 'mappings'>('discovery');
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isDbRefreshing, setIsDbRefreshing] = useState(false);
   const [dbVersion, setDbVersion] = useState(0);
@@ -139,26 +186,42 @@ export default function App() {
   };
 
   const getGearStatus = useCallback((link: any, index: number) => {
-    if (!exportDebugData) return 'normal';
+    if (!exportDebugData) return { type: 'normal', label: '', reason: '' };
     
     // Match by original index for 1:1 parity with the debug chain
     const item = [...(exportDebugData.exported_chain || []), ...(exportDebugData.skipped_gear || [])].find(
       (d) => d.original_index === index
     );
     
-    if (!item) return 'normal';
-    if (!item.exported) return 'skipped';
+    if (!item) return { type: 'normal', label: '', reason: '' };
+
+    const rawStatus = (item.final_status || "PASS") as string;
+    const reason = item.reason || "";
     
-    const isCheck = 
-      item.reason.toLowerCase().includes("check") ||
-      item.reason.toLowerCase().includes("warning") ||
-      item.reason.toLowerCase().includes("caution") ||
-      item.reason.toLowerCase().includes("fallback") ||
-      (item.exported_settings && item.exported_settings.includes("undefined")) ||
-      (item.exported_settings === null && item.type !== "cab");
-      
-    if (isCheck) return 'check';
-    return 'pass';
+    if (rawStatus === "FAIL") {
+      return { type: 'fail', label: 'FAIL', reason };
+    }
+    if (rawStatus === "SKIPPED") {
+      return { type: 'skipped', label: 'SKIPPED', reason };
+    }
+    if (rawStatus === "CHECK") {
+      return { type: 'check', label: 'CHECK', reason };
+    }
+    if (rawStatus === "PARTIAL") {
+      return { type: 'partial', label: 'PARTIAL', reason };
+    }
+    if (rawStatus === "PASS_WITH_WARNING" || rawStatus === "WARN") {
+      return { type: 'warn', label: 'WARN', reason };
+    }
+    if (rawStatus === "PASS") {
+      return { type: 'pass', label: 'PASS', reason };
+    }
+
+    // fallback mapping if final_status wasn't populated or was custom
+    if (!item.exported) {
+      return { type: 'skipped', label: 'SKIPPED', reason };
+    }
+    return { type: 'pass', label: 'PASS', reason };
   }, [exportDebugData]);
 
   const initiateExport = () => {
@@ -526,9 +589,6 @@ export default function App() {
         </div>
       )}
       <section className="min-h-[140px] border-b border-white/10 relative bg-[#0a0a0a] shrink-0 py-6">
-        <div className={`absolute top-1/2 left-0 w-full h-[2px] -translate-y-1/2 pointer-events-none z-0 transition-colors duration-500 ${
-          'bg-[#f59e0b] shadow-[0_0_20px_rgba(245,158,11,0.5)]'
-        }`} />
         
         <div className="flex items-center flex-wrap gap-y-10 gap-x-12 px-12 h-full relative z-10">
           {!toneResult && (
@@ -538,22 +598,21 @@ export default function App() {
           )}
           {currentChain.map((link, i) => {
             const isActive = (activeGearId === `${link.name}-${i}`) || (!activeGearId && i === 0);
-            const status = getGearStatus(link, i);
-            
-            // Status colors
-            const statusColorClass = {
-              pass: 'text-green-400',
-              check: 'text-amber-400',
-              skipped: 'text-red-400',
-              normal: 'text-gray-500 hover:text-white'
-            }[status];
+            const gearStatus = getGearStatus(link, i);
+            const status = gearStatus.type;
+            const statusLabel = gearStatus.label;
+            const statusReason = gearStatus.reason;
 
-            const statusBorderClass = {
-              pass: 'border-green-500/30',
-              check: 'border-amber-500/30',
-              skipped: 'border-red-500/30',
-              normal: 'border-white/10 hover:border-white/40'
-            }[status];
+            const activeStyle = {
+              solid: "#ffffff",
+              clearBg: "rgba(255, 255, 255, 0.15)",
+              clearBorder: "rgba(255, 255, 255, 0.45)",
+              pulse: false
+            };
+
+            const styleCfg = isActive
+              ? activeStyle
+              : (STATUS_CONFIG[status] || STATUS_CONFIG.normal);
 
             // Meaningful Gear Icons
             const nameL = link.name.toLowerCase();
@@ -569,27 +628,62 @@ export default function App() {
             if (link.type === 'rack' && (nameL.includes('eq') || nameL.includes('graphic'))) NodeIcon = Sliders;
             if (link.type === 'pedal' && nameL.includes('boost')) NodeIcon = Gauge;
 
+            const hoverTitle = statusReason 
+              ? `Status: ${statusLabel}\nReason: ${statusReason}` 
+              : `${link.name} (${statusLabel || 'Awaiting Translation'})`;
+
             return (
               <div key={`${link.name}-${i}`} className="flex flex-col items-center gap-2 group">
                 <div className="flex flex-col items-center mb-1">
                   <span className="text-[10px] font-bold text-white uppercase tracking-tight text-center max-w-[120px] truncate" title={link.name}>
                     {link.name}
                   </span>
-                  <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest">{link.type}</span>
+                  {statusLabel && (
+                    <span 
+                      className={`text-[8px] font-extrabold uppercase tracking-widest px-1.5 py-0.5 rounded border inline-block mt-0.5 ${styleCfg.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: styleCfg.solid,
+                        backgroundColor: styleCfg.clearBg,
+                        borderColor: styleCfg.clearBorder
+                      }}
+                    >
+                      {statusLabel}
+                    </span>
+                  )}
+                  <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest mt-0.5">{link.type}</span>
                 </div>
-                <button 
-                  onClick={() => handleGearClick(link, i)}
-                  className={`relative w-[70px] h-[70px] bg-[#111] border rounded-lg flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 ${
-                    isActive 
-                      ? 'border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-110 z-20 bg-[#1a1a1a]' 
-                      : statusBorderClass
-                  }`}
-                >
-                  <div className={`absolute -top-2.5 -left-2.5 w-5 h-5 rounded bg-black border ${isActive ? 'border-gear-accent' : 'border-white/10'} flex items-center justify-center`}>
-                    <span className="text-[8px] font-mono text-gray-500">{i + 1}</span>
-                  </div>
-                  <NodeIcon className={`w-7 h-7 transition-all ${isActive ? 'text-white' : statusColorClass}`} />
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => handleGearClick(link, i)}
+                    title={hoverTitle}
+                    className={`relative w-[70px] h-[70px] border rounded-lg flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+                      isActive 
+                        ? 'shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-110 z-20' 
+                        : ''
+                    } ${styleCfg.pulse ? "animate-pulse" : ""}`}
+                    style={{
+                      backgroundColor: styleCfg.clearBg,
+                      borderColor: styleCfg.clearBorder
+                    }}
+                  >
+                    <div className={`absolute -top-2.5 -left-2.5 w-5 h-5 rounded bg-black border ${isActive ? 'border-gear-accent' : 'border-white/10'} flex items-center justify-center`}>
+                      <span className="text-[8px] font-mono text-gray-500">{i + 1}</span>
+                    </div>
+                    <NodeIcon 
+                      className="w-7 h-7 transition-all" 
+                      style={{ color: styleCfg.solid }} 
+                    />
+                  </button>
+                  {i < currentChain.length - 1 && (
+                    <div 
+                      className="absolute top-1/2 -translate-y-1/2 left-[70px] w-12 h-[3px] pointer-events-none rounded-full z-0" 
+                      style={{
+                        backgroundColor: '#60a5fa',
+                        boxShadow: '0 0 10px rgba(96, 165, 250, 0.9), 0 0 3px rgba(96, 165, 250, 1)'
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             );
           })}
@@ -612,13 +706,24 @@ export default function App() {
                     <div className="w-px h-6 bg-white/10" />
                     <button 
                       onClick={() => setGearToolTab('catalogue')}
-                      className={`text-2xl font-display font-bold tracking-tight transition-all ${gearToolTab === 'catalogue' ? 'text-white border-b-2 border-purple-500 pb-1' : 'text-gray-600 hover:text-gray-400'}`}
+                      className={`text-2xl font-display font-bold tracking-tight transition-all ${gearToolTab === 'catalogue' ? 'text-white' : 'text-gray-600 hover:text-gray-400'}`}
                     >
                       Catalogue
                     </button>
+                    <div className="w-px h-6 bg-white/10" />
+                    <button 
+                      onClick={() => setGearToolTab('mappings')}
+                      className={`text-2xl font-display font-bold tracking-tight transition-all ${gearToolTab === 'mappings' ? 'text-white' : 'text-gray-600 hover:text-gray-400'}`}
+                    >
+                      Mappings
+                    </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest font-mono">
-                    {gearToolTab === 'discovery' ? 'Sync unknown gear directly to the cloud' : 'Search and edit existing verified gear records'}
+                    {gearToolTab === 'discovery' 
+                      ? 'Sync unknown gear directly to the cloud' 
+                      : gearToolTab === 'catalogue'
+                        ? 'Search and edit existing verified gear records'
+                        : 'Configure parameter mappings & visual-to-xml rules'}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -646,8 +751,8 @@ export default function App() {
                   <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-xl flex gap-4">
                     <Info className="w-5 h-5 text-blue-400 shrink-0" />
                     <div className="text-xs text-gray-400 space-y-2">
-                      <p className="font-bold text-blue-300">How to update the System:</p>
-                      <ol className="list-decimal list-inside space-y-1">
+                       <p className="font-bold text-blue-300">How to update the System:</p>
+                       <ol className="list-decimal list-inside space-y-1">
                         <li>Upload an <span className="text-white">.at5p</span> preset containing the gear you want to add.</li>
                         <li>The system will identify <span className="text-blue-400">New Gear</span> or <span className="text-cyan-400">New Protocols</span>.</li>
                         <li>Click <span className="text-white font-bold">COMMIT</span> on any row to save it to the Cloud Database.</li>
@@ -656,15 +761,24 @@ export default function App() {
                     </div>
                   </div>
                 </>
-              ) : (
+              ) : gearToolTab === 'catalogue' ? (
                 <CatalogueManager 
                   onRefresh={handleRefreshChain} 
                   initialSearch={catalogueSearchOverride} 
                 />
+              ) : (
+                <ParameterMappingManager />
               )}
             </div>
           ) : toneResult ? (
             <div className="max-w-6xl mx-auto space-y-12">
+              {toneResult.tone_profile_result && (
+                <ToneProfileView 
+                  profileResult={toneResult.tone_profile_result} 
+                  rawRequest={prompt} 
+                />
+              )}
+
               {exportDebugData && (
                 <AT5SignalChainView 
                   debugData={exportDebugData} 

@@ -17,6 +17,22 @@ type ExportDebugItem = {
   exported_settings: string;
   exported: boolean;
   reason: string;
+  gear_guid_resolved?: boolean;
+  gear_included_in_chain?: boolean;
+  gear_written_to_xml?: boolean;
+  parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL";
+  mismatched_parameters?: string[];
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "CHECK" | "SKIPPED" | "FAIL";
+  parameter_details?: {
+    parameter: string;
+    normalized_parameter?: string;
+    input_value?: any;
+    display_value: string;
+    exported_internal_value: string;
+    mapping_status: string;
+    conversion_note?: string;
+  }[];
+  not_exported_detail?: string[];
 };
 
 type ExportDebugData = {
@@ -29,6 +45,58 @@ type ExportDebugData = {
 type Props = {
   debugData: ExportDebugData;
   onJumpToCatalogue?: (guid: string) => void;
+};
+
+interface StatusStyle {
+  solid: string;
+  clearBg: string;
+  clearBorder: string;
+  pulse: boolean;
+}
+
+const STATUS_CONFIG: Record<string, StatusStyle> = {
+  PASS: {
+    solid: "#4ade80",
+    clearBg: "rgba(74, 222, 128, 0.15)",
+    clearBorder: "rgba(74, 222, 128, 0.40)",
+    pulse: false
+  },
+  PASS_WITH_WARNING: {
+    solid: "#eab308",
+    clearBg: "rgba(234, 179, 8, 0.15)",
+    clearBorder: "rgba(234, 179, 8, 0.40)",
+    pulse: true
+  },
+  WARN: {
+    solid: "#eab308",
+    clearBg: "rgba(234, 179, 8, 0.15)",
+    clearBorder: "rgba(234, 179, 8, 0.40)",
+    pulse: true
+  },
+  PARTIAL: {
+    solid: "#f97316",
+    clearBg: "rgba(249, 115, 22, 0.15)",
+    clearBorder: "rgba(249, 115, 22, 0.40)",
+    pulse: true
+  },
+  CHECK: {
+    solid: "#ea580c",
+    clearBg: "rgba(234, 88, 12, 0.15)",
+    clearBorder: "rgba(234, 88, 12, 0.45)",
+    pulse: true
+  },
+  FAIL: {
+    solid: "#dc2626",
+    clearBg: "rgba(220, 38, 38, 0.15)",
+    clearBorder: "rgba(220, 38, 38, 0.45)",
+    pulse: true
+  },
+  SKIPPED: {
+    solid: "#ef4444",
+    clearBg: "rgba(239, 68, 68, 0.15)",
+    clearBorder: "rgba(239, 68, 68, 0.40)",
+    pulse: true
+  }
 };
 
 
@@ -246,46 +314,32 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {!item.exported ? (
-              <span
-                className="rounded-full bg-red-950/40 px-3 py-1 text-[10px] font-bold uppercase tracking-widest"
-                style={{ color: "#f87171" }}
-              >
-                Skipped
-              </span>
-            ) : cardHasUnknown ? (
-              <span
-                className="rounded-full bg-amber-950/40 px-3 py-1 text-[10px] font-bold uppercase tracking-widest border border-amber-500/50 animate-pulse"
-                style={{ color: "#fbbf24" }}
-              >
-                Partial / Needs Review
-              </span>
-            ) : isCheck ? (
-              <span
-                className="rounded-full bg-amber-950/40 px-3 py-1 text-[10px] font-bold uppercase tracking-widest"
-                style={{ color: "#fbbf24" }}
-              >
-                Restricted / Fallback
-              </span>
-            ) : (
-              <span
-                className="rounded-full bg-green-950/40 px-3 py-1 text-[10px] font-bold uppercase tracking-widest"
-                style={{ color: "#4ade80" }}
-              >
-                Pass
-              </span>
-            )}
+            {(() => {
+              const statusKey = item.final_status || "PASS";
+              const styleCfg = STATUS_CONFIG[statusKey] || STATUS_CONFIG.PASS;
+              const label = {
+                PASS: "Pass",
+                PASS_WITH_WARNING: "Warning",
+                WARN: "Warning",
+                PARTIAL: "Partial",
+                CHECK: "Check",
+                FAIL: "Fail",
+                SKIPPED: "Skipped"
+              }[statusKey] || "Pass";
 
-            {isCheck && !cardHasUnknown && (
-              <span
-                className="rounded-full bg-slate-800/50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest border border-amber-500/30"
-                style={{ color: "#fbbf24" }}
-              >
-                Check
-              </span>
-            )}
-
-            {/* Removed redundant cardHasUnknown badge as it is now the primary status if present */}
+              return (
+                <span
+                  className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${styleCfg.pulse ? "animate-pulse" : ""}`}
+                  style={{
+                    color: styleCfg.solid,
+                    backgroundColor: styleCfg.clearBg,
+                    borderColor: styleCfg.clearBorder
+                  }}
+                >
+                  {label}
+                </span>
+              );
+            })()}
           </div>
         </div>
 
@@ -347,6 +401,76 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
         />
         <SettingsTable title="Exported XML settings" data={exportedAttrs} onJumpToCatalogue={onJumpToCatalogue} />
       </div>
+
+      {item.parameter_details && item.parameter_details.length > 0 && (
+        <div className="mt-4 rounded-xl border border-slate-800 p-3 bg-slate-950/30">
+          <div className="mb-2 text-sm font-bold text-slate-200">
+            Export Parameter Verification Details
+          </div>
+          <div className="space-y-2">
+            {item.parameter_details.map((param, pIdx) => (
+              <div
+                key={pIdx}
+                className="grid grid-cols-[140px_1fr] gap-3 border-b border-white/5 pb-2 text-xs leading-tight last:border-0 last:pb-0"
+              >
+                <div className="font-mono font-semibold text-slate-400">
+                  {param.parameter}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-slate-300">Intended: <strong className="text-slate-100">{param.display_value}</strong></span>
+                    {param.normalized_parameter && (
+                      <span className="text-slate-400 font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
+                        ({param.normalized_parameter})
+                      </span>
+                    )}
+                    <span className="text-slate-500 font-mono">→</span>
+                    <span className="text-slate-400">Exported Raw: <strong className="font-mono text-slate-100">"{param.exported_internal_value}"</strong></span>
+                    
+                    <span
+                      className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                        param.mapping_status === "SUCCESS"
+                          ? "bg-green-950/40 text-green-400"
+                          : param.mapping_status === "SUCCESS_NEAREST_BAND"
+                          ? "bg-amber-950/40 text-amber-400"
+                          : "bg-red-950/40 text-red-100"
+                      }`}
+                    >
+                      {param.mapping_status}
+                    </span>
+                  </div>
+                  {param.conversion_note && (
+                    <span className="text-[10px] text-slate-500 italic">
+                      Note: {param.conversion_note}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {item.not_exported_detail && item.not_exported_detail.length > 0 && (
+        <div className="mt-4 rounded-xl border border-amber-950/30 p-3 bg-amber-950/10">
+          <div className="mb-1 text-sm font-bold text-amber-400">
+            Cabinet Parameters Unexported In Preset XML
+          </div>
+          <p className="text-[11px] text-slate-400 mb-2">
+            These parameters are set in the tone engine but are not exported directly to standard AT5 XML. You must verify or configure them inside AmpliTube 5:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {item.not_exported_detail.map((detail, dIdx) => (
+              <span
+                key={dIdx}
+                className="px-2 py-1 rounded bg-slate-800 text-slate-200 font-mono text-[10px] border border-slate-700 shadow-sm"
+              >
+                {detail}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -363,24 +487,37 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
   }, [debugData]);
 
   const stats = useMemo(() => {
-    const exported = debugData.exported_chain || [];
-    const skipped = debugData.skipped_gear || [];
-    
-    const checkItems = exported.filter(item => 
-      item.reason.toLowerCase().includes("check") ||
-      item.reason.toLowerCase().includes("warning") ||
-      item.reason.toLowerCase().includes("caution") ||
-      item.reason.toLowerCase().includes("fallback") ||
-      item.exported_settings.includes("undefined") ||
-      (!item.exported_settings && item.type !== "cab")
-    );
+    const all = [
+      ...(debugData.exported_chain || []),
+      ...(debugData.skipped_gear || [])
+    ];
 
-    const skippedCount = skipped.length;
-    const checkCount = checkItems.length;
-    const totalCount = exported.length + skippedCount;
-    const passCount = exported.length - checkCount;
+    let totalCount = all.length;
+    let passCount = 0;
+    let warningCount = 0;
+    let partialCount = 0;
+    let checkCount = 0;
+    let skippedCount = 0;
+    let failCount = 0;
 
-    return { totalCount, passCount, checkCount, skippedCount };
+    all.forEach(item => {
+      const status = item.final_status || "PASS";
+      if (status === "PASS") {
+        passCount++;
+      } else if (status === "PASS_WITH_WARNING") {
+        warningCount++;
+      } else if (status === "PARTIAL") {
+        partialCount++;
+      } else if (status === "CHECK") {
+        checkCount++;
+      } else if (status === "SKIPPED") {
+        skippedCount++;
+      } else if (status === "FAIL") {
+        failCount++;
+      }
+    });
+
+    return { totalCount, passCount, warningCount, partialCount, checkCount, skippedCount, failCount };
   }, [debugData]);
 
   const copyJson = async () => {
@@ -422,23 +559,87 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
                 Total: {stats.totalCount}
               </span>
 
-              {stats.checkCount === 0 && stats.skippedCount === 0 ? (
-                <span className="rounded-md bg-green-900/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-green-400">
+              {stats.checkCount === 0 && stats.skippedCount === 0 && stats.warningCount === 0 && stats.partialCount === 0 && stats.failCount === 0 ? (
+                <span 
+                  className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.PASS.pulse ? "animate-pulse" : ""}`}
+                  style={{
+                    color: STATUS_CONFIG.PASS.solid,
+                    backgroundColor: STATUS_CONFIG.PASS.clearBg,
+                    borderColor: STATUS_CONFIG.PASS.clearBorder
+                  }}
+                >
                   Pass
                 </span>
               ) : (
                 <>
-                  <span className="rounded-md bg-green-900/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-green-400">
+                  <span 
+                    className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.PASS.pulse ? "animate-pulse" : ""}`}
+                    style={{
+                      color: STATUS_CONFIG.PASS.solid,
+                      backgroundColor: STATUS_CONFIG.PASS.clearBg,
+                      borderColor: STATUS_CONFIG.PASS.clearBorder
+                    }}
+                  >
                     Pass: {stats.passCount}
                   </span>
+                  {stats.warningCount > 0 && (
+                    <span 
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.WARN.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: STATUS_CONFIG.WARN.solid,
+                        backgroundColor: STATUS_CONFIG.WARN.clearBg,
+                        borderColor: STATUS_CONFIG.WARN.clearBorder
+                      }}
+                    >
+                      Warn: {stats.warningCount}
+                    </span>
+                  )}
+                  {stats.partialCount > 0 && (
+                    <span 
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.PARTIAL.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: STATUS_CONFIG.PARTIAL.solid,
+                        backgroundColor: STATUS_CONFIG.PARTIAL.clearBg,
+                        borderColor: STATUS_CONFIG.PARTIAL.clearBorder
+                      }}
+                    >
+                      Partial: {stats.partialCount}
+                    </span>
+                  )}
                   {stats.checkCount > 0 && (
-                    <span className="rounded-md bg-amber-900/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-400">
+                    <span 
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.CHECK.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: STATUS_CONFIG.CHECK.solid,
+                        backgroundColor: STATUS_CONFIG.CHECK.clearBg,
+                        borderColor: STATUS_CONFIG.CHECK.clearBorder
+                      }}
+                    >
                       Check: {stats.checkCount}
                     </span>
                   )}
                   {stats.skippedCount > 0 && (
-                    <span className="rounded-md bg-red-900/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-400">
+                    <span 
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.SKIPPED.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: STATUS_CONFIG.SKIPPED.solid,
+                        backgroundColor: STATUS_CONFIG.SKIPPED.clearBg,
+                        borderColor: STATUS_CONFIG.SKIPPED.clearBorder
+                      }}
+                    >
                       Skipped: {stats.skippedCount}
+                    </span>
+                  )}
+                  {stats.failCount > 0 && (
+                    <span 
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.FAIL.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: STATUS_CONFIG.FAIL.solid,
+                        backgroundColor: STATUS_CONFIG.FAIL.clearBg,
+                        borderColor: STATUS_CONFIG.FAIL.clearBorder
+                      }}
+                    >
+                      Fail: {stats.failCount}
                     </span>
                   )}
                 </>

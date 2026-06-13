@@ -14,6 +14,38 @@ import {
 import { AT5_VERIFIED_GEAR, VerifiedGearDef, VerifiedParamDef } from "./at5VerifiedParameterOverrides";
 import { getAt5Catalog } from "./at5Catalog";
 
+export const FILTER_BANDS = [
+  20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 
+  800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 
+  12500, 16000, 20000
+];
+
+export function parseFrequencyToHz(freqStr: string): number | null {
+  const clean = freqStr.toLowerCase().trim();
+  const match = clean.match(/^([0-9.]+)\s*(khz|hz|k)?$/);
+  if (!match) return null;
+  const val = parseFloat(match[1]);
+  if (isNaN(val)) return null;
+  const unit = match[2];
+  if (unit === "khz" || unit === "k") {
+    return val * 1000;
+  }
+  return val;
+}
+
+export function findClosestBand(hz: number): number {
+  let closest = FILTER_BANDS[0];
+  let minDiff = Math.abs(hz - closest);
+  for (let i = 1; i < FILTER_BANDS.length; i++) {
+    const diff = Math.abs(hz - FILTER_BANDS[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = FILTER_BANDS[i];
+    }
+  }
+  return closest;
+}
+
 export interface ResolvedParameter {
   friendlyName: string;
   xmlName: string;
@@ -345,11 +377,24 @@ const parseSettingValue = (
   if (!Number.isFinite(n)) return undefined;
 
   if (transform === "dbThresholdToLinear") {
-    if (text.includes("db") || n < 0) n = Math.pow(10, n / 20);
+    const db = Math.min(0, Math.max(-100, n));
+    n = Math.pow(10, db / 20);
   }
 
   if (transform === "khzToHzIfNeeded") {
     if (text.includes("khz")) n *= 1000;
+  }
+
+  if (transform === "noiseGateRelease") {
+    if (text.includes("ms")) {
+      // already milliseconds
+    } else if (text.includes("s") || text.includes("sec")) {
+      n = n * 1000;
+    } else if (n > 1.5 && n <= 10) {
+      n = 20 + n * 148; // treat as 20-1500 dial (0-10 scale)
+    } else if (n <= 1.5) {
+      n = n * 1000; // treat as seconds (e.g. 1.2 -> 1200ms)
+    }
   }
 
   if (transform === "noiseGateDepth") {
@@ -358,8 +403,6 @@ const parseSettingValue = (
       // 0 -> -100, 10 -> -20. Linear mapping: -100 + (n * 8)
       n = -100 + n * 8;
     }
-    // Clamp to AT5 range
-    n = Math.min(-20, Math.max(-100, n));
   }
 
   if (transform === "black76InputOutput") {
@@ -389,6 +432,40 @@ export function resolveParameterValue(
   return Math.min(max, Math.max(min, v as number));
 }
 
+export function normalizeSettingsToCanonical(
+  gearNameOrId: string | undefined,
+  category: string,
+  settings: Record<string, string | number> = {}
+): Record<string, string | number> {
+  const defs = getParameterDefinitions(gearNameOrId, category);
+  if (!defs || defs.length === 0) {
+    return settings;
+  }
+
+  const normalized: Record<string, string | number> = {};
+  for (const [key, val] of Object.entries(settings)) {
+    const cleanKey = key.toLowerCase().replace(/[^a-z0-9.]/g, "");
+    
+    const def = defs.find((d) => {
+      const cleanFriendly = d.friendlyName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+      const cleanXml = d.xmlName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+      const cleanAliases = (d.aliases ?? []).map((a) => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
+      return (
+        cleanFriendly === cleanKey ||
+        cleanXml === cleanKey ||
+        cleanAliases.includes(cleanKey)
+      );
+    });
+
+    if (def) {
+      normalized[def.friendlyName] = val;
+    } else {
+      normalized[key] = val;
+    }
+  }
+  return normalized;
+}
+
 export function buildMappedParameterAttrs(
   gearNameOrId: string | undefined,
   category: string,
@@ -396,8 +473,10 @@ export function buildMappedParameterAttrs(
 ): string {
   const defs = getParameterDefinitions(gearNameOrId, category);
 
+  const canonicalSettings = normalizeSettingsToCanonical(gearNameOrId, category, settings as Record<string, string | number>);
+
   const normalisedSettings = new Map(
-    Object.entries(settings || {}).map(([key, value]) => [normalise(key), value])
+    Object.entries(canonicalSettings).map(([key, value]) => [normalise(key), value])
   );
 
   // Noise Gate Depth safety
@@ -420,6 +499,23 @@ export function buildMappedParameterAttrs(
       let raw = lookupNames
         .map((name) => normalisedSettings.get(normalise(name)))
         .find((value) => value !== undefined);
+
+      if (raw === undefined && gearNameOrId && (category === "rack" || category === "stomp") && gearNameOrId.toLowerCase().includes("graphic")) {
+        const bandMatch = def.xmlName.match(/^Band(\d+)$/i);
+        if (bandMatch) {
+          const bandFreq = parseInt(bandMatch[1]);
+          for (const [sKey, sVal] of normalisedSettings.entries()) {
+            const hz = parseFrequencyToHz(sKey);
+            if (hz !== null) {
+              const closest = findClosestBand(hz);
+              if (closest === bandFreq) {
+                raw = sVal;
+                break;
+              }
+            }
+          }
+        }
+      }
 
       if (raw === undefined && def.defaultValue !== undefined) {
         raw = def.defaultValue;

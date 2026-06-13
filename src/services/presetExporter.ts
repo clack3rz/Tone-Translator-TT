@@ -8,6 +8,10 @@ import {
   buildMappedParameterAttrs,
   resolveVerifiedOrManifestRealId,
   getParameterDefinitions,
+  normalizeSettingsToCanonical,
+  resolveParameterValue,
+  parseFrequencyToHz,
+  findClosestBand,
 } from "./at5ParameterManifest";
 
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "./at5VerifiedProtocols";
@@ -17,6 +21,12 @@ const DEFAULT_CAB_GUID = "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b"; // 4x12 Brit 80
 const DEFAULT_SPEAKER_GUID = "e372dd04b11d49588c290fbe341e97ca"; // Brit 75
 const DEFAULT_MIC0_GUID = "1e41acc4-85af-4e84-bee4-eabc0be5fef1"; // Dynamic 57
 const DEFAULT_MIC1_GUID = "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb"; // Condenser 87
+
+export let exportStrictnessMode: "safe" | "learning" = "learning";
+
+export function setExportStrictnessMode(mode: "safe" | "learning") {
+  exportStrictnessMode = mode;
+}
 
 const VERIFIED_RACK_NAMES = [
   "parametric eq",
@@ -549,9 +559,22 @@ export interface ExportDebugItem {
   exported_settings: string;
   exported: boolean;
   reason: string;
-  parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED";
+  gear_guid_resolved?: boolean;
+  gear_included_in_chain?: boolean;
+  gear_written_to_xml?: boolean;
+  parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL";
   mismatched_parameters?: string[];
-  final_status?: "PASS" | "CHECK";
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "CHECK" | "SKIPPED" | "FAIL";
+  parameter_details?: {
+    parameter: string;
+    normalized_parameter?: string;
+    input_value?: any;
+    display_value: string;
+    exported_internal_value: string;
+    mapping_status: string;
+    conversion_note?: string;
+  }[];
+  not_exported_detail?: string[];
 }
 
 export interface ExportDebugData {
@@ -607,7 +630,10 @@ const makeDebugItem = (
   exported: boolean,
   reason: string
 ): ExportDebugItem => {
-  const gear = pair.normalized;
+  const gear = {
+    ...pair.normalized,
+    settings: normalizeSettingsToCanonical(pair.normalized.name, group, pair.normalized.settings ?? {}),
+  };
   
   // Strict Catalogue Lookup
   const catalogMatch = findAT5Gear(gear.name, group);
@@ -687,8 +713,19 @@ const makeDebugItem = (
   }
 
   // Parameter Mapping Verification Logic
-  let parameter_mapping_status: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" = "SUCCESS";
+  let parameter_mapping_status: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" = "SUCCESS";
   const mismatched_parameters: string[] = [];
+  const detailsList: {
+    parameter: string;
+    normalized_parameter?: string;
+    input_value?: any;
+    display_value: string;
+    exported_internal_value: string;
+    mapping_status: string;
+    conversion_note?: string;
+  }[] = [];
+  const not_exported_detail: string[] = [];
+  let hasNearestBandWarning = false;
 
   const parsedExported: Record<string, number | string> = {};
   const attrRegex = /([A-Za-z0-9_]+)="([^"]*)"/g;
@@ -705,15 +742,29 @@ const makeDebugItem = (
     const defs = getParameterDefinitions(gear.name, group);
     if (defs && defs.length > 0) {
       for (const [normKey, normVal] of Object.entries(normSettings)) {
-        const cleanNormKey = normKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const cleanNormKey = normKey.toLowerCase().replace(/[^a-z0-9.]/g, "");
         if (["bypass", "mute", "volume", "output", "level", "pan", "status", "gain_level", "noise_level"].includes(cleanNormKey)) {
-          continue;
+          // If the parameter is verified in the overrides/defs, we MUST verify and map it!
+          // We only skip it if there's no def for it.
+          const hasDef = defs.some(d => {
+            const cleanFriendly = d.friendlyName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+            const cleanXml = d.xmlName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+            const cleanAliases = (d.aliases ?? []).map((a) => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
+            return (
+              cleanFriendly === cleanNormKey ||
+              cleanXml === cleanNormKey ||
+              cleanAliases.includes(cleanNormKey)
+            );
+          });
+          if (!hasDef) {
+            continue;
+          }
         }
 
-        const def = defs.find((d) => {
-          const cleanFriendly = d.friendlyName.toLowerCase().replace(/[^a-z0-9]/g, "");
-          const cleanXml = d.xmlName.toLowerCase().replace(/[^a-z0-9]/g, "");
-          const cleanAliases = (d.aliases ?? []).map((a) => a.toLowerCase().replace(/[^a-z0-9]/g, ""));
+        let def = defs.find((d) => {
+          const cleanFriendly = d.friendlyName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+          const cleanXml = d.xmlName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+          const cleanAliases = (d.aliases ?? []).map((a) => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
           return (
             cleanFriendly === cleanNormKey ||
             cleanXml === cleanNormKey ||
@@ -721,27 +772,110 @@ const makeDebugItem = (
           );
         });
 
+        const isGraphicEq = gear.name.toLowerCase().includes("graphic");
+        let isNearestBandMapping = false;
+        let nearestBandMappedXmlName = "";
+        let nearestBandFreq = 0;
+
+        if (!def && isGraphicEq) {
+          const hz = parseFrequencyToHz(normKey);
+          if (hz !== null) {
+            const closest = findClosestBand(hz);
+            nearestBandFreq = closest;
+            const targetXml = `Band${closest}`;
+            def = defs.find(d => d.xmlName.toLowerCase() === targetXml.toLowerCase());
+            if (def) {
+              isNearestBandMapping = true;
+              nearestBandMappedXmlName = def.xmlName;
+            }
+          }
+        }
+
         if (def) {
           const expVal = parsedExported[def.xmlName];
           if (expVal !== undefined) {
-            const nv = typeof normVal === "number" ? normVal : parseFloat(String(normVal));
+            const resolvedIntended = resolveParameterValue(normVal, def.min, def.max, def.transform);
+            
+            const nv = typeof resolvedIntended === "number" ? resolvedIntended : parseFloat(String(resolvedIntended));
             const ev = typeof expVal === "number" ? expVal : parseFloat(String(expVal));
 
+            let match = false;
             if (!isNaN(nv) && !isNaN(ev)) {
-              if (Math.abs(nv - ev) > 0.15) {
-                mismatched_parameters.push(
-                  `${def.friendlyName} (Intended: ${nv}, Exported: ${ev})`
-                );
+              match = Math.abs(nv - ev) <= 0.15;
+            } else {
+              match = String(resolvedIntended).trim().toLowerCase() === String(expVal).trim().toLowerCase();
+            }
+
+            const appendUnitIdNotPresent = (val: string | number, unit: string) => {
+              const strVal = String(val);
+              const uLower = unit.toLowerCase().trim();
+              const vLower = strVal.toLowerCase();
+              if (vLower.includes(uLower)) {
+                return strVal;
               }
-            } else if (String(normVal).trim().toLowerCase() !== String(expVal).trim().toLowerCase()) {
+              return `${strVal} ${unit}`;
+            };
+
+            let conversion_note: string | undefined;
+            let display_value = def.unit ? appendUnitIdNotPresent(normVal, def.unit) : String(normVal);
+
+            const normalizedGearName = gear.name.toLowerCase();
+            if (isNearestBandMapping) {
+              const sign = parseFloat(String(normVal)) >= 0 ? "+" : "";
+              display_value = `${normKey} ${sign}${normVal} dB`;
+              conversion_note = `${normKey} is not an exact AT5 Graphic EQ band. Mapped to nearest supported band: ${nearestBandFreq}Hz.`;
+            } else if (normalizedGearName === "noise gate" || normalizedGearName.includes("gate")) {
+              if (def.friendlyName === "Threshold") {
+                conversion_note = "Converted dB threshold to AT5 linear threshold using 10^(dB/20).";
+                display_value = appendUnitIdNotPresent(normVal, "dB");
+              } else if (def.friendlyName === "Release") {
+                conversion_note = "Release exports directly in milliseconds.";
+                display_value = appendUnitIdNotPresent(normVal, "ms");
+              } else if (def.friendlyName === "Depth") {
+                conversion_note = "Depth exports directly in dB.";
+                display_value = appendUnitIdNotPresent(normVal, "dB");
+              }
+            } else {
+              if (def.transform === "dbThresholdToLinear") {
+                conversion_note = "Converted dB threshold to AT5 internal gate threshold value";
+              } else if (def.transform === "noiseGateRelease") {
+                conversion_note = "Normalized Release time to ms or scaled dial value";
+              } else if (def.transform === "noiseGateDepth") {
+                conversion_note = "Mapped depth to AT5 dB range (-100 to -20)";
+              } else if (def.transform) {
+                conversion_note = `Converted value using transform ${def.transform}`;
+              }
+            }
+
+            const mapStatus = isNearestBandMapping ? "SUCCESS_NEAREST_BAND" : (match ? "SUCCESS" : "MISMATCH");
+            detailsList.push({
+              parameter: normKey,
+              normalized_parameter: isNearestBandMapping ? nearestBandMappedXmlName : undefined,
+              input_value: normVal,
+              display_value,
+              exported_internal_value: String(expVal),
+              mapping_status: mapStatus,
+              conversion_note,
+            });
+
+            if (isNearestBandMapping) {
+              hasNearestBandWarning = true;
+            } else if (!match) {
               mismatched_parameters.push(
-                `${def.friendlyName} (Intended: '${normVal}', Exported: '${expVal}')`
+                `${def.friendlyName} (Intended display: ${normVal}, Resolved: ${resolvedIntended}, Exported: ${expVal})`
               );
             }
           } else {
             mismatched_parameters.push(
               `${def.friendlyName} (Unable to map or missing in exported settings)`
             );
+            detailsList.push({
+              parameter: normKey,
+              display_value: String(normVal),
+              exported_internal_value: "MISSING",
+              mapping_status: "MISMATCH",
+              conversion_note: "Parameter missing in exported attributes",
+            });
           }
         } else {
           mismatched_parameters.push(
@@ -753,7 +887,6 @@ const makeDebugItem = (
       parameter_mapping_status = "UNVERIFIED";
     }
   } else if (exported && group === "cab") {
-    // Cab RoomType and speaker/mic checks with specific robust comparisons
     const normRoom = String(normSettings.Room || normSettings.room || "").toLowerCase();
     const expRoom = String(parsedExported.RoomType || "").toLowerCase();
 
@@ -766,7 +899,7 @@ const makeDebugItem = (
         if (rl.includes("garage")) return "garage";
         if (rl.includes("hall")) return "hall";
         if (rl.includes("mid")) return "mid";
-        return "large"; // Default fallback
+        return "large";
       };
 
       const cleanNorm = getCleanRoom(normRoom);
@@ -778,15 +911,51 @@ const makeDebugItem = (
         );
       }
     }
+
+    for (const [key, val] of Object.entries(normSettings)) {
+      const k = key.toLowerCase();
+      if (
+        k === "speaker" || 
+        k === "mic_1" || 
+        k === "mic_2" || 
+        k === "room"
+      ) {
+        continue;
+      }
+      not_exported_detail.push(`${key}: '${val}'`);
+    }
+
+    if (not_exported_detail.length > 0) {
+      parameter_mapping_status = "PARTIAL";
+    }
   }
 
-  let final_status: "PASS" | "CHECK" = "PASS";
-  let finalExported = exported;
-  if (mismatched_parameters.length > 0) {
-    parameter_mapping_status = "MISMATCH";
-    final_status = "CHECK";
-    finalReason = `Check: Parameter discrepancies found! [${mismatched_parameters.join(", ")}]`;
-    finalExported = false; // Do not show exported: true when mismatched settings exist
+  const gear_guid_resolved = guid !== undefined && guid !== "" && guid !== AT5_EMPTY_SLOT_GUID;
+  const gear_included_in_chain = exported;
+  const gear_written_to_xml = exported && gear_guid_resolved;
+
+  let final_status: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "CHECK" | "SKIPPED" | "FAIL" = "PASS";
+  let finalExported = gear_written_to_xml;
+
+  if (!gear_included_in_chain || !gear_guid_resolved) {
+    final_status = "SKIPPED";
+  } else {
+    if (mismatched_parameters.length > 0) {
+      parameter_mapping_status = "MISMATCH";
+      final_status = "CHECK";
+      finalReason = `Check: Parameter discrepancies found! [${mismatched_parameters.join(", ")}]`;
+    } else if (parameter_mapping_status === "PARTIAL") {
+      final_status = "PARTIAL";
+      finalReason = `Partial: Cabinet has unexported settings: [${not_exported_detail.map(d => d.split(":")[0]).join(", ")}] that must be verified in AT5.`;
+    } else if (hasNearestBandWarning) {
+      if (exportStrictnessMode === "learning") {
+        final_status = "PASS_WITH_WARNING";
+        finalReason = "Included with nearest-band parameter calibration.";
+      } else {
+        final_status = "CHECK";
+        finalReason = "Check: Non-exact band mapping occurred.";
+      }
+    }
   }
 
   return {
@@ -802,9 +971,14 @@ const makeDebugItem = (
     exported_settings: attrs,
     exported: finalExported,
     reason: finalReason,
+    gear_guid_resolved,
+    gear_included_in_chain,
+    gear_written_to_xml,
     parameter_mapping_status,
     mismatched_parameters,
     final_status,
+    parameter_details: detailsList.length > 0 ? detailsList : undefined,
+    not_exported_detail: not_exported_detail.length > 0 ? not_exported_detail : undefined,
   };
 };
 

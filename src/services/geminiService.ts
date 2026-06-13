@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ToneResult, SignalChainElement } from "../types";
+import { buildToneProfile } from "./toneProfileBuilder";
 import { AMP_MANIFEST, STOMP_MANIFEST, CAB_MANIFEST, ROOM_MANIFEST, RACK_MANIFEST, TONEX_MANIFEST } from "./gearManifest";
 import { getAt5Catalog, findAT5Gear, AT5_EMPTY_SLOT_GUID } from "./at5Catalog";
 import { AT5_AMPLIFIER_KNOWLEDGE } from "./at5AmplifierKnowledge";
@@ -202,6 +203,9 @@ export async function translateTone(
   youtubeUrl?: string,
   useValidationRecipes: boolean = false
 ): Promise<ToneResult> {
+  // Step 1: Tone Profile Builder (Runs before final signal-chain generation)
+  const toneProfileResult = await buildToneProfile(textPrompt, targetAudio, signal);
+
   const ampContext = AT5_AMPLIFIER_KNOWLEDGE.map(amp => {
     const controlsStr = amp.controls.map(c => `- ${c.name} (range: ${c.min} to ${c.max}${c.description ? ` - ${c.description}` : ""})`).join("\n");
     const settingsStr = Object.entries(amp.typicalSettings).map(([k, v]) => `${k}: ${v}`).join(", ");
@@ -220,7 +224,20 @@ ${controlsStr}
     .replace('{user_input}', textPrompt)
     .replace('{amplifier_directory}', ampContext)
     .replace('{cabinet_speaker_directory}', AT5_CABINET_SPEAKER_KNOWLEDGE);
-  const parts: any[] = [{ text: fullPrompt }];
+  
+  const parts: any[] = [
+    { text: fullPrompt },
+    {
+      text: `SYSTEM DETECTED TONE PROFILE:
+Before mapping exact AmpliTube 5 gear models, this structured Tone Profile was built to classify the target:
+${JSON.stringify(toneProfileResult, null, 2)}
+
+You MUST strictly adhere to this Tone Profile in your signal chain plan:
+- Gain Level: Match '${toneProfileResult.tone_profile.gain_level}'.
+- Style/Genre: Align with '${toneProfileResult.tone_profile.style.join(", ")}'.
+- Likely & Avoid Families: Absolutely prioritize general likely hardware/effects family guidelines, and strictly avoid things specified in initial_family_guidance avoids.`
+    }
+  ];
 
   if (youtubeUrl) {
     parts.push({ text: `Additional YouTube Context: ${youtubeUrl}` });
@@ -275,7 +292,8 @@ ${controlsStr}
         eq_strategy: "Amplifier EQ has scooped bass to keep low-end tight and clear mid-frequencies pushed to maximize crunch and projection. Cabinet features Greenback speakers for midrange emphasis.",
         amplifier_debug: "selected TT Gear Name: British Lead S100\nmatched aliases/tags: classic rock, vintage Marshall, Malcolm Young, AC/DC, rhythm, plexi, super lead\ntone reason: Chosen for authentic classic 70s British rock crunch. Malcolm Young's tone is dry, dynamic, and mid-forward without modern saturated distortion. British Lead S100 represents the iconic Plexi 1959/Super Lead 100 watt crunch perfectly.\navailable controls used: Gain: 4.0, Bass: 4.5, Middle: 7.5, Treble: 5.5, Presence: 5.0, Reverb: 0.0, Volume: 7.5\nany controls requested but unavailable: None\n\nselected Cab Name: 4x12 Brit 8000\nselected Speaker Name: Brit Green\ncab, speaker & microphone reason: British closed-back 4x12 paired with Greenback-style (Brit Green) speakers for classic organic crunch, rich midrange response, and vintage compression characteristics. Dynamic 57 as a primary close mic gives presence and pick attack, while Ribbon 121 adds warmth and body."
       },
-      confidence: 100
+      confidence: 100,
+      tone_profile_result: toneProfileResult
     };
   }
 
@@ -351,7 +369,8 @@ ${controlsStr}
         eq_strategy: "V-shape with forward high-mids via Graphic EQ.",
         amplifier_debug: "selected TT Gear Name: Brit 8000\nmatched aliases/tags: early thrash, Metallica, rhythm, brit 8000\ntone reason: Matches 80s thrash metal requests ideally. JCM800/Brit 8000 selected for iconic midrange punch and raw power tube saturation.\navailable controls used: Pre Amp: 7.0, Bass: 4.0, Middle: 7.5, Treble: 7.0, Presence: 7.8, Master: 6.0\nany controls requested but unavailable: None\n\nselected Cab Name: 4x12 Brit 8000\nselected Speaker Name: Brit 75\ncab, speaker & microphone reason: Closed-back Marshall-style 4x12 chosen as the metal standard for high-end projection and controlled low-end chugs. Coupled with Brit 75 (G12T-75) speakers to capture the authentic extended highs and raw, buzzy, scooped low-end texture of early 1980s American-British thrash. Dynamic 57 provides pick attack and presence, while Ribbon 121 smooths high-frequency buzz."
       },
-      confidence: 100
+      confidence: 100,
+      tone_profile_result: toneProfileResult
     };
   }
 
@@ -415,7 +434,9 @@ ${controlsStr}
   const toneText = response.text || "{}";
   try {
     const result = JSON.parse(toneText) as ToneResult;
-    return adjustThrashPedalSelection(result, textPrompt);
+    const adjusted = adjustThrashPedalSelection(result, textPrompt);
+    adjusted.tone_profile_result = toneProfileResult;
+    return adjusted;
   } catch (error) {
     console.error("AI Response JSON Parsing Failed:", error);
     throw new Error("Failed to parse AI response. Please try again.");
@@ -444,6 +465,25 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
       const settings = el.settings || {};
       const newSettings: Record<string, any> = {};
 
+      const isThrashContext = [
+        "metallica",
+        "kill em all",
+        "kill 'em all",
+        "early thrash",
+        "thrash metal",
+        "thrash rhythm",
+        "tight rhythm metal",
+        "tight rhythm",
+        "rhythm metal",
+        "palm muting",
+        "palm mute",
+        "palm mutes",
+        "pick attack",
+        "marshall style thrash",
+        "marshall-style thrash",
+        "nwobhm"
+      ].some(kw => lowerPrompt.includes(kw)) || result.tone_summary?.gain_level === "high";
+
       let hasRelease = false;
       let hasThreshold = false;
       let hasDepth = false;
@@ -451,13 +491,46 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
       for (const [key, value] of Object.entries(settings)) {
         const kLower = key.toLowerCase();
         if (kLower === "release" || kLower === "decay") {
-          newSettings["Release"] = value;
+          let numVal = parseFloat(String(value));
+          if (!isNaN(numVal)) {
+            if (numVal <= 10) {
+              if (numVal <= 1.5) {
+                numVal = numVal * 1000;
+              } else {
+                numVal = 20 + numVal * 148;
+              }
+            }
+            numVal = Math.min(1500, Math.max(20, numVal));
+            newSettings["Release"] = `${Math.round(numVal)} ms`;
+          } else {
+            newSettings["Release"] = value;
+          }
           hasRelease = true;
         } else if (kLower === "threshold" || kLower === "gate") {
-          newSettings["Threshold"] = value;
+          let numVal = parseFloat(String(value));
+          if (!isNaN(numVal)) {
+            if (numVal >= 0 && numVal <= 1 && !String(value).toLowerCase().includes("db")) {
+              numVal = numVal === 0 ? -100 : 20 * Math.log10(numVal);
+            } else if (numVal > 1 && numVal <= 10 && !String(value).toLowerCase().includes("db")) {
+              numVal = -100 + numVal * 10;
+            }
+            numVal = Math.min(0, Math.max(-100, numVal));
+            newSettings["Threshold"] = `${Math.round(numVal * 10) / 10} dB`;
+          } else {
+            newSettings["Threshold"] = value;
+          }
           hasThreshold = true;
         } else if (kLower === "depth" || kLower === "reduction") {
-          newSettings["Depth"] = value;
+          let numVal = parseFloat(String(value));
+          if (!isNaN(numVal)) {
+            if (numVal >= 0 && numVal <= 10 && !String(value).toLowerCase().includes("db")) {
+              numVal = -100 + numVal * 8;
+            }
+            numVal = Math.min(-20, Math.max(-100, numVal));
+            newSettings["Depth"] = `${Math.round(numVal)} dB`;
+          } else {
+            newSettings["Depth"] = value;
+          }
           hasDepth = true;
         } else {
           newSettings[key] = value;
@@ -465,34 +538,15 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
       }
 
       if (!hasThreshold) {
-        newSettings["Threshold"] = "-45 dB";
+        newSettings["Threshold"] = isThrashContext ? "-45 dB" : "-55 dB";
       }
 
       if (!hasRelease) {
-        const isThrashContext = [
-          "metallica",
-          "kill em all",
-          "kill 'em all",
-          "early thrash",
-          "thrash metal",
-          "thrash rhythm",
-          "tight rhythm metal",
-          "tight rhythm",
-          "rhythm metal",
-          "palm muting",
-          "palm mute",
-          "palm mutes",
-          "pick attack",
-          "marshall style thrash",
-          "marshall-style thrash",
-          "nwobhm"
-        ].some(kw => lowerPrompt.includes(kw)) || result.tone_summary?.gain_level === "high";
-
-        newSettings["Release"] = isThrashContext ? "150 ms" : "200 ms";
+        newSettings["Release"] = isThrashContext ? "120 ms" : "150 ms";
       }
 
       if (!hasDepth) {
-        newSettings["Depth"] = "-60";
+        newSettings["Depth"] = "-60 dB";
       }
 
       return {

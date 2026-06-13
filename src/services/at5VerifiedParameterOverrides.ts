@@ -17,6 +17,7 @@ export interface VerifiedParamDef {
     | "dbThresholdToLinear"
     | "khzToHzIfNeeded"
     | "noiseGateDepth"
+    | "noiseGateRelease"
     | "black76InputOutput"
     | "black76Ratio";
 }
@@ -43,8 +44,8 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
       { friendlyName: "Bass", xmlName: "Bass_JCM800AT4", min: 0, max: 10, aliases: ["bass", "low"] },
       { friendlyName: "Middle", xmlName: "Middle_JCM800AT4", min: 0, max: 10, aliases: ["middle", "mid"] },
       { friendlyName: "Treble", xmlName: "Treble_JCM800AT4", min: 0, max: 10, aliases: ["treble", "high"] },
-      { friendlyName: "Master", xmlName: "Master_JCM800AT4", min: 0, max: 10, aliases: ["master", "volume", "output"] },
-      { friendlyName: "Pre Amp", xmlName: "PreAmp_JCM800AT4", min: 0, max: 10, aliases: ["preamp_gain", "pre_amp", "preamp", "gain", "drive"] },
+      { friendlyName: "Master", xmlName: "Master_JCM800AT4", min: 0, max: 10, aliases: ["master", "volume", "output", "master volume", "master_volume"] },
+      { friendlyName: "PreAmp", xmlName: "PreAmp_JCM800AT4", min: 0, max: 10, aliases: ["preamp_gain", "pre_amp", "preamp", "gain", "drive", "pre amp volume", "pre amp", "preamp volume", "input gain", "input_gain"] },
     ],
   },
   {
@@ -95,9 +96,9 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     aliases: ["gate", "hard gate"],
     preferredSection: "StompB1",
     params: [
-      { friendlyName: "Threshold", xmlName: "Threshold", min: 0.00001, max: 1, unit: "linear", aliases: ["threshold", "gate", "noise threshold"], transform: "dbThresholdToLinear" },
-      { friendlyName: "Release", xmlName: "Release", min: 20, max: 1500, unit: "ms", aliases: ["release", "decay"] },
-      { friendlyName: "Depth", xmlName: "Depth", min: -100, max: -20, unit: "dB", aliases: ["depth", "reduction"], transform: "noiseGateDepth" },
+      { friendlyName: "Threshold", xmlName: "Threshold", min: 0.00001, max: 1, unit: "linear", aliases: ["threshold", "gate threshold", "threshold db", "gate", "noise threshold", "gate_threshold", "threshold_db"], transform: "dbThresholdToLinear" },
+      { friendlyName: "Release", xmlName: "Release", min: 20, max: 1500, unit: "ms", aliases: ["release", "release time", "decay", "release_time"], transform: "noiseGateRelease" },
+      { friendlyName: "Depth", xmlName: "Depth", min: -100, max: -20, unit: "dB", aliases: ["depth", "attenuation", "reduction", "depth_db"], transform: "noiseGateDepth" },
     ],
   },
   {
