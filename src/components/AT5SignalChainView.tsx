@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { Sliders } from "lucide-react";
 import { getAt5Catalog } from "../services/at5Catalog";
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "../services/at5VerifiedProtocols";
 
@@ -20,6 +21,7 @@ type ExportDebugItem = {
   gear_guid_resolved?: boolean;
   gear_included_in_chain?: boolean;
   gear_written_to_xml?: boolean;
+  gear_attempted_to_xml?: boolean;
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL";
   mismatched_parameters?: string[];
   final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "CHECK" | "SKIPPED" | "FAIL";
@@ -33,6 +35,26 @@ type ExportDebugItem = {
     conversion_note?: string;
   }[];
   not_exported_detail?: string[];
+  tone_adjustment_intent?: Record<string, string>;
+  mapped_intent?: any[];
+  dropped_intent?: any[];
+  verified_guid_resolved?: boolean;
+  actual_exported_guid?: string;
+  intended_gear_name?: string;
+  actual_exported_gear_name?: string;
+  fallback_guid_used?: boolean;
+  fallback_source?: string;
+  substitution_used?: boolean;
+  substitution_reason?: string;
+  suggested_action?: string;
+  gear_manager_type?: string;
+  slot_compatibility?: string[];
+  selected_slot_section?: string;
+  slot_type_valid?: boolean;
+  gear_profile_source?: string;
+  selection_context?: string;
+  requested_generic_name?: string;
+  resolved_profile_name?: string;
 };
 
 type ExportDebugData = {
@@ -40,6 +62,7 @@ type ExportDebugData = {
   exported_chain: ExportDebugItem[];
   skipped_gear: ExportDebugItem[];
   exported_xml_summary: string;
+  rack_decision?: any;
 };
 
 type Props = {
@@ -390,6 +413,87 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
           </span>{" "}
           <span style={readableValueStyle}>{item.reason}</span>
         </div>
+
+        {item.suggested_action && (
+          <div className="mt-2 text-xs p-2.5 rounded bg-amber-500/10 border border-amber-500/20 text-gray-300 font-mono">
+            <span className="font-bold text-amber-400">Suggested Action: </span>
+            {item.suggested_action}
+          </div>
+        )}
+
+        {/* Diagnostic Metadata Block */}
+        <div className="mt-3 pt-3 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-2 text-[10.5px] font-mono leading-relaxed bg-[#111114]/50 p-2.5 rounded-xl border border-white/5">
+          {item.intended_gear_name && (
+            <div>
+              <span className="text-gray-500">Intended Gear:</span>{" "}
+              <span className="text-gray-300 font-semibold">{item.intended_gear_name}</span>
+            </div>
+          )}
+          {item.actual_exported_gear_name && (
+            <div>
+              <span className="text-gray-500">Exported Gear:</span>{" "}
+              <span className="text-gray-300 font-semibold">{item.actual_exported_gear_name}</span>
+            </div>
+          )}
+          {item.verified_guid_resolved !== undefined && (
+            <div>
+              <span className="text-gray-500">Verified GUID Resolved:</span>{" "}
+              <span className={item.verified_guid_resolved ? "text-emerald-400 font-semibold" : "text-amber-400 font-semibold"}>
+                {item.verified_guid_resolved ? "true" : "false"}
+              </span>
+            </div>
+          )}
+          {item.fallback_guid_used !== undefined && (
+            <div>
+              <span className="text-gray-500">Fallback GUID Used:</span>{" "}
+              <span className="text-gray-300">{item.fallback_guid_used ? "true" : "false"}</span>
+            </div>
+          )}
+          {item.fallback_source && (
+            <div className="md:col-span-2">
+              <span className="text-gray-500">Fallback Source:</span>{" "}
+              <span className="text-gray-400">{item.fallback_source}</span>
+            </div>
+          )}
+          {item.substitution_used && (
+            <div className="md:col-span-2">
+              <span className="text-amber-400 font-bold uppercase tracking-wider text-[9px] mr-1">Substitution:</span>{" "}
+              <span className="text-gray-300 italic">{item.substitution_reason}</span>
+            </div>
+          )}
+          {item.requested_generic_name && (
+            <div>
+              <span className="text-gray-500">Requested Generic Name:</span>{" "}
+              <span className="text-cyan-400 font-bold">"{item.requested_generic_name}"</span>
+            </div>
+          )}
+          {item.resolved_profile_name && (
+            <div>
+              <span className="text-gray-500">Resolved Profile Name:</span>{" "}
+              <span className="text-cyan-400 font-bold">"{item.resolved_profile_name}"</span>
+            </div>
+          )}
+          {item.selection_context && (
+            <div>
+              <span className="text-gray-500">Selection Context:</span>{" "}
+              <span className="text-purple-400 font-semibold">{item.selection_context}</span>
+            </div>
+          )}
+          {item.gear_manager_type && (
+            <div>
+              <span className="text-gray-500">Gear Manager Type:</span>{" "}
+              <span className="text-gray-300 font-semibold">{item.gear_manager_type}</span>
+            </div>
+          )}
+          {item.slot_type_valid !== undefined && (
+            <div>
+              <span className="text-gray-500">Slot Type Valid:</span>{" "}
+              <span className={item.slot_type_valid ? "text-emerald-400 font-semibold" : "text-rose-500 font-bold"}>
+                {item.slot_type_valid ? "true" : "false"}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="mt-4 grid gap-3">
@@ -401,6 +505,63 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
         />
         <SettingsTable title="Exported XML settings" data={exportedAttrs} onJumpToCatalogue={onJumpToCatalogue} />
       </div>
+
+      {item.tone_adjustment_intent && Object.keys(item.tone_adjustment_intent).length > 0 && (
+        <div className="mt-4 rounded-xl border border-cyan-500/10 p-3 bg-cyan-950/10">
+          <div className="mb-2 text-xs font-mono font-bold uppercase text-cyan-400">
+            Tone Adjustment Intent
+          </div>
+          <div className="grid gap-1.5 text-xs font-mono">
+            {Object.entries(item.tone_adjustment_intent).map(([key, val]) => (
+              <div key={key} className="flex gap-2">
+                <span className="text-gray-400 capitalize">{key.replace("_", " ")}:</span>
+                <span className="text-cyan-300 font-semibold">{val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {item.mapped_intent && item.mapped_intent.length > 0 && (
+        <div className="mt-4 rounded-xl border border-emerald-500/10 p-3 bg-emerald-950/10">
+          <div className="mb-2 text-xs font-mono font-bold uppercase text-emerald-400">
+            Mapped Intent
+          </div>
+          <div className="space-y-2 text-xs font-mono">
+            {item.mapped_intent.map((mi: any, idx: number) => (
+              <div key={idx} className="bg-black/20 p-2 rounded-lg leading-relaxed">
+                <div className="flex justify-between font-bold text-gray-200">
+                  <span>{mi.intent}</span>
+                  <span className="text-emerald-400">→ {mi.mapped_to}</span>
+                </div>
+                {mi.settings && (
+                  <div className="text-[10px] text-gray-400 mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                    {Object.entries(mi.settings).map(([k, v]) => (
+                      <span key={k}>{k}: <strong className="text-white">{String(v)}</strong></span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {item.dropped_intent && item.dropped_intent.length > 0 && (
+        <div className="mt-4 rounded-xl border border-red-500/10 p-3 bg-red-950/10">
+          <div className="mb-2 text-xs font-mono font-bold uppercase text-red-400">
+            Dropped Intent
+          </div>
+          <div className="space-y-1.5 text-xs font-mono">
+            {item.dropped_intent.map((di: any, idx: number) => (
+              <div key={idx} className="bg-black/30 p-2 rounded-lg flex items-start justify-between">
+                <span className="text-red-300">{di.intent}</span>
+                <span className="text-[10px] text-gray-300 italic font-sans">{di.reason}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {item.parameter_details && item.parameter_details.length > 0 && (
         <div className="mt-4 rounded-xl border border-slate-800 p-3 bg-slate-950/30">
@@ -676,6 +837,57 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
       </div>
 
       <div className="space-y-6">
+        {/* Rack / Post-Amp EQ Decision Reasoning Card */}
+        {debugData.rack_decision && (
+          <div className="rounded-2xl border border-amber-500/20 p-5 bg-amber-500/5 shadow-md">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-amber-400 animate-pulse" />
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
+                  Rack / Post-Amp EQ Decision
+                </h4>
+              </div>
+              <span className={`rounded-md px-2 py-0.5 text-[9px] font-mono font-bold uppercase border tracking-widest ${
+                debugData.rack_decision.status === 'required' || debugData.rack_decision.status === 'recommended'
+                  ? 'bg-amber-500/20 text-yellow-300 border-amber-500/40 animate-pulse'
+                  : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+              }`}>
+                {debugData.rack_decision.status}
+              </span>
+            </div>
+
+            <p className="text-xs text-gray-300 mb-3 leading-relaxed">
+              <span className="font-semibold text-gray-200">Reasoning:</span> {debugData.rack_decision.reason}
+            </p>
+
+            {debugData.rack_decision.selected_gear && (
+              <div className="text-xs font-mono text-gray-300 flex items-center gap-1.5 mb-3 bg-black/40 p-2.5 rounded-lg border border-white/5">
+                <span className="text-slate-400">Selected Gear:</span>
+                <strong className="text-cyan-400 font-bold">{debugData.rack_decision.selected_gear}</strong>
+              </div>
+            )}
+
+            {debugData.rack_decision.eq_intent && debugData.rack_decision.eq_intent.length > 0 && (
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest block">Intended EQ Curves:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {debugData.rack_decision.eq_intent.map((intent: string, idx: number) => (
+                    <span key={idx} className="text-[10px] font-mono bg-amber-500/15 text-yellow-300 px-2 py-1 rounded border border-amber-500/30">
+                      {intent}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {debugData.rack_decision.status === 'not_needed' && debugData.rack_decision.why_omitted && (
+              <div className="mt-3 text-xs text-rose-300 font-mono italic p-2 rounded bg-rose-950/15 border border-rose-500/10">
+                <span className="font-bold">Why Omitted:</span> {debugData.rack_decision.why_omitted}
+              </div>
+            )}
+          </div>
+        )}
+
         {sortedItems.map((item, index) => (
           <GearCard
             key={`${item.slot_section}-${item.slot_index}-${item.normalized_name}-${index}`}

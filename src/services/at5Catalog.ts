@@ -224,6 +224,41 @@ export function findAT5Gear(
   return match;
 }
 
+export function findBestCatalogMatchAcrossGroups(query: string | undefined): AT5CatalogItem | undefined {
+  if (!query) return undefined;
+  const catalog = getAt5Catalog() || [];
+  const q = query.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  
+  let bestItem: AT5CatalogItem | undefined = undefined;
+  let bestScore = -1;
+
+  for (const item of catalog) {
+    const names = [
+      item.displayName,
+      ...(item.otherNames ?? []),
+      ...(item.examplePresets ?? [])
+    ].map(n => n.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, " ").trim());
+
+    for (const n of names) {
+      if (!n) continue;
+      let score = 0;
+      if (n === q) score = 1000;
+      else if (n.includes(q)) score = 250;
+      else if (q.includes(n)) score = 150;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestItem = item;
+      }
+    }
+  }
+
+  if (bestScore >= 150) {
+    return bestItem;
+  }
+  return undefined;
+}
+
 export function findAT5GearGuid(
   query: string | undefined,
   group: AT5GearGroup

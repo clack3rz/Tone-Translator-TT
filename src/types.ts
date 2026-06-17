@@ -40,19 +40,19 @@ export interface ToneProfile {
   player: string;
   era: string;
   style: string[];
-  role: "rhythm" | "lead" | "clean" | "acoustic_style" | "bass" | "mixed" | "unknown";
-  gain_level: "clean" | "edge" | "low" | "medium-low" | "medium" | "medium-high" | "high" | "unknown";
-  distortion_type: "clean" | "edge_of_breakup" | "crunch" | "overdrive" | "saturated" | "fuzz" | "unknown";
-  low_end: "loose" | "controlled" | "tight" | "boomy" | "unknown";
-  midrange: "scooped" | "neutral" | "forward" | "aggressive" | "unknown";
-  highs: "dark" | "smooth" | "bright" | "harsh" | "unknown";
-  attack: "soft" | "balanced" | "sharp" | "unknown";
-  dynamics: "dynamic" | "slightly_compressed" | "compressed" | "unknown";
-  effects_profile: "none" | "minimal" | "moderate" | "heavy" | "unknown";
-  room: "dry" | "small" | "medium" | "large" | "unknown";
-  width: "mono" | "narrow" | "double_tracked" | "wide" | "unknown";
-  production_style: "raw" | "polished" | "live" | "studio" | "unknown";
-  confidence: "low" | "medium" | "high";
+  role: "rhythm" | "lead" | "clean" | "acoustic_style" | "bass" | "mixed" | "unknown" | string;
+  gain_level: "clean" | "edge" | "low" | "medium-low" | "medium" | "medium-high" | "high" | "unknown" | string;
+  distortion_type: "clean" | "edge_of_breakup" | "crunch" | "overdrive" | "saturated" | "fuzz" | "unknown" | string;
+  low_end: "loose" | "controlled" | "tight" | "boomy" | "unknown" | string;
+  midrange: "scooped" | "neutral" | "forward" | "aggressive" | "unknown" | string;
+  highs: "dark" | "smooth" | "bright" | "harsh" | "unknown" | string;
+  attack: "soft" | "balanced" | "sharp" | "unknown" | string;
+  dynamics: "dynamic" | "slightly_compressed" | "compressed" | "unknown" | string;
+  effects_profile: "none" | "minimal" | "moderate" | "heavy" | "unknown" | string;
+  room: "dry" | "small" | "medium" | "large" | "unknown" | string;
+  width: "mono" | "narrow" | "double_tracked" | "wide" | "unknown" | string;
+  production_style: "raw" | "polished" | "live" | "studio" | "unknown" | string;
+  confidence: "low" | "medium" | "high" | string;
   
   // Future Audio-derived placeholder fields (to be populated later via isolated audio feature extraction)
   spectral_centroid?: number;         // perceived brightness
@@ -92,6 +92,14 @@ export interface ToneProfileResult {
   warnings: string[];
 }
 
+export interface RackDecision {
+  status: "required" | "recommended" | "optional" | "not_needed" | string;
+  selected_gear: string | null;
+  reason: string;
+  eq_intent: string[];
+  why_omitted?: string;
+}
+
 export interface ToneResult {
   tone_summary: ToneSummary;
   signal_chain: SignalChainElement[];
@@ -103,6 +111,8 @@ export interface ToneResult {
   // but we will primarily use the above
   signalChain?: GearLink[]; 
   tone_profile_result?: ToneProfileResult;
+  tone_adjustment_intent?: Record<string, string>;
+  rack_decision?: RackDecision;
 }
 
 export type AT5GearGroup =
@@ -152,3 +162,73 @@ export interface ParameterMapping {
   updatedAt?: any;
   updatedBy?: string;
 }
+
+// Gear Profile Types
+export interface GearProfileParameter {
+  displayName: string;
+  canonicalName: string;
+  aliases: string[];
+  visual: {
+    min: number;
+    max: number;
+    unit: string;
+  };
+  export: {
+    name: string;
+    min: number;
+    max: number;
+  };
+  conversion: {
+    mode: string;
+    formula: string;
+  };
+  defaultValue?: string | number;
+  validationStatus: 'PASS' | 'WARN' | 'PARTIAL' | 'CHECK' | 'FAIL' | 'UNKNOWN';
+}
+
+export interface GearProfile {
+  id: string;
+  displayName: string;
+  type: string; // stomp, amp, cab, speaker, mic, rack, room, tonex, etc.
+  guid: string;
+  slot: string;
+  aliases: string[];
+  parameters: GearProfileParameter[];
+  discovery?: {
+    importHistory?: string[];
+    isDraft?: boolean;
+    detectedAt?: string;
+  };
+  validation: {
+    status: 'PASS' | 'WARN' | 'PARTIAL' | 'CHECK' | 'FAIL' | 'UNKNOWN';
+    gaps: string[];
+    reason?: string;
+  };
+  rawSources: {
+    catalog?: AT5CatalogItem;
+    mappings?: ParameterMapping[];
+    verified?: any;
+    verifiedProtocol?: any;
+  };
+}
+
+export interface MicPlacementMapping {
+  id?: string;
+  gear: string; // e.g. "4x12 Brit 8000"
+  friendly_setting: string; // "Mic_1_Placement" | "Mic_2_Placement"
+  target?: string; // Alias for friendly_setting
+  mic_slot?: string;
+  friendly_value: string; // e.g. "Cap Edge"
+  friendly_name?: string; // Alias for friendly_value
+  friendly_placement?: string;
+  friendly_distance?: string;
+  maps_to: Record<string, string | number>;
+  xml_values?: Record<string, string | number>; // Alias for maps_to
+  status: "validated" | "estimated" | "discovered";
+  validation_status?: string; // Alias for status
+  source?: string;
+  updatedAt?: any;
+  updatedBy?: string;
+}
+
+

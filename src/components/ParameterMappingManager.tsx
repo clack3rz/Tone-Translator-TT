@@ -16,6 +16,7 @@ import {
 import { ParameterMapping } from '../types';
 import { at5DatabaseService } from '../services/at5DatabaseService';
 import { auth, signInWithGoogle } from '../services/firebase';
+import { refreshDbParameterMappings } from '../services/at5ParameterManifest';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
 export const ParameterMappingManager: React.FC = () => {
@@ -55,6 +56,7 @@ export const ParameterMappingManager: React.FC = () => {
     try {
       const data = await at5DatabaseService.getParameterMappings();
       setMappings(data);
+      await refreshDbParameterMappings().catch(err => console.error('Error refreshing parameter manifest cache', err));
     } catch (err) {
       console.error('Error loading parameter mappings', err);
     } finally {

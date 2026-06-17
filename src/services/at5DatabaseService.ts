@@ -12,7 +12,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
-import { AT5CatalogItem, ParameterMapping } from '../types';
+import { AT5CatalogItem, ParameterMapping, MicPlacementMapping } from '../types';
 import { VerifiedMapping } from './at5VerifiedProtocols';
 
 // Enum for Operation Types (Mandatory for error logging)
@@ -253,6 +253,63 @@ export const at5DatabaseService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, path);
     }
+  },
+
+  async getMicPlacementMappings(): Promise<MicPlacementMapping[]> {
+    const path = 'mic_placement_mappings';
+    try {
+      const snapshot = await getDocs(collection(db, path));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id
+        } as unknown as MicPlacementMapping;
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  },
+
+  async saveMicPlacementMapping(mapping: MicPlacementMapping) {
+    if (!auth.currentUser) throw new Error("Must be signed in to save mic placement mappings");
+    
+    const rawId = `${mapping.gear}_${mapping.friendly_setting}_${mapping.friendly_value}`;
+    const mappingId = rawId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    
+    const path = `mic_placement_mappings/${mappingId}`;
+    try {
+      const data = sanitize({
+        ...mapping,
+        id: mappingId,
+        friendly_setting: mapping.friendly_setting || mapping.target,
+        friendly_value: mapping.friendly_value || mapping.friendly_name,
+        maps_to: mapping.maps_to || mapping.xml_values || {},
+        target: mapping.friendly_setting || mapping.target,
+        friendly_name: mapping.friendly_value || mapping.friendly_name,
+        xml_values: mapping.maps_to || mapping.xml_values || {},
+        status: mapping.status || mapping.validation_status || "validated",
+        validation_status: mapping.status || mapping.validation_status || "validated",
+        source: mapping.source || "AT5 preset import",
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid
+      });
+      await setDoc(doc(db, 'mic_placement_mappings', mappingId), data);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
+  async deleteMicPlacementMapping(id: string) {
+    if (!auth.currentUser) throw new Error("Must be signed in to delete mic placement mappings");
+    const path = `mic_placement_mappings/${id}`;
+    try {
+      await deleteDoc(doc(db, 'mic_placement_mappings', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, path);
+    }
   }
 };
+
 

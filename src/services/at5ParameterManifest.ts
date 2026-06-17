@@ -13,6 +13,29 @@ import {
 } from "./gearManifest";
 import { AT5_VERIFIED_GEAR, VerifiedGearDef, VerifiedParamDef } from "./at5VerifiedParameterOverrides";
 import { getAt5Catalog } from "./at5Catalog";
+import { ParameterMapping, MicPlacementMapping } from "../types";
+import { at5DatabaseService } from "./at5DatabaseService";
+
+let dbParameterMappings: ParameterMapping[] = [];
+let dbMicPlacementMappings: MicPlacementMapping[] = [];
+
+export async function refreshDbParameterMappings(): Promise<void> {
+  try {
+    dbParameterMappings = await at5DatabaseService.getParameterMappings() || [];
+    dbMicPlacementMappings = await at5DatabaseService.getMicPlacementMappings() || [];
+  } catch (error) {
+    console.error("Failed to refresh db parameter mappings", error);
+  }
+}
+
+export function getDbParameterMappings(): ParameterMapping[] {
+  return dbParameterMappings;
+}
+
+export function getDbMicPlacementMappings(): MicPlacementMapping[] {
+  return dbMicPlacementMappings;
+}
+
 
 export const FILTER_BANDS = [
   20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 
@@ -55,6 +78,8 @@ export interface ResolvedParameter {
   aliases?: string[];
   defaultValue?: number | string;
   transform?: VerifiedParamDef["transform"];
+  visualMin?: number;
+  visualMax?: number;
 }
 
 const ALL_GEAR: GearItem[] = [
@@ -182,14 +207,16 @@ export function findVerifiedGear(
   gearNameOrId: string | undefined,
   category?: string
 ): VerifiedGearDef | undefined {
-  return findVerifiedGearWithScore(gearNameOrId, category)?.gear;
+  const match = findVerifiedGearWithScore(gearNameOrId, category);
+  return (match && match.score >= 150) ? match.gear : undefined;
 }
 
 export function findManifestGear(
   gearNameOrId: string | undefined,
   category?: string
 ): GearItem | undefined {
-  return findManifestGearWithScore(gearNameOrId, category)?.gear;
+  const match = findManifestGearWithScore(gearNameOrId, category);
+  return (match && match.score >= 150) ? match.gear : undefined;
 }
 
 export function resolveVerifiedOrManifestRealId(
@@ -244,7 +271,11 @@ export function resolveVerifiedOrManifestRealId(
     return 0;
   });
 
-  return candidates[0].realId;
+  const best = candidates[0];
+  if (best.score < 150) {
+    return undefined;
+  }
+  return best.realId;
 }
 
 export function getParameterDefinitions(
@@ -290,43 +321,104 @@ export function getParameterDefinitions(
 
   const best = candidates[0];
 
+  let baseParams: ResolvedParameter[] = [];
+
   if (best.type === "verified") {
-    return best.data.params;
-  }
-
-  if (best.type === "catalog") {
+    baseParams = best.data.params.map((p: any) => ({ ...p }));
+  } else if (best.type === "catalog") {
     const gear = best.data;
-    if (!gear.knobs) return [];
-    return gear.knobs.map((knob: any) => {
-      const baseXmlName = compact(knob.name);
-      return {
-        friendlyName: knob.name,
-        xmlName: gear.group === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
-        min: knob.min ?? 0,
-        max: knob.max ?? 10,
-        defaultValue: knob.default !== undefined ? knob.default : undefined,
-      };
-    });
+    if (gear.knobs) {
+      baseParams = gear.knobs.map((knob: any) => {
+        const baseXmlName = compact(knob.name);
+        return {
+          friendlyName: knob.name,
+          xmlName: gear.group === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
+          min: knob.min ?? 0,
+          max: knob.max ?? 10,
+          defaultValue: knob.default !== undefined ? knob.default : undefined,
+        };
+      });
+    }
+  } else {
+    const gear = best.data;
+    if (gear.knobs) {
+      baseParams = gear.knobs.filter(isKnobDefinition).map((knob: any) => {
+        const baseXmlName = compact(knob.name);
+        return {
+          friendlyName: knob.name,
+          xmlName: gear.category === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
+          min: knob.min,
+          max: knob.max,
+          unit: knob.unit,
+        };
+      });
+    }
   }
 
-  const gear = best.data;
-  if (!gear.knobs) return [];
+  // Merge dynamic database mapping overrides to resolve discrepancies and keep the Exporter matched to the Profile Management source of truth
+  let displayName = "";
+  let aliases: string[] = [];
+  if (best.type === "verified") {
+    displayName = best.data.name;
+    aliases = best.data.aliases ?? [];
+  } else if (best.type === "catalog") {
+    displayName = best.data.displayName;
+    aliases = [
+      ...(best.data.otherNames || []),
+      ...(best.data.examplePresets || [])
+    ];
+  } else {
+    displayName = best.data.name;
+    aliases = [];
+  }
 
-  return gear.knobs.filter(isKnobDefinition).map((knob: any) => {
-    const baseXmlName = compact(knob.name);
-    return {
-      friendlyName: knob.name,
-      xmlName: gear.category === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
-      min: knob.min,
-      max: knob.max,
-      unit: knob.unit,
-    };
-  });
+  const aliasSet = new Set([
+    normalise(displayName),
+    ...aliases.map(a => normalise(a))
+  ]);
+
+  const relevantDb = dbParameterMappings.filter(m => aliasSet.has(normalise(m.gearName)));
+
+  const paramsMap = new Map<string, ResolvedParameter>();
+  for (const p of baseParams) {
+    paramsMap.set(p.friendlyName.toLowerCase().trim(), p);
+  }
+
+  for (const dbM of relevantDb) {
+    const key = dbM.parameter.toLowerCase().trim();
+    const existing = paramsMap.get(key);
+
+    if (existing) {
+      existing.xmlName = dbM.exportParameterName || existing.xmlName;
+      existing.min = dbM.exportMin;
+      existing.max = dbM.exportMax;
+      existing.transform = dbM.conversion as any;
+      existing.visualMin = dbM.visualMin;
+      existing.visualMax = dbM.visualMax;
+    } else {
+      paramsMap.set(key, {
+        friendlyName: dbM.parameter,
+        xmlName: dbM.exportParameterName,
+        min: dbM.exportMin,
+        max: dbM.exportMax,
+        transform: dbM.conversion as any,
+        aliases: [],
+        visualMin: dbM.visualMin,
+        visualMax: dbM.visualMax
+      });
+    }
+  }
+
+  return Array.from(paramsMap.values());
 }
 
 const parseSettingValue = (
   value: unknown,
-  transform?: VerifiedParamDef["transform"]
+  transform?: VerifiedParamDef["transform"] | string,
+  min?: number,
+  max?: number,
+  visualMin?: number,
+  visualMax?: number
 ): string | number | undefined => {
   if (value === undefined || value === null) return undefined;
   
@@ -376,9 +468,26 @@ const parseSettingValue = (
   }
   if (!Number.isFinite(n)) return undefined;
 
-  if (transform === "dbThresholdToLinear") {
+  if (transform === "dbThresholdToLinear" || transform === "db_to_linear") {
     const db = Math.min(0, Math.max(-100, n));
     n = Math.pow(10, db / 20);
+  }
+
+  if (transform === "linear_to_db") {
+    if (n <= 0) {
+      n = -100;
+    } else {
+      n = 20 * Math.log10(n);
+    }
+  }
+
+  if (transform === "scaled_range") {
+    const vMin = visualMin ?? 0;
+    const vMax = visualMax ?? 10;
+    const expMin = min ?? 0;
+    const expMax = max ?? 10;
+    const pct = (vMin === vMax) ? 0 : (n - vMin) / (vMax - vMin);
+    n = expMin + pct * (expMax - expMin);
   }
 
   if (transform === "khzToHzIfNeeded") {
@@ -424,12 +533,18 @@ export function resolveParameterValue(
   value: unknown,
   min: number,
   max: number,
-  transform?: VerifiedParamDef["transform"]
+  transform?: VerifiedParamDef["transform"] | string,
+  visualMin?: number,
+  visualMax?: number
 ): string | number | undefined {
-  const v = parseSettingValue(value, transform);
+  const v = parseSettingValue(value, transform, min, max, visualMin, visualMax);
   if (typeof v === "string") return v;
   if (v === undefined || !Number.isFinite(v)) return undefined;
-  return Math.min(max, Math.max(min, v as number));
+  
+  // Safe clamping handles reversed / descending ranges (min > max)
+  const actualMin = Math.min(min, max);
+  const actualMax = Math.max(min, max);
+  return Math.min(actualMax, Math.max(actualMin, v as number));
 }
 
 export function normalizeSettingsToCanonical(
@@ -493,43 +608,61 @@ export function buildMappedParameterAttrs(
       .join(" ");
   }
 
-  return defs
-    .map((def) => {
-      const lookupNames = [def.friendlyName, def.xmlName, ...(def.aliases ?? [])];
-      let raw = lookupNames
-        .map((name) => normalisedSettings.get(normalise(name)))
-        .find((value) => value !== undefined);
+  const attributes: { xmlName: string; attrValue: string; isDefault: boolean }[] = [];
 
-      if (raw === undefined && gearNameOrId && (category === "rack" || category === "stomp") && gearNameOrId.toLowerCase().includes("graphic")) {
-        const bandMatch = def.xmlName.match(/^Band(\d+)$/i);
-        if (bandMatch) {
-          const bandFreq = parseInt(bandMatch[1]);
-          for (const [sKey, sVal] of normalisedSettings.entries()) {
-            const hz = parseFrequencyToHz(sKey);
-            if (hz !== null) {
-              const closest = findClosestBand(hz);
-              if (closest === bandFreq) {
-                raw = sVal;
-                break;
-              }
+  for (const def of defs) {
+    const lookupNames = [def.friendlyName, def.xmlName, ...(def.aliases ?? [])];
+    let raw = lookupNames
+      .map((name) => normalisedSettings.get(normalise(name)))
+      .find((value) => value !== undefined);
+
+    let isDefault = false;
+
+    if (raw === undefined && gearNameOrId && (category === "rack" || category === "stomp") && gearNameOrId.toLowerCase().includes("graphic")) {
+      const bandMatch = def.xmlName.match(/^Band(\d+)$/i);
+      if (bandMatch) {
+        const bandFreq = parseInt(bandMatch[1]);
+        for (const [sKey, sVal] of normalisedSettings.entries()) {
+          const hz = parseFrequencyToHz(sKey);
+          if (hz !== null) {
+            const closest = findClosestBand(hz);
+            if (closest === bandFreq) {
+              raw = sVal;
+              break;
             }
           }
         }
       }
+    }
 
-      if (raw === undefined && def.defaultValue !== undefined) {
-        raw = def.defaultValue;
-      }
+    if (raw === undefined && def.defaultValue !== undefined) {
+      raw = def.defaultValue;
+      isDefault = true;
+    }
 
-      const resolved = resolveParameterValue(raw, def.min, def.max, def.transform);
-      if (resolved === undefined) return null;
+    const resolved = resolveParameterValue(raw, def.min, def.max, def.transform, def.visualMin, def.visualMax);
+    if (resolved === undefined) continue;
 
-      if (typeof resolved === "string") {
-        return `${def.xmlName}="${escapeXmlAttr(resolved)}"`;
-      }
+    const formattedValue = typeof resolved === "string"
+      ? escapeXmlAttr(resolved)
+      : String(Number(resolved.toFixed(6)));
 
-      return `${def.xmlName}="${Number(resolved.toFixed(6))}"`;
-    })
-    .filter(Boolean)
+    attributes.push({
+      xmlName: def.xmlName,
+      attrValue: formattedValue,
+      isDefault
+    });
+  }
+
+  const finalMap = new Map<string, typeof attributes[number]>();
+  for (const attr of attributes) {
+    const existing = finalMap.get(attr.xmlName);
+    if (!existing || (existing.isDefault && !attr.isDefault)) {
+      finalMap.set(attr.xmlName, attr);
+    }
+  }
+
+  return Array.from(finalMap.values())
+    .map(attr => `${attr.xmlName}="${attr.attrValue}"`)
     .join(" ");
 }

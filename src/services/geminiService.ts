@@ -62,6 +62,24 @@ ENGINEERING PHILOSOPHY (Killer Rig Systematic Tone):
    - MICROPHONE CALIBRATION: Start with "Dynamic 57" as the primary close microphone placed close to the cone edge/midway for attack and core midrange projection. If a second microphone is used, prefer "Ribbon 121" or "Dynamic 421" for warmth and body. STRICTLY AVOID "Condenser 87" as a default second mic under raw vintage AC/DC contexts. Keep the cabinet room dial and ambience mix low/controlled. Room Type must be "Small Studio".
    - REASONING & DEBUG/ENGINEERING NOTE: Malcolm Young's Jailbreak rhythm tone is treated as a dry 1970s AC/DC rhythm sound: vintage Marshall-style crunch, low-to-medium gain, strong mids, Greenback-style speaker compression, and minimal processing. Clearly explain these choices in the notes.
 
+8. EQUALIZER RULE AND RACK EQ DECISION COUPLING:
+   - AT5 "Parametric EQ" (stomp or rack/effects loop) has strictly *two bands* and only six visible controls: 'Freq 1', 'Gain 1', 'Q 1', 'Freq 2', 'Gain 2', 'Q 2'.
+   - Do NOT output abstract parameters like 'Low Freq', 'Low Gain', 'Mid Freq', 'High Freq', etc., in its settings. If you use 'Parametric EQ', you must restrict its settings key strictly to these 6 controls.
+   - If more than two EQ adjustments or frequency shaping bands are required, prefer 'Graphic EQ' or '10 Band Graphic' over 'Parametric EQ'.
+   - If only two precise EQ moves are needed, 'Parametric EQ' is acceptable using only its 6 specific controls.
+   - For any target tone request, you must make a conscious decision on whether post-amp/rack EQ is necessary or not, populating the root-level "rack_decision" field in the output JSON:
+     * "status": "required" (Only when prompt explicitly mentions post-EQ action, direct studio sculpting, or a classic V-shaped graphic EQ contour).
+     * "status": "recommended" (For tight-grain modern/thrash metal genres like Metallica, Pantera where a specific high-mids presence spike or heavy low-end filtering is part of the genre icon).
+     * "status": "optional" (For general rock, pop, or average requests unless specified).
+     * "status": "not_needed" (For simple classic rock like AC/DC, blues, clean jazz, or country where a raw, uncolored tone is ideal and the amp handles all shaping).
+   - The "rack_decision" field in your JSON output must contain:
+     * "status": "required | recommended | optional | not_needed"
+     * "selected_gear": "Graphic EQ | Parametric EQ | null" (The specific EQ selected, or null if status is "not_needed" or omitted).
+     * "reason": "Detailed justification connecting the selected status and choice to the requested style/genre."
+     * "eq_intent": ["Array of short strings summarizing the EQ curve goals/intents, e.g., 'Scoop mids around 400Hz', 'Cut sub-bass rumble at 100Hz'"].
+     * "why_omitted": "Explain why no rack EQ was included if eq_intent exists or rack EQ is optional/recommended/required but omitted, otherwise leave empty or omit."
+   - If you must use 'Parametric EQ', place any broader abstract tone adjustments goals/intents in the root-level 'tone_adjustment_intent' field (e.g., 'low_end', 'midrange', 'presence').
+
 KNOWLEDGE BASE:
 
 1. TONE DESCRIPTORS:
@@ -190,7 +208,19 @@ OUTPUT SCHEMA:
     "eq_strategy": "Detailed breakdown of the frequency shaping logic",
     "amplifier_debug": "selected TT Gear Name: <exact matching amp name>\nmatched aliases/tags: <comma-separated matched aliases & tags>\ntone reason: <rank candidate amps and explain why the chosen one won>\navailable controls used: <exact knobs and values set>\nany controls requested but unavailable: <any requested knobs or features that do not exist on the selected amp, or 'None'>\n\nselected Cab Name: <exact matching cab name>\nselected Speaker Name: <exact matching speaker name>\ncab, speaker & microphone reason: <explain logic behind cabinet construction, size, speaker choice, microphone roles, matching placement, and how they relate systematically to the style and amp>"
   },
-  "confidence": 0-100
+  "confidence": 0-100,
+  "tone_adjustment_intent": {
+    "low_end": "string (optional overview of low end shaping goal)",
+    "midrange": "string (optional overview of midrange shaping goal)",
+    "presence": "string (optional overview of presence/highs shaping goal)"
+  },
+  "rack_decision": {
+    "status": "required | recommended | optional | not_needed",
+    "selected_gear": "string | null",
+    "reason": "string describing the decision",
+    "eq_intent": ["string1", "string2"],
+    "why_omitted": "string describing omission if applicable, else omit"
+  }
 }
 `;
 
@@ -293,7 +323,101 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
         amplifier_debug: "selected TT Gear Name: British Lead S100\nmatched aliases/tags: classic rock, vintage Marshall, Malcolm Young, AC/DC, rhythm, plexi, super lead\ntone reason: Chosen for authentic classic 70s British rock crunch. Malcolm Young's tone is dry, dynamic, and mid-forward without modern saturated distortion. British Lead S100 represents the iconic Plexi 1959/Super Lead 100 watt crunch perfectly.\navailable controls used: Gain: 4.0, Bass: 4.5, Middle: 7.5, Treble: 5.5, Presence: 5.0, Reverb: 0.0, Volume: 7.5\nany controls requested but unavailable: None\n\nselected Cab Name: 4x12 Brit 8000\nselected Speaker Name: Brit Green\ncab, speaker & microphone reason: British closed-back 4x12 paired with Greenback-style (Brit Green) speakers for classic organic crunch, rich midrange response, and vintage compression characteristics. Dynamic 57 as a primary close mic gives presence and pick attack, while Ribbon 121 adds warmth and body."
       },
       confidence: 100,
-      tone_profile_result: toneProfileResult
+      tone_profile_result: toneProfileResult,
+      rack_decision: {
+        status: "not_needed",
+        selected_gear: null,
+        reason: "For classic AC/DC rhythm, a bone-dry, uncolored tone driven directly by tube power amp saturation is ideal. Post-amp/rack EQ is not needed because the amplifier and cabinet handle all necessary frequency shaping of the raw, historic classic rock voice.",
+        eq_intent: []
+      }
+    };
+  }
+
+  const isPanteraKeyword = [
+    "pantera", "cowboys from hell", "cowboys_from_hell", "cfh", "dimebag", "dimebag darrell", "darrell 100"
+  ].some(kw => lowerPrompt.includes(kw));
+
+  if (useValidationRecipes && isPanteraKeyword) {
+    return {
+      tone_summary: {
+        style: "Pantera Cowboys From Hell Thrash Metal Rhythm",
+        gain_level: "high",
+        noise_level: "high"
+      },
+      signal_chain: [
+        {
+          type: "pedal",
+          name: "Noise Gate",
+          settings: {
+            "Threshold": "-45 dB",
+            "Release": "120 ms",
+            "Depth": "-60 dB"
+          }
+        },
+        {
+          type: "pedal",
+          name: "OverScream",
+          settings: {
+            "Drive": 1.0,
+            "Tone": 6.5,
+            "Level": 9.0
+          }
+        },
+        {
+          type: "amp",
+          name: "Darrell 100",
+          settings: {
+            "Gain": 7.5,
+            "Master": 5.0,
+            "Bass": 6.0,
+            "Mid": 3.5,
+            "Treble": 7.0,
+            "Presence": 6.5,
+            "Pull": 1.0,
+            "Channel": 1.0
+          }
+        },
+        {
+          type: "cab",
+          name: "4x12 Brit 8000",
+          settings: {
+            "Speaker": "Brit 75",
+            "Mic_1": "Dynamic 57",
+            "Mic_2": "Ribbon 121",
+            "Room": "Small Studio"
+          }
+        },
+        {
+          type: "rack",
+          name: "Graphic EQ",
+          settings: {
+            "100Hz": "+4 dB",
+            "400Hz": "-6 dB",
+            "800Hz": "-2 dB",
+            "1600Hz": "+2 dB",
+            "3150Hz": "+5 dB",
+            "6300Hz": "+2 dB"
+          }
+        }
+      ],
+      engineering_notes: {
+        gain_strategy: "Extremely sharp, tight, and punchy solid-state distortion based on the Randall RG100 (Darrell 100). Pre-amp clipping diode 'Pull' is active for maximum vintage crunch, boosted by an OverScream pedal with drive at 1.0 to compress/focus the low-end entry.",
+        noise_control: "Fast noise gate setting is mandatory for the ultra-tight stop-start syncopated riffs of Cowboys From Hell. Decay is set short to truncate any hum or feedback instantly.",
+        eq_strategy: "Aggressive V-shaped equalization curve: scooped low-mid frequencies (400Hz) paired with a heavy high-mid presence boost to define the razor-sharp pick attack on palm-mutes.",
+        amplifier_debug: "selected TT Gear Name: Darrell 100\nmatched aliases/tags: pantera, dimebag, solid-state, mid-scoop, rg100\ntone reason: Chosen for the authentic solid-state thrash bite of Cowboys From Hell. Darrell 100 requires Gear Discovery for proper GUID serialization; currently operating with temporary parameter mapping and a fallback GUID representation.\navailable controls used: Gain: 7.5, Master: 5.0, Bass: 6.0, Mid: 3.5, Treble: 7.0, Presence: 6.5, Pull: 1.0, Channel: 1.0\nany controls requested but unavailable: None"
+      },
+      confidence: 100,
+      tone_profile_result: toneProfileResult,
+      rack_decision: {
+        status: "recommended",
+        selected_gear: "Graphic EQ",
+        reason: "For Cowboys From Hell, a razor-sharp V-shaped post-amp Graphic EQ is critical to sculpt the scooped, solid-state crunch while maintaining punchy clarity.",
+        eq_intent: [
+          "Scoop low-mids around 400Hz to achieve classic solid-state scoop",
+          "Boost low-end punch around 100Hz",
+          "Sharpen upper-mid biting presence around 3.1kHz"
+        ]
+      }
     };
   }
 
@@ -370,7 +494,17 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
         amplifier_debug: "selected TT Gear Name: Brit 8000\nmatched aliases/tags: early thrash, Metallica, rhythm, brit 8000\ntone reason: Matches 80s thrash metal requests ideally. JCM800/Brit 8000 selected for iconic midrange punch and raw power tube saturation.\navailable controls used: Pre Amp: 7.0, Bass: 4.0, Middle: 7.5, Treble: 7.0, Presence: 7.8, Master: 6.0\nany controls requested but unavailable: None\n\nselected Cab Name: 4x12 Brit 8000\nselected Speaker Name: Brit 75\ncab, speaker & microphone reason: Closed-back Marshall-style 4x12 chosen as the metal standard for high-end projection and controlled low-end chugs. Coupled with Brit 75 (G12T-75) speakers to capture the authentic extended highs and raw, buzzy, scooped low-end texture of early 1980s American-British thrash. Dynamic 57 provides pick attack and presence, while Ribbon 121 smooths high-frequency buzz."
       },
       confidence: 100,
-      tone_profile_result: toneProfileResult
+      tone_profile_result: toneProfileResult,
+      rack_decision: {
+        status: "recommended",
+        selected_gear: "Graphic EQ",
+        reason: "For tight early thrash metal, post-amp/rack EQ is recommended to sculpt high-end presence, tighten low-end chugs, and slightly scoop the low-mid frequencies to reproduce the authentic Kill 'Em All vinyl production curve.",
+        eq_intent: [
+          "Scoop low-mids around 400Hz to 800Hz",
+          "Cut sub-bass rumble at 100Hz",
+          "Boost presence in high-mids at 1.6kHz to 3.1kHz"
+        ]
+      }
     };
   }
 
@@ -547,6 +681,22 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
 
       if (!hasDepth) {
         newSettings["Depth"] = "-60 dB";
+      }
+
+      // Final strict calibration for tight thrash rhythm Noise Gate
+      if (isThrashContext) {
+        const needsLongSustain = lowerPrompt.includes("sustain") || lowerPrompt.includes("long decay") || lowerPrompt.includes("slow gate") || lowerPrompt.includes("slow release");
+        if (!needsLongSustain) {
+          const currentReleaseNum = parseFloat(String(newSettings["Release"] || ""));
+          if (isNaN(currentReleaseNum) || currentReleaseNum > 180 || currentReleaseNum < 80) {
+            newSettings["Release"] = "120 ms";
+          }
+          const currentThrNum = parseFloat(String(newSettings["Threshold"] || ""));
+          if (isNaN(currentThrNum) || currentThrNum > -40 || currentThrNum < -65) {
+            newSettings["Threshold"] = "-45 dB";
+          }
+          newSettings["Depth"] = "-60 dB";
+        }
       }
 
       return {

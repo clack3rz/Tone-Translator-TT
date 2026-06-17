@@ -1,4 +1,5 @@
 import { SignalChainElement } from "../types";
+import { findBestCatalogMatchAcrossGroups } from "./at5Catalog";
 
 const normalise = (value: string) =>
   value
@@ -275,9 +276,8 @@ const GEAR_NAME_MAP: Record<string, string> = {
   "jazz 12": "Jazz 12",
 
   // EQ / rack aliases
-  "graphic eq": "10 Band Graphic",
-  "graphic equalizer": "10 Band Graphic",
   "10 band graphic": "10 Band Graphic",
+  "7 band graphic": "7 Band Graphic",
   "parametric eq": "Parametric EQ",
   "eq pg": "EQ PG",
   "eq-pg": "EQ PG",
@@ -493,24 +493,8 @@ const normaliseParametricEqSettings = (
       else if (k === "freq 2" || k === "freq2" || k === "frequency 2" || k === "freq_2") out["Freq 2"] = value;
       else if (k === "gain 2" || k === "gain2" || k === "gain_2") out["Gain 2"] = value;
       else if (k === "q 2" || k === "q2" || k === "q_2") out["Q 2"] = value;
-      else if (k === "low cut" || k === "lowcut" || k === "low_cut") out["Low Cut"] = value;
-      else if (k === "high cut" || k === "highcut" || k === "high_cut") out["High Cut"] = value;
-      else out[key] = value;
     }
     return out;
-  }
-
-  // Otherwise, extract up to 3 bands: Low, Mid, High
-  let lowCut: any = undefined;
-  let highCut: any = undefined;
-
-  for (const [key, value] of Object.entries(settings)) {
-    const k = normalise(key);
-    if (k === "low cut" || k === "lowcut" || k === "low_cut" || k === "high pass" || k === "highpass") {
-      lowCut = value;
-    } else if (k === "high cut" || k === "highcut" || k === "high_cut" || k === "low pass" || k === "lowpass") {
-      highCut = value;
-    }
   }
 
   let lowF: any = undefined, lowG: any = undefined, lowQ: any = undefined;
@@ -567,9 +551,6 @@ const normaliseParametricEqSettings = (
     }
   }
 
-  if (lowCut !== undefined) out["Low Cut"] = lowCut;
-  if (highCut !== undefined) out["High Cut"] = highCut;
-
   if (out["Freq 1"] !== undefined && out["Q 1"] === undefined) out["Q 1"] = 0.9;
   if (out["Freq 2"] !== undefined && out["Q 2"] === undefined) out["Q 2"] = 0.8;
 
@@ -622,17 +603,166 @@ const normaliseSettings = (
 export function normaliseSignalChain(
   chain: SignalChainElement[]
 ): SignalChainElement[] {
-  return chain.map((gear) => {
-    const canonicalName = normaliseGearName(gear.name);
+  const ampIndex = chain.findIndex(el => el.type === "amp");
+  const cabIndex = chain.findIndex(el => el.type === "cab");
+  const thresholdIndex = ampIndex !== -1 ? ampIndex : (cabIndex !== -1 ? cabIndex : chain.length);
+
+  return chain.map((gear, index) => {
+    let canonicalName = normaliseGearName(gear.name);
+    let canonicalType = gear.type;
+
+    const lowerName = gear.name.toLowerCase().trim();
+    
+    const isEq = 
+      lowerName.includes("eq") ||
+      lowerName.includes("geq") ||
+      lowerName.includes("graphic") ||
+      lowerName.includes("equalizer") ||
+      lowerName.includes("parametric") ||
+      lowerName === "eq pg" ||
+      lowerName === "eq-pg" ||
+      lowerName.includes("pre eq") ||
+      lowerName.includes("6 band") ||
+      lowerName.includes("7 band") ||
+      lowerName.includes("10 band") ||
+      lowerName.includes("api 560") ||
+      lowerName.includes("api-560");
+
+    if (isEq) {
+      const isPostAmp = index >= thresholdIndex;
+      const isRackIntent = gear.type === "rack" || isPostAmp;
+
+      if (isRackIntent) {
+        canonicalType = "rack";
+        if (lowerName.includes("pg") || lowerName.includes("api 560") || lowerName.includes("api-560") || lowerName === "eq pg" || lowerName === "eq-pg") {
+          canonicalName = "EQ PG";
+        } else if (lowerName.includes("parametric")) {
+          if (lowerName.includes("3")) {
+            canonicalName = "Parametric EQ 3";
+          } else {
+            canonicalName = "Parametric EQ";
+          }
+        } else {
+          // Default rack Graphic EQ
+          canonicalName = "Graphic EQ";
+        }
+      } else {
+        canonicalType = "pedal";
+        if (lowerName.includes("7 band") || lowerName.includes("7-band") || lowerName.includes("seven") || lowerName === "geq") {
+          canonicalName = "7 Band Graphic";
+        } else if (lowerName.includes("6 band") || lowerName.includes("6-band")) {
+          canonicalName = "6 Band EQ";
+        } else if (lowerName.includes("pre eq") || lowerName.includes("pre-eq") || lowerName === "pre eq 3") {
+          canonicalName = "Pre EQ 3";
+        } else {
+          // Default pedal Graphic EQ
+          canonicalName = "10 Band Graphic";
+        }
+      }
+    } else {
+      // Resolve through Gear Manager (Catalog) as source of truth
+      const catalogMatch = findBestCatalogMatchAcrossGroups(gear.name);
+      if (catalogMatch) {
+        canonicalName = catalogMatch.displayName;
+        canonicalType = catalogMatch.group === "stomp" ? "pedal" : (catalogMatch.group as any);
+      }
+    }
+
+    if (canonicalName === "10 Band Graphic Rack" || canonicalName === "Graphic EQ Rack") {
+      canonicalName = "Graphic EQ";
+      canonicalType = "rack";
+    }
 
     return {
       ...gear,
       name: canonicalName,
+      type: canonicalType,
       settings: normaliseSettings(
         canonicalName,
-        gear.type,
+        canonicalType,
         gear.settings ?? {}
       ),
     };
   });
+}
+
+export interface RemovedEqItem {
+  el: SignalChainElement;
+  idx: number;
+}
+
+export function filterDuplicateEqsWithRemoved(
+  chain: SignalChainElement[],
+  rackDecision?: any
+): { cleanedChain: SignalChainElement[]; removedItems: RemovedEqItem[] } {
+  const ampIndex = chain.findIndex(el => el.type === "amp");
+  const cabIndex = chain.findIndex(el => el.type === "cab");
+  const thresholdIndex = ampIndex !== -1 ? ampIndex : (cabIndex !== -1 ? cabIndex : chain.length);
+
+  const isEq = (name: string): boolean => {
+    const ln = name.toLowerCase().trim();
+    return (
+      ln.includes("eq") ||
+      ln.includes("graphic") ||
+      ln.includes("equalizer") ||
+      ln.includes("parametric") ||
+      ln === "eq pg" ||
+      ln === "eq-pg" ||
+      ln.includes("pre eq") ||
+      ln.includes("6 band") ||
+      ln.includes("7 band") ||
+      ln.includes("10 band")
+    );
+  };
+
+  // Classify each raw element
+  const eqItems = chain.map((el, idx) => {
+    const isPostAmp = idx >= thresholdIndex;
+    const itemIsEq = isEq(el.name);
+    
+    let role = "";
+    if (itemIsEq) {
+      role = isPostAmp ? "post_amp_eq" : "pre_amp_eq";
+    }
+
+    return {
+      el,
+      idx,
+      isEq: itemIsEq,
+      isPostAmp,
+      role
+    };
+  });
+
+  const eqs = eqItems.filter(x => x.isEq);
+  if (eqs.length <= 1) {
+    return { cleanedChain: chain, removedItems: [] };
+  }
+
+  // Determine if pre_amp_eq is explicitly required
+  const preAmpEqRequired = rackDecision && (
+    rackDecision.pre_amp_eq_required === true || 
+    rackDecision.pre_amp_eq_required === "true" ||
+    rackDecision.pre_amp_eq_required === "required"
+  );
+
+  const indicesToRemove = new Set<number>();
+  const removedItems: RemovedEqItem[] = [];
+
+  for (const eq of eqs) {
+    const nameLower = eq.el.name.toLowerCase().trim();
+    if (!eq.isPostAmp) {
+      // Pre-amp EQ
+      const isVerifiedPedalEq = ["7 band graphic", "10 band graphic", "6 band eq", "pre eq 3"].includes(nameLower);
+      
+      // If we have a pre-amp EQ that is unverified (like "Graphic EQ" pedal) or we don't have pre_amp_eq_required explicitly true:
+      if (!isVerifiedPedalEq || !preAmpEqRequired) {
+        indicesToRemove.add(eq.idx);
+        removedItems.push({ el: eq.el, idx: eq.idx });
+      }
+    }
+  }
+
+  const cleanedChain = chain.filter((_, idx) => !indicesToRemove.has(idx));
+  return { cleanedChain, removedItems };
 }

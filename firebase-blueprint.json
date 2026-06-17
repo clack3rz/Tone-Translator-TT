@@ -63,6 +63,27 @@
         "updatedBy": { "type": "string" }
       },
       "required": ["gearName", "parameter", "conversion", "exportParameterName"]
+    },
+    "mic_placement_mapping": {
+      "title": "Mic Placement Mapping",
+      "description": "Custom mic placement to XML value mappings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "gear": { "type": "string" },
+        "friendly_setting": { "type": "string" },
+        "target": { "type": "string" },
+        "friendly_value": { "type": "string" },
+        "friendly_name": { "type": "string" },
+        "maps_to": { "type": "object" },
+        "xml_values": { "type": "object" },
+        "status": { "type": "string" },
+        "validation_status": { "type": "string" },
+        "source": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["gear", "friendly_setting", "friendly_value", "maps_to"]
     }
   },
   "firestore": {
@@ -85,6 +106,10 @@
     "/parameter_mappings/{mappingId}": {
       "schema": "parameter_mapping",
       "description": "A mapping for a gear parameter conversion rule"
+    },
+    "/mic_placement_mappings/{mappingId}": {
+      "schema": "mic_placement_mapping",
+      "description": "Custom mic placement mappings to XML attributes"
     }
   }
 }

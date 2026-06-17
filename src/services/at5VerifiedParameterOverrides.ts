@@ -29,6 +29,7 @@ export interface VerifiedGearDef {
   aliases?: string[];
   preferredSection?: string;
   params: VerifiedParamDef[];
+  isVerified?: boolean;
 }
 
 export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
@@ -93,7 +94,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Noise Gate",
     category: "stomp",
     realId: "0455f997-43ca-4c9b-9269-286a19d10d48",
-    aliases: ["gate", "hard gate"],
+    aliases: ["gate", "hard gate", "noise gate", "stomp_noise_gate", "noise_gate"],
     preferredSection: "StompB1",
     params: [
       { friendlyName: "Threshold", xmlName: "Threshold", min: 0.00001, max: 1, unit: "linear", aliases: ["threshold", "gate threshold", "threshold db", "gate", "noise threshold", "gate_threshold", "threshold_db"], transform: "dbThresholdToLinear" },
@@ -122,6 +123,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Compressor",
     category: "stomp",
     realId: "5478981b-b18a-469f-81e7-a3e228cc9d50",
+    aliases: ["compressor", "stomp_compressor", "classic compressor", "stomp_classic_compressor"],
     preferredSection: "StompB1",
     params: [
       { friendlyName: "Comp", xmlName: "Comp", min: 0, max: 100, aliases: ["comp", "compression", "amount", "sustain"] },
@@ -132,7 +134,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Dcomp",
     category: "stomp",
     realId: "26c75920-d4bf-4e5e-900f-f78c70e06c17",
-    aliases: ["dcomp", "dyna comp", "dyna-comp", "dynacomp"],
+    aliases: ["dcomp", "dyna comp", "dyna-comp", "dynacomp", "stomp_dcomp", "d_comp"],
     preferredSection: "StompB1",
     params: [
       { friendlyName: "Sensitivity", xmlName: "Sensitivity", min: 0, max: 10, aliases: ["sensitivity", "comp", "sustain"] },
@@ -143,6 +145,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Delay",
     category: "stomp",
     realId: "e11b1dc5-1f7d-42ad-af30-0539b3646b3c",
+    aliases: ["delay", "stomp_delay", "analog delay", "analog_delay"],
     preferredSection: "StompB1",
     params: [
       { friendlyName: "Delay", xmlName: "Delay", min: 62, max: 2000, unit: "ms", aliases: ["delay", "time", "delay_time"] },
@@ -155,6 +158,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Parametric EQ",
     category: "rack",
     realId: "7511f3f3-cac1-476f-a1da-089556f62f58",
+    aliases: ["parametric eq", "rack_parametric_eq", "stomp_parametric_eq", "parametric_eq", "parametric equalizer"],
     preferredSection: "RackA",
     params: [
       { friendlyName: "Low Cut", xmlName: "LowCut", min: 20, max: 1000, unit: "Hz", aliases: ["low_cut", "lowcut", "hp_freq", "high_pass", "highpass"], transform: "khzToHzIfNeeded" },
@@ -199,7 +203,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Graphic EQ",
     category: "rack",
     realId: "b66b51c2-d9a3-4909-b7e0-cd1e51636e97",
-    aliases: ["10 Band Graphic", "Graphic Equalizer", "graphic_eq"],
+    aliases: ["Graphic EQ Rack", "Graphic EQ", "Graphic Equalizer", "graphic_eq", "rack_graphic_eq", "graphic eq"],
     preferredSection: "RackA",
     params: [
       { friendlyName: "Band 20", xmlName: "Band20", min: -15, max: 15, defaultValue: 0, aliases: ["20Hz", "20 hz"] },
@@ -238,6 +242,60 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     ],
   },
   {
+    name: "10 Band Graphic",
+    category: "stomp",
+    realId: "babadeaf-9c28-4641-8fa9-d7366a3238a2",
+    aliases: [
+      "10 Band Graphic",
+      "10 Band Graphic Pedal",
+      "10 Band Graphic Stomp",
+      "MXR 10 Band Equalizer",
+      "MXR 10 Band",
+      "MXR 10-Band",
+      "GeqM",
+      "stomp_10_band_graphic",
+      "Graphic EQ"
+    ],
+    preferredSection: "Slot",
+    isVerified: true,
+    params: [
+      { friendlyName: "Band 100", xmlName: "Band100", min: -15, max: 15, defaultValue: 0, aliases: ["100Hz", "100 hz"] },
+      { friendlyName: "Band 200", xmlName: "Band200", min: -15, max: 15, defaultValue: 0, aliases: ["200Hz", "200 hz"] },
+      { friendlyName: "Band 400", xmlName: "Band400", min: -15, max: 15, defaultValue: 0, aliases: ["400Hz", "400 hz"] },
+      { friendlyName: "Band 800", xmlName: "Band800", min: -15, max: 15, defaultValue: 0, aliases: ["800Hz", "800 hz"] },
+      { friendlyName: "Band 1600", xmlName: "Band1600", min: -15, max: 15, defaultValue: 0, aliases: ["1.6kHz", "1.6 khz", "1600Hz", "1600 hz"] },
+      { friendlyName: "Band 3200", xmlName: "Band3200", min: -15, max: 15, defaultValue: 0, aliases: ["3.2kHz", "3.2 khz", "3200Hz", "3200 hz", "3150Hz"] },
+      { friendlyName: "Band 6400", xmlName: "Band6400", min: -15, max: 15, defaultValue: 0, aliases: ["6.4kHz", "6.4 khz", "6400Hz", "6400 hz", "6300Hz"] },
+      { friendlyName: "Level", xmlName: "Level", min: -15, max: 15, defaultValue: 0 }
+    ]
+  },
+  {
+    name: "7 Band Graphic",
+    category: "stomp",
+    realId: "8d7ff76e-9273-46b6-95d5-3d7bd667fff2",
+    aliases: [
+      "7 Band Graphic",
+      "7 Band",
+      "7 Band EQ",
+      "7 Band Graphic Pedal",
+      "Geq",
+      "stomp_7_band_graphic",
+      "Graphic EQ"
+    ],
+    preferredSection: "Slot",
+    isVerified: true,
+    params: [
+      { friendlyName: "Band 100", xmlName: "Band100", min: -15, max: 15, defaultValue: 0, aliases: ["100Hz", "100 hz"] },
+      { friendlyName: "Band 200", xmlName: "Band200", min: -15, max: 15, defaultValue: 0, aliases: ["200Hz", "200 hz"] },
+      { friendlyName: "Band 400", xmlName: "Band400", min: -15, max: 15, defaultValue: 0, aliases: ["400Hz", "400 hz"] },
+      { friendlyName: "Band 800", xmlName: "Band800", min: -15, max: 15, defaultValue: 0, aliases: ["800Hz", "800 hz"] },
+      { friendlyName: "Band 1600", xmlName: "Band1600", min: -15, max: 15, defaultValue: 0, aliases: ["1.6kHz", "1.6 khz", "1600Hz", "1600 hz"] },
+      { friendlyName: "Band 3200", xmlName: "Band3200", min: -15, max: 15, defaultValue: 0, aliases: ["3.2kHz", "3.2 khz", "3200Hz", "3200 hz", "3150Hz"] },
+      { friendlyName: "Band 6400", xmlName: "Band6400", min: -15, max: 15, defaultValue: 0, aliases: ["6.4kHz", "6.4 khz", "6400Hz", "6400 hz", "6300Hz"] },
+      { friendlyName: "Level", xmlName: "Level", min: -15, max: 15, defaultValue: 0 }
+    ]
+  },
+  {
     name: "Black 76",
     category: "rack",
     realId: "aecfbde7-4f23-44ca-9f58-b0a110f0ea7a",
@@ -261,6 +319,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Fender Compressor",
     category: "rack",
     realId: "7307c816-856f-438b-a381-45edf43bee0b",
+    aliases: ["fender compressor", "rack_fender_compressor", "fender comp"],
     preferredSection: "RackA",
     params: [
       { friendlyName: "Switch", xmlName: "Switch", min: 0, max: 3, aliases: ["mode", "intensity"] },
@@ -272,6 +331,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "Tube Compressor",
     category: "rack",
     realId: "d0211742-18e6-4fdb-9efa-3d72e4ae515b",
+    aliases: ["tube compressor", "rack_tube_compressor", "tube comp"],
     preferredSection: "RackA",
     params: [
       { friendlyName: "Drive", xmlName: "Drive", min: 0.177828, max: 5.62341 },
@@ -285,7 +345,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     name: "EQ PG",
     category: "rack",
     realId: "ec1212e3-d949-4d91-a1dd-4bb6803f8432",
-    aliases: ["EQ PG", "EQ-PG", "PG Graphic EQ", "PG Graphic EQ Rack", "eq_pg"],
+    aliases: ["EQ PG", "EQ-PG", "PG Graphic EQ", "PG Graphic EQ Rack", "eq_pg", "API 560", "API 560 EQ", "EQPG"],
     preferredSection: "RackA",
     params: [
       { friendlyName: "31Hz", xmlName: "Gain31Hz", min: -12.0, max: 12.0, defaultValue: 0, aliases: ["31hz", "31 hz"] },

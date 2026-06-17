@@ -9,7 +9,7 @@ service cloud.firestore {
 
     // --- Helpers ---
     function isSignedIn() { return request.auth != null; }
-    function isVerified() { return isSignedIn(); }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
     function isAdmin() { return isVerified() && request.auth.token.email == 'cclackerz@gmail.com'; }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function incoming() { return request.resource.data; }
@@ -41,6 +41,17 @@ service cloud.firestore {
         && data.parameter is string && data.parameter.size() <= 128
         && data.conversion is string && data.conversion.size() <= 64
         && data.exportParameterName is string && data.exportParameterName.size() <= 128
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
+    // Validation Blueprint for Mic Placement Mapping
+    function isValidMicPlacementMapping(data) {
+      return data.keys().hasAll(['gear', 'friendly_setting', 'friendly_value', 'maps_to', 'updatedAt', 'updatedBy'])
+        && data.gear is string && data.gear.size() <= 256
+        && data.friendly_setting is string && data.friendly_setting.size() <= 128
+        && data.friendly_value is string && data.friendly_value.size() <= 128
+        && data.maps_to is map
         && data.updatedAt == request.time
         && data.updatedBy == request.auth.uid;
     }
@@ -109,6 +120,22 @@ service cloud.firestore {
           incoming().diff(existing()).affectedKeys().hasOnly([
             'gearName', 'parameter', 'visualMin', 'visualMax', 'visualUnit',
             'exportMin', 'exportMax', 'exportParameterName', 'conversion', 'formula',
+            'updatedAt', 'updatedBy', 'id'
+          ])
+          && incoming().id == existing().id
+        )
+      );
+    }
+
+    match /mic_placement_mappings/{mappingId} {
+      allow read: if true;
+      allow delete: if isVerified();
+      allow create, update: if isVerified() && isValidId(mappingId) && isValidMicPlacementMapping(incoming()) && (
+        isAdmin() ||
+        request.method == 'create' || (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'gear', 'friendly_setting', 'friendly_value', 'maps_to', 'target', 
+            'friendly_name', 'xml_values', 'status', 'validation_status', 'source', 
             'updatedAt', 'updatedBy', 'id'
           ])
           && incoming().id == existing().id

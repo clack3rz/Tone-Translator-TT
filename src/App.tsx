@@ -3,9 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'motion/react';
 import AT5SignalChainView from "./components/AT5SignalChainView";
 import { ToneProfileView } from "./components/ToneProfileView";
-import { AT5GearImportPanel } from './components/AT5GearImportPanel';
-import { CatalogueManager } from './components/CatalogueManager';
-import { ParameterMappingManager } from './components/ParameterMappingManager';
+import { GearManagementPanel } from './components/GearManagementPanel';
 import { 
   Music, 
   Upload, 
@@ -51,6 +49,7 @@ import { auth, signInWithGoogle } from './services/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { refreshCatalog } from './services/at5Catalog';
 import { refreshProtocols } from './services/at5VerifiedProtocols';
+import { refreshDbParameterMappings } from './services/at5ParameterManifest';
 
 const STATUS_CONFIG: Record<string, { solid: string; clearBg: string; clearBorder: string; pulse: boolean }> = {
   pass: {
@@ -125,7 +124,7 @@ export default function App() {
 
   const handleRefreshChain = useCallback(async () => {
     setIsDbRefreshing(true);
-    await Promise.all([refreshCatalog(), refreshProtocols()]);
+    await Promise.all([refreshCatalog(), refreshProtocols(), refreshDbParameterMappings()]);
     setDbVersion(prev => prev + 1);
     setIsDbRefreshing(false);
   }, []);
@@ -138,7 +137,7 @@ export default function App() {
     // Initial data refresh
     const initDb = async () => {
       setIsDbRefreshing(true);
-      await Promise.all([refreshCatalog(), refreshProtocols()]);
+      await Promise.all([refreshCatalog(), refreshProtocols(), refreshDbParameterMappings()]);
       setIsDbRefreshing(false);
     };
     initDb();
@@ -694,81 +693,15 @@ export default function App() {
         <div className="p-8">
           {isGearToolOpen ? (
             <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-6">
-                    <button 
-                      onClick={() => setGearToolTab('discovery')}
-                      className={`text-2xl font-display font-bold tracking-tight transition-all ${gearToolTab === 'discovery' ? 'text-white' : 'text-gray-600 hover:text-gray-400'}`}
-                    >
-                      Gear Discovery
-                    </button>
-                    <div className="w-px h-6 bg-white/10" />
-                    <button 
-                      onClick={() => setGearToolTab('catalogue')}
-                      className={`text-2xl font-display font-bold tracking-tight transition-all ${gearToolTab === 'catalogue' ? 'text-white' : 'text-gray-600 hover:text-gray-400'}`}
-                    >
-                      Catalogue
-                    </button>
-                    <div className="w-px h-6 bg-white/10" />
-                    <button 
-                      onClick={() => setGearToolTab('mappings')}
-                      className={`text-2xl font-display font-bold tracking-tight transition-all ${gearToolTab === 'mappings' ? 'text-white' : 'text-gray-600 hover:text-gray-400'}`}
-                    >
-                      Mappings
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest font-mono">
-                    {gearToolTab === 'discovery' 
-                      ? 'Sync unknown gear directly to the cloud' 
-                      : gearToolTab === 'catalogue'
-                        ? 'Search and edit existing verified gear records'
-                        : 'Configure parameter mappings & visual-to-xml rules'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={handleRefreshChain}
-                    disabled={isDbRefreshing}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-xs font-bold uppercase tracking-widest disabled:opacity-50"
-                  >
-                    {isDbRefreshing ? <Loader2 className="w-4 h-4 animate-spin text-blue-400" /> : <RefreshCw className="w-4 h-4 text-blue-400" />}
-                    Refresh Chain & DB
-                  </button>
-                  <button 
-                    onClick={() => setIsGearToolOpen(false)}
-                    className="p-2 hover:bg-white/10 rounded-full text-gray-500 hover:text-white transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-              
-              {gearToolTab === 'discovery' ? (
-                <>
-                  <AT5GearImportPanel onRefreshChain={handleRefreshChain} />
-                  
-                  <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-xl flex gap-4">
-                    <Info className="w-5 h-5 text-blue-400 shrink-0" />
-                    <div className="text-xs text-gray-400 space-y-2">
-                       <p className="font-bold text-blue-300">How to update the System:</p>
-                       <ol className="list-decimal list-inside space-y-1">
-                        <li>Upload an <span className="text-white">.at5p</span> preset containing the gear you want to add.</li>
-                        <li>The system will identify <span className="text-blue-400">New Gear</span> or <span className="text-cyan-400">New Protocols</span>.</li>
-                        <li>Click <span className="text-white font-bold">COMMIT</span> on any row to save it to the Cloud Database.</li>
-                        <li>Once committed, the "Brain" will automatically recognize this gear in future tone generations.</li>
-                      </ol>
-                    </div>
-                  </div>
-                </>
-              ) : gearToolTab === 'catalogue' ? (
-                <CatalogueManager 
-                  onRefresh={handleRefreshChain} 
-                  initialSearch={catalogueSearchOverride} 
-                />
-              ) : (
-                <ParameterMappingManager />
-              )}
+              <GearManagementPanel 
+                onRefreshChain={handleRefreshChain} 
+                onClose={() => {
+                  setIsGearToolOpen(false);
+                  setCatalogueSearchOverride(undefined);
+                }} 
+                initialSelectedGuid={catalogueSearchOverride}
+                exportDebugData={exportDebugData}
+              />
             </div>
           ) : toneResult ? (
             <div className="max-w-6xl mx-auto space-y-12">

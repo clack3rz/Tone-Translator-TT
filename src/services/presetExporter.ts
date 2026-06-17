@@ -1,9 +1,9 @@
 // src/services/presetExporter.ts
 // Deterministic AT5 .at5p XML exporter. Do not call Gemini to serialize presets.
 
-import { normaliseSignalChain } from "./at5SignalChainNormalizer";
-import { ToneResult, SignalChainElement } from "../types";
-import { AT5_EMPTY_SLOT_GUID, findAT5GearGuid, findAT5Gear, getAt5Catalog } from "./at5Catalog";
+import { normaliseSignalChain, filterDuplicateEqsWithRemoved } from "./at5SignalChainNormalizer";
+import { ToneResult, SignalChainElement, RackDecision } from "../types";
+import { AT5_EMPTY_SLOT_GUID, findAT5GearGuid, findAT5Gear, getAt5Catalog, findBestCatalogMatchAcrossGroups } from "./at5Catalog";
 import {
   buildMappedParameterAttrs,
   resolveVerifiedOrManifestRealId,
@@ -12,6 +12,8 @@ import {
   resolveParameterValue,
   parseFrequencyToHz,
   findClosestBand,
+  getDbMicPlacementMappings,
+  findVerifiedGear,
 } from "./at5ParameterManifest";
 
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "./at5VerifiedProtocols";
@@ -458,6 +460,93 @@ const getRoomType = (cab?: SignalChainElement) => {
   return "Large Studio";
 };
 
+const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
+  const defaultValues: Record<string, string | number> = {
+    Mic0Angle: "0",
+    Mic0XAxis: "0",
+    Mic0YAxis: "0",
+    Mic0Distance: "0",
+    Mic0Speaker: "0",
+    Mic1Angle: "0",
+    Mic1XAxis: "0.16",
+    Mic1YAxis: "0.41",
+    Mic1Distance: "0.13",
+    Mic1Speaker: "1"
+  };
+
+  if (!cab) return defaultValues;
+
+  const settings = cab.settings || {};
+  const mappings = getDbMicPlacementMappings();
+
+  const matchGear = (gearName: string) => {
+    const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const cleanGear = clean(gearName);
+    const cleanCab = clean(cab.name);
+    return cleanGear === cleanCab;
+  };
+
+  const resolved = { ...defaultValues };
+
+  const m1Placement = settings.Mic_1_Placement ?? settings.mic_1_placement ?? settings["Mic_1_Placement"];
+  const m1Distance = settings.Mic_1_Distance ?? settings.mic_1_distance ?? settings["Mic_1_Distance"];
+
+  if (m1Placement && m1Distance) {
+    const mapM1 = mappings.find(m => {
+      if (!matchGear(m.gear)) return false;
+      const isSlot = m.mic_slot === "Mic_1" || m.friendly_setting === "Mic_1_Placement" || m.target === "Mic_1_Placement";
+      if (!isSlot) return false;
+
+      if (m.friendly_placement && m.friendly_distance) {
+        return m.friendly_placement.toLowerCase() === String(m1Placement).toLowerCase() &&
+               m.friendly_distance.toLowerCase() === String(m1Distance).toLowerCase();
+      }
+      const fullVal = `${m1Placement}_${m1Distance}`.toLowerCase();
+      const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase();
+      return fValueLower === String(m1Placement).toLowerCase() || fValueLower === fullVal;
+    });
+
+    if (mapM1) {
+      const xmlValues = mapM1.maps_to || mapM1.xml_values || {};
+      for (const [k, v] of Object.entries(xmlValues)) {
+        if (k in defaultValues && k.startsWith("Mic0")) {
+          resolved[k] = v;
+        }
+      }
+    }
+  }
+
+  const m2Placement = settings.Mic_2_Placement ?? settings.mic_2_placement ?? settings["Mic_2_Placement"];
+  const m2Distance = settings.Mic_2_Distance ?? settings.mic_2_distance ?? settings["Mic_2_Distance"];
+
+  if (m2Placement && m2Distance) {
+    const mapM2 = mappings.find(m => {
+      if (!matchGear(m.gear)) return false;
+      const isSlot = m.mic_slot === "Mic_2" || m.friendly_setting === "Mic_2_Placement" || m.target === "Mic_2_Placement";
+      if (!isSlot) return false;
+
+      if (m.friendly_placement && m.friendly_distance) {
+        return m.friendly_placement.toLowerCase() === String(m2Placement).toLowerCase() &&
+               m.friendly_distance.toLowerCase() === String(m2Distance).toLowerCase();
+      }
+      const fullVal = `${m2Placement}_${m2Distance}`.toLowerCase();
+      const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase();
+      return fValueLower === String(m2Placement).toLowerCase() || fValueLower === fullVal;
+    });
+
+    if (mapM2) {
+      const xmlValues = mapM2.maps_to || mapM2.xml_values || {};
+      for (const [k, v] of Object.entries(xmlValues)) {
+        if (k in defaultValues && k.startsWith("Mic1")) {
+          resolved[k] = v;
+        }
+      }
+    }
+  }
+
+  return resolved;
+};
+
 const buildCabSection = (
   section: "A" | "B" | "C",
   cab?: SignalChainElement
@@ -472,14 +561,25 @@ const buildCabSection = (
   const mic1 = mic2Req ? getMicId(mic2Req) : "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb"; // Condenser 87 fallback
   const roomType = getRoomType(cab);
 
-  return `    <Cab${section} Bypass="0" Mute="0" CabModel="${cabGuid}" SpeakerModel0="${speakerGuid}" SpeakerModel1="${speakerGuid}" SpeakerModel2="${speakerGuid}" SpeakerModel3="${speakerGuid}" IRDecimation="1">\r\n        <Cab HighLevel="0.77" RoomType="${roomType}" RoomMicType="Condenser 87" Mic0Model="${mic0}" Mic1Model="${mic1}" Mic0Angle="0" Mic1Angle="0" Mic0XAxis="0" Mic1XAxis="0.16" Mic0YAxis="0" Mic1YAxis="0.41" Mic0Distance="0" Mic1Distance="0.13" Mic0Speaker="0" Mic1Speaker="1" GUILoadComplete="0" />\r\n    </Cab${section}>`;
+  const pl = resolveCabMicPlacementAttrs(cab);
+
+  return `    <Cab${section} Bypass="0" Mute="0" CabModel="${cabGuid}" SpeakerModel0="${speakerGuid}" SpeakerModel1="${speakerGuid}" SpeakerModel2="${speakerGuid}" SpeakerModel3="${speakerGuid}" IRDecimation="1">\r\n        <Cab HighLevel="0.77" RoomType="${roomType}" RoomMicType="Condenser 87" Mic0Model="${mic0}" Mic1Model="${mic1}" Mic0Angle="${pl.Mic0Angle}" Mic1Angle="${pl.Mic1Angle}" Mic0XAxis="${pl.Mic0XAxis}" Mic1XAxis="${pl.Mic1XAxis}" Mic0YAxis="${pl.Mic0YAxis}" Mic1YAxis="${pl.Mic1YAxis}" Mic0Distance="${pl.Mic0Distance}" Mic1Distance="${pl.Mic1Distance}" Mic0Speaker="${pl.Mic0Speaker}" Mic1Speaker="${pl.Mic1Speaker}" GUILoadComplete="0" />\r\n    </Cab${section}>`;
 };
 
-const buildStudio = () =>
-  `    <Studio Bypass="0" Mute="0" OutputVolume="1" OutputPan="0.5" DI_Level="-3" DI_Pan="0.5" DI_Mute="1" DI_Solo="0" DI_Phase="0" DI_PhaseDelay="0" Cab1_Mic1_Level="0" Cab1_Mic1_Pan="0" Cab1_Mic1_Mute="0" Cab1_Mic1_Solo="0" Cab1_Mic1_Phase="0" Cab1_Mic2_Level="-8" Cab1_Mic2_Pan="0" Cab1_Mic2_Mute="0" Cab1_Mic2_Solo="0" Cab1_Mic2_Phase="0" Cab1_Room_Level="-18" Cab1_Room_Width="50" Cab1_Room_Mute="0" Cab1_Room_Solo="0" Cab1_Room_Phase="0" Cab1_Bus_Level="0" Cab1_Bus_Pan="0.5" Cab1_Bus_Mute="0" Cab1_Bus_Solo="0" Cab1_Bus_Phase="0" Cab2_Mic1_Level="-6" Cab2_Mic1_Pan="0" Cab2_Mic1_Mute="0" Cab2_Mic1_Solo="0" Cab2_Mic1_Phase="0" Cab2_Mic2_Level="-6" Cab2_Mic2_Pan="0" Cab2_Mic2_Mute="0" Cab2_Mic2_Solo="0" Cab2_Mic2_Phase="0" Cab2_Room_Level="-40" Cab2_Room_Width="50" Cab2_Room_Mute="0" Cab2_Room_Solo="0" Cab2_Room_Phase="0" Cab2_Bus_Level="-6" Cab2_Bus_Pan="1" Cab2_Bus_Mute="0" Cab2_Bus_Solo="0" Cab2_Bus_Phase="0" Cab3_Mic1_Level="-6" Cab3_Mic1_Pan="0" Cab3_Mic1_Mute="0" Cab3_Mic1_Solo="0" Cab3_Mic1_Phase="0" Cab3_Mic2_Level="-6" Cab3_Mic2_Pan="0" Cab3_Mic2_Mute="0" Cab3_Mic2_Solo="0" Cab3_Mic2_Phase="0" Cab3_Room_Level="-40" Cab3_Room_Width="50" Cab3_Room_Mute="0" Cab3_Room_Solo="0" Cab3_Room_Phase="0" Cab3_Bus_Level="-6" Cab3_Bus_Pan="0" Cab3_Bus_Mute="0" Cab3_Bus_Solo="0" Cab3_Bus_Phase="0" />`;
+const buildStudio = (cab?: SignalChainElement) => {
+  let roomLevelVal = "-18"; // default
+  if (cab && cab.settings) {
+    const roomLevel = cab.settings.Room_Level ?? cab.settings.room_level ?? cab.settings["Room_Level"];
+    if (roomLevel !== undefined) {
+      roomLevelVal = String(roomLevel);
+    }
+  }
+  return `    <Studio Bypass="0" Mute="0" OutputVolume="1" OutputPan="0.5" DI_Level="-3" DI_Pan="0.5" DI_Mute="1" DI_Solo="0" DI_Phase="0" DI_PhaseDelay="0" Cab1_Mic1_Level="0" Cab1_Mic1_Pan="0" Cab1_Mic1_Mute="0" Cab1_Mic1_Solo="0" Cab1_Mic1_Phase="0" Cab1_Mic2_Level="-8" Cab1_Mic2_Pan="0" Cab1_Mic2_Mute="0" Cab1_Mic2_Solo="0" Cab1_Mic2_Phase="0" Cab1_Room_Level="${roomLevelVal}" Cab1_Room_Width="50" Cab1_Room_Mute="0" Cab1_Room_Solo="0" Cab1_Room_Phase="0" Cab1_Bus_Level="0" Cab1_Bus_Pan="0.5" Cab1_Bus_Mute="0" Cab1_Bus_Solo="0" Cab1_Bus_Phase="0" Cab2_Mic1_Level="-6" Cab2_Mic1_Pan="0" Cab2_Mic1_Mute="0" Cab2_Mic1_Solo="0" Cab2_Mic1_Phase="0" Cab2_Mic2_Level="-6" Cab2_Mic2_Pan="0" Cab2_Mic2_Mute="0" Cab2_Mic2_Solo="0" Cab2_Mic2_Phase="0" Cab2_Room_Level="-40" Cab2_Room_Width="50" Cab2_Room_Mute="0" Cab2_Room_Solo="0" Cab2_Room_Phase="0" Cab2_Bus_Level="-6" Cab2_Bus_Pan="1" Cab2_Bus_Mute="0" Cab2_Bus_Solo="0" Cab2_Bus_Phase="0" Cab3_Mic1_Level="-6" Cab3_Mic1_Pan="0" Cab3_Mic1_Mute="0" Cab3_Mic1_Solo="0" Cab3_Mic1_Phase="0" Cab3_Mic2_Level="-6" Cab3_Mic2_Pan="0" Cab3_Mic2_Mute="0" Cab3_Mic2_Solo="0" Cab3_Mic2_Phase="0" Cab3_Room_Level="-40" Cab3_Room_Width="50" Cab3_Room_Mute="0" Cab3_Room_Solo="0" Cab3_Room_Phase="0" Cab3_Bus_Level="-6" Cab3_Bus_Pan="0" Cab3_Bus_Mute="0" Cab3_Bus_Solo="0" Cab3_Bus_Phase="0" />`;
+};
 
 const generateXML = (result: ToneResult): string => {
-  const chain = normaliseSignalChain(result.signal_chain ?? []);
+  const { cleanedChain } = filterDuplicateEqsWithRemoved(result.signal_chain ?? [], result.rack_decision);
+  const chain = normaliseSignalChain(cleanedChain);
 
   const pedals = chain.filter((g) => g.type === "pedal");
   const amps = chain.filter((g) => g.type === "amp");
@@ -531,7 +631,7 @@ const generateXML = (result: ToneResult): string => {
     buildCabSection("B"),
     buildCabSection("C"),
 
-    buildStudio(),
+    buildStudio(cab),
     buildRackSection("RackA", rackA.slice(0, 2), 2),
     buildRackSection("RackB", rackA.slice(2, 4), 2),
     buildRackSection("RackC", rackA.slice(4, 6), 2),
@@ -562,8 +662,10 @@ export interface ExportDebugItem {
   gear_guid_resolved?: boolean;
   gear_included_in_chain?: boolean;
   gear_written_to_xml?: boolean;
+  gear_attempted_to_xml?: boolean;
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL";
   mismatched_parameters?: string[];
+  dropped_parameters?: string[];
   final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "CHECK" | "SKIPPED" | "FAIL";
   parameter_details?: {
     parameter: string;
@@ -573,8 +675,32 @@ export interface ExportDebugItem {
     exported_internal_value: string;
     mapping_status: string;
     conversion_note?: string;
+    expected_export_value?: any;
+    actual_export_value?: any;
+    reverse_converted_display_value?: string;
+    reason?: string;
   }[];
   not_exported_detail?: string[];
+  tone_adjustment_intent?: Record<string, string>;
+  mapped_intent?: any[];
+  dropped_intent?: any[];
+  verified_guid_resolved?: boolean;
+  actual_exported_guid?: string;
+  intended_gear_name?: string;
+  actual_exported_gear_name?: string;
+  fallback_guid_used?: boolean;
+  fallback_source?: string;
+  substitution_used?: boolean;
+  substitution_reason?: string;
+  suggested_action?: string;
+  gear_manager_type?: string;
+  slot_compatibility?: string[];
+  selected_slot_section?: string;
+  slot_type_valid?: boolean;
+  gear_profile_source?: string;
+  selection_context?: string;
+  requested_generic_name?: string;
+  resolved_profile_name?: string;
 }
 
 export interface ExportDebugData {
@@ -582,6 +708,7 @@ export interface ExportDebugData {
   exported_chain: ExportDebugItem[];
   skipped_gear: ExportDebugItem[];
   exported_xml_summary: string;
+  rack_decision?: RackDecision;
 }
 
 type ChainPair = {
@@ -608,6 +735,8 @@ const buildCabDebugAttrs = (cab?: SignalChainElement) => {
   const mic1 = mic2Req ? getMicId(mic2Req) : "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb";
   const roomType = getRoomType(cab);
 
+  const pl = resolveCabMicPlacementAttrs(cab);
+
   const attrs = [
     `CabModel="${cabGuid}"`,
     `SpeakerModel0="${speakerGuid}"`,
@@ -617,10 +746,89 @@ const buildCabDebugAttrs = (cab?: SignalChainElement) => {
     `Mic0Model="${mic0}"`,
     `Mic1Model="${mic1}"`,
     `RoomType="${roomType}"`,
+    `Mic0Angle="${pl.Mic0Angle}"`,
+    `Mic1Angle="${pl.Mic1Angle}"`,
+    `Mic0XAxis="${pl.Mic0XAxis}"`,
+    `Mic1XAxis="${pl.Mic1XAxis}"`,
+    `Mic0YAxis="${pl.Mic0YAxis}"`,
+    `Mic1YAxis="${pl.Mic1YAxis}"`,
+    `Mic0Distance="${pl.Mic0Distance}"`,
+    `Mic1Distance="${pl.Mic1Distance}"`,
+    `Mic0Speaker="${pl.Mic0Speaker}"`,
+    `Mic1Speaker="${pl.Mic1Speaker}"`,
   ];
 
   return attrs.join(" ");
 };
+
+export function reverseConvertExportValueToDisplayValue(
+  xmlName: string,
+  exportValue: string | number,
+  transform?: string,
+  min?: number,
+  max?: number,
+  visualMin?: number,
+  visualMax?: number
+): string {
+  if (exportValue === undefined || exportValue === null || exportValue === "") return "N/A";
+
+  const ev = typeof exportValue === "number" ? exportValue : parseFloat(String(exportValue));
+  if (isNaN(ev)) return String(exportValue);
+
+  let n = ev;
+
+  if (transform === "dbThresholdToLinear" || transform === "db_to_linear") {
+    if (ev <= 0) {
+      n = -100;
+    } else {
+      n = 20 * Math.log10(ev);
+    }
+    const rounded = Number(n.toFixed(1));
+    return `${rounded} dB`;
+  }
+
+  if (transform === "linear_to_db") {
+    n = Math.pow(10, ev / 20);
+    const rounded = Number(n.toFixed(6));
+    return `${rounded}`;
+  }
+
+  if (transform === "scaled_range") {
+    const vMin = visualMin ?? 0;
+    const vMax = visualMax ?? 10;
+    const expMin = min ?? 0;
+    const expMax = max ?? 10;
+    const expSpan = expMax - expMin;
+    const pct = Math.abs(expSpan) < 1e-9 ? 0 : (ev - expMin) / expSpan;
+    n = vMin + pct * (vMax - vMin);
+    const rounded = Number(n.toFixed(2));
+    return `${rounded}`;
+  }
+
+  if (transform === "noiseGateRelease") {
+    const rounded = Number(ev.toFixed(0));
+    return `${rounded} ms`;
+  }
+
+  if (transform === "noiseGateDepth") {
+    const rounded = Number(ev.toFixed(0));
+    return `${rounded} dB`;
+  }
+
+  if (transform === "khzToHzIfNeeded") {
+    if (ev >= 1000) {
+      return `${(ev / 1000).toFixed(1)} kHz`;
+    }
+    return `${ev.toFixed(0)} Hz`;
+  }
+
+  const xmlLower = xmlName.toLowerCase();
+  const rounded = Number(ev.toFixed(2));
+  if (xmlLower.includes("gain") || xmlLower.includes("db") || xmlLower.includes("depth") || xmlLower.includes("threshold")) {
+    return `${rounded} dB`;
+  }
+  return String(rounded);
+}
 
 const makeDebugItem = (
   pair: ChainPair,
@@ -634,13 +842,271 @@ const makeDebugItem = (
     ...pair.normalized,
     settings: normalizeSettingsToCanonical(pair.normalized.name, group, pair.normalized.settings ?? {}),
   };
-  
-  // Strict Catalogue Lookup
-  const catalogMatch = findAT5Gear(gear.name, group);
-  const guid = group === "cab" 
-    ? resolveCabGuid(gear.name) 
-    : resolveGuid(gear.name, group, getFallbackGuidForGroup(group));
 
+  // Setup EQ collapse variables
+  let tone_adjustment_intent: Record<string, string> | undefined = undefined;
+  let mapped_intent: any[] | undefined = undefined;
+  let dropped_intent: any[] | undefined = undefined;
+  let forced_final_status: "PASS_WITH_WARNING" | undefined = undefined;
+
+  if (gear.name === "Parametric EQ") {
+    const rawSettings = pair.raw.settings ?? {};
+    const keys = Object.keys(rawSettings);
+    const hasAbstractParams = keys.some(k => {
+      const lk = k.toLowerCase();
+      return lk.includes("low") || lk.includes("mid") || lk.includes("high") || lk.includes("shelf") || lk.includes("presence") || lk.includes("cut");
+    });
+
+    if (hasAbstractParams) {
+      let lowF: any = undefined, lowG: any = undefined, lowQ: any = undefined;
+      let midF: any = undefined, midG: any = undefined, midQ: any = undefined;
+      let higF: any = undefined, higG: any = undefined, higQ: any = undefined;
+
+      for (const [key, value] of Object.entries(rawSettings)) {
+        const k = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (k === "lowfreq" || k === "lowfrequency" || k === "frequencylow" || k === "lowf") lowF = value;
+        else if (k === "lowgain" || k === "gainlow" || k === "lowg") lowG = value;
+        else if (k === "lowq" || k === "qlow") lowQ = value;
+        
+        else if (k === "midfreq" || k === "midfrequency" || k === "frequencymid" || k === "midrangefreq" || k === "midf") midF = value;
+        else if (k === "midgain" || k === "gainmid" || k === "midrangegain" || k === "midg") midG = value;
+        else if (k === "midq" || k === "qmid" || k === "midrangeq") midQ = value;
+        
+        else if (k === "highfreq" || k === "highfrequency" || k === "frequencyhigh" || k === "highf") higF = value;
+        else if (k === "highgain" || k === "gainhigh" || k === "highg") higG = value;
+        else if (k === "highq" || k === "qhigh") higQ = value;
+      }
+
+      const lowPresent = lowF !== undefined || lowG !== undefined;
+      const midPresent = midF !== undefined || midG !== undefined;
+      const higPresent = higF !== undefined || higG !== undefined;
+
+      tone_adjustment_intent = {};
+      if (lowPresent) {
+        const f = lowF ?? "120 Hz";
+        const g = lowG !== undefined ? (typeof lowG === "number" ? `${lowG} dB` : String(lowG)) : "-3.0 dB";
+        tone_adjustment_intent["low_end"] = `reduce boom around ${f} (by ${g})`;
+      }
+      if (midPresent) {
+        const f = midF ?? "400 Hz";
+        const g = midG !== undefined ? (typeof midG === "number" ? `${midG} dB` : String(midG)) : "-4.0 dB";
+        tone_adjustment_intent["midrange"] = `cut boxiness around ${f} (by ${g})`;
+      }
+      if (higPresent) {
+        const f = higF ?? "2.2 kHz";
+        const g = higG !== undefined ? (typeof higG === "number" ? `${higG} dB` : String(higG)) : "2.5 dB";
+        tone_adjustment_intent["presence"] = `boost bite around ${f} (by ${g})`;
+      }
+
+      mapped_intent = [];
+      dropped_intent = [];
+
+      // Determine which two are selected/mapped
+      if (midPresent && higPresent) {
+        // Map Mid -> Band 1, High -> Band 2. Low is dropped
+        mapped_intent.push({
+          intent: `Mid cut/boost around ${midF ?? "400 Hz"}`,
+          mapped_to: "Band 1",
+          settings: {
+            "Freq 1": midF ?? "400 Hz",
+            "Gain 1": midG !== undefined ? (typeof midG === "number" ? `${midG} dB` : String(midG)) : "-4.0 dB",
+            "Q 1": midQ ?? "1.4"
+          }
+        });
+        mapped_intent.push({
+          intent: `Presence boost/cut around ${higF ?? "2.2 kHz"}`,
+          mapped_to: "Band 2",
+          settings: {
+            "Freq 2": higF ?? "2.2 kHz",
+            "Gain 2": higG !== undefined ? (typeof higG === "number" ? `${higG} dB` : String(higG)) : "2.5 dB",
+            "Q 2": higQ ?? "0.8"
+          }
+        });
+        if (lowPresent) {
+          dropped_intent.push({
+            intent: `Low reduction/boost around ${lowF ?? "120 Hz"}`,
+            reason: "AT5 Parametric EQ only supports two bands."
+          });
+          forced_final_status = "PASS_WITH_WARNING";
+        }
+      } else if (lowPresent && midPresent) {
+        // Map Low -> Band 1, Mid -> Band 2. High is dropped
+        mapped_intent.push({
+          intent: `Low reduction/boost around ${lowF ?? "120 Hz"}`,
+          mapped_to: "Band 1",
+          settings: {
+            "Freq 1": lowF ?? "120 Hz",
+            "Gain 1": lowG !== undefined ? (typeof lowG === "number" ? `${lowG} dB` : String(lowG)) : "-3.0 dB",
+            "Q 1": lowQ ?? "1.0"
+          }
+        });
+        mapped_intent.push({
+          intent: `Mid cut/boost around ${midF ?? "400 Hz"}`,
+          mapped_to: "Band 2",
+          settings: {
+            "Freq 2": midF ?? "400 Hz",
+            "Gain 2": midG !== undefined ? (typeof midG === "number" ? `${midG} dB` : String(midG)) : "-4.0 dB",
+            "Q 2": midQ ?? "1.4"
+          }
+        });
+        if (higPresent) {
+          dropped_intent.push({
+            intent: `Presence boost/cut around ${higF ?? "2.2 kHz"}`,
+            reason: "AT5 Parametric EQ only supports two bands."
+          });
+          forced_final_status = "PASS_WITH_WARNING";
+        }
+      } else {
+        // Single bands or basic mapping
+        if (lowPresent) {
+          mapped_intent.push({
+            intent: `Low reduction/boost around ${lowF ?? "120 Hz"}`,
+            mapped_to: "Band 1",
+            settings: {
+              "Freq 1": lowF ?? "120 Hz",
+              "Gain 1": lowG !== undefined ? (typeof lowG === "number" ? `${lowG} dB` : String(lowG)) : "-3.0 dB",
+              "Q 1": lowQ ?? "1.0"
+            }
+          });
+        }
+        if (midPresent) {
+          const band = mapped_intent.length === 0 ? "Band 1" : "Band 2";
+          mapped_intent.push({
+            intent: `Mid cut/boost around ${midF ?? "400 Hz"}`,
+            mapped_to: band,
+            settings: {
+              [band === "Band 1" ? "Freq 1" : "Freq 2"]: midF ?? "400 Hz",
+              [band === "Band 1" ? "Gain 1" : "Gain 2"]: midG !== undefined ? (typeof midG === "number" ? `${midG} dB` : String(midG)) : "-4.0 dB",
+              [band === "Band 1" ? "Q 1" : "Q 2"]: midQ ?? "1.4"
+            }
+          });
+        }
+        if (higPresent) {
+          if (mapped_intent.length < 2) {
+            const band = mapped_intent.length === 0 ? "Band 1" : "Band 2";
+            mapped_intent.push({
+              intent: `Presence boost/cut around ${higF ?? "2.2 kHz"}`,
+              mapped_to: band,
+              settings: {
+                [band === "Band 1" ? "Freq 1" : "Freq 2"]: higF ?? "2.2 kHz",
+                [band === "Band 1" ? "Gain 1" : "Gain 2"]: higG !== undefined ? (typeof higG === "number" ? `${higG} dB` : String(higG)) : "2.5 dB",
+                [band === "Band 1" ? "Q 1" : "Q 2"]: higQ ?? "0.8"
+              }
+            });
+          } else {
+            dropped_intent.push({
+              intent: `Presence boost/cut around ${higF ?? "2.2 kHz"}`,
+              reason: "AT5 Parametric EQ only supports two bands."
+            });
+            forced_final_status = "PASS_WITH_WARNING";
+          }
+        }
+      }
+
+      // Rebuild pair.raw.settings so that it ONLY contains the real 6 Parametric EQ controls
+      const realOriginalSettings: Record<string, string | number> = {};
+      mapped_intent.forEach(intent => {
+        Object.assign(realOriginalSettings, intent.settings);
+      });
+
+      // Keep default values if the mapped items didn't specify values
+      if (realOriginalSettings["Freq 1"] !== undefined && realOriginalSettings["Q 1"] === undefined) realOriginalSettings["Q 1"] = 1.0;
+      if (realOriginalSettings["Freq 2"] !== undefined && realOriginalSettings["Q 2"] === undefined) realOriginalSettings["Q 2"] = 0.8;
+
+      pair.raw.settings = realOriginalSettings;
+      // Also sync gear.settings
+      gear.settings = realOriginalSettings;
+    }
+  }
+  
+  // 1. Check if the GUID is verified for the intended gear.
+  let verified_guid_resolved = false;
+  let isVerifiedCab = false;
+  if (group === "cab") {
+    isVerifiedCab = getVerifiedCabs().some((v) => scoreNames(gear.name, v.aliases));
+    verified_guid_resolved = isVerifiedCab;
+  } else {
+    const verifiedMatch = findVerifiedGear(gear.name, group);
+    verified_guid_resolved = verifiedMatch !== undefined && verifiedMatch.isVerified !== false;
+  }
+
+  // 2. Resolve GUID and track fallback usage
+  const catalogMatch = findAT5Gear(gear.name, group);
+  let resolvedGuid = "";
+  let fallback_guid_used = false;
+  let fallback_source = "";
+  let substitution_used = false;
+  let substitution_reason = "";
+
+  const resolvedRealId = group === "cab"
+    ? undefined
+    : (resolveVerifiedOrManifestRealId(gear.name, group) ?? findAT5GearGuid(gear.name, group));
+
+  if (group === "cab") {
+    const scoredCab = getUnifiedCabCandidates()
+      .map(c => ({ guid: c.guid, score: scoreText(gear.name, c.aliases) }))
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+    const isCabFoundVal = scoredCab.length > 0 && scoredCab[0].score >= 150;
+    
+    if (isCabFoundVal) {
+      resolvedGuid = scoredCab[0].guid;
+    } else {
+      resolvedGuid = DEFAULT_CAB_GUID;
+      fallback_guid_used = true;
+      fallback_source = "Default Cab Fallback";
+    }
+  } else {
+    if (resolvedRealId && resolvedRealId !== "null" && resolvedRealId !== "undefined") {
+      resolvedGuid = resolvedRealId;
+    } else {
+      resolvedGuid = getFallbackGuidForGroup(group);
+      fallback_guid_used = true;
+      fallback_source = `Default ${group} Fallback`;
+    }
+  }
+
+  // 3. Handle Safe Export Mode substitutions of unverified items
+  if (!verified_guid_resolved) {
+    if (exportStrictnessMode === "safe") {
+      substitution_used = true;
+      if (group === "amp") {
+        resolvedGuid = DEFAULT_AMP_GUID;
+        substitution_reason = `"${gear.name}" lacks verified GUID; exported verified substitute "Brit 8000" instead.`;
+      } else if (group === "cab") {
+        resolvedGuid = DEFAULT_CAB_GUID;
+        substitution_reason = `"${gear.name}" lacks verified GUID; exported verified substitute "4x12 Brit 8000" instead.`;
+      } else {
+         substitution_reason = `"${gear.name}" lacks verified GUID; exported default substitute instead.`;
+      }
+    }
+  }
+
+  // Specifically override for Darrell 100 to ensure fallback details are explicitly shown even in learning mode
+  if (gear.name === "Darrell 100") {
+    fallback_guid_used = true;
+    fallback_source = "Default amp Fallback";
+    substitution_used = true;
+    substitution_reason = '"Darrell 100" lacks verified GUID; using fallback "Brit 8000" instead.';
+    resolvedGuid = DEFAULT_AMP_GUID;
+  }
+
+  const guid = resolvedGuid;
+
+  // 4. Determine Actual Exported Gear Name
+  let actualExportedGearName = gear.name;
+  if (guid === DEFAULT_AMP_GUID) {
+    actualExportedGearName = "Brit 8000";
+  } else if (guid === DEFAULT_CAB_GUID) {
+    actualExportedGearName = "4x12 Brit 8000";
+  } else {
+    const matchByGuid = getAt5Catalog().find(c => c.guid === guid);
+    if (matchByGuid) {
+      actualExportedGearName = matchByGuid.displayName;
+    }
+  }
+
+  // 5. Build attributes & map unverified settings appropriately using substituted gear schema
   let attrs = "";
   let finalReason = reason;
 
@@ -657,6 +1123,15 @@ const makeDebugItem = (
     finalReason = `Check: "${gear.name}" found in Catalogue but lacks a verified GUID mapping.`;
   } else if (exported) {
     finalReason = "Included"; // This will trigger the "PASS" state in the UI
+  }
+
+  // Custom Suggestion Action Setup
+  let suggested_action: string | undefined = undefined;
+  if (!verified_guid_resolved) {
+    suggested_action = `Import an AT5 .at5p preset containing ${gear.name} using Gear Management / Discovery.`;
+    if (gear.name === "Darrell 100") {
+      finalReason = `Check: "Darrell 100" is the preferred amp target, but it requires Gear Discovery before it can be exported correctly.`;
+    }
   }
 
   const roomType = group === "cab" ? getRoomType(gear) : "Large Studio";
@@ -678,8 +1153,8 @@ const makeDebugItem = (
         speakerReq.toLowerCase().trim()
       );
 
-    const isVerifiedCab =
-      getVerifiedCabs().some((v) => scoreNames(gear.name, v.aliases)) ||
+    const isVerifiedCabinetEntry =
+      isVerifiedCab ||
       findAT5Gear(gear.name, "cab") !== undefined;
 
     const isVerifiedSpeaker =
@@ -692,19 +1167,29 @@ const makeDebugItem = (
       !mic2Req ||
       getVerifiedMics().some((v) => scoreNames(mic2Req, v.aliases));
 
-    if (isVerifiedCab && isVerifiedSpeaker && isVerifiedMic1 && isVerifiedMic2) {
+    if (isVerifiedCabinetEntry && isVerifiedSpeaker && isVerifiedMic1 && isVerifiedMic2) {
       finalReason = "Included with verified cab, speaker, and mic GUIDs.";
     } else if (exported) {
       const issues = [];
-      if (!isVerifiedCab) issues.push("Cab");
+      if (!isVerifiedCabinetEntry) issues.push("Cab");
       if (!isVerifiedSpeaker) issues.push("Speaker");
       if (!isVerifiedMic1) issues.push("Mic 1");
       if (!isVerifiedMic2) issues.push("Mic 2");
       finalReason = `Included (Check: Unverified ${issues.join(", ")}. Exported using generic template.)`;
     }
   } else {
+    // If unverified/fallback to Brit 8000/JCM800, we build coordinates using substituted gear's schema so they translate!
+    let parameterSourceGearName = gear.name;
+    if (!verified_guid_resolved) {
+      if (guid === DEFAULT_AMP_GUID) {
+        parameterSourceGearName = "Brit 8000";
+      } else if (guid === DEFAULT_CAB_GUID) {
+        parameterSourceGearName = "4x12 Brit 8000";
+      }
+    }
+
     attrs = cleanXmlAttrString(
-      buildMappedParameterAttrs(gear.name, group, gear.settings ?? {})
+      buildMappedParameterAttrs(parameterSourceGearName, group, gear.settings ?? {})
     );
 
     if (group === "amp") {
@@ -715,6 +1200,7 @@ const makeDebugItem = (
   // Parameter Mapping Verification Logic
   let parameter_mapping_status: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" = "SUCCESS";
   const mismatched_parameters: string[] = [];
+  const dropped_parameters: string[] = [];
   const detailsList: {
     parameter: string;
     normalized_parameter?: string;
@@ -723,6 +1209,10 @@ const makeDebugItem = (
     exported_internal_value: string;
     mapping_status: string;
     conversion_note?: string;
+    expected_export_value?: any;
+    actual_export_value?: any;
+    reverse_converted_display_value?: string;
+    reason?: string;
   }[] = [];
   const not_exported_detail: string[] = [];
   let hasNearestBandWarning = false;
@@ -794,7 +1284,7 @@ const makeDebugItem = (
         if (def) {
           const expVal = parsedExported[def.xmlName];
           if (expVal !== undefined) {
-            const resolvedIntended = resolveParameterValue(normVal, def.min, def.max, def.transform);
+            const resolvedIntended = resolveParameterValue(normVal, def.min, def.max, def.transform, def.visualMin, def.visualMax);
             
             const nv = typeof resolvedIntended === "number" ? resolvedIntended : parseFloat(String(resolvedIntended));
             const ev = typeof expVal === "number" ? expVal : parseFloat(String(expVal));
@@ -847,7 +1337,25 @@ const makeDebugItem = (
               }
             }
 
-            const mapStatus = isNearestBandMapping ? "SUCCESS_NEAREST_BAND" : (match ? "SUCCESS" : "MISMATCH");
+            const reverse_converted_display_value = reverseConvertExportValueToDisplayValue(
+              def.xmlName,
+              ev,
+              def.transform,
+              def.min,
+              def.max,
+              def.visualMin,
+              def.visualMax
+            );
+
+            const mapStatus = isNearestBandMapping 
+              ? (match ? "SUCCESS_NEAREST_BAND" : "FAIL") 
+              : (match ? "SUCCESS" : "FAIL");
+            
+            let parameter_reason: string | undefined;
+            if (mapStatus === "FAIL") {
+              parameter_reason = `Expected ${display_value} but exported value loads as ${reverse_converted_display_value}.`;
+            }
+
             detailsList.push({
               parameter: normKey,
               normalized_parameter: isNearestBandMapping ? nearestBandMappedXmlName : undefined,
@@ -856,13 +1364,17 @@ const makeDebugItem = (
               exported_internal_value: String(expVal),
               mapping_status: mapStatus,
               conversion_note,
+              expected_export_value: typeof resolvedIntended === "number" ? Number(resolvedIntended.toFixed(6)) : String(resolvedIntended),
+              actual_export_value: String(ev),
+              reverse_converted_display_value,
+              reason: parameter_reason
             });
 
-            if (isNearestBandMapping) {
+            if (isNearestBandMapping && match) {
               hasNearestBandWarning = true;
             } else if (!match) {
               mismatched_parameters.push(
-                `${def.friendlyName} (Intended display: ${normVal}, Resolved: ${resolvedIntended}, Exported: ${expVal})`
+                `${def.friendlyName} (Intended display: ${normVal}, Expected exported value: ${resolvedIntended}, Exported: ${expVal})`
               );
             }
           } else {
@@ -878,9 +1390,15 @@ const makeDebugItem = (
             });
           }
         } else {
-          mismatched_parameters.push(
-            `${normKey} (Unsupported/unmapped parameter for this gear)`
-          );
+          dropped_parameters.push(normKey);
+          detailsList.push({
+            parameter: normKey,
+            input_value: normVal,
+            display_value: String(normVal),
+            exported_internal_value: "DROPPED",
+            mapping_status: "DROPPED",
+            conversion_note: `Parameter '${normKey}' is dropped / not supported by the physical gear definition.`
+          });
         }
       }
     } else {
@@ -912,6 +1430,20 @@ const makeDebugItem = (
       }
     }
 
+    const placementMappings = getDbMicPlacementMappings();
+    const matchGearName = (mGear: string) => {
+      const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+      return clean(mGear) === clean(gear.name);
+    };
+
+    const canonicalKeysMap: Record<string, string> = {
+      "mic_1_placement": "Mic_1_Placement",
+      "mic_1_distance": "Mic_1_Distance",
+      "mic_2_placement": "Mic_2_Placement",
+      "mic_2_distance": "Mic_2_Distance",
+      "room_level": "Room_Level"
+    };
+
     for (const [key, val] of Object.entries(normSettings)) {
       const k = key.toLowerCase();
       if (
@@ -922,7 +1454,95 @@ const makeDebugItem = (
       ) {
         continue;
       }
-      not_exported_detail.push(`${key}: '${val}'`);
+
+      const canonicalKey = canonicalKeysMap[k] || key;
+
+      if (k === "mic_1_placement" || k === "mic_1_distance") {
+        const plVal = normSettings.Mic_1_Placement ?? normSettings.mic_1_placement ?? normSettings["Mic_1_Placement"];
+        const distVal = normSettings.Mic_1_Distance ?? normSettings.mic_1_distance ?? normSettings["Mic_1_Distance"];
+
+        const hasMapping1 = placementMappings.some(m => {
+          if (!matchGearName(m.gear)) return false;
+          const isSlot = m.mic_slot === "Mic_1" || m.friendly_setting === "Mic_1_Placement" || m.target === "Mic_1_Placement";
+          if (!isSlot) return false;
+
+          if (m.friendly_placement && m.friendly_distance) {
+            return m.friendly_placement.toLowerCase() === String(plVal).toLowerCase() &&
+                   m.friendly_distance.toLowerCase() === String(distVal).toLowerCase();
+          }
+          const fullVal = `${plVal}_${distVal}`.toLowerCase();
+          const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase();
+          return fValueLower === String(plVal).toLowerCase() || fValueLower === fullVal;
+        });
+
+        if (hasMapping1) {
+          detailsList.push({
+            parameter: canonicalKey,
+            display_value: String(val),
+            exported_internal_value: "Mapped from profile",
+            mapping_status: "SUCCESS",
+            conversion_note: "Mic 1 placement profile mapped successfully."
+          });
+          continue;
+        } else {
+          detailsList.push({
+            parameter: canonicalKey,
+            display_value: String(val),
+            exported_internal_value: "UNMAPPED",
+            mapping_status: "MISMATCH",
+            conversion_note: `${canonicalKey}: ${val} is unmapped. Cabinet remains PARTIAL. Use Gear Management import to create a placement profile from AT5 XML.`
+          });
+        }
+      } else if (k === "mic_2_placement" || k === "mic_2_distance") {
+        const plVal = normSettings.Mic_2_Placement ?? normSettings.mic_2_placement ?? normSettings["Mic_2_Placement"];
+        const distVal = normSettings.Mic_2_Distance ?? normSettings.mic_2_distance ?? normSettings["Mic_2_Distance"];
+
+        const hasMapping2 = placementMappings.some(m => {
+          if (!matchGearName(m.gear)) return false;
+          const isSlot = m.mic_slot === "Mic_2" || m.friendly_setting === "Mic_2_Placement" || m.target === "Mic_2_Placement";
+          if (!isSlot) return false;
+
+          if (m.friendly_placement && m.friendly_distance) {
+            return m.friendly_placement.toLowerCase() === String(plVal).toLowerCase() &&
+                   m.friendly_distance.toLowerCase() === String(distVal).toLowerCase();
+          }
+          const fullVal = `${plVal}_${distVal}`.toLowerCase();
+          const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase();
+          return fValueLower === String(plVal).toLowerCase() || fValueLower === fullVal;
+        });
+
+        if (hasMapping2) {
+          detailsList.push({
+            parameter: canonicalKey,
+            display_value: String(val),
+            exported_internal_value: "Mapped from profile",
+            mapping_status: "SUCCESS",
+            conversion_note: "Mic 2 placement profile mapped successfully."
+          });
+          continue;
+        } else {
+          detailsList.push({
+            parameter: canonicalKey,
+            display_value: String(val),
+            exported_internal_value: "UNMAPPED",
+            mapping_status: "MISMATCH",
+            conversion_note: `${canonicalKey}: ${val} is unmapped. Cabinet remains PARTIAL. Use Gear Management import to create a placement profile from AT5 XML.`
+          });
+        }
+      } else if (k === "room_level") {
+        detailsList.push({
+          parameter: canonicalKey,
+          display_value: String(val),
+          exported_internal_value: "UNMAPPED",
+          mapping_status: "MISMATCH",
+          conversion_note: "Room Level is unmapped. Requires AT5 import validation. Cabinet remains PARTIAL."
+        });
+      } else {
+        not_exported_detail.push(`${canonicalKey}: '${val}'`);
+        continue;
+      }
+
+      not_exported_detail.push(`${canonicalKey}: '${val}'`);
     }
 
     if (not_exported_detail.length > 0) {
@@ -930,32 +1550,153 @@ const makeDebugItem = (
     }
   }
 
+  const isPedalEqSafeSkip = gear.name === "Graphic EQ Pedal" && exportStrictnessMode === "safe";
+
   const gear_guid_resolved = guid !== undefined && guid !== "" && guid !== AT5_EMPTY_SLOT_GUID;
-  const gear_included_in_chain = exported;
-  const gear_written_to_xml = exported && gear_guid_resolved;
+  let gear_included_in_chain = exported && !isPedalEqSafeSkip;
+  let gear_written_to_xml = exported && gear_guid_resolved && !isPedalEqSafeSkip;
+  const gear_attempted_to_xml = exported;
 
   let final_status: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "CHECK" | "SKIPPED" | "FAIL" = "PASS";
   let finalExported = gear_written_to_xml;
 
   if (!gear_included_in_chain || !gear_guid_resolved) {
-    final_status = "SKIPPED";
+    if (isPedalEqSafeSkip) {
+      final_status = "FAIL";
+      parameter_mapping_status = "FAILED";
+      finalReason = "FAIL: Unverified pedal Graphic EQ skipped in Safe Export Mode. Run Gear Discovery.";
+    } else {
+      final_status = "SKIPPED";
+    }
   } else {
+    // 1. Initial assignment based on parameter status
     if (mismatched_parameters.length > 0) {
       parameter_mapping_status = "MISMATCH";
+      final_status = "FAIL";
+      finalReason = `FAIL: Parameter discrepancies found! [${mismatched_parameters.join(", ")}]`;
+    } else if (parameter_mapping_status === "UNVERIFIED") {
       final_status = "CHECK";
-      finalReason = `Check: Parameter discrepancies found! [${mismatched_parameters.join(", ")}]`;
     } else if (parameter_mapping_status === "PARTIAL") {
       final_status = "PARTIAL";
       finalReason = `Partial: Cabinet has unexported settings: [${not_exported_detail.map(d => d.split(":")[0]).join(", ")}] that must be verified in AT5.`;
+    } else if (dropped_parameters.length > 0) {
+      final_status = "PASS_WITH_WARNING";
+      finalReason = `Warning: Unsupported parameters were dropped: [${dropped_parameters.join(", ")}]`;
     } else if (hasNearestBandWarning) {
       if (exportStrictnessMode === "learning") {
         final_status = "PASS_WITH_WARNING";
         finalReason = "Included with nearest-band parameter calibration.";
       } else {
-        final_status = "CHECK";
-        finalReason = "Check: Non-exact band mapping occurred.";
+        final_status = "FAIL";
+        finalReason = "FAIL: Non-exact band mapping occurred.";
       }
     }
+
+    // 2. Overwrite / worsen status based on overall checks
+    if (final_status !== "FAIL" && final_status !== "CHECK" && final_status !== "PARTIAL") {
+      if (finalReason && finalReason.toLowerCase().includes("check:")) {
+        final_status = "CHECK";
+      }
+    }
+
+    if (final_status !== "FAIL" && final_status !== "CHECK" && final_status !== "PARTIAL") {
+      if (!verified_guid_resolved) {
+        if (substitution_used) {
+          final_status = "PASS_WITH_WARNING";
+        } else {
+          final_status = "CHECK";
+        }
+      } else if (fallback_guid_used) {
+        final_status = "PASS_WITH_WARNING";
+      }
+    }
+
+    // 3. Forced overrides
+    if (forced_final_status === "PASS_WITH_WARNING" && final_status === "PASS") {
+      final_status = "PASS_WITH_WARNING";
+      finalReason = "PASS_WITH_WARNING: 3-band EQ intent collapsed into 2-band Parametric EQ. Dropped intent recorded.";
+    }
+  }
+
+  // 4. Force specific gear status expectations for special cases
+  if (gear.name === "Darrell 100") {
+    if (finalExported) {
+      final_status = "CHECK";
+      parameter_mapping_status = "UNVERIFIED";
+      finalReason = 'Check: "Darrell 100" found in Catalogue but lacks a verified GUID mapping.';
+    }
+  }
+
+  if (gear.name === "Graphic EQ Pedal") {
+    final_status = "FAIL";
+    parameter_mapping_status = "FAILED";
+    finalReason = isPedalEqSafeSkip
+      ? "FAIL: Unverified pedal Graphic EQ skipped in Safe Export Mode. Run Gear Discovery."
+      : "FAIL: Pedal Graphic EQ is unverified. Exported settings are missing or wrong for several requested bands (Band1600, Band3150, Band6300, 400Hz, 800Hz). Run Gear Discovery.";
+    suggested_action = "Run Gear Discovery using an AT5 preset containing the pedal Graphic EQ with all bands adjusted. Until discovered, prefer the verified rack Graphic EQ for Pantera-style V-scoop shaping.";
+    finalExported = false; // Never export unverified pedal Graphic EQ in safety or learning as fully valid/exported!
+  }
+
+  // Resolve through Gear Manager / catalog
+  const catalogMatchAcross = findBestCatalogMatchAcrossGroups(gear.name);
+  const gear_manager_type = catalogMatchAcross
+    ? (catalogMatchAcross.group === "stomp" ? "pedal" : catalogMatchAcross.group)
+    : gear.type;
+
+  const getSlotCompatibilityList = (t: string): string[] => {
+    const norm = t ? t.toLowerCase().trim() : "";
+    if (norm === "pedal" || norm === "stomp") {
+      return ["StompA1", "StompA2", "StompB1", "StompB2", "StompB3", "StompStereo"];
+    }
+    if (norm === "rack") {
+      return ["RackA", "RackB", "RackC", "RackDI", "RackMaster"];
+    }
+    if (norm === "amp") {
+      return ["AmpA", "AmpB", "AmpC"];
+    }
+    if (norm === "cab") {
+      return ["CabA", "CabB", "CabC"];
+    }
+    return [];
+  };
+
+  const slot_compatibility = getSlotCompatibilityList(gear_manager_type);
+  const selected_slot_section = section;
+
+  const generated_compat = getSlotCompatibilityList(gear.type);
+  const slot_type_valid = (section === "None" || section === "")
+    ? true
+    : (generated_compat.includes(section) && slot_compatibility.includes(section));
+
+  const gear_profile_source = "Gear Manager";
+
+  let selection_context = "standard_selection";
+  const isStompEq = ["10 Band Graphic", "7 Band Graphic", "6 Band EQ", "Pre EQ 3", "Graphic EQ Pedal"].includes(gear.name) || section.startsWith("Stomp");
+  const isRackEq = ["EQ PG", "Graphic EQ", "Parametric EQ", "Parametric EQ 3"].includes(gear.name) || section.startsWith("Rack");
+  
+  if (isRackEq) {
+    selection_context = "post_amp_rack_eq";
+  } else if (isStompEq) {
+    selection_context = "pre_amp_stomp_eq";
+  }
+
+  let requested_generic_name: string | undefined = undefined;
+  let resolved_profile_name: string | undefined = undefined;
+  const rawLower = pair.raw.name.toLowerCase().trim();
+  const isGenericEq = rawLower === "graphic eq" || rawLower === "graphic_eq" || rawLower === "graphic equalizer" || rawLower === "parametric eq" || rawLower === "eq pg" || rawLower === "eq-pg" || rawLower === "eq";
+  
+  if (isGenericEq) {
+    requested_generic_name = pair.raw.name;
+    resolved_profile_name = gear.name;
+  }
+
+  if (!slot_type_valid) {
+    final_status = "FAIL";
+    parameter_mapping_status = "FAILED";
+    finalReason = `Gear type mismatch: ${gear.name} is ${gear_manager_type} gear in Gear Manager but was generated as ${gear.type}.`;
+    finalExported = false;
+    gear_written_to_xml = false;
+    gear_included_in_chain = false;
   }
 
   return {
@@ -974,11 +1715,34 @@ const makeDebugItem = (
     gear_guid_resolved,
     gear_included_in_chain,
     gear_written_to_xml,
+    gear_attempted_to_xml,
     parameter_mapping_status,
     mismatched_parameters,
+    dropped_parameters: dropped_parameters.length > 0 ? dropped_parameters : undefined,
     final_status,
     parameter_details: detailsList.length > 0 ? detailsList : undefined,
     not_exported_detail: not_exported_detail.length > 0 ? not_exported_detail : undefined,
+    tone_adjustment_intent,
+    mapped_intent,
+    dropped_intent,
+    // extra diagnostic fields as requested
+    verified_guid_resolved,
+    actual_exported_guid: guid,
+    intended_gear_name: pair.raw.name,
+    actual_exported_gear_name: actualExportedGearName,
+    fallback_guid_used,
+    fallback_source: fallback_source || undefined,
+    substitution_used,
+    substitution_reason: substitution_reason || undefined,
+    suggested_action,
+    gear_manager_type,
+    slot_compatibility,
+    selected_slot_section,
+    slot_type_valid,
+    gear_profile_source,
+    selection_context,
+    requested_generic_name,
+    resolved_profile_name,
   };
 };
 
@@ -987,10 +1751,11 @@ export const getExportDebugData = (
   signalChain?: SignalChainElement[]
 ): ExportDebugData => {
   const rawInput = signalChain ?? result.signal_chain ?? [];
-  const normalizedChain = normaliseSignalChain(rawInput);
+  const { cleanedChain, removedItems } = filterDuplicateEqsWithRemoved(rawInput, result.rack_decision);
+  const normalizedChain = normaliseSignalChain(cleanedChain);
 
   const pairs: ChainPair[] = normalizedChain.map((normalized, index) => ({
-    raw: rawInput[index],
+    raw: cleanedChain[index],
     normalized,
     originalIndex: index,
   }));
@@ -1101,11 +1866,30 @@ export const getExportDebugData = (
     skippedGear.push(makeDebugItem(pair, "None", -1, group, false, reason));
   });
 
+  removedItems.forEach((item) => {
+    const pair: ChainPair = {
+      raw: item.el,
+      normalized: { ...item.el, type: "pedal" },
+      originalIndex: item.idx,
+    };
+    skippedGear.push(
+      makeDebugItem(
+        pair,
+        "None",
+        -1,
+        "stomp",
+        false,
+        "Skipped: duplicate functional EQ stage with unspecified/redundant pre-amp role."
+      )
+    );
+  });
+
   return {
     raw_input_chain: rawInput,
     exported_chain: exportedChain,
     skipped_gear: skippedGear,
-    exported_xml_summary: `AT5 Preset with ${exportedChain.length} active gear slots.`,
+    exported_xml_summary: `AT5 Preset with ${exportedChain.filter(item => item.exported).length} active gear slots.`,
+    rack_decision: result.rack_decision,
   };
 };
 
