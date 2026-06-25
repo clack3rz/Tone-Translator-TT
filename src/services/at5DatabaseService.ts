@@ -12,7 +12,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
-import { AT5CatalogItem, ParameterMapping, MicPlacementMapping } from '../types';
+import { AT5CatalogItem, ParameterMapping, MicPlacementMapping, IKMPAKCandidate } from '../types';
 import { VerifiedMapping } from './at5VerifiedProtocols';
 
 // Enum for Operation Types (Mandatory for error logging)
@@ -308,6 +308,97 @@ export const at5DatabaseService = {
       await deleteDoc(doc(db, 'mic_placement_mappings', id));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, path);
+    }
+  },
+
+  /**
+   * IKMPAK Gear Discovery Accelerator Candidates (Staging)
+   */
+  async getDiscoveryCandidates(): Promise<IKMPAKCandidate[]> {
+    const path = 'gear_discovery_candidates';
+    try {
+      const snapshot = await getDocs(collection(db, path));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id
+        } as IKMPAKCandidate;
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  },
+
+  async saveDiscoveryCandidate(candidate: IKMPAKCandidate) {
+    if (!auth.currentUser) throw new Error("Must be signed in to save discovery candidate");
+    const docId = candidate.id || candidate.guid || `${candidate.candidateGearType}-${candidate.name}`.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const path = `gear_discovery_candidates/${docId}`;
+    try {
+      const data = sanitize({
+        ...candidate,
+        id: docId,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid
+      });
+      await setDoc(doc(db, 'gear_discovery_candidates', docId), data);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
+  async saveDiscoveryCandidates(candidates: IKMPAKCandidate[]) {
+    if (!auth.currentUser) throw new Error("Must be signed in to save candidates");
+    const batchSize = 400;
+    try {
+      for (let i = 0; i < candidates.length; i += batchSize) {
+        const batch = writeBatch(db);
+        const chunk = candidates.slice(i, i + batchSize);
+        chunk.forEach(candidate => {
+          const docId = candidate.id || candidate.guid || `${candidate.candidateGearType}-${candidate.name}`.replace(/[^a-zA-Z0-9_\-]/g, '_');
+          const docRef = doc(db, 'gear_discovery_candidates', docId);
+          batch.set(docRef, sanitize({
+            ...candidate,
+            id: docId,
+            updatedAt: serverTimestamp(),
+            updatedBy: auth.currentUser!.uid
+          }));
+        });
+        await batch.commit();
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'BATCH_SAVE_CANDIDATES');
+    }
+  },
+
+  async deleteDiscoveryCandidate(id: string) {
+    if (!auth.currentUser) throw new Error("Must be signed in to delete discovery candidate");
+    const path = `gear_discovery_candidates/${id}`;
+    try {
+      await deleteDoc(doc(db, 'gear_discovery_candidates', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, path);
+    }
+  },
+
+  async clearAllDiscoveryCandidates() {
+    if (!auth.currentUser) throw new Error("Must be signed in to clear candidates");
+    const path = 'gear_discovery_candidates';
+    try {
+      const snapshot = await getDocs(collection(db, path));
+      const batchSize = 400;
+      const docs = snapshot.docs;
+      for (let i = 0; i < docs.length; i += batchSize) {
+        const batch = writeBatch(db);
+        const chunk = docs.slice(i, i + batchSize);
+        chunk.forEach(d => {
+          batch.delete(d.ref);
+        });
+        await batch.commit();
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'CLEAR_CANDIDATES');
     }
   }
 };

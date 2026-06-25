@@ -376,4 +376,27 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
       { friendlyName: "Volume 2", xmlName: "Loudness2MarshallMajor_param", min: 0, max: 10, defaultValue: 4, aliases: ["volume 2", "loudness 2", "volume2"] },
     ],
   },
+  {
+    name: "Darrell 100",
+    category: "amp",
+    realId: "cfa6b70c-2c6c-4b83-b881-571a6343dfac",
+    aliases: ["darrell100", "darrell 100", "darrell-100"],
+    preferredSection: "AmpA",
+    isVerified: true,
+    params: [
+      { friendlyName: "Bass", xmlName: "Bass_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["bass", "low"] },
+      { friendlyName: "Middle", xmlName: "Middle_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["middle", "mid", "middle_darrell100"] },
+      { friendlyName: "Treble", xmlName: "Treble_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["treble", "high"] },
+      { friendlyName: "Presence", xmlName: "Presence_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["presence"] },
+      { friendlyName: "Treble Pull", xmlName: "TreblePull_Darrell100", min: 0, max: 1, defaultValue: 0, aliases: ["pull", "treble pull", "treble_pull", "pull treble", "pull_treble"] },
+      { friendlyName: "Channel", xmlName: "Channel_Darrell100", min: 1, max: 2, defaultValue: 1, aliases: ["channel", "ch"] },
+      { friendlyName: "Reverb", xmlName: "Reverb_Darrell100", min: 0, max: 10, defaultValue: 0, aliases: ["reverb"] },
+      { friendlyName: "Gain 1", xmlName: "Gain1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain1", "gain_1"] },
+      { friendlyName: "Gain 2", xmlName: "Gain2_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain2", "gain_2"] },
+      { friendlyName: "Master 1", xmlName: "Master1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master1", "master_1"] },
+      { friendlyName: "Master 2", xmlName: "Master2_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master2", "master_2"] },
+      { friendlyName: "Gain", xmlName: "Gain1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain", "drive", "preamp"] },
+      { friendlyName: "Master", xmlName: "Master1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master", "volume"] }
+    ],
+  },
 ];

@@ -84,6 +84,34 @@
         "updatedBy": { "type": "string" }
       },
       "required": ["gear", "friendly_setting", "friendly_value", "maps_to"]
+    },
+    "gear_discovery_candidate": {
+      "title": "IKMPAK Gear Discovery Candidate",
+      "description": "An unverified gear candidate staged from .pak or JSON/CSV imports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "source": { "type": "string" },
+        "importBatchId": { "type": "string" },
+        "pakCategory": { "type": "string" },
+        "candidateGearType": { "type": "string" },
+        "name": { "type": "string" },
+        "normalizedName": { "type": "string" },
+        "guid": { "type": "string" },
+        "shortName": { "type": "string" },
+        "shortName2": { "type": "string" },
+        "keywords": { "type": "array", "items": { "type": "string" } },
+        "collectionTags": { "type": "array", "items": { "type": "string" } },
+        "manufacturerHints": { "type": "string" },
+        "realWorldHints": { "type": "string" },
+        "matchedGearProfileId": { "type": "string" },
+        "discoveryStatus": { "type": "string" },
+        "validationStatus": { "type": "string" },
+        "notes": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["name", "candidateGearType", "guid", "importBatchId"]
     }
   },
   "firestore": {
@@ -110,6 +138,10 @@
     "/mic_placement_mappings/{mappingId}": {
       "schema": "mic_placement_mapping",
       "description": "Custom mic placement mappings to XML attributes"
+    },
+    "/gear_discovery_candidates/{candidateId}": {
+      "schema": "gear_discovery_candidate",
+      "description": "Staged unverified gear candidates"
     }
   }
 }

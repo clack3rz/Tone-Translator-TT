@@ -11,7 +11,7 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
     function isAdmin() { return isVerified() && request.auth.token.email == 'cclackerz@gmail.com'; }
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function isValidId(id) { return id is string && id.size() <= 128; }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
 
@@ -56,6 +56,17 @@ service cloud.firestore {
         && data.updatedBy == request.auth.uid;
     }
 
+    // Validation Blueprint for Discovery Candidate
+    function isValidCandidate(data) {
+      return data.keys().hasAll(['name', 'candidateGearType', 'importBatchId', 'updatedAt', 'updatedBy'])
+        && data.name is string && data.name.size() <= 1024
+        && data.candidateGearType is string && data.candidateGearType.size() <= 128
+        && (!('guid' in data) || (data.guid is string && data.guid.size() <= 256))
+        && data.importBatchId is string && data.importBatchId.size() <= 256
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
     // --- Main Collections ---
 
     match /catalogue/{guid} {
@@ -68,9 +79,15 @@ service cloud.firestore {
           incoming().diff(existing()).affectedKeys().hasOnly([
             'displayName', 'otherNames', 'knobs', 'updatedAt', 'updatedBy', 
             'slot', 'paramSuffix', 'usedInPresets', 'examplePresets', 'group', 'guid',
+            'discoveredParameters', 'parameterDefinitions', 'sourceHistory', 'validationQueueStatus',
+            'ignoredAliasSuggestions', 'validationStatus', 'parameterSource', 'guidSource',
+            'lastValidatedAt', 'lastValidatedFromPreset', 'profileStatus', 'confirmedGuid',
+            'confirmedGearType', 'isDraft', 'importHistory', 'detectedAt',
+            'sourcePresetFilename', 'dateApplied', 'discoverySource', 'isDbRecord', 'id',
+            'discoveredFromParentCab', 'discoveredFromField', 'validationMethod',
             'display_name', 'other_observed_names', 'used_in_presets', 'param_suffix' // Legacy fields
           ])
-          && incoming().guid == existing().guid
+          && (incoming().guid == existing().guid || !('guid' in existing()) || existing().guid == "" || existing().guid.startsWith("gear-") || existing().guid.startsWith("name-") || existing().guid.startsWith("name_") || existing().guid == "none" || existing().guid == "NONE")
         )
       );
     }
@@ -141,6 +158,12 @@ service cloud.firestore {
           && incoming().id == existing().id
         )
       );
+    }
+
+    match /gear_discovery_candidates/{candidateId} {
+      allow read: if true;
+      allow delete: if isVerified();
+      allow create, update: if isVerified() && isValidId(candidateId) && (isAdmin() || isValidCandidate(incoming()));
     }
 
     // System collection for connection test

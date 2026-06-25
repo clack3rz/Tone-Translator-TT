@@ -145,6 +145,24 @@ export interface AT5CatalogItem {
   knobs?: KnobMember[]; 
   paramSuffix?: string;
   isDbRecord?: boolean; // New flag
+  validationStatus?: string;
+  parameterSource?: string;
+  guidSource?: string;
+  lastValidatedAt?: string;
+  lastValidatedFromPreset?: string;
+  isDraft?: boolean;
+  importHistory?: string[];
+  detectedAt?: string;
+  sourcePresetFilename?: string;
+  dateApplied?: string;
+  discoverySource?: string;
+  profileStatus?: string;
+  confirmedGuid?: string;
+  confirmedGearType?: string;
+  discoveredParameters?: any[];
+  parameterDefinitions?: any[];
+  sourceHistory?: any[];
+  validationQueueStatus?: string;
 }
 
 export interface ParameterMapping {
@@ -194,15 +212,39 @@ export interface GearProfile {
   slot: string;
   aliases: string[];
   parameters: GearProfileParameter[];
+  validationStatus?: string;
+  parameterSource?: string;
+  guidSource?: string;
+  lastValidatedAt?: string;
+  lastValidatedFromPreset?: string;
+  profileStatus?: string;
+  confirmedGuid?: string;
+  confirmedGearType?: string;
+  discoveredFromParentCab?: string;
+  discoveredFromField?: string;
+  validationMethod?: string;
+  discoveredParameters?: any[];
+  parameterDefinitions?: any[];
+  sourceHistory?: any[];
+  validationQueueStatus?: string;
   discovery?: {
     importHistory?: string[];
     isDraft?: boolean;
     detectedAt?: string;
+    sourcePresetFilename?: string;
+    dateApplied?: string;
+    discoverySourceType?: string;
+    discoverySources?: {
+      sourceType: string;
+      confidence: string;
+      notes: string;
+    }[];
   };
   validation: {
     status: 'PASS' | 'WARN' | 'PARTIAL' | 'CHECK' | 'FAIL' | 'UNKNOWN';
     gaps: string[];
     reason?: string;
+    validationStatus?: string;
   };
   rawSources: {
     catalog?: AT5CatalogItem;
@@ -210,6 +252,15 @@ export interface GearProfile {
     verified?: any;
     verifiedProtocol?: any;
   };
+  ignoredAliasSuggestions?: {
+    alias: string;
+    normalizedAlias: string;
+    gearProfileId?: string;
+    guid?: string;
+    reason: string;
+    source: string;
+    timestamp: string;
+  }[];
 }
 
 export interface MicPlacementMapping {
@@ -227,6 +278,32 @@ export interface MicPlacementMapping {
   status: "validated" | "estimated" | "discovered";
   validation_status?: string; // Alias for status
   source?: string;
+  updatedAt?: any;
+  updatedBy?: string;
+}
+
+export interface IKMPAKCandidate {
+  id: string; // unique identifier
+  source: "ikmpak";
+  importBatchId: string;
+  pakCategory: string; // Stomps, Racks, Amps, Cabs, Mics, RoomMics, Rooms, Speakers
+  candidateGearType: "stomp" | "rack" | "amp" | "cab" | "mic" | "roomMic" | "room" | "speaker";
+  name: string;
+  normalizedName: string;
+  guid: string;
+  shortName: string;
+  shortName2: string;
+  keywords: string[];
+  collectionTags: string[];
+  manufacturerHints: string;
+  realWorldHints: string;
+  matchedGearProfileId: string | null;
+  discoveryStatus: string; // one of: new_candidate, existing_match, possible_duplicate, type_mismatch, alias_collision, guid_mismatch, missing_keywords, missing_collection_tags, needs_at5p_validation, rejected, promoted_unverified
+  validationStatus: "discovered_unverified" | "awaiting_at5p_validation";
+  notes: string;
+  importIndex?: number;
+  lastActionType?: "merged" | "applied_unverified" | "awaiting_at5p_validation" | "rejected";
+  lastActionTime?: string;
   updatedAt?: any;
   updatedBy?: string;
 }

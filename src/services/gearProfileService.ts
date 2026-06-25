@@ -31,20 +31,32 @@ export const gearProfileService = {
       const guid = item.guid || '';
       const nGuid = normGuid(guid);
       
-      const type = item.group; // 'amp', 'stomp', 'rack', 'cab', etc.
-      const displayName = item.displayName;
+      let type = item.group; // 'amp', 'stomp', 'rack', 'cab', etc.
+      let displayName = item.displayName;
       const aliases = Array.from(new Set([
         ...(item.otherNames || []),
         ...(item.examplePresets || [])
       ]));
 
-      const id = nGuid ? `gear-${nGuid}` : `gear-${normaliseName(displayName)}-${type}`;
+      let id = nGuid ? 
+        (guid.startsWith('gear-') || guid.startsWith('name-') || guid.startsWith('name_') ? guid : `gear-${nGuid}`) : 
+        `gear-${normaliseName(displayName)}-${type}`;
+
+      // Darrell 100 normalization
+      const cleanName = displayName.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+      if (cleanName === "darrell100" || cleanName === "darrell 100" || displayName === "Darrell 100") {
+        id = "amp_darrell_100";
+        displayName = "Darrell 100";
+        type = "amp";
+      }
 
       // Build parameters base for this item
       const parameters = this.mergeParameters(item, displayName, nGuid, dbMappings);
 
       // Check validation
       const validation = this.evaluateValidation(type, guid, aliases, parameters);
+
+      const valStatus = (item as any).validationStatus || (guid && (cleanName === "darrell100" || cleanName === "darrell 100") ? "verified_at5p" : undefined);
 
       profiles.push({
         id,
@@ -55,6 +67,29 @@ export const gearProfileService = {
         aliases,
         parameters,
         validation,
+        validationStatus: valStatus,
+        parameterSource: (item as any).parameterSource || undefined,
+        guidSource: (item as any).guidSource || undefined,
+        lastValidatedAt: (item as any).lastValidatedAt || undefined,
+        lastValidatedFromPreset: (item as any).lastValidatedFromPreset || undefined,
+        profileStatus: (item as any).profileStatus || undefined,
+        confirmedGuid: (item as any).confirmedGuid || undefined,
+        confirmedGearType: (item as any).confirmedGearType || undefined,
+        discoveredFromParentCab: (item as any).discoveredFromParentCab || undefined,
+        discoveredFromField: (item as any).discoveredFromField || undefined,
+        validationMethod: (item as any).validationMethod || undefined,
+        discoveredParameters: (item as any).discoveredParameters || undefined,
+        parameterDefinitions: (item as any).parameterDefinitions || undefined,
+        sourceHistory: (item as any).sourceHistory || undefined,
+        validationQueueStatus: (item as any).validationQueueStatus || undefined,
+        ignoredAliasSuggestions: (item as any).ignoredAliasSuggestions || [],
+        discovery: {
+          isDraft: (item as any).isDraft,
+          importHistory: (item as any).importHistory || [],
+          detectedAt: (item as any).detectedAt,
+          sourcePresetFilename: (item as any).sourcePresetFilename,
+          dateApplied: (item as any).dateApplied,
+        },
         rawSources: {
           catalog: item,
           mappings: dbMappings.filter(m => this.isMappingForGear(m, displayName, aliases)),
@@ -336,21 +371,26 @@ export const gearProfileService = {
     parameters: GearProfileParameter[]
   ) {
     const gaps: string[] = [];
+    const isRoomOrRoomMic = type === 'room' || type === 'room_mic' || type === 'roomMic';
 
     // Identity Checks
-    if (!guid || guid.trim().length === 0) {
-      gaps.push('Missing GUID');
-    } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guid)) {
-      gaps.push('Invalid GUID structure');
+    if (!isRoomOrRoomMic) {
+      if (!guid || guid.trim().length === 0) {
+        gaps.push('Missing GUID');
+      } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guid)) {
+        gaps.push('Invalid GUID structure');
+      }
     }
 
     if (!aliases || aliases.length === 0) {
-      gaps.push('Missing aliases');
+      if (!isRoomOrRoomMic) {
+        gaps.push('Missing aliases');
+      }
     }
 
     // Parameter checks
     if (!parameters || parameters.length === 0) {
-      if (type !== 'cab' && type !== 'speaker' && type !== 'mic') {
+      if (type !== 'cab' && type !== 'speaker' && type !== 'mic' && !isRoomOrRoomMic) {
         gaps.push('No parameters mapped');
       }
     } else {
@@ -432,12 +472,42 @@ export const gearProfileService = {
         min: p.visual?.min ?? 0,
         max: p.visual?.max ?? 10,
         default: String(p.defaultValue ?? '')
-      }))
-    };
+      })),
+      validationStatus: profile.validationStatus,
+      parameterSource: profile.parameterSource,
+      guidSource: profile.guidSource,
+      lastValidatedAt: profile.lastValidatedAt,
+      lastValidatedFromPreset: profile.lastValidatedFromPreset,
+      isDraft: profile.discovery?.isDraft,
+      importHistory: profile.discovery?.importHistory,
+      detectedAt: profile.discovery?.detectedAt,
+      sourcePresetFilename: profile.discovery?.sourcePresetFilename,
+      dateApplied: profile.discovery?.dateApplied,
+      discoverySource: profile.discovery?.discoverySourceType,
+      profileStatus: profile.profileStatus,
+      confirmedGuid: profile.confirmedGuid,
+      confirmedGearType: profile.confirmedGearType,
+      discoveredFromParentCab: profile.discoveredFromParentCab,
+      discoveredFromField: profile.discoveredFromField,
+      validationMethod: profile.validationMethod,
+      discoveredParameters: profile.discoveredParameters,
+      parameterDefinitions: profile.parameterDefinitions,
+      sourceHistory: profile.sourceHistory,
+      validationQueueStatus: profile.validationQueueStatus,
+      ignoredAliasSuggestions: profile.ignoredAliasSuggestions || []
+    } as any;
 
     if (profile.guid && profile.guid.length > 5) {
       // Save item to catalogue
       await at5DatabaseService.saveGearItem(updatedCatalogGear);
+    } else {
+      // No valid hardware GUID, save using stable profile.id as synthetic GUID to persist metadata
+      const docId = profile.id;
+      const updatedGearWithIdGuid = {
+        ...updatedCatalogGear,
+        guid: docId
+      };
+      await at5DatabaseService.saveGearItem(updatedGearWithIdGuid);
     }
 
     // 2. cab/mic/speaker aliases → verified_* where required

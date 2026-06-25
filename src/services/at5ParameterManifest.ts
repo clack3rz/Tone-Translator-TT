@@ -594,6 +594,42 @@ export function buildMappedParameterAttrs(
     Object.entries(canonicalSettings).map(([key, value]) => [normalise(key), value])
   );
 
+  // Darrell 100 channel-aware mappings (Rule 6 & 7)
+  const normGear = (gearNameOrId || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (normGear === "darrell100") {
+    let channelVal = (settings["Channel"] ?? settings["channel"] ?? settings["Channel_Darrell100"] ?? settings["channel_darrell100"]) as any;
+    let isHighGainChannel = false;
+    if (channelVal !== undefined) {
+      const chStr = String(channelVal).toLowerCase();
+      if (chStr === "2" || chStr.includes("lead") || chStr.includes("high") || chStr.includes("ch2") || chStr.includes("crunch")) {
+        isHighGainChannel = true;
+      }
+    }
+
+    const gainVal = (settings["Gain"] ?? settings["gain"] ?? settings["preamp"] ?? settings["PreAmp"] ?? settings["drive"] ?? settings["Drive"]) as any;
+    const masterVal = (settings["Master"] ?? settings["master"] ?? settings["volume"] ?? settings["Volume"]) as any;
+
+    if (isHighGainChannel) {
+      if (gainVal !== undefined && normalisedSettings.get(normalise("Gain2_Darrell100")) === undefined) {
+        normalisedSettings.set(normalise("Gain2_Darrell100"), gainVal);
+      }
+      if (masterVal !== undefined && normalisedSettings.get(normalise("Master2_Darrell100")) === undefined) {
+        normalisedSettings.set(normalise("Master2_Darrell100"), masterVal);
+      }
+    } else {
+      if (gainVal !== undefined && normalisedSettings.get(normalise("Gain1_Darrell100")) === undefined) {
+        normalisedSettings.set(normalise("Gain1_Darrell100"), gainVal);
+      }
+      if (masterVal !== undefined && normalisedSettings.get(normalise("Master1_Darrell100")) === undefined) {
+        normalisedSettings.set(normalise("Master1_Darrell100"), masterVal);
+      }
+    }
+
+    if (channelVal !== undefined) {
+      normalisedSettings.set(normalise("Channel_Darrell100"), channelVal);
+    }
+  }
+
   // Noise Gate Depth safety
   if (normalise(gearNameOrId || "") === "noise gate") {
     const hasDepth = ["depth", "reduction"].some(alias => normalisedSettings.has(normalise(alias)));

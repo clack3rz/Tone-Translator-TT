@@ -22,9 +22,9 @@ type ExportDebugItem = {
   gear_included_in_chain?: boolean;
   gear_written_to_xml?: boolean;
   gear_attempted_to_xml?: boolean;
-  parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL";
+  parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
   mismatched_parameters?: string[];
-  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "CHECK" | "SKIPPED" | "FAIL";
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
@@ -33,6 +33,19 @@ type ExportDebugItem = {
     exported_internal_value: string;
     mapping_status: string;
     conversion_note?: string;
+    intended_semantic_value?: string;
+    resolved_profile_found?: boolean;
+    resolved_profile_value?: any;
+    fallback_value?: any;
+    exported_value?: any;
+    placement_label?: string;
+    placement_profile_source?: string;
+    placement_profile_id?: string;
+    fallback_used?: boolean;
+    fallback_reason?: string;
+    resolved_numeric_values?: any;
+    exported_numeric_values?: any;
+    verification_status?: string;
   }[];
   not_exported_detail?: string[];
   tone_adjustment_intent?: Record<string, string>;
@@ -100,6 +113,12 @@ const STATUS_CONFIG: Record<string, StatusStyle> = {
     solid: "#f97316",
     clearBg: "rgba(249, 115, 22, 0.15)",
     clearBorder: "rgba(249, 115, 22, 0.40)",
+    pulse: true
+  },
+  PARTIAL_WITH_FALLBACK: {
+    solid: "#eab308",
+    clearBg: "rgba(234, 179, 8, 0.15)",
+    clearBorder: "rgba(234, 179, 8, 0.40)",
     pulse: true
   },
   CHECK: {
@@ -568,46 +587,94 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
           <div className="mb-2 text-sm font-bold text-slate-200">
             Export Parameter Verification Details
           </div>
-          <div className="space-y-2">
-            {item.parameter_details.map((param, pIdx) => (
-              <div
-                key={pIdx}
-                className="grid grid-cols-[140px_1fr] gap-3 border-b border-white/5 pb-2 text-xs leading-tight last:border-0 last:pb-0"
-              >
-                <div className="font-mono font-semibold text-slate-400">
-                  {param.parameter}
-                </div>
-                <div className="flex flex-col gap-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-slate-300">Intended: <strong className="text-slate-100">{param.display_value}</strong></span>
-                    {param.normalized_parameter && (
-                      <span className="text-slate-400 font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
-                        ({param.normalized_parameter})
-                      </span>
-                    )}
-                    <span className="text-slate-500 font-mono">→</span>
-                    <span className="text-slate-400">Exported Raw: <strong className="font-mono text-slate-100">"{param.exported_internal_value}"</strong></span>
-                    
-                    <span
-                      className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+          <div className="space-y-3">
+            {item.parameter_details.map((param, pIdx) => {
+              const isMicPlacement = param.parameter === "Mic 1 Placement" || param.parameter === "Mic 2 Placement";
+              if (isMicPlacement) {
+                const isFallback = param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK" || !param.resolved_profile_found;
+                return (
+                  <div key={pIdx} className="border-b border-white/5 pb-3 text-xs leading-normal last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between font-mono font-semibold text-slate-400 mb-1.5">
+                      <span>{param.parameter}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
                         param.mapping_status === "SUCCESS"
                           ? "bg-green-950/40 text-green-400"
-                          : param.mapping_status === "SUCCESS_NEAREST_BAND"
-                          ? "bg-amber-950/40 text-amber-400"
-                          : "bg-red-950/40 text-red-100"
-                      }`}
-                    >
-                      {param.mapping_status}
-                    </span>
+                          : "bg-amber-950/40 text-amber-400"
+                      }`}>
+                        {param.mapping_status === "FALLBACK_USED" ? "FALLBACK USED" : param.mapping_status}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-300 pl-2">
+                      <div>
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider">Intended Input</span>
+                        <strong className="text-slate-200">{param.display_value}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider">Resolved Profile</span>
+                        <span className={param.resolved_profile_found ? "text-green-400 font-semibold" : "text-amber-400 font-semibold"}>
+                          {param.resolved_profile_found ? `Found (${param.placement_profile_source || "Database"})` : "Not Found"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider">
+                          {isFallback ? "Fallback Exported" : "Resolved Exported"}
+                        </span>
+                        <div className="font-mono text-[10px] text-slate-200 bg-slate-900/60 p-2 rounded-lg border border-white/5 mt-1 space-y-0.5 max-w-xs">
+                          {param.exported_internal_value.split(", ").map((coord, cIdx) => (
+                            <div key={cIdx}>* {coord}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {param.conversion_note && (
+                      <div className="text-[10px] text-slate-500 italic mt-2 pl-2">
+                        Note: {param.conversion_note}
+                      </div>
+                    )}
                   </div>
-                  {param.conversion_note && (
-                    <span className="text-[10px] text-slate-500 italic">
-                      Note: {param.conversion_note}
-                    </span>
-                  )}
+                );
+              }
+
+              return (
+                <div
+                  key={pIdx}
+                  className="grid grid-cols-[140px_1fr] gap-3 border-b border-white/5 pb-2 text-xs leading-tight last:border-0 last:pb-0"
+                >
+                  <div className="font-mono font-semibold text-slate-400">
+                    {param.parameter}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-slate-300">Intended: <strong className="text-slate-100">{param.display_value}</strong></span>
+                      {param.normalized_parameter && (
+                        <span className="text-slate-400 font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
+                          ({param.normalized_parameter})
+                        </span>
+                      )}
+                      <span className="text-slate-500 font-mono">→</span>
+                      <span className="text-slate-400">Exported Raw: <strong className="font-mono text-slate-100">"{param.exported_internal_value}"</strong></span>
+                      
+                      <span
+                        className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                          param.mapping_status === "SUCCESS"
+                            ? "bg-green-950/40 text-green-400"
+                            : param.mapping_status === "SUCCESS_NEAREST_BAND" || param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK"
+                            ? "bg-amber-950/40 text-amber-400"
+                            : "bg-red-950/40 text-red-100"
+                        }`}
+                      >
+                        {param.mapping_status}
+                      </span>
+                    </div>
+                    {param.conversion_note && (
+                      <span className="text-[10px] text-slate-500 italic">
+                        Note: {param.conversion_note}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
