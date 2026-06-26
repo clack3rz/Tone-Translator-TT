@@ -24,7 +24,7 @@ type ExportDebugItem = {
   gear_attempted_to_xml?: boolean;
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
   mismatched_parameters?: string[];
-  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK";
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
@@ -71,6 +71,23 @@ type ExportDebugItem = {
   selection_context?: string;
   requested_generic_name?: string;
   resolved_profile_name?: string;
+  requested_gear_name?: string;
+  original_requested_gear_name?: string;
+  normalized_requested_gear_name?: string;
+  fallback_exported_gear_name?: string;
+  fallback_exported_guid?: string;
+  original_requested_settings?: Record<string, unknown>;
+  exported_fallback_settings?: string;
+  fallback_applied?: boolean;
+  fallback_trigger?: string;
+  fallback_reason?: string;
+  is_real_requested_default_gear?: boolean;
+  final_guid_source?: string;
+  fallback_block_triggered?: boolean;
+  parameter_schema_source?: string;
+  profile_validation_status?: string;
+  resolved_parameter_source?: string;
+  hardcoded_substitution_applied?: boolean;
 };
 
 type ExportDebugData = {
@@ -152,6 +169,12 @@ const STATUS_CONFIG: Record<string, StatusStyle> = {
     solid: "#f43f5e",
     clearBg: "rgba(244, 63, 94, 0.15)",
     clearBorder: "rgba(244, 63, 94, 0.55)",
+    pulse: true
+  },
+  BLOCKED_EXPORT: {
+    solid: "#ef4444",
+    clearBg: "rgba(239, 68, 68, 0.15)",
+    clearBorder: "rgba(239, 68, 68, 0.55)",
     pulse: true
   }
 };
@@ -374,7 +397,9 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-col">
             <div className="text-lg font-bold" style={readableValueStyle}>
-              {item.normalized_name}
+              {item.substitution_used || item.fallback_applied
+                ? item.original_requested_gear_name || item.requested_gear_name || item.original_name
+                : item.normalized_name}
             </div>
             <div className="text-sm" style={readableMutedStyle}>
               Original: {item.original_name}
@@ -394,7 +419,8 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
                 FAIL: "Fail",
                 SKIPPED: "Skipped",
                 CRITICAL: "Critical",
-                SUBSTITUTED_FALLBACK: "Substituted"
+                SUBSTITUTED_FALLBACK: "Substituted",
+                BLOCKED_EXPORT: "Blocked"
               }[statusKey] || statusKey;
 
               return (
@@ -468,22 +494,58 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
           </div>
         )}
 
-        {(item.final_status === "CRITICAL" || item.substitution_used) && (
+        {(item.substitution_used || item.fallback_applied) && (
+          <div>
+            <span className="font-bold" style={{ color: "#f43f5e" }}>
+              Exported fallback:
+            </span>{" "}
+            <span className="font-semibold text-rose-300">
+              {item.actual_exported_gear_name || item.fallback_exported_gear_name || "None"}
+            </span>
+          </div>
+        )}
+
+        {(item.final_status === "CRITICAL" || item.substitution_used || item.fallback_applied) && (
           <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-xs font-mono space-y-1.5">
             <div className="font-bold text-red-400 uppercase tracking-wider text-[10px]">
               CRITICAL EXPORT SUBSTITUTION DETECTED
             </div>
             <div>
-              <span className="text-gray-400">Requested Gear:</span> <span className="font-semibold text-white">{item.original_name}</span>
+              <span className="text-gray-400">Requested Gear:</span>{" "}
+              <span className="font-semibold text-white">
+                {item.original_requested_gear_name || item.requested_gear_name || item.original_name}
+              </span>
             </div>
             <div>
-              <span className="text-gray-400">Actual Exported Gear:</span> <span className="font-semibold text-white">{item.actual_exported_gear_name || "None"}</span>
+              <span className="text-gray-400">Actual Exported Gear:</span>{" "}
+              <span className="font-semibold text-white">
+                {item.fallback_exported_gear_name || item.actual_exported_gear_name || "None"}
+              </span>
+            </div>
+            {item.fallback_exported_guid && (
+              <div>
+                <span className="text-gray-400">Fallback GUID:</span>{" "}
+                <span className="font-semibold text-white">
+                  {item.fallback_exported_guid}
+                </span>
+              </div>
+            )}
+            <div>
+              <span className="text-gray-400">Fallback Reason:</span>{" "}
+              <span className="font-semibold text-white">
+                {item.fallback_reason || item.substitution_reason || "missing_verified_guid"}
+              </span>
             </div>
             <div>
-              <span className="text-gray-400">Fallback Used:</span> <span className="font-semibold text-white">Yes</span>
+              <span className="text-gray-400">Fallback Used:</span>{" "}
+              <span className="font-semibold text-white">Yes</span>
             </div>
             <div className="pt-1.5 border-t border-red-500/10 mt-1.5 text-gray-300">
-              <span className="font-bold text-red-400">Action Required:</span> Import an AT5 .at5p preset containing <span className="underline font-semibold text-white">{item.original_name}</span> using Gear Management / Discovery.
+              <span className="font-bold text-red-400">Action Required:</span> Import an AT5 .at5p preset containing{" "}
+              <span className="underline font-semibold text-white">
+                {item.original_requested_gear_name || item.requested_gear_name || item.original_name}
+              </span>{" "}
+              using Gear Management / Discovery.
             </div>
           </div>
         )}

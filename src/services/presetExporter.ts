@@ -867,7 +867,7 @@ export interface ExportDebugItem {
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
   mismatched_parameters?: string[];
   dropped_parameters?: string[];
-  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK";
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
@@ -937,6 +937,8 @@ export interface ExportDebugItem {
   profile_validation_status?: string;
   resolved_parameter_source?: string;
   hardcoded_substitution_applied?: boolean;
+  fallback_applied?: boolean;
+  fallback_trigger?: string;
   darrell_channel_selected?: string;
   darrell_active_gain_parameter?: string;
   darrell_active_master_parameter?: string;
@@ -2443,6 +2445,8 @@ const makeDebugItem = (
     original_requested_settings: pair.raw.settings ?? {},
     exported_fallback_settings: fallback_guid_used ? attrs : undefined,
     fallback_guid_used,
+    fallback_applied: fallback_guid_used,
+    fallback_trigger: fallback_guid_used ? (group === "amp" ? "DEFAULT_AMP_GUID" : group === "cab" ? "DEFAULT_CAB_GUID" : "default") : undefined,
     fallback_source: fallback_source || undefined,
     substitution_used,
     substitution_reason: substitution_reason || undefined,
