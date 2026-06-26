@@ -939,6 +939,9 @@ export interface ExportDebugItem {
   hardcoded_substitution_applied?: boolean;
   fallback_applied?: boolean;
   fallback_trigger?: string;
+  fallback_reason?: string;
+  is_real_requested_default_gear?: boolean;
+  fallback_decision_source?: "resolver" | "safe_mode" | "strict_mode" | "none";
   darrell_channel_selected?: string;
   darrell_active_gain_parameter?: string;
   darrell_active_master_parameter?: string;
@@ -1098,6 +1101,11 @@ const makeDebugItem = (
     ...pair.normalized,
     settings: normalizeSettingsToCanonical(pair.normalized.name, group, pair.normalized.settings ?? {}),
   };
+
+  const originalRequestedGearName = pair.raw.name;
+  const originalRequestedSettings = { ...(pair.raw.settings ?? {}) };
+  const normalizedRequestedGearName = gear.name;
+  const normalizedRequestedSettings = { ...(gear.settings ?? {}) };
 
   if (group === "cab") {
     if (!pair.raw.settings) pair.raw.settings = {};
@@ -1345,10 +1353,6 @@ const makeDebugItem = (
   const guidInfo = resolveGearGuidInfo(gear.name, group);
   const catalogMatch = findAT5Gear(gear.name, group);
   let resolvedGuid = guidInfo.resolvedGuid;
-  let fallback_guid_used = guidInfo.fallback_block_triggered;
-  let fallback_source = fallback_guid_used ? `Default ${group} Fallback` : "";
-  let substitution_used = false;
-  let substitution_reason = "";
 
   // 1b. Check if the GUID is verified for the intended gear (Rule 3)
   let verified_guid_resolved = false;
@@ -1378,46 +1382,7 @@ const makeDebugItem = (
     }
   }
 
-  // 3. Handle Safe/Strict Export Mode substitutions of unverified items
-  if (!verified_guid_resolved) {
-    if (exportStrictnessMode === "safe") {
-      substitution_used = true;
-      fallback_guid_used = true;
-      if (group === "amp") {
-        resolvedGuid = DEFAULT_AMP_GUID;
-        substitution_reason = `"${gear.name}" lacks verified GUID; exported verified substitute "Brit 8000" instead.`;
-      } else if (group === "cab") {
-        resolvedGuid = DEFAULT_CAB_GUID;
-        substitution_reason = `"${gear.name}" lacks verified GUID; exported verified substitute "4x12 Brit 8000" instead.`;
-      } else {
-         substitution_reason = `"${gear.name}" lacks verified GUID; exported default substitute instead.`;
-      }
-    } else if (exportStrictnessMode === "strict") {
-      resolvedGuid = "";
-      substitution_used = false;
-      fallback_guid_used = false;
-      substitution_reason = `"${gear.name}" lacks verified GUID. Strict Export Mode blocks fallback export.`;
-    }
-  }
-
-  const guid = resolvedGuid;
-
-  // 4. Determine Actual Exported Gear Name
-  let actualExportedGearName = gear.name;
-  if (!guid || guid === "") {
-    actualExportedGearName = "None";
-  } else if (guid === DEFAULT_AMP_GUID) {
-    actualExportedGearName = "Brit 8000";
-  } else if (guid === DEFAULT_CAB_GUID) {
-    actualExportedGearName = "4x12 Brit 8000";
-  } else {
-    const matchByGuid = getAt5Catalog().find(c => c.guid === guid);
-    if (matchByGuid) {
-      actualExportedGearName = matchByGuid.displayName;
-    }
-  }
-
-  // Determine if a real fallback substitution was applied because requested gear lacks verified GUID
+  // 2. Explicit Fallback and Substitution Decider (Anti-Guesswork)
   const isOriginalRequestBrit8000 = (
     gear.name.toLowerCase() === "brit 8000" ||
     pair.raw.name.toLowerCase().trim() === "brit 8000" ||
@@ -1433,37 +1398,102 @@ const makeDebugItem = (
     pair.raw.name.toLowerCase().trim() === "4x12 jcm800"
   );
 
-  let isFallback = guidInfo.fallback_block_triggered || fallback_guid_used;
-  if (guid === DEFAULT_AMP_GUID && !isOriginalRequestBrit8000) {
-    isFallback = true;
-  }
-  if (guid === DEFAULT_CAB_GUID && !isOriginalRequestCabBrit8000) {
-    isFallback = true;
-  }
+  const is_real_requested_default_gear = (group === "amp" && isOriginalRequestBrit8000) || (group === "cab" && isOriginalRequestCabBrit8000);
 
-  if (isOriginalRequestBrit8000 && guid === DEFAULT_AMP_GUID) {
-    isFallback = false;
-  }
-  if (isOriginalRequestCabBrit8000 && guid === DEFAULT_CAB_GUID) {
-    isFallback = false;
-  }
+  let fallback_decision_source: "resolver" | "safe_mode" | "strict_mode" | "none" = "none";
+  let fallback_applied = false;
+  let fallback_guid_used = false;
+  let substitution_used = false;
+  let fallback_trigger: string | undefined = undefined;
+  let fallback_reason: string | undefined = undefined;
+  let substitution_reason = "";
+  let fallback_source = "";
 
-  fallback_guid_used = isFallback;
-
-  // Set standard substitution and fallback details if actual exported gear name !== requested gear name
-  if (fallback_guid_used || (actualExportedGearName !== gear.name && guid !== "")) {
-    substitution_used = true;
-    if (!substitution_reason) {
-      substitution_reason = `Requested gear "${gear.name}" lacked verified GUID, so fallback gear "${actualExportedGearName}" was exported.`;
+  if (!verified_guid_resolved) {
+    if (exportStrictnessMode === "strict") {
+      fallback_decision_source = "strict_mode";
+      resolvedGuid = "";
+      fallback_applied = false;
+      fallback_guid_used = false;
+      substitution_used = false;
+      fallback_trigger = "strict_mode_blocked";
+      fallback_reason = "Strict mode blocked export because the requested gear lacks a verified GUID.";
+      substitution_reason = fallback_reason;
+    } else {
+      fallback_decision_source = "safe_mode";
+      if (is_real_requested_default_gear) {
+        fallback_applied = false;
+        fallback_guid_used = false;
+        substitution_used = false;
+      } else {
+        fallback_applied = true;
+        fallback_guid_used = true;
+        substitution_used = true;
+        fallback_trigger = "missing_verified_guid";
+        if (group === "amp") {
+          resolvedGuid = DEFAULT_AMP_GUID;
+        } else if (group === "cab") {
+          resolvedGuid = DEFAULT_CAB_GUID;
+        } else {
+          resolvedGuid = getFallbackGuidForGroup(group);
+        }
+      }
     }
-    if (!fallback_source) {
-      fallback_source = `Default ${group} fallback`;
+  } else if (guidInfo.fallback_block_triggered) {
+    if (is_real_requested_default_gear) {
+      fallback_decision_source = "none";
+      fallback_applied = false;
+      fallback_guid_used = false;
+      substitution_used = false;
+    } else {
+      fallback_decision_source = "resolver";
+      fallback_applied = true;
+      fallback_guid_used = true;
+      substitution_used = true;
+      fallback_trigger = "missing_catalog_guid";
+      if (group === "amp") {
+        resolvedGuid = DEFAULT_AMP_GUID;
+      } else if (group === "cab") {
+        resolvedGuid = DEFAULT_CAB_GUID;
+      } else {
+        resolvedGuid = getFallbackGuidForGroup(group);
+      }
     }
-    guidInfo.final_guid_source = "fallback";
+  }
+
+  const guid = resolvedGuid;
+
+  // Determine Actual Exported Gear Name
+  let actualExportedGearName = gear.name;
+  if (!guid || guid === "" || guid === AT5_EMPTY_SLOT_GUID) {
+    actualExportedGearName = "None";
+  } else if (guid === DEFAULT_AMP_GUID) {
+    actualExportedGearName = "Brit 8000";
+  } else if (guid === DEFAULT_CAB_GUID) {
+    actualExportedGearName = "4x12 Brit 8000";
   } else {
-    substitution_used = false;
-    substitution_reason = "";
-    fallback_source = "";
+    const matchByGuid = getAt5Catalog().find(c => c.guid === guid);
+    if (matchByGuid) {
+      actualExportedGearName = matchByGuid.displayName;
+    }
+  }
+
+  // Populate actual reason texts based on the finalized names and flags
+  if (fallback_applied || substitution_used) {
+    fallback_source = `Default ${group} fallback`;
+    guidInfo.final_guid_source = "fallback";
+    
+    if (fallback_trigger === "missing_verified_guid") {
+      fallback_reason = `TT exported fallback "${actualExportedGearName}" instead of requested gear "${originalRequestedGearName}" because the requested gear lacks a verified GUID.`;
+    } else if (fallback_trigger === "missing_catalog_guid") {
+      fallback_reason = `TT exported fallback "${actualExportedGearName}" instead of requested gear "${originalRequestedGearName}" because the requested gear is missing from the catalog.`;
+    } else {
+      fallback_reason = `TT exported fallback "${actualExportedGearName}" instead of requested gear "${originalRequestedGearName}".`;
+    }
+    substitution_reason = fallback_reason;
+  } else if (fallback_decision_source === "strict_mode") {
+    fallback_reason = "Strict mode blocked export because the requested gear lacks a verified GUID.";
+    substitution_reason = fallback_reason;
   }
 
   // 5. Build attributes & map unverified settings appropriately using substituted gear schema
@@ -2407,15 +2437,15 @@ const makeDebugItem = (
   }
 
   return {
-    original_name: pair.raw.name,
-    normalized_name: gear.name,
+    original_name: originalRequestedGearName,
+    normalized_name: normalizedRequestedGearName,
     type: gear.type,
     resolved_guid: guid,
     slot_section: section,
     slot_index: index,
     original_index: pair.originalIndex,
-    original_settings: pair.raw.settings ?? {},
-    normalized_settings: gear.settings ?? {},
+    original_settings: originalRequestedSettings,
+    normalized_settings: normalizedRequestedSettings,
     exported_settings: attrs,
     exported: finalExported,
     reason: finalReason,
@@ -2435,18 +2465,21 @@ const makeDebugItem = (
     // extra diagnostic fields as requested
     verified_guid_resolved,
     actual_exported_guid: guid,
-    intended_gear_name: pair.raw.name,
-    requested_gear_name: pair.raw.name,
-    original_requested_gear_name: pair.raw.name,
-    normalized_requested_gear_name: gear.name,
+    intended_gear_name: originalRequestedGearName,
+    requested_gear_name: originalRequestedGearName,
+    original_requested_gear_name: originalRequestedGearName,
+    normalized_requested_gear_name: normalizedRequestedGearName,
     actual_exported_gear_name: actualExportedGearName,
-    fallback_exported_gear_name: fallback_guid_used ? actualExportedGearName : undefined,
-    fallback_exported_guid: fallback_guid_used ? guid : undefined,
-    original_requested_settings: pair.raw.settings ?? {},
-    exported_fallback_settings: fallback_guid_used ? attrs : undefined,
-    fallback_guid_used,
-    fallback_applied: fallback_guid_used,
-    fallback_trigger: fallback_guid_used ? (group === "amp" ? "DEFAULT_AMP_GUID" : group === "cab" ? "DEFAULT_CAB_GUID" : "default") : undefined,
+    fallback_exported_gear_name: fallback_applied ? actualExportedGearName : undefined,
+    fallback_exported_guid: fallback_applied ? guid : undefined,
+    original_requested_settings: originalRequestedSettings,
+    exported_fallback_settings: fallback_applied ? attrs : undefined,
+    fallback_guid_used: fallback_applied,
+    fallback_applied,
+    fallback_trigger,
+    fallback_reason,
+    is_real_requested_default_gear,
+    fallback_decision_source,
     fallback_source: fallback_source || undefined,
     substitution_used,
     substitution_reason: substitution_reason || undefined,

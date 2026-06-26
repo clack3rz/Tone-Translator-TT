@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Sliders } from "lucide-react";
 import { getAt5Catalog } from "../services/at5Catalog";
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "../services/at5VerifiedProtocols";
@@ -88,6 +88,7 @@ type ExportDebugItem = {
   profile_validation_status?: string;
   resolved_parameter_source?: string;
   hardcoded_substitution_applied?: boolean;
+  fallback_decision_source?: "resolver" | "safe_mode" | "strict_mode" | "none";
 };
 
 type ExportDebugData = {
@@ -908,8 +909,14 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
     return { totalCount, passCount, warningCount, partialCount, checkCount, skippedCount, failCount, criticalCount, substitutionCount };
   }, [debugData]);
 
+  const [copied, setCopied] = useState(false);
+
   const copyJson = async () => {
     await navigator.clipboard.writeText(JSON.stringify(debugData, null, 2));
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   };
 
   const exportJson = () => {
@@ -921,7 +928,7 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "tt-at5-signal-chain-debug.json";
+    link.download = "tt-at5-export-debug.json";
 
     document.body.appendChild(link);
     link.click();
@@ -1070,10 +1077,9 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
           <button
             type="button"
             onClick={copyJson}
-            className="rounded-xl bg-white/5 hover:bg-white/10 px-5 py-2.5 text-xs font-bold uppercase tracking-widest border border-white/10 transition-all shadow-lg active:scale-95"
-            style={{ color: "#ffffff" }}
+            className={`rounded-xl px-5 py-2.5 text-xs font-bold uppercase tracking-widest border transition-all shadow-lg active:scale-95 ${copied ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40' : 'bg-white/5 hover:bg-white/10 text-white border-white/10'}`}
           >
-            Copy Chain JSON
+            {copied ? "Debug JSON copied." : "Copy Debug JSON"}
           </button>
 
           <button
@@ -1082,7 +1088,7 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
             className="rounded-xl bg-white/5 hover:bg-white/10 px-5 py-2.5 text-xs font-bold uppercase tracking-widest border border-white/10 transition-all shadow-lg active:scale-95"
             style={{ color: "#ffffff" }}
           >
-            Export Chain JSON
+            Export Debug JSON
           </button>
         </div>
       </div>
