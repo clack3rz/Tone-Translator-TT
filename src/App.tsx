@@ -88,6 +88,18 @@ const STATUS_CONFIG: Record<string, { solid: string; clearBg: string; clearBorde
     clearBorder: "rgba(239, 68, 68, 0.40)",
     pulse: true
   },
+  critical: {
+    solid: "#ef4444",
+    clearBg: "rgba(239, 68, 68, 0.15)",
+    clearBorder: "rgba(239, 68, 68, 0.55)",
+    pulse: true
+  },
+  substituted: {
+    solid: "#f43f5e",
+    clearBg: "rgba(244, 63, 94, 0.15)",
+    clearBorder: "rgba(244, 63, 94, 0.55)",
+    pulse: true
+  },
   normal: {
     solid: "#9ca3af",
     clearBg: "transparent",
@@ -202,6 +214,12 @@ export default function App() {
     }
     if (rawStatus === "SKIPPED") {
       return { type: 'skipped', label: 'SKIPPED', reason };
+    }
+    if (rawStatus === "CRITICAL") {
+      return { type: 'critical', label: 'CRITICAL', reason };
+    }
+    if (rawStatus === "SUBSTITUTED_FALLBACK") {
+      return { type: 'substituted', label: 'SUBSTITUTED', reason };
     }
     if (rawStatus === "CHECK") {
       return { type: 'check', label: 'CHECK', reason };

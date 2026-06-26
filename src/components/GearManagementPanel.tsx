@@ -2491,38 +2491,80 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                                   {activeInstance.parameter_details.map((detail: any, idx: number) => {
                                     const isMicPlacement = detail.parameter === "Mic 1 Placement" || detail.parameter === "Mic 2 Placement";
                                     if (isMicPlacement) {
+                                      const isMic1 = detail.parameter === "Mic 1 Placement";
                                       const isFallback = detail.mapping_status === "FALLBACK_USED" || detail.mapping_status === "PARTIAL_WITH_FALLBACK" || !detail.resolved_profile_found;
+                                      
+                                      // Friendly source label
+                                      let sourceLabel = "Cabinet Default Coordinates";
+                                      if (detail.placement_source === "calibrated_profile") sourceLabel = "Calibrated Profile";
+                                      else if (detail.placement_source === "at5p_discovery_profile") sourceLabel = "Imported AT5 Preset Profile";
+                                      else if (detail.placement_source === "fallback_default") sourceLabel = "Fallback Default Coordinates";
+                                      else if (detail.placement_source === "imported_existing_value") sourceLabel = "Imported AT5 Value";
+                                      else if (detail.placement_source === "cab_default") sourceLabel = "Cabinet Default Coordinates";
+
+                                      // Styled status badge
+                                      let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-800";
+                                      let badgeText = "DEFAULT USED";
+                                      if (detail.mapping_status === "RESOLVED_FROM_PROFILE") {
+                                        badgeStyle = "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20";
+                                        badgeText = "RESOLVED FROM PROFILE";
+                                      } else if (detail.mapping_status === "FALLBACK_USED") {
+                                        badgeStyle = "bg-amber-950/40 text-amber-400 border border-amber-500/20";
+                                        badgeText = "FALLBACK USED";
+                                      } else if (detail.mapping_status === "NOT_SPECIFIED") {
+                                        badgeStyle = "bg-blue-950/20 text-blue-400 border border-blue-500/20";
+                                        badgeText = "DEFAULT USED";
+                                      }
+
                                       return (
-                                        <div key={idx} className="bg-black/10 p-4 space-y-3 font-mono text-xs">
-                                          <div className="flex items-center justify-between">
-                                            <div className="text-gray-300 font-bold">{detail.parameter}</div>
-                                            <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
-                                              detail.mapping_status === "SUCCESS"
-                                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                            }`}>
-                                              {detail.mapping_status === "FALLBACK_USED" ? "FALLBACK USED" : detail.mapping_status}
+                                        <div key={idx} className="bg-black/15 p-4 space-y-3 font-mono text-xs border-b border-white/5 last:border-0">
+                                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-1.5">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-gray-200 font-bold">{detail.parameter}</span>
+                                              <span className="text-[10px] text-cyan-400">
+                                                ({isMic1 ? "TT Mic_1 → AT5 Mic0" : "TT Mic_2 → AT5 Mic1"})
+                                              </span>
+                                            </div>
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider self-start md:self-auto ${badgeStyle}`}>
+                                              {badgeText}
                                             </span>
                                           </div>
                                           
-                                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[10.5px]">
+                                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[10.5px]">
                                             <div>
-                                              <div className="text-[8.5px] text-gray-500 uppercase">Intended Input</div>
-                                              <div className="text-gray-300 font-bold mt-0.5">{detail.display_value}</div>
+                                              <div className="text-[8.5px] text-gray-500 uppercase tracking-wider mb-0.5">Intended Semantic Placement</div>
+                                              <div className="text-gray-300 font-bold">{detail.display_value}</div>
+                                              {detail.display_value !== "Not specified" && (
+                                                <span className="text-[9px] text-gray-500 block mt-0.5">
+                                                  Provided by signal chain
+                                                </span>
+                                              )}
                                             </div>
+                                            
                                             <div>
-                                              <div className="text-[8.5px] text-gray-500 uppercase">Resolved Profile</div>
-                                              <div className={`font-bold mt-0.5 ${detail.resolved_profile_found ? "text-emerald-400" : "text-amber-400"}`}>
-                                                {detail.resolved_profile_found ? `Found (${detail.placement_profile_source || "Database"})` : "Not Found"}
+                                              <div className="text-[8.5px] text-gray-500 uppercase tracking-wider mb-0.5">Placement Source</div>
+                                              <div className="flex flex-col gap-1 mt-0.5">
+                                                <span className={detail.resolved_profile_found ? "text-emerald-400 font-semibold" : isFallback ? "text-amber-400 font-semibold" : "text-blue-400 font-semibold"}>
+                                                  {sourceLabel}
+                                                </span>
+                                                {detail.resolved_profile_found && detail.placement_profile_source && (
+                                                  <span className="text-[8.5px] text-gray-500">
+                                                    Profile ID: {detail.placement_profile_id ? detail.placement_profile_id.substring(0, 8) : "N/A"}
+                                                  </span>
+                                                )}
                                               </div>
                                             </div>
+
                                             <div>
-                                              <div className="text-[8.5px] text-gray-500 uppercase">
-                                                {isFallback ? "Fallback Exported" : "Resolved Exported"}
+                                              <div className="text-[8.5px] text-gray-500 uppercase tracking-wider mb-0.5">
+                                                {isFallback ? "Fallback Exported (XML)" : "Exported (XML)"}
                                               </div>
-                                              <div className="bg-black/40 p-2 rounded-xl border border-white/5 mt-1 space-y-1 text-gray-300 text-[10px]">
+                                              <div className="bg-black/40 p-2.5 rounded-xl border border-white/5 mt-1 space-y-1 text-gray-300 text-[10px]">
                                                 {detail.exported_internal_value.split(", ").map((coord: string, cIdx: number) => (
-                                                  <div key={cIdx}>* {coord}</div>
+                                                  <div key={cIdx} className="flex justify-between">
+                                                    <span className="text-gray-500">{coord.split(":")[0]}:</span>
+                                                    <span className="text-cyan-400 font-semibold">{coord.split(":")[1]}</span>
+                                                  </div>
                                                 ))}
                                               </div>
                                             </div>

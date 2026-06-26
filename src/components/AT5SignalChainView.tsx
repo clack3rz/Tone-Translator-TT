@@ -24,7 +24,7 @@ type ExportDebugItem = {
   gear_attempted_to_xml?: boolean;
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
   mismatched_parameters?: string[];
-  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL";
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
@@ -46,6 +46,9 @@ type ExportDebugItem = {
     resolved_numeric_values?: any;
     exported_numeric_values?: any;
     verification_status?: string;
+    placement_was_supplied_by_chain?: boolean;
+    placement_source?: string;
+    resolved_at5_fields?: any;
   }[];
   not_exported_detail?: string[];
   tone_adjustment_intent?: Record<string, string>;
@@ -137,6 +140,18 @@ const STATUS_CONFIG: Record<string, StatusStyle> = {
     solid: "#ef4444",
     clearBg: "rgba(239, 68, 68, 0.15)",
     clearBorder: "rgba(239, 68, 68, 0.40)",
+    pulse: true
+  },
+  CRITICAL: {
+    solid: "#ef4444",
+    clearBg: "rgba(239, 68, 68, 0.15)",
+    clearBorder: "rgba(239, 68, 68, 0.55)",
+    pulse: true
+  },
+  SUBSTITUTED_FALLBACK: {
+    solid: "#f43f5e",
+    clearBg: "rgba(244, 63, 94, 0.15)",
+    clearBorder: "rgba(244, 63, 94, 0.55)",
     pulse: true
   }
 };
@@ -336,13 +351,24 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
     return isUnknown(resolveGuidName(val, k));
   }) || (item.resolved_guid && isGuid(item.resolved_guid) && isUnknown(resolveGuidName(item.resolved_guid)));
 
+  const isCritical = item.final_status === "CRITICAL" || item.final_status === "FAIL" || item.substitution_used;
+  const isCheckOrWarn = isCheck || cardHasUnknown || item.final_status === "CHECK" || item.final_status === "PASS_WITH_WARNING";
+
+  const customCardStyle = {
+    ...readableCardStyle,
+    backgroundColor: isCritical 
+      ? "#1a0f12" 
+      : (isCheckOrWarn ? "#1c140d" : "#0f172a"),
+    borderColor: isCritical 
+      ? "rgba(239, 68, 68, 0.4)" 
+      : (isCheckOrWarn ? "rgba(234, 179, 8, 0.3)" : "rgba(30, 41, 59, 0.5)"),
+  };
+
   return (
     <div
       id={cardId}
-      className={`rounded-2xl border p-4 shadow-xl transition-all duration-500 target:ring-2 target:ring-gear-accent target:ring-offset-4 target:ring-offset-black scroll-mt-24 ${
-        isCheck || cardHasUnknown ? 'border-amber-950/50' : 'border-slate-800'
-      }`}
-      style={readableCardStyle}
+      className={`rounded-2xl border p-4 shadow-xl transition-all duration-500 target:ring-2 target:ring-gear-accent target:ring-offset-4 target:ring-offset-black scroll-mt-24`}
+      style={customCardStyle}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
@@ -366,8 +392,10 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
                 PARTIAL: "Partial",
                 CHECK: "Check",
                 FAIL: "Fail",
-                SKIPPED: "Skipped"
-              }[statusKey] || "Pass";
+                SKIPPED: "Skipped",
+                CRITICAL: "Critical",
+                SUBSTITUTED_FALLBACK: "Substituted"
+              }[statusKey] || statusKey;
 
               return (
                 <span
@@ -437,6 +465,26 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
           <div className="mt-2 text-xs p-2.5 rounded bg-amber-500/10 border border-amber-500/20 text-gray-300 font-mono">
             <span className="font-bold text-amber-400">Suggested Action: </span>
             {item.suggested_action}
+          </div>
+        )}
+
+        {(item.final_status === "CRITICAL" || item.substitution_used) && (
+          <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-xs font-mono space-y-1.5">
+            <div className="font-bold text-red-400 uppercase tracking-wider text-[10px]">
+              CRITICAL EXPORT SUBSTITUTION DETECTED
+            </div>
+            <div>
+              <span className="text-gray-400">Requested Gear:</span> <span className="font-semibold text-white">{item.original_name}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Actual Exported Gear:</span> <span className="font-semibold text-white">{item.actual_exported_gear_name || "None"}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Fallback Used:</span> <span className="font-semibold text-white">Yes</span>
+            </div>
+            <div className="pt-1.5 border-t border-red-500/10 mt-1.5 text-gray-300">
+              <span className="font-bold text-red-400">Action Required:</span> Import an AT5 .at5p preset containing <span className="underline font-semibold text-white">{item.original_name}</span> using Gear Management / Discovery.
+            </div>
           </div>
         )}
 
@@ -591,43 +639,87 @@ const GearCard = ({ item, onJumpToCatalogue }: { item: ExportDebugItem; onJumpTo
             {item.parameter_details.map((param, pIdx) => {
               const isMicPlacement = param.parameter === "Mic 1 Placement" || param.parameter === "Mic 2 Placement";
               if (isMicPlacement) {
+                const isMic1 = param.parameter === "Mic 1 Placement";
                 const isFallback = param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK" || !param.resolved_profile_found;
+                
+                // Friendly source label
+                let sourceLabel = "Cabinet Default Coordinates";
+                if (param.placement_source === "calibrated_profile") sourceLabel = "Calibrated Profile";
+                else if (param.placement_source === "at5p_discovery_profile") sourceLabel = "Imported AT5 Preset Profile";
+                else if (param.placement_source === "fallback_default") sourceLabel = "Fallback Default Coordinates";
+                else if (param.placement_source === "imported_existing_value") sourceLabel = "Imported AT5 Value";
+                else if (param.placement_source === "cab_default") sourceLabel = "Cabinet Default Coordinates";
+
+                // Styled status badge
+                let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-800";
+                let badgeText = "DEFAULT USED";
+                if (param.mapping_status === "RESOLVED_FROM_PROFILE") {
+                  badgeStyle = "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20";
+                  badgeText = "RESOLVED FROM PROFILE";
+                } else if (param.mapping_status === "FALLBACK_USED") {
+                  badgeStyle = "bg-amber-950/40 text-amber-400 border border-amber-500/20";
+                  badgeText = "FALLBACK USED";
+                } else if (param.mapping_status === "NOT_SPECIFIED") {
+                  badgeStyle = "bg-blue-950/20 text-blue-400 border border-blue-500/20";
+                  badgeText = "DEFAULT USED";
+                }
+
                 return (
-                  <div key={pIdx} className="border-b border-white/5 pb-3 text-xs leading-normal last:border-0 last:pb-0">
-                    <div className="flex items-center justify-between font-mono font-semibold text-slate-400 mb-1.5">
-                      <span>{param.parameter}</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                        param.mapping_status === "SUCCESS"
-                          ? "bg-green-950/40 text-green-400"
-                          : "bg-amber-950/40 text-amber-400"
-                      }`}>
-                        {param.mapping_status === "FALLBACK_USED" ? "FALLBACK USED" : param.mapping_status}
+                  <div key={pIdx} className="border-b border-white/5 pb-4 text-xs leading-normal last:border-0 last:pb-0">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between font-mono font-semibold text-slate-400 mb-2 gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-200">{param.parameter}</span>
+                        <span className="text-[10px] text-cyan-400 font-normal">
+                          ({isMic1 ? "TT Mic_1 → AT5 Mic0" : "TT Mic_2 → AT5 Mic1"})
+                        </span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider self-start md:self-auto ${badgeStyle}`}>
+                        {badgeText}
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-300 pl-2">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-300 pl-2">
                       <div>
-                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider">Intended Input</span>
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">Intended Semantic Placement</span>
                         <strong className="text-slate-200">{param.display_value}</strong>
+                        {param.display_value !== "Not specified" && (
+                          <span className="text-[10px] text-slate-500 block mt-1 font-mono">
+                            Provided by signal chain
+                          </span>
+                        )}
                       </div>
+                      
                       <div>
-                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider">Resolved Profile</span>
-                        <span className={param.resolved_profile_found ? "text-green-400 font-semibold" : "text-amber-400 font-semibold"}>
-                          {param.resolved_profile_found ? `Found (${param.placement_profile_source || "Database"})` : "Not Found"}
-                        </span>
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">Placement Source</span>
+                        <div className="flex flex-col gap-1">
+                          <span className={param.resolved_profile_found ? "text-emerald-400 font-semibold" : isFallback ? "text-amber-400 font-semibold" : "text-blue-400 font-semibold"}>
+                            {sourceLabel}
+                          </span>
+                          {param.resolved_profile_found && param.placement_profile_source && (
+                            <span className="text-[9px] text-slate-500 font-mono">
+                              Profile ID: {param.placement_profile_id ? param.placement_profile_id.substring(0, 8) : "N/A"}
+                            </span>
+                          )}
+                        </div>
                       </div>
+
                       <div>
-                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider">
-                          {isFallback ? "Fallback Exported" : "Resolved Exported"}
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">
+                          {isFallback ? "Fallback Exported (XML)" : "Exported (XML)"}
                         </span>
-                        <div className="font-mono text-[10px] text-slate-200 bg-slate-900/60 p-2 rounded-lg border border-white/5 mt-1 space-y-0.5 max-w-xs">
+                        <div className="font-mono text-[10px] text-slate-300 bg-slate-900/60 p-2.5 rounded-lg border border-white/5 mt-1 space-y-0.5 max-w-xs">
                           {param.exported_internal_value.split(", ").map((coord, cIdx) => (
-                            <div key={cIdx}>* {coord}</div>
+                            <div key={cIdx} className="flex justify-between">
+                              <span className="text-slate-500">{coord.split(":")[0]}:</span>
+                              <span className="text-cyan-400 font-semibold">{coord.split(":")[1]}</span>
+                            </div>
                           ))}
                         </div>
                       </div>
                     </div>
+
                     {param.conversion_note && (
-                      <div className="text-[10px] text-slate-500 italic mt-2 pl-2">
+                      <div className="text-[10px] text-slate-500 italic mt-2.5 pl-2 border-l-2 border-slate-800">
                         Note: {param.conversion_note}
                       </div>
                     )}
@@ -727,6 +819,8 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
     let checkCount = 0;
     let skippedCount = 0;
     let failCount = 0;
+    let criticalCount = 0;
+    let substitutionCount = 0;
 
     all.forEach(item => {
       const status = item.final_status || "PASS";
@@ -742,10 +836,14 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
         skippedCount++;
       } else if (status === "FAIL") {
         failCount++;
+      } else if (status === "CRITICAL") {
+        criticalCount++;
+      } else if (status === "SUBSTITUTED_FALLBACK") {
+        substitutionCount++;
       }
     });
 
-    return { totalCount, passCount, warningCount, partialCount, checkCount, skippedCount, failCount };
+    return { totalCount, passCount, warningCount, partialCount, checkCount, skippedCount, failCount, criticalCount, substitutionCount };
   }, [debugData]);
 
   const copyJson = async () => {
@@ -787,7 +885,7 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
                 Total: {stats.totalCount}
               </span>
 
-              {stats.checkCount === 0 && stats.skippedCount === 0 && stats.warningCount === 0 && stats.partialCount === 0 && stats.failCount === 0 ? (
+              {stats.checkCount === 0 && stats.skippedCount === 0 && stats.warningCount === 0 && stats.partialCount === 0 && stats.failCount === 0 && stats.criticalCount === 0 && stats.substitutionCount === 0 ? (
                 <span 
                   className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.PASS.pulse ? "animate-pulse" : ""}`}
                   style={{
@@ -810,6 +908,30 @@ export const AT5SignalChainView: React.FC<Props> = ({ debugData, onJumpToCatalog
                   >
                     Pass: {stats.passCount}
                   </span>
+                  {stats.criticalCount > 0 && (
+                    <span 
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.CRITICAL.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: STATUS_CONFIG.CRITICAL.solid,
+                        backgroundColor: STATUS_CONFIG.CRITICAL.clearBg,
+                        borderColor: STATUS_CONFIG.CRITICAL.clearBorder
+                      }}
+                    >
+                      Critical: {stats.criticalCount}
+                    </span>
+                  )}
+                  {stats.substitutionCount > 0 && (
+                    <span 
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.SUBSTITUTED_FALLBACK.pulse ? "animate-pulse" : ""}`}
+                      style={{
+                        color: STATUS_CONFIG.SUBSTITUTED_FALLBACK.solid,
+                        backgroundColor: STATUS_CONFIG.SUBSTITUTED_FALLBACK.clearBg,
+                        borderColor: STATUS_CONFIG.SUBSTITUTED_FALLBACK.clearBorder
+                      }}
+                    >
+                      Substituted: {stats.substitutionCount}
+                    </span>
+                  )}
                   {stats.warningCount > 0 && (
                     <span 
                       className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${STATUS_CONFIG.WARN.pulse ? "animate-pulse" : ""}`}

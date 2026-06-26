@@ -462,6 +462,14 @@ const normaliseCabSettings = (
       out["Mic_1_Level"] = value;
     } else if (k === "mic 2 level" || k === "mic2 level") {
       out["Mic_2_Level"] = value;
+    } else if (k === "mic 1 placement" || k === "mic1 placement" || k === "mic 1 position" || k === "mic_1_placement" || k === "mic_1_position") {
+      out["Mic_1_Placement"] = value;
+    } else if (k === "mic 2 placement" || k === "mic2 placement" || k === "mic 2 position" || k === "mic_2_placement" || k === "mic_2_position") {
+      out["Mic_2_Placement"] = value;
+    } else if (k === "mic 1 distance" || k === "mic1 distance" || k === "mic_1_distance") {
+      out["Mic_1_Distance"] = value;
+    } else if (k === "mic 2 distance" || k === "mic2 distance" || k === "mic_2_distance") {
+      out["Mic_2_Distance"] = value;
     } else if (k === "room" || k === "room type") {
       out["Room"] = value;
     } else if (k === "room level") {
