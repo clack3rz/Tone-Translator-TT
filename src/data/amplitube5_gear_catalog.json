@@ -230,7 +230,7 @@
   { "group": "amp", "guid": "", "slot": "Amp", "display_name": "AD 200" },
   { "group": "amp", "guid": "", "slot": "Amp", "display_name": "AD 30" },
   { "group": "amp", "guid": "", "slot": "Amp", "display_name": "American Clean MKIII" },
-  { "group": "amp", "guid": "", "slot": "Amp", "display_name": "American Lead MKIII" },
+  { "group": "amp", "guid": "", "slot": "Amp", "display_name": "American Lead MKIII", "other_observed_names": ["Mesa M K I I I Lead", "Mesa MKIII Lead", "Mesa Mark III Lead", "Mesa Boogie Mark III Lead", "Mark III Lead", "MKIII Lead", "MesaMKIIILead"] },
   { "group": "amp", "guid": "", "slot": "Amp", "display_name": "American Tube Clean 1" },
   { "group": "amp", "guid": "", "slot": "Amp", "display_name": "American Tube Clean 2" },
   { "group": "amp", "guid": "", "slot": "Amp", "display_name": "American Tube Vintage" },

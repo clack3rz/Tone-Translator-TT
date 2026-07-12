@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Download,
   Upload,
+  Copy,
   Info,
   CheckCircle2,
   AlertTriangle,
@@ -33,7 +34,7 @@ import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IK
 import { gearProfileService } from '../services/gearProfileService';
 import { parseAt5pPreset } from '../services/at5PresetImporter';
 import { at5DatabaseService } from '../services/at5DatabaseService';
-import { refreshDbParameterMappings } from '../services/at5ParameterManifest';
+import { refreshDbParameterMappings, generateAliasesForXmlParam } from '../services/at5ParameterManifest';
 import { auth, signInWithGoogle } from '../services/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { evaluateCandidate, parseCSV, parseJSON, evaluateAliasSafety, isSlotTypeValid, normalizeGuid, checkProfileMatch, normalizeAliasComparison } from '../services/ikmpakService';
@@ -235,6 +236,139 @@ const resolveChildGear = (
   };
 };
 
+export const getDiscoveryCardVisualState = (dg: any) => {
+  // Determine if there is any child gear needing validation
+  const hasUnresolvedChild = dg.gearType === 'cab' && dg.childGears && dg.childGears.length > 0 && dg.childGears.some((child: any) => !child.isAlreadyValidated);
+
+  const matchStatus = dg.matchResultStatus || "";
+  const isAwaitingVal = dg.matchedProfile?.validationStatus === "awaiting_at5p_validation" || matchStatus === 'AWAITING_AT5P_VALIDATION' || matchStatus === 'SENT_TO_VALIDATION_QUEUE' || matchStatus === 'QUEUED_FOR_VALIDATION';
+  const isBlocked = dg.blocked || matchStatus === 'GUID_CONFLICT_BLOCKED' || matchStatus === 'AMBIGUOUS_MATCH_REVIEW_REQUIRED';
+
+  if (isBlocked) {
+    return {
+      visualState: "blocked",
+      badgeLabel: "CONFLICT / BLOCKED",
+      borderClass: "border-rose-500 bg-rose-950/15 shadow-[0_0_15px_rgba(239,68,68,0.05)]",
+      backgroundClass: "bg-rose-950/5",
+      badgeClass: "bg-rose-500/25 text-rose-400 border border-rose-500/30 font-bold",
+      actionHint: "GUID conflict or ambiguous match detected. Action disabled.",
+      summaryPanelClass: "bg-rose-950/35 border-rose-500/20 text-rose-300",
+      topLineHeader: "CRITICAL BLOCK / CONFLICT",
+      topLineSub: "GUID conflict or ambiguous match detected in Gear Manager."
+    };
+  }
+
+  if (isAwaitingVal) {
+    return {
+      visualState: "queued",
+      badgeLabel: "AWAITING VALIDATION",
+      borderClass: "border-sky-500/30 bg-sky-950/5 shadow-[0_0_15px_rgba(56,189,248,0.03)]",
+      backgroundClass: "bg-sky-950/5",
+      badgeClass: "bg-sky-500/15 text-sky-400 border border-sky-500/25",
+      actionHint: "Discovered profile is currently queued for .at5p validation.",
+      summaryPanelClass: "bg-sky-950/20 border-sky-500/15 text-sky-300",
+      topLineHeader: "QUEUED FOR VALIDATION",
+      topLineSub: "Discovered profile is currently queued for .at5p validation."
+    };
+  }
+
+  if (hasUnresolvedChild || matchStatus === 'PARTIAL_CHILD_VALIDATION' || matchStatus === 'CHILD_PROFILE_PENDING' || matchStatus === 'AWAITING_CHILD_VALIDATION' || matchStatus === 'PARTIAL_UPDATE') {
+    return {
+      visualState: "partial",
+      badgeLabel: "CHILD VALIDATION NEEDED",
+      borderClass: "border-amber-500/30 bg-amber-950/5 shadow-[0_0_15px_rgba(245,158,11,0.03)]",
+      backgroundClass: "bg-amber-950/5",
+      badgeClass: "bg-amber-500/15 text-amber-400 border border-amber-500/25",
+      actionHint: "Cab profile exists, but related speaker/mic/room profile needs validation.",
+      summaryPanelClass: "bg-amber-950/20 border-amber-500/15 text-amber-300",
+      topLineHeader: "PARTIAL CHILD REVIEW",
+      topLineSub: "Parent profile matched, but related child gear needs validation."
+    };
+  }
+
+  const isSafeUpdate = dg.updatesExisting || matchStatus === 'EXACT_GUID_MATCH' || matchStatus === 'EXISTING_PROFILE_UPDATED' || matchStatus === 'AT5P_VALIDATED';
+  if (isSafeUpdate) {
+    const isAlreadyValidated = (dg.matchedProfile && (
+      dg.matchedProfile.validationStatus === "verified_at5p" ||
+      dg.matchedProfile.validationStatus === "verified" ||
+      dg.matchedProfile.profileStatus === "verified_at5p" ||
+      dg.matchedProfile.profileStatus === "verified"
+    )) || matchStatus === 'AT5P_VALIDATED';
+
+    if (isAlreadyValidated) {
+      return {
+        visualState: "already_validated",
+        badgeLabel: "FULLY VALIDATED",
+        borderClass: "border-emerald-500/30 bg-emerald-950/5 shadow-[0_0_15px_rgba(16,185,129,0.03)]",
+        backgroundClass: "bg-emerald-950/5",
+        badgeClass: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25",
+        actionHint: "This gear profile is already fully validated in Gear Manager.",
+        summaryPanelClass: "bg-emerald-950/20 border-emerald-500/15 text-emerald-300",
+        topLineHeader: "ALREADY VALIDATED MATCH",
+        topLineSub: "Matched existing verified profile perfectly. No further action needed."
+      };
+    }
+
+    return {
+      visualState: "safe_update",
+      badgeLabel: "PENDING SAFE UPDATE",
+      borderClass: "border-teal-500/30 bg-teal-950/5 shadow-[0_0_15px_rgba(20,184,166,0.03)]",
+      backgroundClass: "bg-teal-950/5",
+      badgeClass: "bg-teal-500/15 text-teal-400 border border-teal-500/25",
+      actionHint: "Safe existing profile update available.",
+      summaryPanelClass: "bg-teal-950/20 border-teal-500/15 text-teal-300",
+      topLineHeader: "SAFE UPDATE AVAILABLE",
+      topLineSub: "Matched existing profile. Ready to update with discovered parameters."
+    };
+  }
+
+  const isNewProfile = !dg.updatesExisting || matchStatus === 'UNMATCHED_CREATE_DRAFT' || matchStatus === 'NO_EXISTING_PROFILE_FOUND' || matchStatus === 'CREATE_UNVERIFIED_PROFILE' || matchStatus === 'AWAITING_IDENTITY_RESOLUTION';
+  if (isNewProfile) {
+    return {
+      visualState: "new_profile",
+      badgeLabel: "NEW DRAFT REQUIRED",
+      borderClass: "border-indigo-500/30 bg-indigo-950/5 shadow-[0_0_15px_rgba(99,102,241,0.03)]",
+      backgroundClass: "bg-indigo-950/5",
+      badgeClass: "bg-indigo-500/15 text-indigo-400 border border-indigo-500/25",
+      actionHint: "Initialize a new unverified profile from .at5p discovery.",
+      summaryPanelClass: "bg-indigo-950/20 border-indigo-500/15 text-indigo-300",
+      topLineHeader: "NEW DRAFT PROFILE",
+      topLineSub: "No existing Gear Manager profile matched. Safe to create new profile."
+    };
+  }
+
+  return {
+    visualState: "neutral",
+    badgeLabel: "NEUTRAL",
+    borderClass: "border-white/5 bg-[#18181c]",
+    backgroundClass: "bg-[#18181c]",
+    badgeClass: "bg-white/5 text-gray-400 border border-white/10",
+    actionHint: "Neutral discovery item.",
+    summaryPanelClass: "bg-black/10 border border-white/5 text-gray-400",
+    topLineHeader: "NEUTRAL DISCOVERY",
+    topLineSub: "No specific action or conflict detected."
+  };
+};
+
+export const doesItemMatchDiscoveryFilter = (dg: any, filter: string) => {
+  if (filter === 'all') return true;
+  const visualState = getDiscoveryCardVisualState(dg).visualState;
+  
+  if (filter === 'new') {
+    return visualState === 'new_profile';
+  }
+  if (filter === 'matches') {
+    return visualState === 'safe_update' || visualState === 'already_validated';
+  }
+  if (filter === 'issues') {
+    return visualState === 'blocked' || visualState === 'partial';
+  }
+  if (filter === 'queued') {
+    return visualState === 'queued';
+  }
+  return true;
+};
+
 interface GearManagementPanelProps {
   onRefreshChain?: () => void;
   onClose?: () => void;
@@ -288,6 +422,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importWarnings, setImportWarnings] = useState<string[]>([]);
   const [importFeedback, setImportFeedback] = useState<string | null>(null);
+  const [discoveryFilter, setDiscoveryFilter] = useState<string>('all');
 
   // Applied history and review summary states
   const [appliedDiscoveries, setAppliedDiscoveries] = useState<any[]>([]);
@@ -594,6 +729,47 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       setImportErrors([`Save failed: ${err.message || err}`]);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleCopyProfileJson = () => {
+    if (!editedProfile) return;
+    try {
+      const jsonStr = JSON.stringify(editedProfile, null, 2);
+      navigator.clipboard.writeText(jsonStr);
+      setImportFeedback("Gear Profile JSON copied.");
+      setTimeout(() => setImportFeedback(null), 3000);
+    } catch (err: any) {
+      console.error("Failed to copy profile JSON:", err);
+      setImportErrors([`Copy failed: ${err.message || err}`]);
+    }
+  };
+
+  const handleExportProfileJson = () => {
+    if (!editedProfile) return;
+    try {
+      const jsonStr = JSON.stringify(editedProfile, null, 2);
+      const namePart = (editedProfile.displayName || "unnamed")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      const filename = `gear-profile-${namePart || "profile"}.json`;
+
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setImportFeedback(`Exported ${filename} successfully.`);
+      setTimeout(() => setImportFeedback(null), 3000);
+    } catch (err: any) {
+      console.error("Failed to export profile JSON:", err);
+      setImportErrors([`Export failed: ${err.message || err}`]);
     }
   };
 
@@ -1168,27 +1344,111 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         // Darrell 100 on-the-fly normalization
         let incomingName = dg.displayName || '';
         const cleanDgName = incomingName.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
-        if (cleanDgName === "darrell100" || cleanDgName === "darrell 100" || incomingName === "Darrell 100") {
+        const dgTypeLower = (dg.gearType || '').toLowerCase().trim();
+        const dgGuidNorm = dg.modelGuid ? dg.modelGuid.toLowerCase().replace(/[^a-z0-9]/g, '').trim() : '';
+
+        // "Darrell-specific matching is only allowed when:
+        // - discovered display name normalizes to darrell100
+        // - or discovered alias normalizes to darrell100
+        // - or discovered GUID equals Darrell 100 GUID cfa6b70c-2c6c-4b83-b881-571a6343dfac"
+        const isDarrellDiscovered = 
+          cleanDgName === "darrell100" || 
+          cleanDgName === "darrell 100" ||
+          dgGuidNorm === "cfa6b70c2c6c4b83b881571a6343dfac";
+
+        if (isDarrellDiscovered) {
           dg.displayName = "Darrell 100";
           dg.gearType = "amp";
         }
 
-        // Match by GUID first
-        const nGuid = dg.modelGuid ? dg.modelGuid.toLowerCase().replace(/-/g, '').trim() : '';
-        let matched = profiles.find(p => p.guid && p.guid.toLowerCase().replace(/-/g, '').trim() === nGuid);
+        const normGuidForMatch = (g: string) => g ? g.toLowerCase().replace(/[^a-z0-9]/g, '').trim() : '';
+        const matchesAmericanLeadMKIII = (name: string): boolean => {
+          const norm = name.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+          const validNorms = ["mesamkiiilead", "mesamkiii", "mesamarkiiilead", "mesaboogiemarkiiilead", "markiiilead", "mkiiilead", "americanleadmkiii"];
+          return validNorms.includes(norm) || norm.includes("mesamkiiilead") || norm.includes("mesamkiii");
+        };
 
-        // Match by alias/name second
-        if (!matched && dg.displayName) {
-          const lName = dg.displayName.toLowerCase().trim();
-          matched = profiles.find(p => 
-            p.id === "amp_darrell_100" ||
-            p.displayName.toLowerCase().trim() === lName ||
-            p.aliases.some(a => a.toLowerCase().trim() === lName)
-          );
+        let matched: GearProfile | null = null;
+        let matchResultStatus = "UNMATCHED_CREATE_DRAFT";
+        let matchReason = "No matching profile exists. This will create a brand new draft Profile in Gear Manager catalog.";
+        let matchConfidence = "unmatched";
+        let updatesExisting = false;
+        let blocked = false;
+        let blockReason = "";
+
+        // Priority 1: Exact GUID Match
+        if (dgGuidNorm) {
+          const exactGuidMatch = profiles.find(p => {
+            const pTypeLower = (p.type || '').toLowerCase().trim();
+            if (pTypeLower !== dgTypeLower) return false;
+            if (!p.guid || !isGuidValid(p.guid)) return false;
+            return normGuidForMatch(p.guid) === dgGuidNorm;
+          });
+
+          if (exactGuidMatch) {
+            matched = exactGuidMatch;
+            matchResultStatus = "EXACT_GUID_MATCH";
+            updatesExisting = true;
+            matchReason = "Exact GUID Match";
+            matchConfidence = "High (GUID verified)";
+          }
         }
 
-        if (!matched && (cleanDgName === "darrell100" || cleanDgName === "darrell 100")) {
-          matched = profiles.find(p => p.id === "amp_darrell_100");
+        // Priority 2: Empty-GUID profile name/alias match
+        if (!matched && dg.displayName) {
+          const lName = dg.displayName.toLowerCase().trim();
+          const candidate = profiles.find(p => {
+            const pTypeLower = (p.type || '').toLowerCase().trim();
+            if (pTypeLower !== dgTypeLower) return false;
+
+            // Darrell 100 must not match unless discovered is Darrell 100
+            if (p.id === "amp_darrell_100" && !isDarrellDiscovered) return false;
+
+            // Check name / alias matches
+            if (p.displayName.toLowerCase().trim() === lName) return true;
+            if (p.aliases && p.aliases.some(a => a.toLowerCase().trim() === lName)) return true;
+
+            // Support the specific American Lead MKIII aliases
+            if (p.displayName.toLowerCase().trim() === "american lead mkiii") {
+              if (matchesAmericanLeadMKIII(dg.displayName)) return true;
+            }
+
+            return false;
+          });
+
+          if (candidate) {
+            const candHasGuid = candidate.guid && isGuidValid(candidate.guid);
+            const candGuidNorm = candidate.guid ? normGuidForMatch(candidate.guid) : '';
+
+            if (candHasGuid && dgGuidNorm && candGuidNorm !== dgGuidNorm) {
+              // Priority 4 / 8: GUID Conflict Blocked
+              matched = candidate;
+              matchResultStatus = "GUID_CONFLICT_BLOCKED";
+              updatesExisting = false; // Block updating!
+              blocked = true;
+              matchReason = "GUID conflict detected";
+              matchConfidence = "blocked";
+              blockReason = "GUID conflict detected. The discovered gear does not match the selected profile. Updating is blocked to prevent overwriting a validated profile.";
+            } else if (!candHasGuid) {
+              // Priority 2: Empty GUID Profile Match
+              matched = candidate;
+              matchResultStatus = "EMPTY_GUID_PROFILE_MATCH";
+              updatesExisting = true;
+              matchReason = "alias / identity mapping";
+              matchConfidence = "safe empty-GUID profile match";
+            } else {
+              matched = candidate;
+              if (candidate.displayName.toLowerCase().trim() === lName) {
+                matchResultStatus = "ALIAS_MATCH";
+                matchReason = "Matched profile name directly";
+              } else {
+                matchResultStatus = "IDENTITY_HINT_MATCH";
+                matchReason = "Matched via known catalog identity hints or alias";
+              }
+              updatesExisting = true;
+              matchConfidence = "medium";
+            }
+          }
         }
 
         let childGears: any[] = [];
@@ -1250,10 +1510,21 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
 
         return {
           ...dg,
+          originalDiscoveredName: incomingName,
+          proposedDisplayName: dg.displayName,
           sourcePresetFilename: file.name,
           matchedProfile: matched || null,
-          updatesExisting: !!matched,
-          statusLabel: matched ? `Updates existing profile (${matched.displayName})` : 'Creates new draft Profile',
+          updatesExisting: updatesExisting,
+          blocked: blocked,
+          blockReason: blockReason,
+          matchResultStatus: matchResultStatus,
+          matchReason: matchReason,
+          matchConfidence: matchConfidence,
+          statusLabel: blocked 
+            ? `Blocked (GUID Conflict)` 
+            : matched 
+              ? `Updates existing profile (${matched.displayName})` 
+              : 'Creates new draft Profile',
           childGears
         };
       });
@@ -1269,16 +1540,115 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
     }
   };
 
+  const validateProposedName = (dg: any) => {
+    const name = dg.proposedDisplayName !== undefined ? dg.proposedDisplayName : (dg.displayName || '');
+    if (!name.trim()) {
+      return { valid: false, error: "Name cannot be empty or only whitespace." };
+    }
+    
+    const lowerName = name.toLowerCase().trim();
+    const isGeneric = 
+      lowerName === "unknown pedal" || 
+      lowerName === "unknown amp" || 
+      lowerName === "unknown rack" || 
+      lowerName === "unknown cab" || 
+      lowerName === "unknown cabinet" || 
+      lowerName === "unknown gear" ||
+      lowerName.startsWith("unknown");
+
+    const normProposedName = name.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+
+    // Check duplicate against existing profiles
+    const sameTypeProfiles = profiles.filter(p => (p.type || '').toLowerCase().trim() === (dg.gearType || '').toLowerCase().trim());
+    const duplicateProfile = sameTypeProfiles.find(p => {
+      const normPName = p.displayName.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+      if (normPName === normProposedName) return true;
+      if (p.aliases && p.aliases.some(a => a.toLowerCase().replace(/[^a-z0-9]/g, "").trim() === normProposedName)) return true;
+      return false;
+    });
+
+    if (duplicateProfile) {
+      // If it has a different GUID, block / warn
+      const pGuid = duplicateProfile.guid ? duplicateProfile.guid.toLowerCase().replace(/[^a-z0-9]/g, "").trim() : "";
+      const dgGuid = dg.modelGuid ? dg.modelGuid.toLowerCase().replace(/[^a-z0-9]/g, "").trim() : "";
+      if (pGuid && dgGuid && pGuid !== dgGuid) {
+        return { 
+          valid: false, 
+          error: `Name matches an existing profile (${duplicateProfile.displayName}) but GUID differs. Review required.` 
+        };
+      }
+      return { 
+        valid: false, 
+        error: `A profile with this name (${duplicateProfile.displayName}) already exists. Choose a different name or review existing profile before creating.` 
+      };
+    }
+
+    if (isGeneric) {
+      return { valid: false, error: "Name is generic. Please rename before creating to avoid generic catalog entries." };
+    }
+
+    return { valid: true };
+  };
+
+  const handleUpdateProposedName = (dgToUpdate: any, newName: string) => {
+    setDiscoveredGears(prev => prev.map(dg => {
+      const matchesGuid = dg.modelGuid && dgToUpdate.modelGuid && dg.modelGuid === dgToUpdate.modelGuid;
+      const matchesName = dg.displayName === dgToUpdate.displayName;
+      if (matchesGuid || matchesName) {
+        return {
+          ...dg,
+          proposedDisplayName: newName
+        };
+      }
+      return dg;
+    }));
+
+    setReviewingDiscovery((prev: any) => {
+      if (!prev) return null;
+      const matchesGuid = prev.modelGuid && dgToUpdate.modelGuid && prev.modelGuid === dgToUpdate.modelGuid;
+      const matchesName = prev.displayName === dgToUpdate.displayName;
+      if (matchesGuid || matchesName) {
+        return {
+          ...prev,
+          proposedDisplayName: newName
+        };
+      }
+      return prev;
+    });
+  };
+
   const handleApplyDiscovered = (dg: any) => {
     // Present the Review Summary Modal before applying
     setReviewingDiscovery(dg);
   };
 
   const handleApplyDiscoveredConfirmed = async (dg: any) => {
+    // Validate proposed name if it's a new profile
+    const isNew = !dg.matchedProfile;
+    if (isNew) {
+      const val = validateProposedName(dg);
+      if (!val.valid) {
+        throw new Error(val.error || "Proposed name is invalid.");
+      }
+    }
+
     const key = dg.modelGuid || dg.displayName;
     setUpdatingGears(prev => [...prev, key]);
     setIsLoading(true);
     try {
+      // 0. Safety update guard check
+      if (dg.blocked) {
+        throw new Error("Safety Guard Blocked: This action is disabled due to a GUID conflict.");
+      }
+
+      if (dg.matchedProfile && dg.matchedProfile.guid && isGuidValid(dg.matchedProfile.guid)) {
+        const normMatchedGuid = dg.matchedProfile.guid.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        const normDiscoveredGuid = dg.modelGuid ? dg.modelGuid.toLowerCase().replace(/[^a-z0-9]/g, '').trim() : '';
+        if (normDiscoveredGuid && normMatchedGuid !== normDiscoveredGuid) {
+          throw new Error(`Safety Guard Blocked: GUID conflict detected. Discovered gear GUID (${dg.modelGuid}) does not match existing profile GUID (${dg.matchedProfile.guid}) for "${dg.matchedProfile.displayName}". Overwriting is blocked.`);
+        }
+      }
+
       // 1. Keep track of status before
       const valStatusBefore = dg.matchedProfile?.validationStatus || dg.matchedProfile?.validation?.status || 'unverified';
       
@@ -1288,7 +1658,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       // Construct merged alias lists
       const combinedAliases = Array.from(new Set([
         ...(dg.matchedProfile?.aliases || []),
-        dg.displayName,
+        dg.originalDiscoveredName || dg.displayName,
         ...(dg.existingAliases || [])
       ]));
       if (combinedAliases.length > (dg.matchedProfile?.aliases || []).length) {
@@ -1302,10 +1672,11 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         const key = p.name.toLowerCase().trim();
         const existing = parametersUpdate.find(param => param.displayName.toLowerCase().trim() === key);
         if (!existing) {
+          const generated = generateAliasesForXmlParam(p.name);
           parametersUpdate.push({
             displayName: p.name,
             canonicalName: p.name,
-            aliases: [],
+            aliases: generated,
             visual: { min: Number(p.min || 0), max: Number(p.max || 10), unit: '' },
             export: { name: p.name, min: Number(p.min || 0), max: Number(p.max || 1) },
             conversion: { mode: 'direct', formula: '' },
@@ -1314,13 +1685,29 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
           paramsAddedCode++;
         }
       }
+
+      // Ensure all parameters in parametersUpdate have their aliases enriched
+      for (const param of parametersUpdate) {
+        if (!param.aliases || param.aliases.length === 0) {
+          param.aliases = generateAliasesForXmlParam(param.displayName || param.canonicalName);
+        } else {
+          const generated = generateAliasesForXmlParam(param.displayName || param.canonicalName);
+          const currentSet = new Set(param.aliases.map(a => a.toLowerCase().trim()));
+          for (const g of generated) {
+            if (!currentSet.has(g.toLowerCase().trim())) {
+              param.aliases.push(g);
+            }
+          }
+        }
+      }
+
       if (paramsAddedCode > 0) {
         fieldsUpdated.push('parameters');
       }
 
       // Determine correct profile identification
       let profileId = dg.matchedProfile?.id;
-      let displayName = dg.matchedProfile?.displayName || dg.displayName;
+      let displayName = dg.matchedProfile?.displayName || dg.proposedDisplayName || dg.displayName;
       let type = dg.matchedProfile?.type || dg.gearType || 'amp';
 
       const cleanName = displayName.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
@@ -1344,6 +1731,8 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         aliases: combinedAliases,
         parameters: parametersUpdate,
         validationStatus: 'at5p_validated',
+        originalDiscoveredName: dg.originalDiscoveredName || dg.displayName,
+        proposedDisplayName: dg.proposedDisplayName || displayName,
         profileStatus: 'PASS',
         parameterSource: 'at5p_discovery',
         guidSource: 'at5p_discovery',
@@ -1371,7 +1760,11 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
           dateApplied: new Date().toLocaleDateString(),
           discoverySources: [
             ...(dg.matchedProfile?.discovery?.discoverySources || []),
-            { sourceType: '.at5p', confidence: '100%', notes: `Discovered from preset file: ${presetFilename}` }
+            { 
+              sourceType: '.at5p', 
+              confidence: '100%', 
+              notes: `Discovered from preset file: ${presetFilename}. Original discovered name: ${dg.originalDiscoveredName || dg.displayName}` 
+            }
           ]
         },
         validation: {
@@ -1397,7 +1790,15 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
 
       // 3. Post-Apply Verification Check
       const updatedProfiles = await gearProfileService.getGearProfiles();
-      const verifiedProfile = updatedProfiles.find(p => p.id === profileId);
+      const expectedNewId = dg.modelGuid 
+        ? `gear-${dg.modelGuid.toLowerCase().replace(/-/g, '').trim()}` 
+        : profileId;
+
+      const verifiedProfile = updatedProfiles.find(p => 
+        p.id === profileId || 
+        p.id === expectedNewId || 
+        (dg.modelGuid && p.guid && p.guid.toLowerCase().replace(/-/g, '').trim() === dg.modelGuid.toLowerCase().replace(/-/g, '').trim())
+      );
 
       if (!verifiedProfile) {
         throw new Error(`Post-Apply Verification Failed: Profile for "${displayName}" (${profileId}) does not exist in the catalog after saving.`);
@@ -1413,7 +1814,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       }
 
       // Check if it's searchable
-      const searchable = updatedProfiles.some(p => p.id === profileId && (
+      const searchable = updatedProfiles.some(p => p.id === verifiedProfile.id && (
         p.displayName.toLowerCase().includes(displayName.toLowerCase()) ||
         p.aliases.some(a => a.toLowerCase().includes(displayName.toLowerCase()))
       ));
@@ -1426,7 +1827,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         action: "apply_at5p_discovery",
         discovered_name: dg.displayName,
         normalized_discovered_name: dg.displayName.toLowerCase().replace(/[^a-z0-9]/g, "").trim(),
-        matched_profile_id: profileId,
+        matched_profile_id: verifiedProfile.id,
         matched_profile_name: displayName,
         fields_updated: fieldsUpdated,
         validation_status_before: valStatusBefore,
@@ -1440,7 +1841,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         applied: true,
         appliedAt: new Date().toLocaleTimeString(),
         debugOutput: debugOutput,
-        matchedProfileId: profileId
+        matchedProfileId: verifiedProfile.id
       };
 
       setAppliedDiscoveries(prev => [appliedItem, ...prev]);
@@ -1497,7 +1898,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       await loadProfiles();
 
       // Automatically select the profile
-      const finalProfile = updatedProfiles.find(p => p.id === profileId);
+      const finalProfile = updatedProfiles.find(p => p.id === verifiedProfile.id);
       if (finalProfile) {
         setSelectedProfile(finalProfile);
         setEditedProfile({ ...finalProfile });
@@ -1981,14 +2382,34 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                       )}
                     </div>
                     
-                    <button
-                      onClick={handleSaveProfile}
-                      disabled={isSaving}
-                      className="px-4 py-1.5 bg-gear-accent hover:bg-gear-accent/80 text-black text-[10px] font-mono font-bold uppercase rounded-xl transition-all shadow-lg flex items-center gap-1.5 shrink-0 self-stretch sm:self-auto justify-center"
-                    >
-                      {isSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Settings className="w-3 h-3" />}
-                      Save Profile
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap self-stretch sm:self-auto justify-center sm:justify-end">
+                      <button
+                        onClick={handleCopyProfileJson}
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-[10px] font-mono uppercase rounded-xl transition-all shadow-lg flex items-center gap-1.5 shrink-0 border border-white/5"
+                        title="Copy complete Gear Profile JSON to clipboard"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy JSON
+                      </button>
+
+                      <button
+                        onClick={handleExportProfileJson}
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-[10px] font-mono uppercase rounded-xl transition-all shadow-lg flex items-center gap-1.5 shrink-0 border border-white/5"
+                        title="Export complete Gear Profile JSON file"
+                      >
+                        <Download className="w-3 h-3" />
+                        Export JSON
+                      </button>
+
+                      <button
+                        onClick={handleSaveProfile}
+                        disabled={isSaving}
+                        className="px-4 py-1.5 bg-gear-accent hover:bg-gear-accent/80 text-black text-[10px] font-mono font-bold uppercase rounded-xl transition-all shadow-lg flex items-center gap-1.5 shrink-0 self-stretch sm:self-auto justify-center"
+                      >
+                        {isSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Settings className="w-3 h-3" />}
+                        Save Profile
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -3276,357 +3697,514 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                 <div className="space-y-6">
                   
                   {discoveredGears.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest">Discovered Active Gear</h4>
-                      <div className="space-y-3">
-                        {discoveredGears.map((dg, idx) => {
-                          const isUpdating = updatingGears.includes(dg.modelGuid || dg.displayName);
-                          const isApplied = !!dg.applied;
-                          const showSuccess = isApplied && dg.success;
-                          const showError = dg.error && dg.errorMsg;
+                    <div className="space-y-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest">Discovered Active Gear</h4>
+                      </div>
 
-                          return (
-                            <div
-                              key={idx}
-                              className={`bg-[#18181c] border rounded-2xl p-5 flex flex-col gap-4 ${isApplied ? 'border-emerald-500/20 bg-emerald-950/5' : 'border-white/5'}`}
-                            >
-                              {/* SUCCESS STATE */}
-                              {showSuccess ? (
-                                <div className="space-y-4">
-                                  {/* Badges row */}
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <span className="text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 uppercase">
-                                      .AT5P VALIDATED
-                                    </span>
-                                    <span className="text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
-                                      {dg.updatesExisting ? "EXISTING PROFILE UPDATED" : "NEW PROFILE CREATED"}
-                                    </span>
-                                    <span className="text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 uppercase">
-                                      PASS
-                                    </span>
-                                  </div>
+                      {/* Mini Legend & Sub-Filters Row */}
+                      <div className="flex flex-col gap-4 bg-[#141416]/90 border border-white/5 rounded-2xl p-4 shadow-xl">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                          {/* Filter Tabs */}
+                          <div className="flex flex-wrap gap-1.5 bg-black/40 p-1 rounded-xl border border-white/5">
+                            {(['all', 'new', 'matches', 'issues', 'queued'] as const).map((f) => {
+                              const count = discoveredGears.filter(dg => doesItemMatchDiscoveryFilter(dg, f)).length;
+                              const isActive = discoveryFilter === f;
+                              return (
+                                <button
+                                  key={f}
+                                  onClick={() => setDiscoveryFilter(f)}
+                                  className={`px-3 py-1.5 rounded-lg text-[9.5px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                                    isActive 
+                                      ? 'bg-gear-accent text-black font-semibold' 
+                                      : 'text-gray-400 hover:text-white hover:bg-white/[0.02]'
+                                  }`}
+                                >
+                                  {f} <span className={`ml-1 px-1.5 py-0.5 rounded-md text-[8.5px] ${isActive ? 'bg-black/20 text-black' : 'bg-white/5 text-gray-500'}`}>{count}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
 
-                                  {/* Inline Success Message */}
-                                  <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs uppercase font-bold">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                    <span>{dg.successMsg || `${dg.displayName} profile updated from .at5p discovery.`}</span>
-                                  </div>
-
-                                  {/* Small summary details */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-black/20 p-3.5 rounded-xl border border-white/5 text-[11px] font-mono text-gray-300">
-                                    <div className="space-y-1">
-                                      <p><span className="text-gray-500 uppercase">Updated Profile:</span> <span className="text-white font-bold">{dg.displayName}</span></p>
-                                      <p><span className="text-gray-500 uppercase">Confirmed GUID:</span> <span className="text-yellow-500">{dg.confirmedGuid}</span></p>
-                                    </div>
-                                    <div className="space-y-1">
-                                      <p><span className="text-gray-500 uppercase">Parameters Imported:</span> <span className="text-cyan-400 font-bold">{dg.importedParamsCount}</span></p>
-                                      <p><span className="text-gray-500 uppercase">Source File:</span> <span className="text-white">{dg.sourcePresetFilename}</span></p>
-                                    </div>
-                                  </div>
-
-                                  {/* Final Review Area */}
-                                  <div className="text-[10.5px] font-mono bg-[#1c1c22] border border-white/5 rounded-xl p-3.5 space-y-1.5 gray-300">
-                                    <p className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Final Review / Status Details</p>
-                                    <p><span className="text-gray-400">Match Result:</span> <span className="text-emerald-400 font-bold">{dg.updatesExisting ? "Existing Profile Updated" : "New Profile Created"}</span></p>
-                                    <p><span className="text-gray-400">Target profile:</span> <span className="text-white font-bold">{dg.displayName}</span></p>
-                                    <p><span className="text-gray-400">Validation status:</span> <span className="text-sky-400 font-bold">.AT5P VALIDATED</span></p>
-                                    <p><span className="text-gray-400">Last action:</span> <span className="text-gray-300">Updated from .at5p discovery at <span className="text-white">{dg.lastValidatedAt_time}</span></span></p>
-                                    <p><span className="text-gray-400">Source preset:</span> <span className="text-cyan-400">{dg.sourcePresetFilename}</span></p>
-                                  </div>
-
-                                  {/* Nested Child Component Discovery for Cabinet (Validated Block) */}
-                                  {dg.gearType === 'cab' && dg.childGears && dg.childGears.length > 0 && (
-                                    <div className="bg-[#111114] border border-emerald-500/10 rounded-xl p-4 space-y-3.5 mt-3">
-                                      <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                        <span className="text-[10px] font-mono text-emerald-400 uppercase font-bold tracking-widest flex items-center gap-1.5 font-bold">
-                                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                          Cabinet Nested Components Discovery
-                                        </span>
-                                        <span className="text-[9px] font-mono text-gray-400">
-                                          {dg.childGears.length} components parsed from Cab
-                                        </span>
-                                      </div>
-
-                                      <div className="grid grid-cols-1 gap-2">
-                                        {dg.childGears.map((child: any, childIdx: number) => {
-                                          const isChildValidating = updatingGears.includes(child.guid);
-                                          return (
-                                            <div 
-                                              key={childIdx}
-                                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white/[0.02] border border-white/5 rounded-lg text-xs"
-                                            >
-                                              <div className="space-y-0.5">
-                                                <div className="flex items-center gap-2">
-                                                  <span className="font-bold text-white">{child.displayName}</span>
-                                                  <span className="text-[8px] font-mono px-1.5 py-0.5 rounded border border-purple-500/20 text-purple-400 uppercase">
-                                                    {child.type}
-                                                  </span>
-                                                  <span className="text-[10px] font-mono text-gray-500">{child.guid}</span>
-                                                </div>
-                                                <div className="text-[10.5px] font-mono text-gray-400 flex flex-wrap gap-x-2.5">
-                                                  <span><span className="text-gray-500">Source fields:</span> {child.sourceFields.join(", ")}</span>
-                                                  <span>•</span>
-                                                  <span>
-                                                    <span className="text-gray-500">Match:</span>{' '}
-                                                    <span className={child.matchedProfile ? "text-emerald-400 font-semibold" : "text-amber-500"}>
-                                                      {child.matchedProfile ? (
-                                                        (child.type === 'room' || child.type === 'room_mic' || child.type === 'roomMic') ? (
-                                                          `Existing ${child.type === 'room' ? 'Room' : 'Room Mic'} Profile Found: ${child.matchedProfile.displayName}`
-                                                        ) : (
-                                                          `Profile found: ${child.matchedProfile.displayName}`
-                                                        )
-                                                      ) : "Awaiting Identity Resolution"}
-                                                    </span>
-                                                  </span>
-                                                </div>
-                                              </div>
-
-                                              <div className="flex items-center gap-2 shrink-0">
-                                                <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
-                                                  child.isAlreadyValidated
-                                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                                    : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
-                                                }`}>
-                                                  {child.statusLabel}
-                                                </span>
-
-                                                <button
-                                                  onClick={() => {
-                                                    if (child.isAlreadyValidated && child.matchedProfile) {
-                                                      handleSelectProfile(child.matchedProfile);
-                                                    } else {
-                                                      handleApplyChildValidation(dg, child);
-                                                    }
-                                                  }}
-                                                  disabled={isChildValidating}
-                                                  className={`px-2.5 py-1 text-[9.5px] font-mono font-bold uppercase rounded-lg transition-all ${
-                                                    child.isAlreadyValidated
-                                                      ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 cursor-pointer'
-                                                      : 'bg-cyan-500 hover:bg-cyan-600 text-black'
-                                                  }`}
-                                                >
-                                                  {child.isAlreadyValidated ? "already validated / view profile" : "Validate Child"}
-                                                </button>
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                /* BEFORE / ACTIVE STATE */
-                                <div className="space-y-4">
-                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="space-y-1">
-                                      <div className="flex items-center gap-3">
-                                        <span className="text-xs font-bold text-white">{dg.displayName}</span>
-                                        <span className="text-[8px] font-mono px-2 py-0.5 rounded border border-cyan-500/10 text-cyan-400 capitalize">
-                                          {dg.gearType}
-                                        </span>
-                                        <span className="text-[10px] font-mono text-gray-500 truncate max-w-[120px]">{dg.modelGuid}</span>
-                                      </div>
-                                      <p className="text-[10.5px] font-mono text-yellow-500 uppercase">
-                                        Match Result: {dg.updatesExisting ? "Updates Existing Profile" : "No existing profile found (Creates new profile)"}
-                                      </p>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      {isUpdating && (
-                                        <div className="flex items-center gap-1.5 text-[10px] text-amber-500 font-mono animate-pulse uppercase mr-2">
-                                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                          <span>Processing update...</span>
-                                        </div>
-                                      )}
-                                      <button
-                                        onClick={() => handleApplyDiscovered(dg)}
-                                        disabled={isUpdating}
-                                        className={`px-3 py-1.5 text-[10px] font-mono font-bold uppercase rounded-xl transition-all shadow-md flex items-center gap-1.5 ${
-                                          isUpdating 
-                                            ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-white/5' 
-                                            : 'bg-gear-accent hover:bg-gear-accent/80 text-black'
-                                        }`}
-                                      >
-                                        {isUpdating ? (
-                                          <>
-                                            <RefreshCw className="w-3 h-3 animate-spin" />
-                                            <span>Updating Gear Profile...</span>
-                                          </>
-                                        ) : (
-                                          dg.updatesExisting 
-                                            ? 'Update Gear Profile From .at5p Discovery'
-                                            : 'Create Unverified Profile From .at5p Discovery'
-                                        )}
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  {/* Discovered Parameters list classified dynamically for Cabinets */}
-                                  {dg.gearType === 'cab' ? (() => {
-                                    const { numeric, references, selectors } = categorizeParams(dg.parameters);
-                                    return (
-                                      <div className="space-y-3.5 border-t border-white/5 pt-3">
-                                        <p className="text-[9px] font-mono text-gray-500 uppercase font-bold tracking-wider">Discovered Cab Data</p>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                          {/* Numeric Parameters */}
-                                          <div className="bg-black/20 p-2.5 rounded-xl border border-white/5 space-y-1">
-                                            <p className="text-[8px] font-mono text-yellow-500 uppercase font-bold">Numeric Parameters ({numeric.length})</p>
-                                            <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
-                                              {numeric.map((p: any, idx: number) => (
-                                                <span key={idx} className="text-[8.5px] font-mono bg-white/[0.03] border border-white/5 text-gray-400 px-1.5 py-0.5 rounded">
-                                                  {p.name}: {p.value}
-                                                </span>
-                                              ))}
-                                            </div>
-                                          </div>
-
-                                          {/* Gear References */}
-                                          <div className="bg-black/20 p-2.5 rounded-xl border border-white/5 space-y-1">
-                                            <p className="text-[8px] font-mono text-purple-400 uppercase font-bold">Gear References ({references.length})</p>
-                                            <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
-                                              {references.map((p: any, idx: number) => (
-                                                <span key={idx} className="text-[8.5px] font-mono bg-purple-950/20 border border-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded select-all">
-                                                  {p.name}: {p.value}
-                                                </span>
-                                              ))}
-                                            </div>
-                                          </div>
-
-                                          {/* Selector/Enum Values */}
-                                          <div className="bg-black/20 p-2.5 rounded-xl border border-white/5 space-y-1">
-                                            <p className="text-[8px] font-mono text-cyan-400 uppercase font-bold">Selector/Enum Values ({selectors.length})</p>
-                                            <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
-                                              {selectors.map((p: any, idx: number) => (
-                                                <span key={idx} className="text-[8.5px] font-mono bg-cyan-950/20 border border-cyan-500/10 text-cyan-300 px-1.5 py-0.5 rounded">
-                                                  {p.name}: {p.value}
-                                                </span>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })() : (
-                                    /* Standard parameter flat list */
-                                    <div>
-                                      <p className="text-[9px] font-mono text-gray-500 uppercase font-bold mb-1.5">Discovered Parameters</p>
-                                      <div className="flex flex-wrap gap-2">
-                                        {dg.parameters.map((p: any, pIdx: number) => (
-                                          <span key={pIdx} className="text-[8.5px] font-mono bg-white/[0.03] border border-white/5 text-gray-400 px-2 py-0.5 rounded">
-                                            {p.name} [{p.value}]
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Discovered Child Component validation triggers for Cabinet */}
-                                  {dg.gearType === 'cab' && dg.childGears && dg.childGears.length > 0 && (
-                                    <div className="bg-[#111114] border border-white/10 rounded-xl p-4 space-y-3.5 mt-2">
-                                      <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                        <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold tracking-widest flex items-center gap-1.5 font-bold">
-                                          <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                                          Cabinet Nested Components Discovery
-                                        </span>
-                                        <span className="text-[9px] font-mono text-gray-500">
-                                          {dg.childGears.length} components parsed from Cab
-                                        </span>
-                                      </div>
-
-                                      <div className="grid grid-cols-1 gap-2">
-                                        {dg.childGears.map((child: any, childIdx: number) => {
-                                          const isChildValidating = updatingGears.includes(child.guid);
-                                          return (
-                                            <div 
-                                              key={childIdx}
-                                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white/[0.02] border border-white/10 rounded-lg text-xs"
-                                            >
-                                              <div className="space-y-0.5">
-                                                <div className="flex items-center gap-2">
-                                                  <span className="font-bold text-white">{child.displayName}</span>
-                                                  <span className="text-[8px] font-mono px-1.5 py-0.5 rounded border border-purple-500/20 text-purple-400 uppercase">
-                                                    {child.type}
-                                                  </span>
-                                                  <span className="text-[10px] font-mono text-gray-500">{child.guid}</span>
-                                                </div>
-                                                <div className="text-[10.5px] font-mono text-gray-400 flex flex-wrap gap-x-2.5">
-                                                  <span><span className="text-gray-500">Source fields:</span> {child.sourceFields.join(", ")}</span>
-                                                  <span>•</span>
-                                                  <span>
-                                                    <span className="text-gray-500">Match:</span>{' '}
-                                                    <span className={child.matchedProfile ? "text-emerald-400 font-semibold" : "text-amber-500"}>
-                                                      {child.matchedProfile ? (
-                                                        (child.type === 'room' || child.type === 'room_mic' || child.type === 'roomMic') ? (
-                                                          `Existing ${child.type === 'room' ? 'Room' : 'Room Mic'} Profile Found: ${child.matchedProfile.displayName}`
-                                                        ) : (
-                                                          `Profile found: ${child.matchedProfile.displayName}`
-                                                        )
-                                                      ) : "Awaiting Identity Resolution"}
-                                                    </span>
-                                                  </span>
-                                                </div>
-                                              </div>
-
-                                              <div className="flex items-center gap-2 shrink-0">
-                                                <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
-                                                  child.isAlreadyValidated
-                                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                                    : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
-                                                }`}>
-                                                  {child.statusLabel}
-                                                </span>
-
-                                                <button
-                                                  onClick={() => {
-                                                    if (child.isAlreadyValidated && child.matchedProfile) {
-                                                      handleSelectProfile(child.matchedProfile);
-                                                    } else {
-                                                      handleApplyChildValidation(dg, child);
-                                                    }
-                                                  }}
-                                                  disabled={isChildValidating}
-                                                  className={`px-2.5 py-1 text-[9.5px] font-mono font-bold uppercase rounded-lg transition-all ${
-                                                    child.isAlreadyValidated
-                                                      ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 cursor-pointer'
-                                                      : 'bg-cyan-500 hover:bg-cyan-600 text-black'
-                                                  }`}
-                                                >
-                                                  {child.isAlreadyValidated ? "already validated / view profile" : "Validate Child"}
-                                                </button>
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Before Update Review Summary Area */}
-                                  <div className="text-[10.5px] font-mono bg-black/10 border border-white/5 rounded-xl p-3.5 space-y-1 text-gray-400">
-                                    <p className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Status Summary</p>
-                                    <p><span className="text-gray-500">Match Result:</span> <span className="text-yellow-500 font-bold">{dg.updatesExisting ? "Updates Existing Profile" : "No existing profile found (Creates new profile)"}</span></p>
-                                    <p><span className="text-gray-500">Target profile:</span> <span className="text-white font-bold">{dg.updatesExisting ? (dg.matchedProfile?.displayName || dg.displayName) : "(none) - A new draft profile will be initialized"}</span></p>
-                                    <p><span className="text-gray-500">Validation status:</span> <span className={`${(dg.matchedProfile?.validationStatus === "verified_at5p" || dg.matchedProfile?.validationStatus === "at5p_validated") ? "text-emerald-400" : "text-blue-400"} font-bold`}>{(dg.matchedProfile?.validationStatus === "verified_at5p" || dg.matchedProfile?.validationStatus === "at5p_validated") ? ".AT5P VALIDATED" : (dg.matchedProfile?.validationStatus === "awaiting_at5p_validation" ? "Awaiting .AT5P Validation" : "Awaiting .AT5P Validation / Unverified")}</span></p>
-                                    <p><span className="text-gray-500">Action available:</span> <span className="text-emerald-400">{dg.updatesExisting ? "Update Gear Profile From .at5p Discovery" : "Create Unverified Profile From .at5p Discovery"}</span></p>
-                                  </div>
-
-                                  {/* Failure feedback */}
-                                  {showError && (
-                                    <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400/90 font-mono text-[11px] rounded-xl flex items-start gap-2">
-                                      <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                                      <div>
-                                        <span className="font-bold uppercase block text-red-400 text-xs">Profile Update Failed</span>
-                                        {dg.errorMsg}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+                          {/* Legend Indicator list */}
+                          <div className="flex flex-wrap items-center gap-3 text-[9.5px] font-mono text-gray-400">
+                            <span className="text-[8.5px] uppercase font-bold text-gray-500 tracking-wider">Legend:</span>
+                            <div className="flex items-center gap-1.5 bg-emerald-500/5 px-2 py-1 rounded-lg border border-emerald-500/10">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                              <span className="text-emerald-400">Safe Update</span>
                             </div>
-                          );
-                        })}
+                            <div className="flex items-center gap-1.5 bg-rose-500/5 px-2 py-1 rounded-lg border border-rose-500/10">
+                              <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+                              <span className="text-rose-400">New Profile</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-amber-500/5 px-2 py-1 rounded-lg border border-amber-500/10">
+                              <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                              <span className="text-amber-400">Partial / Child</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-blue-500/5 px-2 py-1 rounded-lg border border-blue-500/10">
+                              <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                              <span className="text-blue-400">Queued</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-red-500/5 px-2 py-1 rounded-lg border border-red-500/10">
+                              <span className="w-2 h-2 rounded-full bg-red-600 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                              <span className="text-red-400">Blocked</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {discoveredGears.filter(dg => doesItemMatchDiscoveryFilter(dg, discoveryFilter)).length === 0 ? (
+                          <div className="text-center py-12 bg-[#18181c] border border-white/5 rounded-2xl space-y-2">
+                            <Layers className="w-8 h-8 text-gray-700 mx-auto animate-pulse" />
+                            <p className="text-xs font-mono text-gray-500 uppercase">No discovered gear items match the current "{discoveryFilter}" filter</p>
+                          </div>
+                        ) : (
+                          discoveredGears.filter(dg => doesItemMatchDiscoveryFilter(dg, discoveryFilter)).map((dg, idx) => {
+                            const isUpdating = updatingGears.includes(dg.modelGuid || dg.displayName);
+                            const isApplied = !!dg.applied;
+                            const showSuccess = isApplied && dg.success;
+                            const showError = dg.error && dg.errorMsg;
+                            const visualState = getDiscoveryCardVisualState(dg);
+
+                            return (
+                              <div
+                                key={idx}
+                                className={`border rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300 ${
+                                  isApplied 
+                                    ? 'border-emerald-500/20 bg-emerald-950/5' 
+                                    : visualState.borderClass
+                                }`}
+                              >
+                                {/* SUCCESS STATE */}
+                                {showSuccess ? (
+                                  <div className="space-y-4">
+                                    {/* Badges row */}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span className="text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 uppercase">
+                                        .AT5P VALIDATED
+                                      </span>
+                                      <span className="text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
+                                        {dg.updatesExisting ? "EXISTING PROFILE UPDATED" : "NEW PROFILE CREATED"}
+                                      </span>
+                                      <span className="text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 uppercase">
+                                        PASS
+                                      </span>
+                                    </div>
+
+                                    {/* Inline Success Message */}
+                                    <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs uppercase font-bold">
+                                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                      <span>{dg.successMsg || `${dg.displayName} profile updated from .at5p discovery.`}</span>
+                                    </div>
+
+                                    {/* Small summary details */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-black/20 p-3.5 rounded-xl border border-white/5 text-[11px] font-mono text-gray-300">
+                                      <div className="space-y-1">
+                                        <p><span className="text-gray-500 uppercase">Updated Profile:</span> <span className="text-white font-bold">{dg.displayName}</span></p>
+                                        <p><span className="text-gray-500 uppercase">Confirmed GUID:</span> <span className="text-yellow-500">{dg.confirmedGuid}</span></p>
+                                      </div>
+                                      <div className="space-y-1">
+                                        <p><span className="text-gray-500 uppercase">Parameters Imported:</span> <span className="text-cyan-400 font-bold">{dg.importedParamsCount}</span></p>
+                                        <p><span className="text-gray-500 uppercase">Source File:</span> <span className="text-white">{dg.sourcePresetFilename}</span></p>
+                                      </div>
+                                    </div>
+
+                                    {/* Final Review Area */}
+                                    <div className="text-[10.5px] font-mono bg-[#1c1c22] border border-white/5 rounded-xl p-3.5 space-y-1.5 gray-300">
+                                      <p className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Final Review / Status Details</p>
+                                      <p><span className="text-gray-400">Match Result:</span> <span className="text-emerald-400 font-bold">{dg.updatesExisting ? "Existing Profile Updated" : "New Profile Created"}</span></p>
+                                      <p><span className="text-gray-400">Target profile:</span> <span className="text-white font-bold">{dg.displayName}</span></p>
+                                      <p><span className="text-gray-400">Validation status:</span> <span className="text-sky-400 font-bold">.AT5P VALIDATED</span></p>
+                                      <p><span className="text-gray-400">Last action:</span> <span className="text-gray-300">Updated from .at5p discovery at <span className="text-white">{dg.lastValidatedAt_time}</span></span></p>
+                                      <p><span className="text-gray-400">Source preset:</span> <span className="text-cyan-400">{dg.sourcePresetFilename}</span></p>
+                                    </div>
+
+                                    {/* Nested Child Component Discovery for Cabinet (Validated Block) */}
+                                    {dg.gearType === 'cab' && dg.childGears && dg.childGears.length > 0 && (
+                                      <div className="bg-[#111114] border border-emerald-500/10 rounded-xl p-4 space-y-3.5 mt-3">
+                                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                          <span className="text-[10px] font-mono text-emerald-400 uppercase font-bold tracking-widest flex items-center gap-1.5 font-bold">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                            Cabinet Nested Components Discovery
+                                          </span>
+                                          <span className="text-[9px] font-mono text-gray-400">
+                                            {dg.childGears.length} components parsed from Cab
+                                          </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-2">
+                                          {dg.childGears.map((child: any, childIdx: number) => {
+                                            const isChildValidating = updatingGears.includes(child.guid);
+                                            return (
+                                              <div 
+                                                key={childIdx}
+                                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white/[0.02] border border-white/5 rounded-lg text-xs"
+                                              >
+                                                <div className="space-y-0.5">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-white">{child.displayName}</span>
+                                                    <span className="text-[8px] font-mono px-1.5 py-0.5 rounded border border-purple-500/20 text-purple-400 uppercase">
+                                                      {child.type}
+                                                    </span>
+                                                    <span className="text-[10px] font-mono text-gray-500">{child.guid}</span>
+                                                  </div>
+                                                  <div className="text-[10.5px] font-mono text-gray-400 flex flex-wrap gap-x-2.5">
+                                                    <span><span className="text-gray-500">Source fields:</span> {child.sourceFields.join(", ")}</span>
+                                                    <span>•</span>
+                                                    <span>
+                                                      <span className="text-gray-500">Match:</span>{' '}
+                                                      <span className={child.matchedProfile ? "text-emerald-400 font-semibold" : "text-amber-500"}>
+                                                        {child.matchedProfile ? (
+                                                          (child.type === 'room' || child.type === 'room_mic' || child.type === 'roomMic') ? (
+                                                            `Existing ${child.type === 'room' ? 'Room' : 'Room Mic'} Profile Found: ${child.matchedProfile.displayName}`
+                                                          ) : (
+                                                            `Profile found: ${child.matchedProfile.displayName}`
+                                                          )
+                                                        ) : "Awaiting Identity Resolution"}
+                                                      </span>
+                                                    </span>
+                                                  </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                  <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
+                                                    child.isAlreadyValidated
+                                                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                                      : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+                                                  }`}>
+                                                    {child.statusLabel}
+                                                  </span>
+
+                                                  <button
+                                                    onClick={() => {
+                                                      if (child.isAlreadyValidated && child.matchedProfile) {
+                                                        handleSelectProfile(child.matchedProfile);
+                                                      } else {
+                                                        handleApplyChildValidation(dg, child);
+                                                      }
+                                                    }}
+                                                    disabled={isChildValidating}
+                                                    className={`px-2.5 py-1 text-[9.5px] font-mono font-bold uppercase rounded-lg transition-all ${
+                                                      child.isAlreadyValidated
+                                                        ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 cursor-pointer'
+                                                        : 'bg-cyan-500 hover:bg-cyan-600 text-black'
+                                                    }`}
+                                                  >
+                                                    {child.isAlreadyValidated ? "already validated / view profile" : "Validate Child"}
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  /* BEFORE / ACTIVE STATE */
+                                  <div className="space-y-4">
+                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                      <div className="space-y-1 flex-1">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                          {(() => {
+                                            const isNewProfile = !dg.updatesExisting || 
+                                              dg.matchResultStatus === 'UNMATCHED_CREATE_DRAFT' || 
+                                              dg.matchResultStatus === 'NO_EXISTING_PROFILE_FOUND' || 
+                                              dg.matchResultStatus === 'CREATE_UNVERIFIED_PROFILE' || 
+                                              dg.matchResultStatus === 'AWAITING_IDENTITY_RESOLUTION';
+                                            if (isNewProfile) {
+                                              const validation = validateProposedName({
+                                                ...dg,
+                                                proposedDisplayName: dg.proposedDisplayName !== undefined ? dg.proposedDisplayName : dg.displayName
+                                              }) as any;
+                                              return (
+                                                <div className="flex flex-col gap-2 bg-black/40 border border-white/5 p-3 rounded-xl max-w-md w-full my-1">
+                                                  <div className="flex flex-col gap-1">
+                                                    <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider font-bold">Discovered Name:</span>
+                                                    <span className="text-xs font-bold text-white/70 italic">{dg.originalDiscoveredName || dg.displayName}</span>
+                                                  </div>
+                                                  <div className="flex flex-col gap-1">
+                                                    <label htmlFor={`edit-name-card-${idx}`} className="text-[9px] font-mono text-cyan-400 uppercase tracking-wider font-bold">Create Profile As:</label>
+                                                    <input
+                                                      id={`edit-name-card-${idx}`}
+                                                      type="text"
+                                                      value={dg.proposedDisplayName !== undefined ? dg.proposedDisplayName : dg.displayName}
+                                                      onChange={(e) => handleUpdateProposedName(dg, e.target.value)}
+                                                      placeholder="Enter gear profile name..."
+                                                      className="bg-black/60 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 w-full"
+                                                    />
+                                                  </div>
+                                                  {validation.error && (
+                                                    <div className="flex items-start gap-1.5 text-[9.5px] font-mono text-rose-400 mt-1.5 leading-snug">
+                                                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-500 mt-0.5" />
+                                                      <span>{validation.error}</span>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              );
+                                            } else {
+                                              return (
+                                                <span className="text-xs font-bold text-white">{dg.displayName}</span>
+                                              );
+                                            }
+                                          })()}
+                                          <span className="text-[8px] font-mono px-2 py-0.5 rounded border border-white/10 text-gray-300 capitalize">
+                                            {dg.gearType}
+                                          </span>
+                                          <span className="text-[10px] font-mono text-gray-500 truncate max-w-[120px]">{dg.modelGuid}</span>
+                                          <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded ${visualState.badgeClass}`}>
+                                            {visualState.badgeLabel}
+                                          </span>
+                                        </div>
+ 
+                                        {/* Improved top-line text clarity */}
+                                        <div className="space-y-0.5 mt-2 mb-2">
+                                          <p className="text-[11px] font-mono text-white font-semibold flex items-center gap-1.5">
+                                            <span className={`w-1.5 h-1.5 rounded-full ${
+                                              visualState.visualState === 'blocked' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.7)]' :
+                                              visualState.visualState === 'queued' ? 'bg-sky-500 shadow-[0_0_8px_rgba(56,189,248,0.7)]' :
+                                              visualState.visualState === 'partial' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.7)]' :
+                                              visualState.visualState === 'already_validated' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)]' :
+                                              visualState.visualState === 'safe_update' ? 'bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.7)]' :
+                                              visualState.visualState === 'new_profile' ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.7)]' :
+                                              'bg-gray-500'
+                                            }`} />
+                                            {visualState.topLineHeader}
+                                          </p>
+                                          <p className="text-[10px] font-mono text-gray-400">
+                                            {visualState.topLineSub}
+                                          </p>
+                                        </div>
+ 
+                                        <p className="text-[10px] font-mono text-gray-500 mt-1 uppercase">
+                                          Match Result: {dg.blocked ? "GUID Conflict Blocked" : dg.updatesExisting ? `Updates Existing Profile (${dg.matchResultStatus})` : "No existing profile found (Creates new profile)"}
+                                        </p>
+                                      </div>
+ 
+                                      <div className="flex items-center gap-2 shrink-0 md:mt-2">
+                                        {isUpdating && (
+                                          <div className="flex items-center gap-1.5 text-[10px] text-amber-500 font-mono animate-pulse uppercase mr-2">
+                                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Processing update...</span>
+                                          </div>
+                                        )}
+                                        {(() => {
+                                          const isNewProfile = !dg.updatesExisting || 
+                                            dg.matchResultStatus === 'UNMATCHED_CREATE_DRAFT' || 
+                                            dg.matchResultStatus === 'NO_EXISTING_PROFILE_FOUND' || 
+                                            dg.matchResultStatus === 'CREATE_UNVERIFIED_PROFILE' || 
+                                            dg.matchResultStatus === 'AWAITING_IDENTITY_RESOLUTION';
+                                          const validationResult = isNewProfile ? validateProposedName({
+                                            ...dg,
+                                            proposedDisplayName: dg.proposedDisplayName !== undefined ? dg.proposedDisplayName : dg.displayName
+                                          }) : { valid: true };
+                                          const isActionDisabled = isUpdating || dg.blocked || !validationResult.valid;
+                                          return (
+                                            <button
+                                              onClick={() => handleApplyDiscovered(dg)}
+                                              disabled={isActionDisabled}
+                                              className={`px-3 py-1.5 text-[10px] font-mono font-bold uppercase rounded-xl transition-all shadow-md flex items-center gap-1.5 ${
+                                                isActionDisabled 
+                                                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-white/5' 
+                                                  : 'bg-gear-accent hover:bg-gear-accent/80 text-black'
+                                              }`}
+                                            >
+                                              {isUpdating ? (
+                                                <>
+                                                  <RefreshCw className="w-3 h-3 animate-spin" />
+                                                  <span>Updating Gear Profile...</span>
+                                                </>
+                                              ) : dg.blocked ? (
+                                                <span>Action Disabled (Conflict)</span>
+                                              ) : !validationResult.valid ? (
+                                                <span>Invalid Proposed Name</span>
+                                              ) : (
+                                                dg.updatesExisting 
+                                                  ? 'Update Gear Profile From .at5p Discovery'
+                                                  : `Create Profile: ${dg.proposedDisplayName || dg.displayName}`
+                                              )}
+                                            </button>
+                                          );
+                                        })()}
+                                      </div>
+                                    </div>
+
+                                    {/* Discovered Parameters list classified dynamically for Cabinets */}
+                                    {dg.gearType === 'cab' ? (() => {
+                                      const { numeric, references, selectors } = categorizeParams(dg.parameters);
+                                      return (
+                                        <div className="space-y-3.5 border-t border-white/5 pt-3">
+                                          <p className="text-[9px] font-mono text-gray-500 uppercase font-bold tracking-wider">Discovered Cab Data</p>
+                                          
+                                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            {/* Numeric Parameters */}
+                                            <div className="bg-black/20 p-2.5 rounded-xl border border-white/5 space-y-1">
+                                              <p className="text-[8px] font-mono text-yellow-500 uppercase font-bold">Numeric Parameters ({numeric.length})</p>
+                                              <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
+                                                {numeric.map((p: any, idx: number) => (
+                                                  <span key={idx} className="text-[8.5px] font-mono bg-white/[0.03] border border-white/5 text-gray-400 px-1.5 py-0.5 rounded">
+                                                    {p.name}: {p.value}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            </div>
+
+                                            {/* Gear References */}
+                                            <div className="bg-black/20 p-2.5 rounded-xl border border-white/5 space-y-1">
+                                              <p className="text-[8px] font-mono text-purple-400 uppercase font-bold">Gear References ({references.length})</p>
+                                              <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
+                                                {references.map((p: any, idx: number) => (
+                                                  <span key={idx} className="text-[8.5px] font-mono bg-purple-950/20 border border-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded select-all">
+                                                    {p.name}: {p.value}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            </div>
+
+                                            {/* Selector/Enum Values */}
+                                            <div className="bg-black/20 p-2.5 rounded-xl border border-white/5 space-y-1">
+                                              <p className="text-[8px] font-mono text-cyan-400 uppercase font-bold">Selector/Enum Values ({selectors.length})</p>
+                                              <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
+                                                {selectors.map((p: any, idx: number) => (
+                                                  <span key={idx} className="text-[8.5px] font-mono bg-cyan-950/20 border border-cyan-500/10 text-cyan-300 px-1.5 py-0.5 rounded">
+                                                    {p.name}: {p.value}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })() : (
+                                      /* Standard parameter flat list */
+                                      <div>
+                                        <p className="text-[9px] font-mono text-gray-500 uppercase font-bold mb-1.5">Discovered Parameters</p>
+                                        <div className="flex flex-wrap gap-2">
+                                          {dg.parameters.map((p: any, pIdx: number) => (
+                                            <span key={pIdx} className="text-[8.5px] font-mono bg-white/[0.03] border border-white/5 text-gray-400 px-2 py-0.5 rounded">
+                                              {p.name} [{p.value}]
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Discovered Child Component validation triggers for Cabinet */}
+                                    {dg.gearType === 'cab' && dg.childGears && dg.childGears.length > 0 && (
+                                      <div className="bg-[#111114] border border-white/10 rounded-xl p-4 space-y-3.5 mt-2">
+                                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                          <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold tracking-widest flex items-center gap-1.5 font-bold">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                                            Cabinet Nested Components Discovery
+                                          </span>
+                                          <span className="text-[9px] font-mono text-gray-500">
+                                            {dg.childGears.length} components parsed from Cab
+                                          </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-2">
+                                          {dg.childGears.map((child: any, childIdx: number) => {
+                                            const isChildValidating = updatingGears.includes(child.guid);
+                                            return (
+                                              <div 
+                                                key={childIdx}
+                                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white/[0.02] border border-white/10 rounded-lg text-xs"
+                                              >
+                                                <div className="space-y-0.5">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-white">{child.displayName}</span>
+                                                    <span className="text-[8px] font-mono px-1.5 py-0.5 rounded border border-purple-500/20 text-purple-400 uppercase">
+                                                      {child.type}
+                                                    </span>
+                                                    <span className="text-[10px] font-mono text-gray-500">{child.guid}</span>
+                                                  </div>
+                                                  <div className="text-[10.5px] font-mono text-gray-400 flex flex-wrap gap-x-2.5">
+                                                    <span><span className="text-gray-500">Source fields:</span> {child.sourceFields.join(", ")}</span>
+                                                    <span>•</span>
+                                                    <span>
+                                                      <span className="text-gray-500">Match:</span>{' '}
+                                                      <span className={child.matchedProfile ? "text-emerald-400 font-semibold" : "text-amber-500"}>
+                                                        {child.matchedProfile ? (
+                                                          (child.type === 'room' || child.type === 'room_mic' || child.type === 'roomMic') ? (
+                                                            `Existing ${child.type === 'room' ? 'Room' : 'Room Mic'} Profile Found: ${child.matchedProfile.displayName}`
+                                                          ) : (
+                                                            `Profile found: ${child.matchedProfile.displayName}`
+                                                          )
+                                                        ) : "Awaiting Identity Resolution"}
+                                                      </span>
+                                                    </span>
+                                                  </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                  <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
+                                                    child.isAlreadyValidated
+                                                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                                      : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+                                                  }`}>
+                                                    {child.statusLabel}
+                                                  </span>
+
+                                                  <button
+                                                    onClick={() => {
+                                                      if (child.isAlreadyValidated && child.matchedProfile) {
+                                                        handleSelectProfile(child.matchedProfile);
+                                                      } else {
+                                                        handleApplyChildValidation(dg, child);
+                                                      }
+                                                    }}
+                                                    disabled={isChildValidating}
+                                                    className={`px-2.5 py-1 text-[9.5px] font-mono font-bold uppercase rounded-lg transition-all ${
+                                                      child.isAlreadyValidated
+                                                        ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 cursor-pointer'
+                                                        : 'bg-cyan-500 hover:bg-cyan-600 text-black'
+                                                    }`}
+                                                  >
+                                                    {child.isAlreadyValidated ? "already validated / view profile" : "Validate Child"}
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Before Update Review Summary Area */}
+                                    <div className={`text-[10.5px] font-mono border rounded-xl p-3.5 space-y-1.5 ${visualState.summaryPanelClass}`}>
+                                      <p className="text-[9.5px] uppercase font-bold tracking-wider mb-1 opacity-75">Status Summary</p>
+                                      <p><span className="opacity-60">Match Result:</span> <span className="font-bold">{dg.matchResultStatus || (dg.updatesExisting ? "Updates Existing Profile" : "No existing profile found (Creates new profile)")}</span></p>
+                                      <p><span className="opacity-60">Target profile:</span> <span className="font-bold">{dg.updatesExisting ? (dg.matchedProfile?.displayName || dg.displayName) : dg.blocked ? `${dg.matchedProfile?.displayName} (Conflict Blocked)` : "(none) - A new draft profile will be initialized"}</span></p>
+                                      {dg.matchReason && <p><span className="opacity-60">Match reason:</span> <span className="font-semibold">{dg.matchReason}</span></p>}
+                                      {dg.matchConfidence && <p><span className="opacity-60">Match confidence:</span> <span className="font-bold">{dg.matchConfidence}</span></p>}
+                                      <p><span className="opacity-60">Validation status:</span> <span className="font-bold">{(dg.matchedProfile?.validationStatus === "verified_at5p" || dg.matchedProfile?.validationStatus === "at5p_validated") ? ".AT5P VALIDATED" : (dg.matchedProfile?.validationStatus === "awaiting_at5p_validation" ? "Awaiting .AT5P Validation" : "Awaiting .AT5P Validation / Unverified")}</span></p>
+                                      {dg.blocked ? (
+                                        <div className="text-rose-400 font-bold mt-2 pt-1.5 border-t border-rose-500/15 flex items-start gap-1.5">
+                                          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-500" />
+                                          <div>{dg.blockReason}</div>
+                                        </div>
+                                      ) : (
+                                        <p><span className="opacity-60">Action available:</span> <span className="font-semibold">{dg.updatesExisting ? "Update Gear Profile From .at5p Discovery" : "Create Unverified Profile From .at5p Discovery"}</span></p>
+                                      )}
+                                    </div>
+
+                                    {/* Failure feedback */}
+                                    {showError && (
+                                      <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400/90 font-mono text-[11px] rounded-xl flex items-start gap-2">
+                                        <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                                        <div>
+                                          <span className="font-bold uppercase block text-red-400 text-xs">Profile Update Failed</span>
+                                          {dg.errorMsg}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
                       </div>
                     </div>
                   )}
@@ -4941,6 +5519,17 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                     </div>
                   )}
 
+                  {/* GUID Conflict Error Notification */}
+                  {reviewingDiscovery.blocked && (
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-300 font-mono text-[11px] rounded-2xl flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold uppercase block text-red-400 text-xs">GUID Conflict Detected</span>
+                        {reviewingDiscovery.blockReason}
+                      </div>
+                    </div>
+                  )}
+
                   {reviewingDiscovery.updatesExisting && (
                     reviewingDiscovery.matchedProfile?.validationStatus === "verified_at5p" ||
                     reviewingDiscovery.matchedProfile?.validation?.status === "PASS"
@@ -5026,7 +5615,16 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                        <h5 className="text-[10px] text-gray-400 uppercase font-bold tracking-widest border-b border-white/5 pb-1">Current Gear Profile</h5>
                        {reviewingDiscovery.matchedProfile ? (
                          <div className="space-y-1.5 text-gray-300 text-[11px]">
-                           <p><span className="text-gray-500">Matched ID:</span> <span className="text-white break-all">{reviewingDiscovery.matchedProfile.id}</span></p>
+                                                       {reviewingDiscovery.blocked ? (
+                              <>
+                                <p className="text-red-400 font-bold uppercase mb-2">Matched Profile Blocked:</p>
+                                <p><span className="text-gray-500">Name:</span> <span className="text-white font-bold">{reviewingDiscovery.matchedProfile.displayName}</span></p>
+                                <p><span className="text-gray-500">Existing GUID:</span> <span className="text-rose-400 font-bold font-mono">{reviewingDiscovery.matchedProfile.guid}</span></p>
+                                <p><span className="text-gray-500">Discovered GUID:</span> <span className="text-yellow-400 font-bold font-mono">{reviewingDiscovery.modelGuid}</span></p>
+                              </>
+                            ) : (
+                              <p><span className="text-gray-500">Matched ID:</span> <span className="text-white break-all">{reviewingDiscovery.matchedProfile.id}</span></p>
+                            )}
                            <p><span className="text-gray-500">Display Name:</span> <span className="text-white font-bold">{reviewingDiscovery.matchedProfile.displayName}</span></p>
                            <p><span className="text-gray-500">Type:</span> <span className="text-white capitalize">{reviewingDiscovery.matchedProfile.type}</span></p>
                            <p><span className="text-gray-500">Status:</span> <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-white/10 uppercase text-gray-400">{reviewingDiscovery.matchedProfile.validationStatus || "unverified"}</span></p>
@@ -5111,7 +5709,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                            </>
                          ) : (
                            <>
-                             <li>New physical gear profile will be initialized with ID <span className="text-cyan-400 font-bold">"amp_darrell_100"</span></li>
+                             <li>New physical gear profile will be initialized with ID <span className="text-cyan-400 font-bold font-mono">"{reviewingDiscovery.modelGuid ? `gear-${reviewingDiscovery.modelGuid.toLowerCase().replace(/[^a-z0-9]/g, '').trim()}` : `gear-${reviewingDiscovery.displayName.toLowerCase().replace(/[^a-z0-9]/g, '')}-${reviewingDiscovery.gearType || 'amp'}`}"</span></li>
                              <li>GUID/realId set to <span className="text-cyan-400 font-bold break-all">{reviewingDiscovery.modelGuid}</span></li>
                              <li>All parameters auto-initialized from .at5p parsed preset</li>
                            </>
@@ -5132,15 +5730,15 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                      <button
                        type="button"
                        disabled={isLoading}
-                       onClick={() => reviewingDiscovery.isChildValidation ? handleApplyChildValidationConfirmed(reviewingDiscovery) : handleApplyDiscoveredConfirmed(reviewingDiscovery)}
-                       className="flex-1 px-5 py-2.5 bg-gear-accent hover:bg-gear-accent/80 text-black text-xs font-mono uppercase font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                       onClick={reviewingDiscovery.blocked ? undefined : (() => reviewingDiscovery.isChildValidation ? handleApplyChildValidationConfirmed(reviewingDiscovery) : handleApplyDiscoveredConfirmed(reviewingDiscovery))}
+                       className={`flex-1 px-5 py-2.5 text-xs font-mono uppercase font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 ${reviewingDiscovery.blocked ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-white/5' : 'bg-gear-accent hover:bg-gear-accent/80 text-black disabled:opacity-50 disabled:cursor-not-allowed'}`}
                      >
                       {isLoading ? (
                         <>
                           <RefreshCw className="w-4 h-4 animate-spin" /> Applying...
                         </>
                       ) : (
-                        <>Confirm &amp; Update</>
+                        reviewingDiscovery.blocked ? <>Action Disabled</> : <>Confirm &amp; Update</>
                       )}
                     </button>
                   </div>

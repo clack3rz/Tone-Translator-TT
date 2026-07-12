@@ -98,6 +98,62 @@ export const normalise = (value: string) =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
+export function generateAliasesForXmlParam(xmlName: string): string[] {
+  const aliases = new Set<string>();
+  aliases.add(xmlName);
+  
+  let base = xmlName;
+  if (xmlName.includes("_")) {
+    base = xmlName.split("_")[0];
+  }
+  
+  const baseLower = base.toLowerCase().trim();
+  aliases.add(base);
+  
+  const mapping: Record<string, string[]> = {
+    drive: ["drive", "gain", "lead drive", "lead gain", "input drive"],
+    volume: ["volume", "channel volume", "output volume"],
+    master: ["master", "master volume"],
+    treble: ["treble", "high", "highs"],
+    bass: ["bass", "low", "lows"],
+    middle: ["middle", "mid", "mids", "midrange"],
+    presence: ["presence"],
+    reverb: ["reverb"],
+    bright: ["bright", "bright switch"],
+    trebleshift: ["shift (treble)", "treble shift", "pull treble", "treble pull", "shift_treble", "shift treble"],
+    bassshift: ["shift (bass)", "bass shift", "pull bass", "bass pull", "shift_bass", "shift bass"],
+    rhythm2: ["rhythm 2", "rhythm2", "r2", "channel 2"],
+    deep: ["deep", "deep switch"],
+    eq: ["eq", "graphic eq", "eq on", "geq"],
+    band80hz: ["80hz", "band 80", "eq 80hz", "80 hz", "80"],
+    band240hz: ["240hz", "band 240", "eq 240hz", "240 hz", "240"],
+    band750hz: ["750hz", "band 750", "eq 750hz", "750 hz", "750"],
+    band2200hz: ["2200hz", "2.2khz", "band 2200", "eq 2200hz", "2.2 khz", "2200"],
+    band6600hz: ["6600hz", "6.6khz", "band 6600", "eq 6600hz", "6.6 khz", "6600"]
+  };
+
+  if (mapping[baseLower]) {
+    mapping[baseLower].forEach(a => aliases.add(a));
+  }
+  
+  if (baseLower.endsWith("shift")) {
+    const prefix = baseLower.substring(0, baseLower.length - 5);
+    aliases.add(`${prefix} shift`);
+    aliases.add(`shift (${prefix})`);
+    aliases.add(`pull ${prefix}`);
+    aliases.add(`${prefix} pull`);
+  }
+  
+  if (baseLower.startsWith("band")) {
+    const num = baseLower.substring(4);
+    aliases.add(num);
+    aliases.add(`band ${num}`);
+    aliases.add(`eq ${num}`);
+  }
+
+  return Array.from(aliases);
+}
+
 const compact = (value: string) => String(value).replace(/[^a-zA-Z0-9]/g, "");
 
 const escapeXmlAttr = (value: unknown) =>
@@ -406,6 +462,24 @@ export function getParameterDefinitions(
         visualMin: dbM.visualMin,
         visualMax: dbM.visualMax
       });
+    }
+  }
+
+  // Enrich aliases for all resolved parameters dynamically using generateAliasesForXmlParam
+  for (const p of paramsMap.values()) {
+    if (!p.aliases) {
+      p.aliases = [];
+    }
+    const generatedFromXml = generateAliasesForXmlParam(p.xmlName);
+    const generatedFromFriendly = generateAliasesForXmlParam(p.friendlyName);
+    const uniqueAliases = new Set<string>(p.aliases.map(a => a.toLowerCase().trim()));
+    
+    for (const a of [...generatedFromXml, ...generatedFromFriendly]) {
+      const lowerA = a.toLowerCase().trim();
+      if (!uniqueAliases.has(lowerA)) {
+        p.aliases.push(a);
+        uniqueAliases.add(lowerA);
+      }
     }
   }
 

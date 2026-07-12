@@ -14,6 +14,7 @@ import {
   findClosestBand,
   getDbMicPlacementMappings,
   findVerifiedGear,
+  generateAliasesForXmlParam,
 } from "./at5ParameterManifest";
 
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "./at5VerifiedProtocols";
@@ -102,6 +103,64 @@ const ensureBrit8000Sensitivity = (ampGuid: string, attrs: string) => {
   return cleaned;
 };
 
+export function isAt5pValidatedStatus(status: string | undefined, profile?: any): boolean {
+  if (!status && profile) {
+    status = profile.validationStatus || profile.profileStatus || (profile.validation && profile.validation.status);
+  }
+  if (!status) return false;
+
+  const s = String(status).trim().toLowerCase().replace(/^\.+/, "").trim();
+  const validStrings = [
+    "at5p_validated",
+    "verified_at5p",
+    "at5p validated",
+    "verified at5p"
+  ];
+
+  if (validStrings.includes(s)) {
+    return true;
+  }
+
+  // PASS, if profileStatus/validation.status is PASS and the profile has a valid GUID and parameters
+  if (s === "pass") {
+    if (profile) {
+      const guid = profile.guid || "";
+      const isUuid = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/.test(guid.trim());
+      const knobsExist = profile.knobs && profile.knobs.length > 0;
+      const paramsExist = profile.parameters && profile.parameters.length > 0;
+      const parametersExist = knobsExist || paramsExist || getParameterDefinitions(profile.displayName || profile.name, profile.group || profile.type).length > 0;
+      
+      if (isUuid && parametersExist) {
+        return true;
+      }
+    } else {
+      return true;
+    }
+  }
+
+  if (profile) {
+    const pStatus = (profile.profileStatus || "").trim().toLowerCase();
+    const vStatus = (profile.validationStatus || "").trim().toLowerCase();
+    const innerValStatus = (profile.validation && profile.validation.status) 
+      ? String(profile.validation.status).trim().toLowerCase() 
+      : "";
+    
+    if (pStatus === "pass" || vStatus === "pass" || innerValStatus === "pass") {
+      const guid = profile.guid || "";
+      const isUuid = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/.test(guid.trim());
+      const knobsExist = profile.knobs && profile.knobs.length > 0;
+      const paramsExist = profile.parameters && profile.parameters.length > 0;
+      const parametersExist = knobsExist || paramsExist || getParameterDefinitions(profile.displayName || profile.name, profile.group || profile.type).length > 0;
+      
+      if (isUuid && parametersExist) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 const getFallbackGuidForGroup = (group: "amp" | "cab" | "stomp" | "rack") => {
   if (group === "amp") return DEFAULT_AMP_GUID;
   if (group === "cab") return DEFAULT_CAB_GUID;
@@ -142,12 +201,14 @@ export function resolveGearGuidInfo(
   const catalogMatch = findAT5Gear(gearName, group);
   if (catalogMatch) {
     catalog_guid = catalogMatch.guid;
-    const isDb = catalogMatch.isDbRecord === true || (catalogMatch as any).id?.startsWith("gear-");
-    const valStatus = (catalogMatch as any).validationStatus;
+    const isDb = catalogMatch.isDbRecord === true || 
+                 (catalogMatch as any).id?.startsWith("gear-") ||
+                 (catalogMatch as any).validationStatus !== undefined ||
+                 (catalogMatch as any).profileStatus !== undefined;
     
     if (isDb && catalogMatch.guid) {
       gear_manager_profile_guid = catalogMatch.guid;
-      profile_validation_status = valStatus;
+      profile_validation_status = (catalogMatch as any).validationStatus || (catalogMatch as any).profileStatus;
     }
   }
 
@@ -164,10 +225,10 @@ export function resolveGearGuidInfo(
   }
 
   // Step 1: Priority 1 - Gear Manager / DB catalogue profile (isDbRecord is true, or has validationStatus)
-  if (catalogMatch && catalogMatch.isDbRecord && catalogMatch.guid) {
+  if (catalogMatch && (catalogMatch.isDbRecord || (catalogMatch as any).id?.startsWith("gear-") || (catalogMatch as any).validationStatus || (catalogMatch as any).profileStatus) && catalogMatch.guid) {
     resolvedGuid = catalogMatch.guid;
-    profile_validation_status = (catalogMatch as any).validationStatus || "PASS";
-    if (profile_validation_status === "verified_at5p") {
+    profile_validation_status = (catalogMatch as any).validationStatus || (catalogMatch as any).profileStatus || "PASS";
+    if (isAt5pValidatedStatus(profile_validation_status, catalogMatch)) {
       final_guid_source = "at5p_discovery";
     } else {
       final_guid_source = "gear_manager_db";
@@ -225,6 +286,18 @@ export function resolveGearGuidInfo(
     }
   }
 
+  // Guard against "Analog Delay" resolving to "Black 76" compressor GUID
+  if (normName === "analog delay" && resolvedGuid.toLowerCase() === "aecfbde7-4f23-44ca-9f58-b0a110f0ea7a") {
+    resolvedGuid = getFallbackGuidForGroup(group);
+    final_guid_source = "fallback";
+    fallback_block_triggered = true;
+    gear_manager_profile_guid = undefined;
+    catalog_guid = undefined;
+    verified_static_guid = undefined;
+    manifest_guid = undefined;
+    profile_validation_status = undefined;
+  }
+
   return {
     resolvedGuid,
     final_guid_source,
@@ -248,28 +321,45 @@ const resolveGuid = (
 
 
 
-const isPostAmpRack = (gear: SignalChainElement) => {
-  const n = gear.name.toLowerCase();
+const resolveSlotFamily = (gear: SignalChainElement): "stomp" | "rack" => {
+  if (gear.type === "rack") {
+    return "rack";
+  }
+  if (gear.type === "pedal" || (gear.type as string) === "stomp") {
+    return "stomp";
+  }
+  
+  // Resolve profile type - prioritize stomp/pedal first
+  const stompMatch = findAT5Gear(gear.name, "stomp");
+  if (stompMatch && (stompMatch.group === "stomp" || stompMatch.group === "pedal")) {
+    return "stomp";
+  }
 
-  return ["delay", "reverb", "eq", "compressor", "limiter", "rack"].some((x) =>
-    n.includes(x)
-  );
+  const catalogMatch = findAT5Gear(gear.name, "rack");
+  if (catalogMatch && catalogMatch.group === "rack") {
+    return "rack";
+  }
+
+  return "stomp";
+};
+
+const isPostAmpRack = (gear: SignalChainElement) => {
+  return resolveSlotFamily(gear) === "rack";
 };
 
 const isVerifiedRackGear = (gear: SignalChainElement) => {
+  // Physical slot compatibility MUST win! Pedals must stay in stomp slots.
+  // Therefore, if the physical slot family is not rack, it is NOT verified rack gear!
+  if (resolveSlotFamily(gear) !== "rack") {
+    return false;
+  }
+
   const n = gear.name.toLowerCase();
   if (VERIFIED_RACK_NAMES.some((name) => n.includes(name))) return true;
   
   // Check if we can resolve a GUID from the catalog for this as a rack item
   const rackGuid = resolveGuid(gear.name, "rack", AT5_EMPTY_SLOT_GUID);
   if (rackGuid !== AT5_EMPTY_SLOT_GUID) return true;
-
-  // If it's a pedal being pushed to the rack pool (e.g. a delay pedal), 
-  // check if we have a stomp GUID for it.
-  if (gear.type === "pedal") {
-    const stompGuid = resolveGuid(gear.name, "stomp", AT5_EMPTY_SLOT_GUID);
-    return stompGuid !== AT5_EMPTY_SLOT_GUID;
-  }
 
   return false;
 };
@@ -577,14 +667,85 @@ const resolveSpeakerGuid = (name?: string) => {
   return DEFAULT_SPEAKER_GUID;
 };
 
+const ROOM_ALIASES: { name: string; aliases: string[] }[] = [
+  {
+    name: "Small Studio",
+    aliases: ["Small Studio", "Small Room", "Small"]
+  },
+  {
+    name: "Mid Studio",
+    aliases: [
+      "Mid Studio",
+      "Mid Room",
+      "Mid",
+      "Medium Studio",
+      "Medium Room",
+      "Medium"
+    ]
+  },
+  {
+    name: "Large Studio",
+    aliases: ["Large Studio", "Large Room", "Large"]
+  },
+  {
+    name: "Hall",
+    aliases: ["Hall"]
+  },
+  {
+    name: "Closet",
+    aliases: ["Closet"]
+  },
+  {
+    name: "Bathroom",
+    aliases: ["Bathroom"]
+  },
+  {
+    name: "Garage",
+    aliases: ["Garage"]
+  }
+];
+
+export function canonicalizeRoomType(value: string): string {
+  if (!value) return "Large Studio";
+  const clean = value.trim().toLowerCase().replace(/\s+/g, " ");
+
+  // Direct exact alias matching (whitespace and case tolerant)
+  for (const room of ROOM_ALIASES) {
+    if (room.aliases.some(alias => {
+      const cleanAlias = alias.trim().toLowerCase().replace(/\s+/g, " ");
+      return clean === cleanAlias;
+    })) {
+      return room.name;
+    }
+  }
+
+  // Fallback tolerance using substrings
+  for (const room of ROOM_ALIASES) {
+    if (room.aliases.some(alias => {
+      const cleanAlias = alias.trim().toLowerCase().replace(/\s+/g, " ");
+      return clean.includes(cleanAlias);
+    })) {
+      return room.name;
+    }
+  }
+
+  return value; // Keep raw for unknown detection
+}
+
+export function isKnownRoomType(value: string): boolean {
+  if (!value) return false;
+  const canonical = canonicalizeRoomType(value);
+  return ROOM_ALIASES.some(room => room.name === canonical);
+}
+
 const getRoomType = (cab?: SignalChainElement) => {
   const room = getSettingText(cab, ["room", "room_type"]);
+  if (!room) return "Large Studio";
 
-  if (/small/i.test(room)) return "Small Studio";
-  if (/medium|mid/i.test(room)) return "Mid Studio";
-  if (/large/i.test(room)) return "Large Studio";
-
-  return "Large Studio";
+  if (isKnownRoomType(room)) {
+    return canonicalizeRoomType(room);
+  }
+  return "Large Studio"; // Unknown room fallback to safe default (Large Studio)
 };
 
 export function isUnspecifiedPlacementValue(value: any): boolean {
@@ -896,6 +1057,11 @@ export interface ExportDebugItem {
     placement_was_supplied_by_chain?: boolean;
     placement_source?: string;
     resolved_at5_fields?: any;
+    input_parameter_name?: string;
+    matched_profile_parameter?: string;
+    matched_export_parameter_name?: string;
+    canonical_input_value?: string;
+    match_source?: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" | "room_alias";
   }[];
   not_exported_detail?: string[];
   tone_adjustment_intent?: Record<string, string>;
@@ -947,6 +1113,33 @@ export interface ExportDebugItem {
   darrell_active_master_parameter?: string;
   darrell_channel_mapping_confidence?: "verified_at5p" | "inferred" | "needs_validation";
   darrell_channel_mapping_reason?: string;
+  profile_match_strategy?: string;
+  profile_match_guid?: string;
+  profile_match_name?: string;
+  profile_match_type?: string;
+  profile_match_context?: string;
+  cross_group_match_used?: boolean;
+  cross_group_match_blocked_reason?: string;
+  eq_dedupe_checked?: boolean;
+  eq_dedupe_result?: "kept" | "skipped";
+  eq_dedupe_reason?: string;
+  eq_functional_role?: string;
+  compared_against_gear?: string;
+  compared_against_role?: string;
+  same_slot_context?: boolean;
+  same_gear_type?: boolean;
+  settings_similarity_score?: number;
+  explicit_role_detected?: boolean;
+  validated_profile_protected?: boolean;
+  requested_type?: string;
+  resolved_profile_type?: string;
+  routing_decision?: string;
+  routing_decision_source?: string;
+  physical_slot_family?: string;
+  tonal_role?: string;
+  slot_family_locked?: boolean;
+  rejected_rack_routing_reason?: string;
+  rejected_stomp_routing_reason?: string;
 }
 
 export interface ExportDebugData {
@@ -955,6 +1148,7 @@ export interface ExportDebugData {
   skipped_gear: ExportDebugItem[];
   exported_xml_summary: string;
   rack_decision?: RackDecision;
+  parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
 }
 
 type ChainPair = {
@@ -1356,7 +1550,34 @@ const makeDebugItem = (
 
   // 1b. Check if the GUID is verified for the intended gear (Rule 3)
   let verified_guid_resolved = false;
-  if (group === "cab") {
+
+  const isUuid = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/.test(resolvedGuid || "");
+  const paramsDefs = getParameterDefinitions(gear.name, group);
+  const parametersExist = paramsDefs && paramsDefs.length > 0;
+  
+  const isDbProfile = catalogMatch && (catalogMatch.isDbRecord || (catalogMatch as any).id?.startsWith("gear-") || guidInfo.gear_manager_profile_guid);
+  
+  let isDbProfileTrusted = false;
+  if (isDbProfile && isUuid && parametersExist) {
+    const valStatus = (catalogMatch as any).validationStatus || guidInfo.profile_validation_status;
+    const profileStatus = (catalogMatch as any).profileStatus;
+    const gSource = (catalogMatch as any).guidSource;
+    const pSource = (catalogMatch as any).parameterSource;
+    
+    if (
+      isAt5pValidatedStatus(valStatus, catalogMatch) ||
+      isAt5pValidatedStatus(profileStatus, catalogMatch) ||
+      isAt5pValidatedStatus(guidInfo.profile_validation_status, catalogMatch) ||
+      gSource === "at5p_discovery" ||
+      pSource === "at5p_discovery"
+    ) {
+      isDbProfileTrusted = true;
+    }
+  }
+
+  if (isDbProfileTrusted) {
+    verified_guid_resolved = true;
+  } else if (group === "cab") {
     verified_guid_resolved = getVerifiedCabs().some((v) => scoreNames(gear.name, v.aliases));
   } else {
     const verifiedMatch = findVerifiedGear(gear.name, group);
@@ -1368,12 +1589,8 @@ const makeDebugItem = (
     // - parameters exist (determined via getParameterDefinitions)
     // - profile validation status is PASS/verified_at5p, or the profile came from .at5p discovery
     if (group === "amp") {
-      const isUuid = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/.test(resolvedGuid || "");
-      const paramsDefs = getParameterDefinitions(gear.name, group);
-      const parametersExist = paramsDefs && paramsDefs.length > 0;
-      
       const isPassOrAt5p = guidInfo.profile_validation_status === "PASS" || 
-                           guidInfo.profile_validation_status === "verified_at5p" || 
+                           isAt5pValidatedStatus(guidInfo.profile_validation_status, catalogMatch) ||
                            guidInfo.final_guid_source === "at5p_discovery";
       
       if (isUuid && parametersExist && isPassOrAt5p) {
@@ -1408,6 +1625,8 @@ const makeDebugItem = (
   let fallback_reason: string | undefined = undefined;
   let substitution_reason = "";
   let fallback_source = "";
+  let delay_substituted = false;
+  let delay_substitution_reason = "";
 
   if (!verified_guid_resolved) {
     if (exportStrictnessMode === "strict") {
@@ -1478,6 +1697,50 @@ const makeDebugItem = (
     }
   }
 
+  // Determine name-based fallback mismatch or delay substitution
+  const normActualName = actualExportedGearName.trim().toLowerCase();
+  const normGearName = gear.name.trim().toLowerCase();
+  if (normActualName !== normGearName && normActualName !== "none") {
+    fallback_applied = true;
+    substitution_used = true;
+    if (!fallback_reason) {
+      fallback_reason = `TT exported fallback "${actualExportedGearName}" instead of requested gear "${originalRequestedGearName}".`;
+    }
+    substitution_reason = fallback_reason;
+  }
+
+  const isXTimeRequested = 
+    originalRequestedGearName.toLowerCase().replace(/[^a-z0-9]/g, "") === "xtime" ||
+    gear.name.toLowerCase().replace(/[^a-z0-9]/g, "") === "xtime";
+    
+  const isDigitalDelayRequested = 
+    originalRequestedGearName.toLowerCase() === "digital delay" ||
+    originalRequestedGearName.toLowerCase() === "delay" ||
+    gear.name.toLowerCase() === "digital delay" ||
+    gear.name.toLowerCase() === "delay";
+
+  const isXTimeExported = 
+    actualExportedGearName.toLowerCase().replace(/[^a-z0-9]/g, "") === "xtime";
+
+  const isDigitalDelayExported = 
+    actualExportedGearName.toLowerCase() === "digital delay" ||
+    actualExportedGearName.toLowerCase() === "delay";
+
+  if (isXTimeRequested && isDigitalDelayExported) {
+    delay_substituted = true;
+    delay_substitution_reason = `TT substituted "${actualExportedGearName}" because "X-TIME" is unavailable.`;
+  } else if (isDigitalDelayRequested && isXTimeExported) {
+    delay_substituted = true;
+    delay_substitution_reason = `TT substituted "X-TIME" because "${originalRequestedGearName}" is unavailable.`;
+  }
+
+  if (delay_substituted) {
+    fallback_applied = true;
+    substitution_used = true;
+    fallback_reason = delay_substitution_reason;
+    substitution_reason = delay_substitution_reason;
+  }
+
   // Populate actual reason texts based on the finalized names and flags
   if (fallback_applied || substitution_used) {
     fallback_source = `Default ${group} fallback`;
@@ -1487,7 +1750,7 @@ const makeDebugItem = (
       fallback_reason = `TT exported fallback "${actualExportedGearName}" instead of requested gear "${originalRequestedGearName}" because the requested gear lacks a verified GUID.`;
     } else if (fallback_trigger === "missing_catalog_guid") {
       fallback_reason = `TT exported fallback "${actualExportedGearName}" instead of requested gear "${originalRequestedGearName}" because the requested gear is missing from the catalog.`;
-    } else {
+    } else if (!fallback_reason) {
       fallback_reason = `TT exported fallback "${actualExportedGearName}" instead of requested gear "${originalRequestedGearName}".`;
     }
     substitution_reason = fallback_reason;
@@ -1561,7 +1824,12 @@ const makeDebugItem = (
       !mic2Req ||
       getVerifiedMics().some((v) => scoreNames(mic2Req, v.aliases));
 
-    if (isVerifiedCabinetEntry && isVerifiedSpeaker && isVerifiedMic1 && isVerifiedMic2) {
+    const roomReq = getSettingText(gear, ["room", "room_type"]);
+    const isVerifiedRoom = !roomReq || isKnownRoomType(roomReq);
+
+    if (isVerifiedCabinetEntry && isVerifiedSpeaker && isVerifiedMic1 && isVerifiedMic2 && isVerifiedRoom) {
+      finalReason = "Included with verified cab, speaker, mic, and room values.";
+    } else if (isVerifiedCabinetEntry && isVerifiedSpeaker && isVerifiedMic1 && isVerifiedMic2) {
       finalReason = "Included with verified cab, speaker, and mic GUIDs.";
     } else if (exported) {
       const issues = [];
@@ -1569,6 +1837,7 @@ const makeDebugItem = (
       if (!isVerifiedSpeaker) issues.push("Speaker");
       if (!isVerifiedMic1) issues.push("Mic 1");
       if (!isVerifiedMic2) issues.push("Mic 2");
+      if (!isVerifiedRoom) issues.push("Room");
       finalReason = `Included (Check: Unverified ${issues.join(", ")}. Exported using generic template.)`;
     }
   } else {
@@ -1623,6 +1892,11 @@ const makeDebugItem = (
     placement_was_supplied_by_chain?: boolean;
     placement_source?: string;
     resolved_at5_fields?: any;
+    input_parameter_name?: string;
+    matched_profile_parameter?: string;
+    matched_export_parameter_name?: string;
+    canonical_input_value?: string;
+    match_source?: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" | "room_alias";
   }[] = [];
   const not_exported_detail: string[] = [];
   let hasNearestBandWarning = false;
@@ -1773,6 +2047,22 @@ const makeDebugItem = (
               parameter_reason = `Expected ${display_value} but exported value loads as ${reverse_converted_display_value}.`;
             }
 
+            let match_source: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" = "unmatched";
+            const cleanXml = def.xmlName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+            const cleanFriendly = def.friendlyName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+            if (cleanXml === cleanNormKey) {
+              match_source = "exact_xml";
+            } else if (cleanFriendly === cleanNormKey) {
+              match_source = "friendly_name";
+            } else {
+              match_source = "alias";
+              const generated = generateAliasesForXmlParam(def.xmlName).map(a => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
+              const generatedFriendly = generateAliasesForXmlParam(def.friendlyName).map(a => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
+              if (generated.includes(cleanNormKey) || generatedFriendly.includes(cleanNormKey)) {
+                match_source = "generated_alias";
+              }
+            }
+
             detailsList.push({
               parameter: normKey,
               normalized_parameter: isNearestBandMapping ? nearestBandMappedXmlName : undefined,
@@ -1784,7 +2074,12 @@ const makeDebugItem = (
               expected_export_value: typeof resolvedIntended === "number" ? Number(resolvedIntended.toFixed(6)) : String(resolvedIntended),
               actual_export_value: String(ev),
               reverse_converted_display_value,
-              reason: parameter_reason
+              reason: parameter_reason,
+              input_parameter_name: normKey,
+              matched_profile_parameter: def.friendlyName,
+              matched_export_parameter_name: def.xmlName,
+              match_source,
+              exported_value: expVal,
             });
 
             if (isNearestBandMapping && match) {
@@ -1804,6 +2099,11 @@ const makeDebugItem = (
               exported_internal_value: "MISSING",
               mapping_status: "MISMATCH",
               conversion_note: "Parameter missing in exported attributes",
+              input_parameter_name: normKey,
+              matched_profile_parameter: def.friendlyName,
+              matched_export_parameter_name: def.xmlName,
+              match_source: "unmatched",
+              exported_value: "MISSING",
             });
           }
         } else {
@@ -1814,7 +2114,12 @@ const makeDebugItem = (
             display_value: String(normVal),
             exported_internal_value: "DROPPED",
             mapping_status: "DROPPED",
-            conversion_note: `Parameter '${normKey}' is dropped / not supported by the physical gear definition.`
+            conversion_note: `Parameter '${normKey}' is dropped / not supported by the physical gear definition.`,
+            input_parameter_name: normKey,
+            matched_profile_parameter: "NONE",
+            matched_export_parameter_name: "NONE",
+            match_source: "unmatched",
+            exported_value: "DROPPED",
           });
         }
       }
@@ -1822,27 +2127,39 @@ const makeDebugItem = (
       parameter_mapping_status = "UNVERIFIED";
     }
   } else if (exported && group === "cab") {
-    const normRoom = String(normSettings.Room || normSettings.room || "").toLowerCase();
-    const expRoom = String(parsedExported.RoomType || "").toLowerCase();
+    const rawNormRoom = String(normSettings.Room || normSettings.room || "");
+    const rawExpRoom = String(parsedExported.RoomType || "");
 
-    if (normRoom && expRoom) {
-      const getCleanRoom = (r: string) => {
-        const rl = r.toLowerCase();
-        if (rl.includes("small") || rl.includes("dry")) return "small";
-        if (rl.includes("closet")) return "closet";
-        if (rl.includes("bathroom")) return "bathroom";
-        if (rl.includes("garage")) return "garage";
-        if (rl.includes("hall")) return "hall";
-        if (rl.includes("mid")) return "mid";
-        return "large";
-      };
+    if (rawNormRoom) {
+      const canonicalNorm = canonicalizeRoomType(rawNormRoom);
+      const canonicalExp = canonicalizeRoomType(rawExpRoom);
 
-      const cleanNorm = getCleanRoom(normRoom);
-      const cleanExp = getCleanRoom(expRoom);
+      const isKnown = isKnownRoomType(rawNormRoom);
+      const mappingStatus = isKnown ? "SUCCESS" : "UNVERIFIED";
+      const conversionNote = isKnown
+        ? `${rawNormRoom} is an alias for AT5 RoomType ${canonicalNorm}.`
+        : `Unrecognized room type '${rawNormRoom}'. Fallback default used.`;
 
-      if (cleanNorm !== cleanExp) {
+      detailsList.push({
+        parameter: "RoomType",
+        input_value: rawNormRoom,
+        canonical_input_value: canonicalNorm,
+        exported_internal_value: rawExpRoom,
+        mapping_status: mappingStatus,
+        match_source: "room_alias",
+        conversion_note: conversionNote,
+        display_value: rawNormRoom,
+        expected_export_value: canonicalNorm,
+        exported_value: rawExpRoom,
+      });
+
+      if (!isKnown) {
         mismatched_parameters.push(
-          `RoomType (Intended: '${normSettings.Room || normSettings.room}', Exported: '${parsedExported.RoomType}')`
+          `RoomType (Unrecognized room value: '${rawNormRoom}', Exported fallback: '${rawExpRoom}')`
+        );
+      } else if (canonicalNorm !== canonicalExp) {
+        mismatched_parameters.push(
+          `RoomType (Intended: '${rawNormRoom}', Canonical Intended: '${canonicalNorm}', Exported: '${rawExpRoom}')`
         );
       }
     }
@@ -2321,6 +2638,11 @@ const makeDebugItem = (
       final_status = "PASS_WITH_WARNING";
       finalReason = "PASS_WITH_WARNING: 3-band EQ intent collapsed into 2-band Parametric EQ. Dropped intent recorded.";
     }
+
+    if (delay_substituted) {
+      final_status = "PASS_WITH_WARNING";
+      finalReason = delay_substitution_reason;
+    }
   }
 
   let darrell_channel_selected: string | undefined = undefined;
@@ -2364,11 +2686,86 @@ const makeDebugItem = (
     finalExported = false; // Never export unverified pedal Graphic EQ in safety or learning as fully valid/exported!
   }
 
-  // Resolve through Gear Manager / catalog
+  let selection_context = "standard_selection";
+  const isStompEq = ["10 Band Graphic", "7 Band Graphic", "6 Band EQ", "Pre EQ 3", "Graphic EQ Pedal"].includes(gear.name) || section.startsWith("Stomp");
+  const isRackEq = ["EQ PG", "Graphic EQ", "Parametric EQ", "Parametric EQ 3"].includes(gear.name) || section.startsWith("Rack");
+  
+  if (isRackEq) {
+    selection_context = "post_amp_rack_eq";
+  } else if (isStompEq) {
+    selection_context = "pre_amp_stomp_eq";
+  }
+
+  // Resolve through Gear Manager / catalog with priority rules
+  const activeCatalog = getAt5Catalog() || [];
+  let matchedProfile: any = undefined;
+  let profile_match_strategy = "fallback";
+  let cross_group_match_used = false;
+  let cross_group_match_blocked_reason: string | undefined = undefined;
+
+  const resolved_guid = guidInfo.resolvedGuid || guid;
+
+  // Priority 1: Exact GUID match + same intended group/context
+  if (resolved_guid) {
+    const match1 = activeCatalog.find(c => c.guid && c.guid.toLowerCase() === resolved_guid.toLowerCase() && c.group === group);
+    if (match1) {
+      matchedProfile = match1;
+      profile_match_strategy = "exact_guid_same_context";
+    }
+  }
+
+  // Priority 2: Exact GUID match where Gear Manager profile type is stomp/pedal and selected slot starts with Stomp
+  if (!matchedProfile && resolved_guid && section.toLowerCase().startsWith("stomp")) {
+    const match2 = activeCatalog.find(c => c.guid && c.guid.toLowerCase() === resolved_guid.toLowerCase() && (c.group === "stomp" || c.group === "pedal"));
+    if (match2) {
+      matchedProfile = match2;
+      profile_match_strategy = "exact_guid_stomp_slot_override";
+    }
+  }
+
+  // Priority 3: Exact display name/alias match within the intended group
+  if (!matchedProfile) {
+    const match3 = findAT5Gear(gear.name, group);
+    if (match3) {
+      matchedProfile = match3;
+      profile_match_strategy = "exact_name_same_group";
+    }
+  }
+
+  // Priority 4: Cross-group matching (only use as a last resort)
   const catalogMatchAcross = findBestCatalogMatchAcrossGroups(gear.name);
-  const gear_manager_type = catalogMatchAcross
-    ? (catalogMatchAcross.group === "stomp" ? "pedal" : catalogMatchAcross.group)
-    : gear.type;
+  if (!matchedProfile && catalogMatchAcross) {
+    // Check if we should block it
+    const isStompSlot = section.toLowerCase().startsWith("stomp");
+    const is10BandStompGuid = resolved_guid && resolved_guid.toLowerCase() === "babadeaf-9c28-4641-8fa9-d7366a3238a2";
+    const isStompType = gear.type === "pedal" || (gear.type as string) === "stomp";
+    const acrossIsRack = catalogMatchAcross.group === "rack";
+
+    if (acrossIsRack && (isStompSlot || is10BandStompGuid || isStompType)) {
+      cross_group_match_blocked_reason = "Rejected rack match because selected slot is Stomp and exact stomp GUID/profile exists.";
+      profile_match_strategy = "cross_group_blocked";
+    } else {
+      matchedProfile = catalogMatchAcross;
+      profile_match_strategy = "cross_group_fallback";
+      cross_group_match_used = true;
+    }
+  }
+
+  // Guard against "Analog Delay" resolving to "Black 76" compressor GUID or profile
+  if (matchedProfile && (gear.name.toLowerCase() === "analog delay" || originalRequestedGearName.toLowerCase() === "analog delay") && (matchedProfile.displayName === "Black 76" || (matchedProfile.guid && matchedProfile.guid.toLowerCase() === "aecfbde7-4f23-44ca-9f58-b0a110f0ea7a"))) {
+    matchedProfile = undefined;
+    profile_match_strategy = "rejected_analog_delay_black_76_mismatch";
+  }
+
+  let gear_manager_type = gear.type;
+  if (matchedProfile) {
+    const g = matchedProfile.group ? matchedProfile.group.toLowerCase().trim() : "";
+    gear_manager_type = (g === "stomp" ? "pedal" : g);
+  } else {
+    if (resolved_guid && resolved_guid.toLowerCase() === "babadeaf-9c28-4641-8fa9-d7366a3238a2") {
+      gear_manager_type = "pedal";
+    }
+  }
 
   const getSlotCompatibilityList = (t: string): string[] => {
     const norm = t ? t.toLowerCase().trim() : "";
@@ -2396,16 +2793,6 @@ const makeDebugItem = (
     : (generated_compat.includes(section) && slot_compatibility.includes(section));
 
   const gear_profile_source = "Gear Manager";
-
-  let selection_context = "standard_selection";
-  const isStompEq = ["10 Band Graphic", "7 Band Graphic", "6 Band EQ", "Pre EQ 3", "Graphic EQ Pedal"].includes(gear.name) || section.startsWith("Stomp");
-  const isRackEq = ["EQ PG", "Graphic EQ", "Parametric EQ", "Parametric EQ 3"].includes(gear.name) || section.startsWith("Rack");
-  
-  if (isRackEq) {
-    selection_context = "post_amp_rack_eq";
-  } else if (isStompEq) {
-    selection_context = "pre_amp_stomp_eq";
-  }
 
   let requested_generic_name: string | undefined = undefined;
   let resolved_profile_name: string | undefined = undefined;
@@ -2436,6 +2823,40 @@ const makeDebugItem = (
     gear_included_in_chain = false;
   }
 
+  // Routing Debug Fields
+  const requested_type = pair.raw.type;
+  const resolved_profile_type = gear_manager_type;
+
+  let physical_slot_family = "stomp";
+  if (gear.type === "amp") physical_slot_family = "amp";
+  else if (gear.type === "cab") physical_slot_family = "cab";
+  else if (gear.type === "rack") physical_slot_family = "rack";
+  else physical_slot_family = resolveSlotFamily(gear);
+
+  const routing_decision = (section && section !== "None" && section !== "") 
+    ? (section.toLowerCase().startsWith("stomp") ? "stomp_slot" : (section.toLowerCase().startsWith("rack") ? "rack_slot" : (section.toLowerCase().startsWith("amp") ? "amp_slot" : "cab_slot")))
+    : "none";
+
+  const routing_decision_source = "gear_manager_type";
+  const slot_family_locked = true;
+
+  let tonal_role = "standard";
+  const lowerName = gear.name.toLowerCase();
+  if (lowerName.includes("delay")) tonal_role = "post_amp_delay";
+  else if (lowerName.includes("reverb")) tonal_role = "post_amp_reverb";
+  else if (lowerName.includes("eq")) tonal_role = "eq_shaping";
+  else if (lowerName.includes("compressor") || lowerName.includes("limiter")) tonal_role = "dynamics";
+  else if (gear.type === "amp") tonal_role = "amp_preamp";
+  else if (gear.type === "cab") tonal_role = "cabinet";
+
+  let rejected_rack_routing_reason = undefined;
+  let rejected_stomp_routing_reason = undefined;
+  if (physical_slot_family === "stomp") {
+    rejected_rack_routing_reason = "Generated and resolved gear type is pedal/stomp; rack routing is not allowed.";
+  } else if (physical_slot_family === "rack") {
+    rejected_stomp_routing_reason = "Generated and resolved gear type is rack; stomp routing is not allowed.";
+  }
+
   return {
     original_name: originalRequestedGearName,
     normalized_name: normalizedRequestedGearName,
@@ -2450,6 +2871,15 @@ const makeDebugItem = (
     exported: finalExported,
     reason: finalReason,
     gear_guid_resolved,
+    requested_type,
+    resolved_profile_type,
+    routing_decision,
+    routing_decision_source,
+    physical_slot_family,
+    tonal_role,
+    slot_family_locked,
+    rejected_rack_routing_reason,
+    rejected_stomp_routing_reason,
     gear_included_in_chain,
     gear_written_to_xml,
     gear_attempted_to_xml,
@@ -2501,7 +2931,7 @@ const makeDebugItem = (
     final_guid_source: guidInfo.final_guid_source,
     fallback_block_triggered: guidInfo.fallback_block_triggered,
     parameter_schema_source: verified_guid_resolved 
-      ? (guidInfo.final_guid_source === "verified_static" ? "verified_static" : "gear_manager_db") 
+      ? (guidInfo.final_guid_source === "verified_static" ? "verified_static" : (guidInfo.final_guid_source === "at5p_discovery" ? "at5p_discovery" : "gear_manager_db")) 
       : "none/default",
     profile_validation_status: guidInfo.profile_validation_status,
     resolved_parameter_source: guidInfo.final_guid_source,
@@ -2511,6 +2941,13 @@ const makeDebugItem = (
     darrell_active_master_parameter,
     darrell_channel_mapping_confidence,
     darrell_channel_mapping_reason,
+    profile_match_strategy,
+    profile_match_guid: matchedProfile ? matchedProfile.guid : undefined,
+    profile_match_name: matchedProfile ? matchedProfile.displayName : undefined,
+    profile_match_type: matchedProfile ? matchedProfile.group : undefined,
+    profile_match_context: selection_context,
+    cross_group_match_used,
+    cross_group_match_blocked_reason,
   };
 };
 
@@ -2519,7 +2956,7 @@ export const getExportDebugData = (
   signalChain?: SignalChainElement[]
 ): ExportDebugData => {
   const rawInput = signalChain ?? result.signal_chain ?? [];
-  const { cleanedChain, removedItems } = filterDuplicateEqsWithRemoved(rawInput, result.rack_decision);
+  const { cleanedChain, removedItems, dedupeDebugMap } = filterDuplicateEqsWithRemoved(rawInput, result.rack_decision);
   const normalizedChain = normaliseSignalChain(cleanedChain);
 
   const pairs: ChainPair[] = normalizedChain.map((normalized, index) => ({
@@ -2543,7 +2980,11 @@ export const getExportDebugData = (
     reason = "Included"
   ) => {
     exportedPairKeys.add(pairKey(pair));
-    exportedChain.push(makeDebugItem(pair, section, index, group, true, reason));
+    const debugItem = makeDebugItem(pair, section, index, group, true, reason);
+    if (dedupeDebugMap && dedupeDebugMap[pair.originalIndex]) {
+      Object.assign(debugItem, dedupeDebugMap[pair.originalIndex]);
+    }
+    exportedChain.push(debugItem);
   };
 
   const pedalPairs = pairs.filter((p) => p.normalized.type === "pedal");
@@ -2631,7 +3072,11 @@ export const getExportDebugData = (
       }
     }
 
-    skippedGear.push(makeDebugItem(pair, "None", -1, group, false, reason));
+    const debugItem = makeDebugItem(pair, "None", -1, group, false, reason);
+    if (dedupeDebugMap && dedupeDebugMap[pair.originalIndex]) {
+      Object.assign(debugItem, dedupeDebugMap[pair.originalIndex]);
+    }
+    skippedGear.push(debugItem);
   });
 
   removedItems.forEach((item) => {
@@ -2640,16 +3085,21 @@ export const getExportDebugData = (
       normalized: { ...item.el, type: "pedal" },
       originalIndex: item.idx,
     };
-    skippedGear.push(
-      makeDebugItem(
-        pair,
-        "None",
-        -1,
-        "stomp",
-        false,
-        "Skipped: duplicate functional EQ stage with unspecified/redundant pre-amp role."
-      )
+    const dedupeInfo = dedupeDebugMap ? dedupeDebugMap[item.idx] : undefined;
+    const reason = dedupeInfo?.eq_dedupe_reason ?? "Skipped: duplicate functional EQ stage with unspecified/redundant pre-amp role.";
+
+    const debugItem = makeDebugItem(
+      pair,
+      "None",
+      -1,
+      "stomp",
+      false,
+      reason
     );
+    if (dedupeInfo) {
+      Object.assign(debugItem, dedupeInfo);
+    }
+    skippedGear.push(debugItem);
   });
 
   const activeCount = exportedChain.filter(item => item.exported).length;
@@ -2663,12 +3113,31 @@ export const getExportDebugData = (
     summaryText += ` WARNING: ${criticalItems.length} gear items lacked verified GUID mappings and were substituted with default fallback profiles. Please review individual card details.`;
   }
 
+  // Aggregate overall parameter_mapping_status
+  let overall_mapping_status: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" = "SUCCESS";
+  const allStatuses = [...exportedChain, ...skippedGear].map(item => item.parameter_mapping_status).filter(Boolean);
+
+  if (allStatuses.includes("FAILED")) {
+    overall_mapping_status = "FAILED";
+  } else if (allStatuses.includes("PARTIAL")) {
+    overall_mapping_status = "PARTIAL";
+  } else if (allStatuses.includes("MISMATCH")) {
+    overall_mapping_status = "MISMATCH";
+  } else if (allStatuses.includes("PARTIAL_WITH_FALLBACK")) {
+    overall_mapping_status = "PARTIAL_WITH_FALLBACK";
+  } else if (allStatuses.includes("UNVERIFIED")) {
+    overall_mapping_status = "UNVERIFIED";
+  } else {
+    overall_mapping_status = "SUCCESS";
+  }
+
   return {
     raw_input_chain: rawInput,
     exported_chain: exportedChain,
     skipped_gear: skippedGear,
     exported_xml_summary: summaryText,
     rack_decision: result.rack_decision,
+    parameter_mapping_status: overall_mapping_status,
   };
 };
 

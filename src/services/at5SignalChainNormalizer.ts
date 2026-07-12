@@ -1,5 +1,5 @@
 import { SignalChainElement } from "../types";
-import { findBestCatalogMatchAcrossGroups } from "./at5Catalog";
+import { findBestCatalogMatchAcrossGroups, findAT5Gear, getAt5Catalog } from "./at5Catalog";
 
 const normalise = (value: string) =>
   value
@@ -702,7 +702,7 @@ export interface RemovedEqItem {
 export function filterDuplicateEqsWithRemoved(
   chain: SignalChainElement[],
   rackDecision?: any
-): { cleanedChain: SignalChainElement[]; removedItems: RemovedEqItem[] } {
+): { cleanedChain: SignalChainElement[]; removedItems: RemovedEqItem[]; dedupeDebugMap?: Record<number, any> } {
   const ampIndex = chain.findIndex(el => el.type === "amp");
   const cabIndex = chain.findIndex(el => el.type === "cab");
   const thresholdIndex = ampIndex !== -1 ? ampIndex : (cabIndex !== -1 ? cabIndex : chain.length);
@@ -723,54 +723,216 @@ export function filterDuplicateEqsWithRemoved(
     );
   };
 
-  // Classify each raw element
+  const getEqFunctionalRole = (el: SignalChainElement, index: number): string => {
+    const isPostAmp = index >= thresholdIndex;
+    if (!isPostAmp) {
+      return "pre_amp_stomp_eq";
+    }
+    const nameLower = el.name.toLowerCase().trim();
+    if (nameLower.includes("loop")) {
+      return "loop_eq";
+    }
+    if (el.type === "rack" || nameLower.includes("rack") || nameLower === "eq pg" || nameLower === "eq-pg" || nameLower.includes("parametric")) {
+      return "post_amp_rack_eq";
+    }
+    return "final_shaping_eq";
+  };
+
+  const getGearValidationInfo = (name: string, type: string) => {
+    const group = type === "pedal" ? "stomp" : (type as any);
+    const match = findAT5Gear(name, group);
+    let guid = "";
+    let validationStatus = "";
+    if (match) {
+      guid = match.guid || "";
+      validationStatus = (match as any).validationStatus || (match as any).profileStatus || "";
+    }
+    return { guid, validationStatus };
+  };
+
+  const isValidatedProfileProtected = (el: SignalChainElement, guid: string, valStatus: string): boolean => {
+    const is10BandGraphic = el.name.toLowerCase().includes("10 band graphic") || el.name.toLowerCase().includes("10-band graphic");
+    const isPedal = el.type === "pedal" || (el.type as string) === "stomp";
+    const is10BandGuid = guid.toLowerCase() === "babadeaf-9c28-4641-8fa9-d7366a3238a2";
+    const s = valStatus.toLowerCase().trim().replace(/^\.+/, "").trim();
+    const isVal = ["at5p_validated", "verified_at5p", "at5p validated", "verified at5p", "pass"].includes(s);
+    
+    return (is10BandGraphic || is10BandGuid) && isPedal && (isVal || is10BandGuid);
+  };
+
+  const getSettingsSimilarity = (setA: Record<string, any>, setB: Record<string, any>): number => {
+    const keysA = Object.keys(setA);
+    const keysB = Object.keys(setB);
+    if (keysA.length === 0 && keysB.length === 0) return 1.0;
+    let matchCount = 0;
+    let totalCompare = 0;
+    for (const k of keysA) {
+      totalCompare++;
+      if (setB[k] !== undefined && String(setB[k]) === String(setA[k])) {
+        matchCount++;
+      }
+    }
+    return totalCompare > 0 ? matchCount / totalCompare : 1.0;
+  };
+
   const eqItems = chain.map((el, idx) => {
     const isPostAmp = idx >= thresholdIndex;
     const itemIsEq = isEq(el.name);
     
-    let role = "";
+    let role = "none";
     if (itemIsEq) {
-      role = isPostAmp ? "post_amp_eq" : "pre_amp_eq";
+      role = getEqFunctionalRole(el, idx);
     }
+    
+    const { guid, validationStatus } = itemIsEq ? getGearValidationInfo(el.name, el.type) : { guid: "", validationStatus: "" };
+    const isProtected = itemIsEq ? isValidatedProfileProtected(el, guid, validationStatus) : false;
 
     return {
       el,
       idx,
       isEq: itemIsEq,
       isPostAmp,
-      role
+      role,
+      guid,
+      validationStatus,
+      isProtected,
+      skipped: false,
+      skipReason: "",
+      comparedAgainst: undefined as any
     };
   });
 
   const eqs = eqItems.filter(x => x.isEq);
-  if (eqs.length <= 1) {
-    return { cleanedChain: chain, removedItems: [] };
+  const dedupeDebugMap: Record<number, any> = {};
+
+  if (eqs.length === 0) {
+    return { cleanedChain: chain, removedItems: [], dedupeDebugMap };
   }
 
-  // Determine if pre_amp_eq is explicitly required
+  // Group EQs by their role
+  const groups: Record<string, typeof eqs> = {};
+  for (const eq of eqs) {
+    if (!groups[eq.role]) {
+      groups[eq.role] = [];
+    }
+    groups[eq.role].push(eq);
+  }
+
+  const getEqRank = (item: typeof eqs[0]): number => {
+    let score = 0;
+    if (item.isProtected) score += 1000;
+    
+    const nameLower = item.el.name.toLowerCase().trim();
+    const isGeneric = nameLower === "eq" || nameLower === "graphic eq" || nameLower === "parametric eq" || nameLower === "equalizer";
+    if (!isGeneric) score += 100;
+    
+    const settingsKeys = Object.keys(item.el.settings || {});
+    if (settingsKeys.length > 0) score += 10;
+    
+    score -= item.idx / 1000;
+    return score;
+  };
+
   const preAmpEqRequired = rackDecision && (
     rackDecision.pre_amp_eq_required === true || 
     rackDecision.pre_amp_eq_required === "true" ||
     rackDecision.pre_amp_eq_required === "required"
   );
 
-  const indicesToRemove = new Set<number>();
-  const removedItems: RemovedEqItem[] = [];
-
-  for (const eq of eqs) {
-    const nameLower = eq.el.name.toLowerCase().trim();
-    if (!eq.isPostAmp) {
-      // Pre-amp EQ
-      const isVerifiedPedalEq = ["7 band graphic", "10 band graphic", "6 band eq", "pre eq 3"].includes(nameLower);
+  // Process each group
+  for (const [role, items] of Object.entries(groups)) {
+    if (items.length === 1) {
+      // Kept unconditionally as the only EQ for this role
+      const item = items[0];
+      const hasOtherRoleEqs = eqs.some(e => e.role !== role);
       
-      // If we have a pre-amp EQ that is unverified (like "Graphic EQ" pedal) or we don't have pre_amp_eq_required explicitly true:
-      if (!isVerifiedPedalEq || !preAmpEqRequired) {
-        indicesToRemove.add(eq.idx);
-        removedItems.push({ el: eq.el, idx: eq.idx });
+      let reason = "Not skipped: unique functional EQ stage.";
+      if (hasOtherRoleEqs) {
+        reason = "Not skipped because stomp EQ and rack EQ have separate functional roles.";
+      }
+
+      dedupeDebugMap[item.idx] = {
+        eq_dedupe_checked: true,
+        eq_dedupe_result: "kept",
+        eq_dedupe_reason: reason,
+        eq_functional_role: role,
+        validated_profile_protected: item.isProtected,
+        explicit_role_detected: preAmpEqRequired || false,
+      };
+    } else {
+      // Rank and keep the best one, skip others
+      const sorted = [...items].sort((a, b) => getEqRank(b) - getEqRank(a));
+      const kept = sorted[0];
+
+      dedupeDebugMap[kept.idx] = {
+        eq_dedupe_checked: true,
+        eq_dedupe_result: "kept",
+        eq_dedupe_reason: "Preserved as the primary EQ stage for this functional role.",
+        eq_functional_role: role,
+        validated_profile_protected: kept.isProtected,
+        explicit_role_detected: preAmpEqRequired || false,
+      };
+
+      for (let i = 1; i < sorted.length; i++) {
+        const item = sorted[i];
+        item.skipped = true;
+        item.comparedAgainst = kept;
+
+        const nameLower = item.el.name.toLowerCase().trim();
+        const isGeneric = nameLower === "eq" || nameLower === "graphic eq" || nameLower === "parametric eq" || nameLower === "equalizer";
+        
+        let reason = "Skipped because another EQ with the same slot context and equivalent settings already exists.";
+        if (isGeneric && role === "post_amp_rack_eq") {
+          reason = "Skipped because generic EQ request duplicated an existing rack EQ and no separate pre-amp role was provided.";
+        } else if (isGeneric) {
+          reason = "Skipped because generic EQ request duplicated a specific EQ in the same functional role.";
+        }
+
+        item.skipReason = reason;
+
+        dedupeDebugMap[item.idx] = {
+          eq_dedupe_checked: true,
+          eq_dedupe_result: "skipped",
+          eq_dedupe_reason: reason,
+          eq_functional_role: role,
+          compared_against_gear: kept.el.name,
+          compared_against_role: kept.role,
+          same_slot_context: true,
+          same_gear_type: item.el.type === kept.el.type,
+          settings_similarity_score: getSettingsSimilarity(item.el.settings || {}, kept.el.settings || {}),
+          explicit_role_detected: preAmpEqRequired || false,
+          validated_profile_protected: item.isProtected,
+        };
       }
     }
   }
 
+  // Also handle cases where we compared across different functional roles but kept both,
+  // we can add Compared Against / Separate functional roles debug values for kept items as well!
+  for (const eq of eqs) {
+    if (!dedupeDebugMap[eq.idx]) {
+      // Fallback
+      dedupeDebugMap[eq.idx] = {
+        eq_dedupe_checked: true,
+        eq_dedupe_result: "kept",
+        eq_dedupe_reason: "Not skipped because stomp EQ and rack EQ have separate functional roles.",
+        eq_functional_role: eq.role,
+        validated_profile_protected: eq.isProtected,
+        explicit_role_detected: preAmpEqRequired || false,
+      };
+    }
+  }
+
+  const indicesToRemove = new Set<number>();
+  const removedItems: RemovedEqItem[] = [];
+
+  for (const eq of eqs) {
+    if (eq.skipped) {
+      indicesToRemove.add(eq.idx);
+      removedItems.push({ el: eq.el, idx: eq.idx });
+    }
+  }
+
   const cleanedChain = chain.filter((_, idx) => !indicesToRemove.has(idx));
-  return { cleanedChain, removedItems };
+  return { cleanedChain, removedItems, dedupeDebugMap };
 }

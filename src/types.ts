@@ -213,6 +213,8 @@ export interface GearProfile {
   aliases: string[];
   parameters: GearProfileParameter[];
   validationStatus?: string;
+  originalDiscoveredName?: string;
+  proposedDisplayName?: string;
   parameterSource?: string;
   guidSource?: string;
   lastValidatedAt?: string;
