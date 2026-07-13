@@ -668,11 +668,18 @@ export function normaliseSignalChain(
         }
       }
     } else {
-      // Resolve through Gear Manager (Catalog) as source of truth
-      const catalogMatch = findBestCatalogMatchAcrossGroups(gear.name);
-      if (catalogMatch) {
-        canonicalName = catalogMatch.displayName;
-        canonicalType = catalogMatch.group === "stomp" ? "pedal" : (catalogMatch.group as any);
+      // Resolve through Gear Manager (Catalog) as source of truth, prioritizing the requested category group
+      const targetGroup = (gear.type === "pedal" || (gear.type as string) === "stomp") ? "stomp" : (gear.type as any);
+      const groupMatch = findAT5Gear(gear.name, targetGroup);
+      if (groupMatch) {
+        canonicalName = groupMatch.displayName;
+        canonicalType = groupMatch.group === "stomp" ? "pedal" : (groupMatch.group as any);
+      } else {
+        const catalogMatch = findBestCatalogMatchAcrossGroups(gear.name);
+        if (catalogMatch) {
+          canonicalName = catalogMatch.displayName;
+          canonicalType = catalogMatch.group === "stomp" ? "pedal" : (catalogMatch.group as any);
+        }
       }
     }
 

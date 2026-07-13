@@ -15,6 +15,8 @@ import {
   getDbMicPlacementMappings,
   findVerifiedGear,
   generateAliasesForXmlParam,
+  inferParameterKind,
+  parseSettingValue,
 } from "./at5ParameterManifest";
 
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "./at5VerifiedProtocols";
@@ -346,6 +348,231 @@ const resolveSlotFamily = (gear: SignalChainElement): "stomp" | "rack" => {
 const isPostAmpRack = (gear: SignalChainElement) => {
   return resolveSlotFamily(gear) === "rack";
 };
+
+export interface SlotPlanItem {
+  raw: SignalChainElement;
+  normalized: SignalChainElement;
+  originalIndex: number;
+  requested_type: string;
+  resolved_profile_type: string;
+  gear_manager_type: string;
+  resolved_physical_slot_family: string;
+  tonal_role: string;
+  initial_candidate_slot_section: string | null;
+  initial_candidate_slot_source: string;
+  final_selected_slot_section: string;
+  selected_slot_index: number;
+  wrong_slot_candidate_blocked: boolean;
+  wrong_slot_repaired: boolean;
+  wrong_slot_block_reason: string | null;
+  slot_plan_source: string;
+  is_delay_substituted: boolean;
+  delay_substitution_reason: string;
+  physical_profile_substitution: boolean;
+  substitution_used: boolean;
+  substitution_reason: string;
+}
+
+export function buildResolvedSlotPlan(result: ToneResult, signalChain?: SignalChainElement[]): SlotPlanItem[] {
+  const rawInput = signalChain ?? result.signal_chain ?? [];
+  const { cleanedChain } = filterDuplicateEqsWithRemoved(rawInput, result.rack_decision);
+  const normalizedChain = normaliseSignalChain(cleanedChain);
+
+  const slotPlan: SlotPlanItem[] = [];
+
+  let stompCount = 0;
+  let rackCount = 0;
+  let ampCount = 0;
+  let cabCount = 0;
+
+  let simAmpCount = 0;
+  let simCabCount = 0;
+  let simRackCount = 0;
+  let simStompCount = 0;
+
+  normalizedChain.forEach((normalized, index) => {
+    const raw = cleanedChain[index];
+    const requested_type = raw.type;
+
+    // Determine resolved_profile_type / gear_manager_type
+    let resolved_profile_type: string = normalized.type;
+    const targetGroup = (normalized.type === "pedal" || (normalized.type as string) === "stomp") ? "stomp" : (normalized.type as any);
+    const match = findAT5Gear(normalized.name, targetGroup);
+    if (match) {
+      const g = match.group ? match.group.toLowerCase().trim() : "";
+      resolved_profile_type = g === "stomp" ? "pedal" : g;
+    } else {
+      const matchAcross = findBestCatalogMatchAcrossGroups(normalized.name);
+      if (matchAcross) {
+        const normName = normalized.name.toLowerCase();
+        const matchName = matchAcross.displayName.toLowerCase();
+        const isAnalogDelayBlack76 = (normName === "analog delay" || normName.includes("analog delay")) &&
+                                     (matchName === "black 76" || (matchAcross.guid && matchAcross.guid.toLowerCase() === "aecfbde7-4f23-44ca-9f58-b0a110f0ea7a"));
+        if (!isAnalogDelayBlack76) {
+          const g = matchAcross.group ? matchAcross.group.toLowerCase().trim() : "";
+          resolved_profile_type = g === "stomp" ? "pedal" : g;
+        }
+      }
+    }
+    const gear_manager_type = resolved_profile_type;
+
+    // Resolve physical slot family
+    let resolved_physical_slot_family = "stomp";
+    if (gear_manager_type === "amp") resolved_physical_slot_family = "amp";
+    else if (gear_manager_type === "cab") resolved_physical_slot_family = "cab";
+    else if (gear_manager_type === "rack") resolved_physical_slot_family = "rack";
+
+    // Determine tonal role
+    let tonal_role = "standard";
+    const lowerName = normalized.name.toLowerCase();
+    if (lowerName.includes("delay")) tonal_role = "post_amp_delay";
+    else if (lowerName.includes("reverb")) tonal_role = "post_amp_reverb";
+    else if (lowerName.includes("eq")) tonal_role = "eq_shaping";
+    else if (lowerName.includes("compressor") || lowerName.includes("limiter")) tonal_role = "dynamics";
+    else if (normalized.type === "amp") tonal_role = "amp_preamp";
+    else if (normalized.type === "cab") tonal_role = "cabinet";
+
+    // Simulate initial candidate slot section (using old logic)
+    let initial_candidate_slot_section: string | null = null;
+    if (resolved_physical_slot_family === "amp") {
+      initial_candidate_slot_section = simAmpCount < 3 ? "Amp" + String.fromCharCode(65 + simAmpCount) : "None";
+      simAmpCount++;
+    } else if (resolved_physical_slot_family === "cab") {
+      initial_candidate_slot_section = simCabCount < 3 ? "Cab" + String.fromCharCode(65 + simCabCount) : "None";
+      simCabCount++;
+    } else {
+      const isOldRackEligible = (normalized.type === "rack") || (normalized.type === "pedal" && isPostAmpRack(normalized));
+      if (isOldRackEligible) {
+        if (simRackCount < 2) initial_candidate_slot_section = "RackA";
+        else if (simRackCount < 4) initial_candidate_slot_section = "RackB";
+        else if (simRackCount < 6) initial_candidate_slot_section = "RackC";
+        else initial_candidate_slot_section = "None";
+        simRackCount++;
+      } else {
+        if (simStompCount < 6) initial_candidate_slot_section = "StompA1";
+        else if (simStompCount < 12) initial_candidate_slot_section = "StompB1";
+        else initial_candidate_slot_section = "None";
+        simStompCount++;
+      }
+    }
+
+    // Determine mismatch and wrong slot block
+    let wrong_slot_candidate_blocked = false;
+    let wrong_slot_repaired = false;
+    let wrong_slot_block_reason: string | null = null;
+
+    if (resolved_physical_slot_family === "stomp" && initial_candidate_slot_section && initial_candidate_slot_section.startsWith("Rack")) {
+      wrong_slot_candidate_blocked = true;
+      wrong_slot_repaired = true;
+      wrong_slot_block_reason = `${normalized.name} resolved as pedal/stomp; ${initial_candidate_slot_section} rejected.`;
+    } else if (resolved_physical_slot_family === "rack" && initial_candidate_slot_section && initial_candidate_slot_section.startsWith("Stomp")) {
+      wrong_slot_candidate_blocked = true;
+      wrong_slot_repaired = true;
+      wrong_slot_block_reason = `${normalized.name} resolved as rack; ${initial_candidate_slot_section} rejected.`;
+    }
+
+    // Assign final section & index based on physical family
+    let final_selected_slot_section = "None";
+    let selected_slot_index = -1;
+
+    if (resolved_physical_slot_family === "stomp") {
+      if (stompCount < 6) {
+        final_selected_slot_section = "StompA1";
+        selected_slot_index = stompCount;
+      } else if (stompCount < 12) {
+        final_selected_slot_section = "StompB1";
+        selected_slot_index = stompCount - 6;
+      }
+      stompCount++;
+    } else if (resolved_physical_slot_family === "rack") {
+      if (rackCount < 2) {
+        final_selected_slot_section = "RackA";
+        selected_slot_index = rackCount;
+      } else if (rackCount < 4) {
+        final_selected_slot_section = "RackB";
+        selected_slot_index = rackCount - 2;
+      } else if (rackCount < 6) {
+        final_selected_slot_section = "RackC";
+        selected_slot_index = rackCount - 4;
+      }
+      rackCount++;
+    } else if (resolved_physical_slot_family === "amp") {
+      if (ampCount < 3) {
+        final_selected_slot_section = "Amp" + String.fromCharCode(65 + ampCount);
+        selected_slot_index = 0;
+      }
+      ampCount++;
+    } else if (resolved_physical_slot_family === "cab") {
+      if (cabCount < 3) {
+        final_selected_slot_section = "Cab" + String.fromCharCode(65 + cabCount);
+        selected_slot_index = 0;
+      }
+      cabCount++;
+    }
+
+    if (wrong_slot_candidate_blocked && final_selected_slot_section === "None") {
+      wrong_slot_repaired = false;
+    }
+
+    // Delay/rack substitution
+    const originalRequestedGearName = raw.name;
+    const isXTimeRequested = 
+      originalRequestedGearName.toLowerCase().replace(/[^a-z0-9]/g, "") === "xtime" ||
+      normalized.name.toLowerCase().replace(/[^a-z0-9]/g, "") === "xtime";
+      
+    const isDigitalDelayRequested = 
+      originalRequestedGearName.toLowerCase() === "digital delay" ||
+      originalRequestedGearName.toLowerCase() === "delay" ||
+      normalized.name.toLowerCase() === "digital delay" ||
+      normalized.name.toLowerCase() === "delay";
+
+    let is_delay_substituted = false;
+    let delay_substitution_reason = "";
+    let physical_profile_substitution = false;
+    let substitution_used = false;
+    let substitution_reason = "";
+
+    if (isDigitalDelayRequested && gear_manager_type === "pedal") {
+      is_delay_substituted = true;
+      delay_substitution_reason = "Requested rack Digital Delay unavailable; using validated pedal X-TIME.";
+      physical_profile_substitution = true;
+      substitution_used = true;
+      substitution_reason = delay_substitution_reason;
+    } else if (isXTimeRequested && gear_manager_type === "rack") {
+      is_delay_substituted = true;
+      delay_substitution_reason = 'TT substituted "Digital Delay" because "X-TIME" is unavailable.';
+      physical_profile_substitution = true;
+      substitution_used = true;
+      substitution_reason = delay_substitution_reason;
+    }
+
+    slotPlan.push({
+      raw,
+      normalized,
+      originalIndex: index,
+      requested_type,
+      resolved_profile_type,
+      gear_manager_type,
+      resolved_physical_slot_family,
+      tonal_role,
+      initial_candidate_slot_section,
+      initial_candidate_slot_source: "simulated_old_routing_logic",
+      final_selected_slot_section,
+      selected_slot_index,
+      wrong_slot_candidate_blocked,
+      wrong_slot_repaired,
+      wrong_slot_block_reason,
+      slot_plan_source: "resolved_gear_manager_type",
+      is_delay_substituted,
+      delay_substitution_reason,
+      physical_profile_substitution,
+      substitution_used,
+      substitution_reason
+    });
+  });
+
+  return slotPlan;
+}
 
 const isVerifiedRackGear = (gear: SignalChainElement) => {
   // Physical slot compatibility MUST win! Pedals must stay in stomp slots.
@@ -940,22 +1167,19 @@ const buildStudio = (cab?: SignalChainElement) => {
 };
 
 const generateXML = (result: ToneResult): string => {
-  const { cleanedChain } = filterDuplicateEqsWithRemoved(result.signal_chain ?? [], result.rack_decision);
-  const chain = normaliseSignalChain(cleanedChain);
+  const slotPlan = buildResolvedSlotPlan(result);
 
-  const pedals = chain.filter((g) => g.type === "pedal");
-  const amps = chain.filter((g) => g.type === "amp");
-  const cab = chain.find((g) => g.type === "cab");
-  const explicitRacks = chain.filter((g) => g.type === "rack");
-
-  const preAmpPedals = pedals.filter((g) => !isPostAmpRack(g));
-  const stompA1 = preAmpPedals.slice(0, 6);
-  const stompB1 = preAmpPedals.slice(6, 12);
+  const stompA1 = slotPlan.filter(item => item.final_selected_slot_section === "StompA1").map(item => item.normalized);
+  const stompB1 = slotPlan.filter(item => item.final_selected_slot_section === "StompB1").map(item => item.normalized);
   const stompStereo: SignalChainElement[] = [];
 
-  const rackA = [...explicitRacks, ...pedals.filter(isPostAmpRack)]
-    .filter(isVerifiedRackGear)
-    .slice(0, 6);
+  const amps = slotPlan.filter(item => item.final_selected_slot_section.startsWith("Amp")).map(item => item.normalized);
+  const cabItem = slotPlan.find(item => item.final_selected_slot_section === "CabA");
+  const cab = cabItem ? cabItem.normalized : undefined;
+
+  const rackA = slotPlan.filter(item => item.final_selected_slot_section === "RackA").map(item => item.normalized);
+  const rackB = slotPlan.filter(item => item.final_selected_slot_section === "RackB").map(item => item.normalized);
+  const rackC = slotPlan.filter(item => item.final_selected_slot_section === "RackC").map(item => item.normalized);
 
   const description = escapeXml(
     result.engineering_notes?.gain_strategy ??
@@ -994,9 +1218,9 @@ const generateXML = (result: ToneResult): string => {
     buildCabSection("C"),
 
     buildStudio(cab),
-    buildRackSection("RackA", rackA.slice(0, 2), 2),
-    buildRackSection("RackB", rackA.slice(2, 4), 2),
-    buildRackSection("RackC", rackA.slice(4, 6), 2),
+    buildRackSection("RackA", rackA, 2),
+    buildRackSection("RackB", rackB, 2),
+    buildRackSection("RackC", rackC, 2),
 
     `    <RackDI Bypass="0" Mute="0" OutputVolume="1" Stomp0="${AT5_EMPTY_SLOT_GUID}" Stomp1="${AT5_EMPTY_SLOT_GUID}">\r\n        <Slot0 />\r\n        <Slot1 />\r\n    </RackDI>`,
     `    <RackMaster Bypass="0" Mute="0" OutputVolume="1" ${emptySlotAttrs(6)}>\r\n${emptySlots(6)}\r\n    </RackMaster>`,
@@ -1140,6 +1364,26 @@ export interface ExportDebugItem {
   slot_family_locked?: boolean;
   rejected_rack_routing_reason?: string;
   rejected_stomp_routing_reason?: string;
+  initial_candidate_slot_section?: string | null;
+  initial_candidate_slot_source?: string;
+  resolved_physical_slot_family?: string;
+  final_selected_slot_section?: string;
+  wrong_slot_candidate_blocked?: boolean;
+  wrong_slot_repaired?: boolean;
+  wrong_slot_block_reason?: string | null;
+  slot_plan_source?: string;
+  physical_profile_substitution?: boolean;
+  verification_xml_length?: number;
+  verification_xml_was_truncated?: boolean;
+  searched_section?: string;
+  searched_slot_node?: string;
+  searched_stomp_attr?: string;
+  expected_guid?: string;
+  actual_guid_found?: string;
+  section_found?: boolean;
+  slot_node_found?: boolean;
+  slot_attrs_found?: string[];
+  verification_source?: string;
 }
 
 export interface ExportDebugData {
@@ -1149,6 +1393,12 @@ export interface ExportDebugData {
   exported_xml_summary: string;
   rack_decision?: RackDecision;
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
+  final_xml_verification?: {
+    status: "PASS" | "FAIL";
+    total_elements_verified: number;
+    discrepancies: string[];
+    actual_xml_preview: string;
+  };
 }
 
 type ChainPair = {
@@ -1289,7 +1539,8 @@ const makeDebugItem = (
   index: number,
   group: "amp" | "cab" | "stomp" | "rack",
   exported: boolean,
-  reason: string
+  reason: string,
+  planItem?: SlotPlanItem
 ): ExportDebugItem => {
   const gear = {
     ...pair.normalized,
@@ -1897,6 +2148,18 @@ const makeDebugItem = (
     matched_export_parameter_name?: string;
     canonical_input_value?: string;
     match_source?: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" | "room_alias";
+    conversion_mode?: string;
+    visual_min?: number;
+    visual_max?: number;
+    export_min?: number;
+    export_max?: number;
+    pre_clamp_value?: any;
+    post_clamp_value?: any;
+    clamp_applied?: boolean;
+    final_export_value?: any;
+    range_source?: string;
+    range_confidence?: string;
+    conversion_warning?: string;
   }[] = [];
   const not_exported_detail: string[] = [];
   let hasNearestBandWarning = false;
@@ -1979,8 +2242,22 @@ const makeDebugItem = (
             const nv = typeof resolvedIntended === "number" ? resolvedIntended : parseFloat(String(resolvedIntended));
             const ev = typeof expVal === "number" ? expVal : parseFloat(String(expVal));
 
+            // Calculate clamp and type metadata diagnostics
+            const pre_clamp_val = parseSettingValue(normVal, def.transform, def.min, def.max, def.visualMin, def.visualMax);
+            const clamp_app = (typeof pre_clamp_val === "number" && typeof nv === "number")
+              ? (Math.abs(pre_clamp_val - nv) > 0.001)
+              : false;
+
+            const isKnownContinuousAmpKnob = def.kind === "continuous_knob" || 
+              (def.max > 1 && inferParameterKind(def.friendlyName, def.xmlName) === "continuous_knob") ||
+              (inferParameterKind(def.friendlyName, def.xmlName) === "continuous_knob");
+
+            const isAccidentalClampingTo1 = isKnownContinuousAmpKnob && def.max === 1 && clamp_app;
+
             let match = false;
-            if (!isNaN(nv) && !isNaN(ev)) {
+            if (isAccidentalClampingTo1) {
+              match = false; // Never SUCCESS if clamped down from a valid 0-10 request to 1
+            } else if (!isNaN(nv) && !isNaN(ev)) {
               match = Math.abs(nv - ev) <= 0.15;
             } else {
               match = String(resolvedIntended).trim().toLowerCase() === String(expVal).trim().toLowerCase();
@@ -2038,13 +2315,21 @@ const makeDebugItem = (
               def.unit
             );
 
-            const mapStatus = isNearestBandMapping 
+            let mapStatus = isNearestBandMapping 
               ? (match ? "SUCCESS_NEAREST_BAND" : "FAIL") 
               : (match ? "SUCCESS" : "FAIL");
-            
+
+            if (isAccidentalClampingTo1) {
+              mapStatus = "FAIL";
+            }
+
             let parameter_reason: string | undefined;
             if (mapStatus === "FAIL") {
-              parameter_reason = `Expected ${display_value} but exported value loads as ${reverse_converted_display_value}.`;
+              if (isAccidentalClampingTo1) {
+                parameter_reason = `Accidental continuous knob clamping: Intended display: ${normVal}, clamped to ${resolvedIntended} because exportMax is ${def.max}`;
+              } else {
+                parameter_reason = `Expected ${display_value} but exported value loads as ${reverse_converted_display_value}.`;
+              }
             }
 
             let match_source: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" = "unmatched";
@@ -2061,6 +2346,11 @@ const makeDebugItem = (
               if (generated.includes(cleanNormKey) || generatedFriendly.includes(cleanNormKey)) {
                 match_source = "generated_alias";
               }
+            }
+
+            let conversion_warning: string | undefined = undefined;
+            if (isAccidentalClampingTo1) {
+              conversion_warning = `Input value ${normVal} was clamped to ${resolvedIntended} because exportMax is 1. This appears invalid for a continuous amp knob.`;
             }
 
             detailsList.push({
@@ -2080,14 +2370,32 @@ const makeDebugItem = (
               matched_export_parameter_name: def.xmlName,
               match_source,
               exported_value: expVal,
+              conversion_mode: def.transform || "direct",
+              visual_min: def.visualMin ?? 0,
+              visual_max: def.visualMax ?? 10,
+              export_min: def.min,
+              export_max: def.max,
+              pre_clamp_value: typeof pre_clamp_val === "number" ? Number(pre_clamp_val.toFixed(6)) : pre_clamp_val,
+              post_clamp_value: typeof nv === "number" ? Number(nv.toFixed(6)) : nv,
+              clamp_applied: clamp_app,
+              final_export_value: typeof nv === "number" ? Number(nv.toFixed(6)) : nv,
+              range_source: "Gear Manager / DB mapping",
+              range_confidence: isAccidentalClampingTo1 ? "low / conflicting" : "high",
+              conversion_warning,
             });
 
             if (isNearestBandMapping && match) {
               hasNearestBandWarning = true;
             } else if (!match) {
-              mismatched_parameters.push(
-                `${def.friendlyName} (Intended display: ${normVal}, Expected exported value: ${resolvedIntended}, Exported: ${expVal})`
-              );
+              if (isAccidentalClampingTo1) {
+                mismatched_parameters.push(
+                  `${def.friendlyName} (Accidental continuous knob clamping: Intended display: ${normVal}, clamped to ${resolvedIntended} because exportMax is ${def.max})`
+                );
+              } else {
+                mismatched_parameters.push(
+                  `${def.friendlyName} (Intended display: ${normVal}, Expected exported value: ${resolvedIntended}, Exported: ${expVal})`
+                );
+              }
             }
           } else {
             mismatched_parameters.push(
@@ -2814,24 +3122,44 @@ const makeDebugItem = (
     resolution_reason = "Requested EQ role was post_amp_rack_eq, so TT selected verified rack Graphic EQ instead of stomp 10 Band Graphic.";
   }
 
+  if (planItem && planItem.physical_profile_substitution) {
+    fallback_applied = true;
+    substitution_used = true;
+    substitution_reason = planItem.substitution_reason;
+    delay_substituted = planItem.is_delay_substituted;
+    delay_substitution_reason = planItem.delay_substitution_reason;
+  }
+
+  if (dropped_parameters.length > 0) {
+    parameter_mapping_status = "PARTIAL";
+  }
+
   if (!slot_type_valid) {
-    final_status = "FAIL";
-    parameter_mapping_status = "FAILED";
-    finalReason = `Gear type mismatch: ${gear.name} is ${gear_manager_type} gear in Gear Manager but was generated as ${gear.type}.`;
-    finalExported = false;
-    gear_written_to_xml = false;
-    gear_included_in_chain = false;
+    if (planItem && planItem.wrong_slot_repaired) {
+      // Repaired! Slot type valid is overriden to true.
+    } else {
+      final_status = "FAIL";
+      parameter_mapping_status = "FAILED";
+      finalReason = `Gear type mismatch: ${gear.name} is ${gear_manager_type} gear in Gear Manager but was generated as ${gear.type}.`;
+      finalExported = false;
+      gear_written_to_xml = false;
+      gear_included_in_chain = false;
+    }
   }
 
   // Routing Debug Fields
   const requested_type = pair.raw.type;
-  const resolved_profile_type = gear_manager_type;
+  const resolved_profile_type = planItem ? planItem.resolved_profile_type : gear_manager_type;
 
   let physical_slot_family = "stomp";
   if (gear.type === "amp") physical_slot_family = "amp";
   else if (gear.type === "cab") physical_slot_family = "cab";
   else if (gear.type === "rack") physical_slot_family = "rack";
   else physical_slot_family = resolveSlotFamily(gear);
+
+  if (planItem) {
+    physical_slot_family = planItem.resolved_physical_slot_family;
+  }
 
   const routing_decision = (section && section !== "None" && section !== "") 
     ? (section.toLowerCase().startsWith("stomp") ? "stomp_slot" : (section.toLowerCase().startsWith("rack") ? "rack_slot" : (section.toLowerCase().startsWith("amp") ? "amp_slot" : "cab_slot")))
@@ -2849,6 +3177,10 @@ const makeDebugItem = (
   else if (gear.type === "amp") tonal_role = "amp_preamp";
   else if (gear.type === "cab") tonal_role = "cabinet";
 
+  if (planItem) {
+    tonal_role = planItem.tonal_role;
+  }
+
   let rejected_rack_routing_reason = undefined;
   let rejected_stomp_routing_reason = undefined;
   if (physical_slot_family === "stomp") {
@@ -2856,6 +3188,16 @@ const makeDebugItem = (
   } else if (physical_slot_family === "rack") {
     rejected_stomp_routing_reason = "Generated and resolved gear type is rack; stomp routing is not allowed.";
   }
+
+  const initial_candidate_slot_section = planItem ? planItem.initial_candidate_slot_section : null;
+  const initial_candidate_slot_source = planItem ? planItem.initial_candidate_slot_source : "simulated_old_routing_logic";
+  const resolved_physical_slot_family = physical_slot_family;
+  const final_selected_slot_section = section;
+  const wrong_slot_candidate_blocked = planItem ? planItem.wrong_slot_candidate_blocked : false;
+  const wrong_slot_repaired = planItem ? planItem.wrong_slot_repaired : false;
+  const wrong_slot_block_reason = planItem ? planItem.wrong_slot_block_reason : null;
+  const slot_plan_source = planItem ? planItem.slot_plan_source : "resolved_gear_manager_type";
+  const physical_profile_substitution = planItem ? planItem.physical_profile_substitution : false;
 
   return {
     original_name: originalRequestedGearName,
@@ -2917,7 +3259,7 @@ const makeDebugItem = (
     gear_manager_type,
     slot_compatibility,
     selected_slot_section,
-    slot_type_valid,
+    slot_type_valid: planItem && planItem.wrong_slot_repaired ? true : slot_type_valid,
     gear_profile_source,
     selection_context,
     requested_generic_name,
@@ -2948,7 +3290,121 @@ const makeDebugItem = (
     profile_match_context: selection_context,
     cross_group_match_used,
     cross_group_match_blocked_reason,
+    initial_candidate_slot_section,
+    initial_candidate_slot_source,
+    resolved_physical_slot_family,
+    final_selected_slot_section,
+    wrong_slot_candidate_blocked,
+    wrong_slot_repaired,
+    wrong_slot_block_reason,
+    slot_plan_source,
+    physical_profile_substitution,
   };
+};
+
+interface ParsedXmlSlot {
+  guid: string;
+  attrs: Record<string, string>;
+  rawAttrsString: string;
+}
+
+type ParsedPresetMap = Record<string, ParsedXmlSlot>;
+
+const parseXmlPreset = (xml: string): ParsedPresetMap => {
+  const map: ParsedPresetMap = {};
+
+  // 1. Parse Amp sections
+  const ampRegex = /<Amp(A|B|C)[^>]*Model="([^"]*)"[^>]*>[\s\r\n]*<Amp([^>]*)\/>/gi;
+  let match;
+  while ((match = ampRegex.exec(xml)) !== null) {
+    const section = `Amp${match[1]}`;
+    const guid = match[2];
+    const attrsStr = match[3];
+    const attrs: Record<string, string> = {};
+    const attrRegex = /([A-Za-z0-9_]+)="([^"]*)"/g;
+    let attrMatch;
+    while ((attrMatch = attrRegex.exec(attrsStr)) !== null) {
+      attrs[attrMatch[1]] = attrMatch[2];
+    }
+    map[section] = { guid, attrs, rawAttrsString: attrsStr.trim() };
+  }
+
+  // 2. Parse Cab sections
+  const cabRegex = /<Cab(A|B|C)[^>]*Model="([^"]*)"[^>]*>[\s\r\n]*<Cab([^>]*)\/>/gi;
+  while ((match = cabRegex.exec(xml)) !== null) {
+    const section = `Cab${match[1]}`;
+    const guid = match[2];
+    const attrsStr = match[3];
+    const attrs: Record<string, string> = {};
+    const attrRegex = /([A-Za-z0-9_]+)="([^"]*)"/g;
+    let attrMatch;
+    while ((attrMatch = attrRegex.exec(attrsStr)) !== null) {
+      attrs[attrMatch[1]] = attrMatch[2];
+    }
+    map[section] = { guid, attrs, rawAttrsString: attrsStr.trim() };
+  }
+
+  // 3. Parse Stomp / Loop / Rack sections (Slot containers) with backreference and prefix restrictions
+  const containerRegex = /<(Stomp[A-Za-z0-9_]*|LoopFx[A-Za-z0-9_]*|Rack[A-Za-z0-9_]*)\s+[^>]*>[\s\r\n]*([\s\S]*?)<\/(\1)>/gi;
+  while ((match = containerRegex.exec(xml)) !== null) {
+    const startTag = match[1];
+    const content = match[2];
+
+    const containerAttrs: Record<string, string> = {};
+    const containerAttrRegex = /([A-Za-z0-9_]+)="([^"]*)"/g;
+    let containerMatch;
+    
+    const tagStartIndex = xml.lastIndexOf("<" + startTag, match.index);
+    const tagEndIndex = xml.indexOf(">", tagStartIndex);
+    if (tagStartIndex !== -1 && tagEndIndex !== -1) {
+      const fullTag = xml.substring(tagStartIndex, tagEndIndex + 1);
+      while ((containerMatch = containerAttrRegex.exec(fullTag)) !== null) {
+        containerAttrs[containerMatch[1]] = containerMatch[2];
+      }
+    }
+
+    const slotChildRegex = /<Slot(\d+)\s+([^>]*)\/>/gi;
+    let childMatch;
+    while ((childMatch = slotChildRegex.exec(content)) !== null) {
+      const slotIndex = childMatch[1];
+      const childAttrsStr = childMatch[2];
+      const key = `Stomp${slotIndex}`;
+      const guid = containerAttrs[key] || AT5_EMPTY_SLOT_GUID;
+
+      const attrs: Record<string, string> = {};
+      const attrRegex = /([A-Za-z0-9_]+)="([^"]*)"/g;
+      let attrMatch;
+      while ((attrMatch = attrRegex.exec(childAttrsStr)) !== null) {
+        attrs[attrMatch[1]] = attrMatch[2];
+      }
+
+      const sectionKey = `${startTag}:${slotIndex}`;
+      map[sectionKey] = { guid, attrs, rawAttrsString: childAttrsStr.trim() };
+    }
+  }
+
+  return map;
+};
+
+interface XmlCacheEntry {
+  key: string;
+  xml: string;
+}
+
+let lastGeneratedXmlCache: XmlCacheEntry | null = null;
+
+const computeXmlCacheKey = (result: ToneResult, signalChain?: SignalChainElement[]): string => {
+  try {
+    return JSON.stringify({
+      midiPC: result.midiPC,
+      tone_summary: result.tone_summary,
+      signal_chain: signalChain ?? result.signal_chain ?? [],
+      rack_decision: result.rack_decision,
+      engineering_notes: result.engineering_notes,
+    });
+  } catch (e) {
+    return String(Math.random());
+  }
 };
 
 export const getExportDebugData = (
@@ -2972,62 +3428,44 @@ export const getExportDebugData = (
   const pairKey = (pair: ChainPair) =>
     `${pair.originalIndex}:${pair.raw.type}:${pair.raw.name}`;
 
-  const markExported = (
-    pair: ChainPair,
-    section: string,
-    index: number,
-    group: "amp" | "cab" | "stomp" | "rack",
-    reason = "Included"
-  ) => {
-    exportedPairKeys.add(pairKey(pair));
-    const debugItem = makeDebugItem(pair, section, index, group, true, reason);
-    if (dedupeDebugMap && dedupeDebugMap[pair.originalIndex]) {
-      Object.assign(debugItem, dedupeDebugMap[pair.originalIndex]);
+  const slotPlan = buildResolvedSlotPlan(result, signalChain);
+
+  // Mark all exported items from the slot plan
+  slotPlan.forEach(item => {
+    if (item.final_selected_slot_section !== "None") {
+      const pair: ChainPair = {
+        raw: item.raw,
+        normalized: item.normalized,
+        originalIndex: item.originalIndex
+      };
+      
+      exportedPairKeys.add(pairKey(pair));
+      
+      const debugItem = makeDebugItem(
+        pair, 
+        item.final_selected_slot_section, 
+        item.selected_slot_index, 
+        item.resolved_physical_slot_family as "amp" | "cab" | "stomp" | "rack", 
+        true, 
+        "Included",
+        item
+      );
+      
+      if (dedupeDebugMap && dedupeDebugMap[pair.originalIndex]) {
+        Object.assign(debugItem, dedupeDebugMap[pair.originalIndex]);
+      }
+      exportedChain.push(debugItem);
     }
-    exportedChain.push(debugItem);
-  };
-
-  const pedalPairs = pairs.filter((p) => p.normalized.type === "pedal");
-  const ampPairs = pairs.filter((p) => p.normalized.type === "amp");
-  const cabPairs = pairs.filter((p) => p.normalized.type === "cab");
-  const rackPairs = pairs.filter((p) => p.normalized.type === "rack");
-
-  const preAmpPairs = pedalPairs.filter((p) => !isPostAmpRack(p.normalized));
-  const stompA1 = preAmpPairs.slice(0, 6);
-  const stompB1 = preAmpPairs.slice(6, 12);
-  const stompStereo: ChainPair[] = [];
-
-  const rackMerged = [
-    ...rackPairs,
-    ...pedalPairs.filter((p) => isPostAmpRack(p.normalized)),
-  ]
-    .filter((p) => isVerifiedRackGear(p.normalized))
-    .slice(0, 6);
-
-  stompA1.forEach((pair, i) => markExported(pair, "StompA1", i, "stomp"));
-  stompStereo.forEach((pair, i) =>
-    markExported(pair, "StompStereo", i, "stomp")
-  );
-  stompB1.forEach((pair, i) => markExported(pair, "StompB1", i, "stomp"));
-
-  ampPairs.slice(0, 3).forEach((pair, i) =>
-    markExported(pair, `Amp${String.fromCharCode(65 + i)}`, 0, "amp")
-  );
-
-  cabPairs.slice(0, 1).forEach((pair) =>
-    markExported(pair, "CabA", 0, "cab")
-  );
-
-  rackMerged.slice(0, 2).forEach((pair, i) => markExported(pair, "RackA", i, "rack"));
-  rackMerged.slice(2, 4).forEach((pair, i) => markExported(pair, "RackB", i - 2, "rack"));
-  rackMerged.slice(4, 6).forEach((pair, i) => markExported(pair, "RackC", i - 4, "rack"));
+  });
 
   pairs.forEach((pair) => {
     if (exportedPairKeys.has(pairKey(pair))) return;
 
     const gear = pair.normalized;
+    const planItem = slotPlan.find(item => item.originalIndex === pair.originalIndex);
+    
     let reason = "Skipped: exceeded slot limit or unverified gear category.";
-    let group: "amp" | "cab" | "stomp" | "rack" = "stomp";
+    let group = planItem?.resolved_physical_slot_family as "amp" | "cab" | "stomp" | "rack" || "stomp";
 
     if (gear.type === "amp") {
       group = "amp";
@@ -3047,13 +3485,9 @@ export const getExportDebugData = (
       } else {
         reason = "Skipped: only CabA is currently exported.";
       }
-    } else if (
-      gear.type === "rack" ||
-      (gear.type === "pedal" && isPostAmpRack(gear))
-    ) {
+    } else if (planItem?.resolved_physical_slot_family === "rack") {
       group = "rack";
-      const cat = isPostAmpRack(gear) ? "rack" : "stomp";
-      const guid = resolveGuid(gear.name, cat, "");
+      const guid = resolveGuid(gear.name, "rack", "");
       if (!guid || guid.trim() === "") {
         reason = `Skipped: "${gear.name}" lacks a verified GUID mapping. Please use gear discovery to import.`;
       } else if (!isVerifiedRackGear(gear)) {
@@ -3062,7 +3496,7 @@ export const getExportDebugData = (
       } else {
         reason = "Skipped: RackA only supports two verified rack slots.";
       }
-    } else if (gear.type === "pedal") {
+    } else {
       group = "stomp";
       const guid = resolveGuid(gear.name, "stomp", "");
       if (!guid || guid.trim() === "") {
@@ -3072,7 +3506,7 @@ export const getExportDebugData = (
       }
     }
 
-    const debugItem = makeDebugItem(pair, "None", -1, group, false, reason);
+    const debugItem = makeDebugItem(pair, "None", -1, group, false, reason, planItem);
     if (dedupeDebugMap && dedupeDebugMap[pair.originalIndex]) {
       Object.assign(debugItem, dedupeDebugMap[pair.originalIndex]);
     }
@@ -3101,6 +3535,138 @@ export const getExportDebugData = (
     }
     skippedGear.push(debugItem);
   });
+
+  // --- REAL-TIME XML PARSE & VERIFICATION SYNC STEP ---
+  const cacheKey = computeXmlCacheKey(result, rawInput);
+  let finalXml = "";
+  if (lastGeneratedXmlCache && lastGeneratedXmlCache.key === cacheKey) {
+    finalXml = lastGeneratedXmlCache.xml;
+  } else {
+    finalXml = generateXML({ ...result, signal_chain: rawInput });
+    lastGeneratedXmlCache = { key: cacheKey, xml: finalXml };
+  }
+  const parsedXmlMap = parseXmlPreset(finalXml);
+  const overall_xml_discrepancies: string[] = [];
+  let total_xml_elements_verified = 0;
+
+  exportedChain.forEach((debugItem) => {
+    if (!debugItem.exported) return;
+
+    const isAmpOrCab = debugItem.slot_section.startsWith("Amp") || debugItem.slot_section.startsWith("Cab");
+    const key = isAmpOrCab
+      ? debugItem.slot_section
+      : `${debugItem.slot_section}:${debugItem.slot_index}`;
+
+    // Fill diagnostic fields
+    debugItem.verification_xml_length = finalXml.length;
+    debugItem.verification_xml_was_truncated = false;
+    debugItem.searched_section = debugItem.slot_section;
+    debugItem.searched_slot_node = isAmpOrCab ? undefined : `Slot${debugItem.slot_index}`;
+    debugItem.searched_stomp_attr = isAmpOrCab ? undefined : `Stomp${debugItem.slot_index}`;
+    debugItem.expected_guid = debugItem.resolved_guid;
+    debugItem.verification_source = "final_export_xml";
+
+    const actualXmlItem = parsedXmlMap[key];
+    if (actualXmlItem) {
+      total_xml_elements_verified++;
+      debugItem.section_found = true;
+      debugItem.slot_node_found = true;
+      debugItem.actual_guid_found = actualXmlItem.guid;
+      debugItem.slot_attrs_found = Object.keys(actualXmlItem.attrs);
+
+      // 1. Sync GUID
+      if (debugItem.resolved_guid !== actualXmlItem.guid) {
+        overall_xml_discrepancies.push(
+          `${debugItem.normalized_name} (Slot: ${debugItem.slot_section}): GUID mismatch! Simulated/Database had "${debugItem.resolved_guid}", but actual exported XML has "${actualXmlItem.guid}"`
+        );
+        debugItem.resolved_guid = actualXmlItem.guid;
+      }
+
+      // 2. Sync exported_settings to actual XML attributes
+      debugItem.exported_settings = actualXmlItem.rawAttrsString;
+
+      // 3. Sync individual parameter values and re-validate
+      const final_xml_mismatched_parameters: string[] = [];
+
+      if (debugItem.parameter_details && debugItem.parameter_details.length > 0) {
+        debugItem.parameter_details.forEach((detail: any) => {
+          const xmlName = detail.matched_export_parameter_name;
+          if (!xmlName) return;
+
+          const actualXmlVal = actualXmlItem.attrs[xmlName];
+          if (actualXmlVal !== undefined) {
+            detail.actual_export_value = isNaN(parseFloat(actualXmlVal)) ? actualXmlVal : parseFloat(actualXmlVal);
+            detail.exported_internal_value = String(actualXmlVal);
+
+            // Re-evaluate match against actual XML value
+            const nv = typeof detail.expected_export_value === "number" ? detail.expected_export_value : parseFloat(String(detail.expected_export_value));
+            const ev = parseFloat(actualXmlVal);
+
+            let match = false;
+            if (detail.conversion_warning) {
+              match = false; // Always FAIL if clamping warning is active
+            } else if (!isNaN(nv) && !isNaN(ev)) {
+              match = Math.abs(nv - ev) <= 0.15;
+            } else {
+              match = String(detail.expected_export_value).trim().toLowerCase() === String(actualXmlVal).trim().toLowerCase();
+            }
+
+            if (match) {
+              detail.mapping_status = "SUCCESS";
+              detail.reason = undefined;
+            } else {
+              detail.mapping_status = "FAIL";
+              if (detail.conversion_warning) {
+                detail.reason = detail.conversion_warning;
+                final_xml_mismatched_parameters.push(
+                  `${detail.matched_profile_parameter ?? detail.parameter} (Clamping warning: ${detail.conversion_warning})`
+                );
+              } else {
+                detail.reason = `Expected ${detail.display_value} but actual exported XML contains value ${actualXmlVal}.`;
+                final_xml_mismatched_parameters.push(
+                  `${detail.matched_profile_parameter ?? detail.parameter} (XML value mismatch: expected ${detail.expected_export_value}, got ${actualXmlVal})`
+                );
+              }
+            }
+          } else {
+            // Attribute missing in XML!
+            detail.mapping_status = "FAIL";
+            detail.reason = `Expected ${detail.display_value} but attribute "${xmlName}" is missing in the actual exported XML.`;
+            final_xml_mismatched_parameters.push(
+              `${detail.matched_profile_parameter ?? detail.parameter} (XML attribute "${xmlName}" is missing)`
+            );
+          }
+        });
+      }
+
+      // If there are final XML parameter mismatches, overwrite status to FAIL
+      if (final_xml_mismatched_parameters.length > 0) {
+        debugItem.parameter_mapping_status = "MISMATCH";
+        debugItem.final_status = "FAIL";
+        debugItem.reason = `FAIL: XML validation failed! Discrepancies found: [${final_xml_mismatched_parameters.join(", ")}]`;
+        
+        final_xml_mismatched_parameters.forEach(p => {
+          overall_xml_discrepancies.push(`${debugItem.normalized_name} (Slot: ${debugItem.slot_section}): ${p}`);
+        });
+      }
+    } else {
+      // Slot is missing from actual XML!
+      const sectionExists = Object.keys(parsedXmlMap).some(k => k.startsWith(debugItem.slot_section + ":") || k === debugItem.slot_section);
+      debugItem.section_found = sectionExists;
+      debugItem.slot_node_found = false;
+      debugItem.actual_guid_found = undefined;
+      debugItem.slot_attrs_found = [];
+
+      overall_xml_discrepancies.push(
+        `${debugItem.normalized_name} (Slot: ${debugItem.slot_section}): Slot is entirely missing from actual exported XML!`
+      );
+      debugItem.parameter_mapping_status = "FAILED";
+      debugItem.final_status = "FAIL";
+      debugItem.reason = `FAIL: Slot is entirely missing from actual exported XML!`;
+    }
+  });
+
+  const overall_xml_status = overall_xml_discrepancies.length > 0 ? "FAIL" : "PASS";
 
   const activeCount = exportedChain.filter(item => item.exported).length;
   const criticalItems = exportedChain.filter(item => item.final_status === "CRITICAL" || item.final_status === "SUBSTITUTED_FALLBACK");
@@ -3138,6 +3704,12 @@ export const getExportDebugData = (
     exported_xml_summary: summaryText,
     rack_decision: result.rack_decision,
     parameter_mapping_status: overall_mapping_status,
+    final_xml_verification: {
+      status: overall_xml_status,
+      total_elements_verified: total_xml_elements_verified,
+      discrepancies: overall_xml_discrepancies,
+      actual_xml_preview: finalXml.substring(0, 2000) + (finalXml.length > 2000 ? "\n... (truncated)" : "")
+    }
   };
 };
 
@@ -3145,8 +3717,16 @@ export const getExportData = (
   result: ToneResult,
   signalChain?: SignalChainElement[]
 ): Uint8Array => {
-  const chainToExport = signalChain ?? result.signal_chain;
-  const xmlContent = generateXML({ ...result, signal_chain: chainToExport });
+  const chainToExport = signalChain ?? result.signal_chain ?? [];
+  const cacheKey = computeXmlCacheKey(result, chainToExport);
+
+  let xmlContent = "";
+  if (lastGeneratedXmlCache && lastGeneratedXmlCache.key === cacheKey) {
+    xmlContent = lastGeneratedXmlCache.xml;
+  } else {
+    xmlContent = generateXML({ ...result, signal_chain: chainToExport });
+    lastGeneratedXmlCache = { key: cacheKey, xml: xmlContent };
+  }
   return new TextEncoder().encode(xmlContent);
 };
 

@@ -20,6 +20,7 @@ export interface VerifiedParamDef {
     | "noiseGateRelease"
     | "black76InputOutput"
     | "black76Ratio";
+  kind?: "continuous_knob" | "switch_boolean" | "enum" | "frequency" | "gain_db" | "time_ms" | "semantic";
 }
 
 export interface VerifiedGearDef {
@@ -399,4 +400,28 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
       { friendlyName: "Master", xmlName: "Master1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master", "volume"] }
     ],
   },
+  {
+    name: "American Lead MKIII",
+    category: "amp",
+    realId: "4af9d89a-c06b-4c8f-b137-af72bc58fded",
+    aliases: ["american lead mkiii", "mesa mark iii lead", "mesa boogie mark iii lead", "mesamkiiilead", "mesa mkiii lead", "mark iii lead", "mkiii lead"],
+    preferredSection: "AmpA",
+    isVerified: true,
+    params: [
+      { friendlyName: "Lead Drive", xmlName: "Drive_MesaMKIIILead", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob", aliases: ["lead drive", "leaddrive", "drive", "drive_mesamkiiilead", "gain"] },
+      { friendlyName: "Volume", xmlName: "Volume_MesaMKIIILead", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob", aliases: ["volume", "volume_mesamkiiilead"] },
+      { friendlyName: "Master", xmlName: "Master_MesaMKIIILead", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob", aliases: ["master", "master_mesamkiiilead"] },
+      { friendlyName: "Treble", xmlName: "Treble_MesaMKIIILead", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob", aliases: ["treble", "treble_mesamkiiilead"] },
+      { friendlyName: "Bass", xmlName: "Bass_MesaMKIIILead", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob", aliases: ["bass", "bass_mesamkiiilead"] },
+      { friendlyName: "Middle", xmlName: "Middle_MesaMKIIILead", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob", aliases: ["middle", "middle_mesamkiiilead", "mid"] },
+      { friendlyName: "Presence", xmlName: "Presence_MesaMKIIILead", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob", aliases: ["presence", "presence_mesamkiiilead"] },
+      { friendlyName: "Reverb", xmlName: "Reverb_MesaMKIIILead", min: 0, max: 10, defaultValue: 0, kind: "continuous_knob", aliases: ["reverb", "reverb_mesamkiiilead"] },
+      { friendlyName: "Bright", xmlName: "Bright_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["bright", "bright_mesamkiiilead"] },
+      { friendlyName: "Shift (Bass)", xmlName: "BassShift_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["shift (bass)", "shift bass", "bassshift", "bass_shift", "bassshift_mesamkiiilead"] },
+      { friendlyName: "Shift (Treble)", xmlName: "TrebleShift_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["shift (treble)", "shift treble", "trebleshift", "treble_shift", "trebleshift_mesamkiiilead"] },
+      { friendlyName: "Rhythm 2", xmlName: "Rhythm2_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["rhythm 2", "rhythm2", "rhythm2_mesamkiiilead"] },
+      { friendlyName: "Deep", xmlName: "Deep_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["deep", "deep_mesamkiiilead"] },
+      { friendlyName: "EQ", xmlName: "Eq_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["eq", "eq_mesamkiiilead", "eq on/off"] }
+    ]
+  }
 ];

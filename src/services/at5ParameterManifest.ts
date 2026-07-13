@@ -80,6 +80,7 @@ export interface ResolvedParameter {
   transform?: VerifiedParamDef["transform"];
   visualMin?: number;
   visualMax?: number;
+  kind?: "continuous_knob" | "switch_boolean" | "enum" | "frequency" | "gain_db" | "time_ms" | "semantic";
 }
 
 const ALL_GEAR: GearItem[] = [
@@ -334,6 +335,25 @@ export function resolveVerifiedOrManifestRealId(
   return best.realId;
 }
 
+export function inferParameterKind(
+  friendlyName: string,
+  xmlName?: string
+): "continuous_knob" | "switch_boolean" | "enum" | "frequency" | "gain_db" | "time_ms" | "semantic" | undefined {
+  const name = friendlyName.toLowerCase().trim();
+  const xml = xmlName ? xmlName.toLowerCase().trim() : "";
+  
+  const knownKnobs = ["drive", "gain", "lead drive", "master", "volume", "treble", "bass", "middle", "mid", "presence", "reverb"];
+  const knownSwitches = ["bright", "shift", "rhythm2", "deep", "eq on/off", "eq", "eq_"];
+
+  if (knownKnobs.some(k => name.includes(k) || xml.includes(k))) {
+    return "continuous_knob";
+  }
+  if (knownSwitches.some(s => name.includes(s) || xml.includes(s))) {
+    return "switch_boolean";
+  }
+  return undefined;
+}
+
 export function getParameterDefinitions(
   gearNameOrId: string | undefined,
   category?: string
@@ -437,6 +457,9 @@ export function getParameterDefinitions(
 
   const paramsMap = new Map<string, ResolvedParameter>();
   for (const p of baseParams) {
+    if (!p.kind) {
+      p.kind = inferParameterKind(p.friendlyName, p.xmlName);
+    }
     paramsMap.set(p.friendlyName.toLowerCase().trim(), p);
   }
 
@@ -446,21 +469,46 @@ export function getParameterDefinitions(
 
     if (existing) {
       existing.xmlName = dbM.exportParameterName || existing.xmlName;
-      existing.min = dbM.exportMin;
-      existing.max = dbM.exportMax;
+      
+      const isKnownContinuousAmpKnob = existing.kind === "continuous_knob" || 
+        (existing.max > 1 && inferParameterKind(existing.friendlyName, existing.xmlName) === "continuous_knob");
+      
+      const dbWantsToDowngrade = dbM.exportMax === 1;
+      const dbIsSwitch = dbM.conversion === "boolean" || dbM.conversion === "enum";
+      
+      if (isKnownContinuousAmpKnob && dbWantsToDowngrade && !dbIsSwitch) {
+        // Prevent downgrading a known continuous amp knob from 0-10 to 0-1
+        // Keep existing.min and existing.max as they are
+      } else {
+        existing.min = dbM.exportMin;
+        existing.max = dbM.exportMax;
+      }
+      
       existing.transform = dbM.conversion as any;
       existing.visualMin = dbM.visualMin;
       existing.visualMax = dbM.visualMax;
     } else {
+      const inferredKind = inferParameterKind(dbM.parameter, dbM.exportParameterName);
+      const isKnownContinuousAmpKnob = inferredKind === "continuous_knob";
+      
+      let finalMin = dbM.exportMin;
+      let finalMax = dbM.exportMax;
+      
+      if (isKnownContinuousAmpKnob && dbM.exportMax === 1 && dbM.conversion !== "boolean" && dbM.conversion !== "enum") {
+        finalMin = 0;
+        finalMax = 10;
+      }
+      
       paramsMap.set(key, {
         friendlyName: dbM.parameter,
         xmlName: dbM.exportParameterName,
-        min: dbM.exportMin,
-        max: dbM.exportMax,
+        min: finalMin,
+        max: finalMax,
         transform: dbM.conversion as any,
         aliases: [],
         visualMin: dbM.visualMin,
-        visualMax: dbM.visualMax
+        visualMax: dbM.visualMax,
+        kind: inferredKind
       });
     }
   }
@@ -486,7 +534,7 @@ export function getParameterDefinitions(
   return Array.from(paramsMap.values());
 }
 
-const parseSettingValue = (
+export const parseSettingValue = (
   value: unknown,
   transform?: VerifiedParamDef["transform"] | string,
   min?: number,
