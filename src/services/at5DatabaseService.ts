@@ -275,8 +275,7 @@ export const at5DatabaseService = {
   async saveMicPlacementMapping(mapping: MicPlacementMapping) {
     if (!auth.currentUser) throw new Error("Must be signed in to save mic placement mappings");
     
-    const rawId = `${mapping.gear}_${mapping.friendly_setting}_${mapping.friendly_value}`;
-    const mappingId = rawId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const mappingId = mapping.id || `${mapping.gear}_${mapping.friendly_setting}_${mapping.friendly_value}`.replace(/[^a-zA-Z0-9_\-]/g, '_');
     
     const path = `mic_placement_mappings/${mappingId}`;
     try {

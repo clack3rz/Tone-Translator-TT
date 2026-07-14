@@ -153,7 +153,14 @@ service cloud.firestore {
           incoming().diff(existing()).affectedKeys().hasOnly([
             'gear', 'friendly_setting', 'friendly_value', 'maps_to', 'target', 
             'friendly_name', 'xml_values', 'status', 'validation_status', 'source', 
-            'updatedAt', 'updatedBy', 'id'
+            'updatedAt', 'updatedBy', 'id',
+            'cabGuid', 'cabName', 'cabAliases', 'micSlot', 'micIndex', 
+            'canonicalPlacementName', 'placementAliases', 'friendlyPlacement', 
+            'friendlyDistance', 'micModelName', 'micModelGuid', 'micModelScope', 
+            'validationStatus', 'confidence', 'discoveredFromPresetName', 
+            'discoveredFromFileName', 'discoveredAt', 'notes', 'rawXmlSource', 
+            'isActive', 'isDefault', 'isDeprecated', 'conflictReason', 
+            'lastVerifiedAgainstAt5p'
           ])
           && incoming().id == existing().id
         )

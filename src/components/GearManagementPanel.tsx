@@ -30,7 +30,7 @@ import {
   Zap,
   EyeOff
 } from 'lucide-react';
-import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IKMPAKCandidate } from '../types';
+import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IKMPAKCandidate, MicPlacementMapping } from '../types';
 import { gearProfileService } from '../services/gearProfileService';
 import { parseAt5pPreset } from '../services/at5PresetImporter';
 import { at5DatabaseService } from '../services/at5DatabaseService';
@@ -39,6 +39,7 @@ import { auth, signInWithGoogle } from '../services/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { evaluateCandidate, parseCSV, parseJSON, evaluateAliasSafety, isSlotTypeValid, normalizeGuid, checkProfileMatch, normalizeAliasComparison } from '../services/ikmpakService';
 import { getAt5Catalog } from '../services/at5Catalog';
+import { getVerifiedMics } from '../services/at5VerifiedProtocols';
 
 function getChildGearType(fieldName: string): "speaker" | "mic" | "room" | "room_mic" | null {
   const norm = fieldName.toLowerCase();
@@ -418,6 +419,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
   const [dragActive, setDragActive] = useState(false);
   const [importedPresetName, setImportedPresetName] = useState<string>('');
   const [discoveredGears, setDiscoveredGears] = useState<any[]>([]);
+  const [discoveredPlacements, setDiscoveredPlacements] = useState<any[]>([]);
   const [discoveredProtocols, setDiscoveredProtocols] = useState<any[]>([]);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importWarnings, setImportWarnings] = useState<string[]>([]);
@@ -1530,6 +1532,153 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       });
 
       setDiscoveredGears(enrichedDetected);
+      
+      // Extract discovered mic placements
+      const mappings = await at5DatabaseService.getMicPlacementMappings() || [];
+      
+      const extractMicPlacements = (detectedGearList: any[], presetFilename: string) => {
+        const candidates: any[] = [];
+        const verifiedMics = getVerifiedMics() || [];
+        const emptyGuid = "773b8ea7-b54a-4a3c-99df-ffbbf6d29271";
+
+        const getParamVal = (params: any[], name: string): string => {
+          if (!params) return "";
+          const p = params.find(param => param.name.toLowerCase() === name.toLowerCase());
+          return p !== undefined ? String(p.value) : "";
+        };
+
+        detectedGearList.forEach(dg => {
+          if (dg.gearType !== "cab") return;
+
+          const cabGuid = dg.modelGuid || "";
+          const cabName = dg.displayName || "";
+
+          // Mic 1 Slot
+          const mic0Guid = getParamVal(dg.parameters, "Mic0Model");
+          if (mic0Guid && mic0Guid !== emptyGuid) {
+            const mic0Name = verifiedMics.find((m: any) => m.guid.toLowerCase() === mic0Guid.toLowerCase())?.aliases?.[0] || `Mic (${mic0Guid.substring(0, 8)})`;
+            const xmlValues = {
+              Mic0Angle: getParamVal(dg.parameters, "Mic0Angle") || "0",
+              Mic0XAxis: getParamVal(dg.parameters, "Mic0XAxis") || "0",
+              Mic0YAxis: getParamVal(dg.parameters, "Mic0YAxis") || "0",
+              Mic0Distance: getParamVal(dg.parameters, "Mic0Distance") || "0",
+              Mic0Speaker: getParamVal(dg.parameters, "Mic0Speaker") || "0"
+            };
+            candidates.push({
+              id: `discovered-mic1-${dg.modelGuid}-${Date.now()}-${Math.random()}`,
+              cabGuid,
+              cabName,
+              micSlot: "Mic_1",
+              micIndex: 0,
+              micModelGuid: mic0Guid,
+              micModelName: mic0Name,
+              xml_values: xmlValues,
+              friendlyPlacement: "",
+              friendlyDistance: "",
+              notes: "",
+              sourcePresetFilename: presetFilename
+            });
+          }
+
+          // Mic 2 Slot
+          const mic1Guid = getParamVal(dg.parameters, "Mic1Model");
+          if (mic1Guid && mic1Guid !== emptyGuid) {
+            const mic1Name = verifiedMics.find((m: any) => m.guid.toLowerCase() === mic1Guid.toLowerCase())?.aliases?.[0] || `Mic (${mic1Guid.substring(0, 8)})`;
+            const xmlValues = {
+              Mic1Angle: getParamVal(dg.parameters, "Mic1Angle") || "0",
+              Mic1XAxis: getParamVal(dg.parameters, "Mic1XAxis") || "0",
+              Mic1YAxis: getParamVal(dg.parameters, "Mic1YAxis") || "0",
+              Mic1Distance: getParamVal(dg.parameters, "Mic1Distance") || "0",
+              Mic1Speaker: getParamVal(dg.parameters, "Mic1Speaker") || "1"
+            };
+            candidates.push({
+              id: `discovered-mic2-${dg.modelGuid}-${Date.now()}-${Math.random()}`,
+              cabGuid,
+              cabName,
+              micSlot: "Mic_2",
+              micIndex: 1,
+              micModelGuid: mic1Guid,
+              micModelName: mic1Name,
+              xml_values: xmlValues,
+              friendlyPlacement: "",
+              friendlyDistance: "",
+              notes: "",
+              sourcePresetFilename: presetFilename
+            });
+          }
+        });
+
+        return candidates;
+      };
+
+      const checkAllZeros = (xml: any) => {
+        const values = Object.entries(xml).filter(([k]) => !k.endsWith("Speaker")).map(([, v]) => parseFloat(String(v)));
+        return values.every(v => isNaN(v) || v === 0);
+      };
+
+      const extractedPlacements = extractMicPlacements(results.detectedGear || [], file.name);
+      
+      const processedPlacements = extractedPlacements.map(pl => {
+        const isCabMatch = (m: any, cName: string, cGuid: string) => {
+          if (cGuid && m.cabGuid && cGuid.toLowerCase().replace(/-/g, "") === m.cabGuid.toLowerCase().replace(/-/g, "")) {
+            return true;
+          }
+          const cleanStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+          const reqCabClean = cleanStr(cName);
+          if (m.cabName && cleanStr(m.cabName) === reqCabClean) return true;
+          if (m.gear && cleanStr(m.gear) === reqCabClean) return true;
+          if (m.cabAliases && Array.isArray(m.cabAliases)) {
+            return m.cabAliases.some((alias: string) => cleanStr(alias) === reqCabClean);
+          }
+          return false;
+        };
+
+        const isSlotMatch = (m: any, slot: string) => {
+          const mSlot = m.micSlot || m.mic_slot || m.friendly_setting || m.target;
+          if (!mSlot) return false;
+          const cleanMSlot = mSlot.toLowerCase().replace(/_/g, "");
+          const cleanSlot = slot.toLowerCase().replace(/_/g, "");
+          return cleanMSlot === cleanSlot || cleanMSlot === cleanSlot + "placement";
+        };
+
+        const isCoordinatesMatch = (m: any, xmlVals: any) => {
+          const mXml = m.maps_to || m.xml_values || {};
+          return Object.keys(xmlVals).every(k => {
+            return String(mXml[k]) === String(xmlVals[k]);
+          });
+        };
+
+        const exactMatch = mappings.find(m => 
+          isCabMatch(m, pl.cabName, pl.cabGuid) &&
+          isSlotMatch(m, pl.micSlot) &&
+          isCoordinatesMatch(m, pl.xml_values)
+        );
+
+        const allZeros = checkAllZeros(pl.xml_values);
+
+        let friendlyPlacement = "";
+        let friendlyDistance = "";
+        let status: "GREEN" | "AMBER" | "RED" | "BLUE" = "BLUE";
+
+        if (exactMatch) {
+          status = "GREEN";
+          friendlyPlacement = exactMatch.friendly_placement || exactMatch.friendly_value?.split(",")[0]?.trim() || "";
+          friendlyDistance = exactMatch.friendly_distance || exactMatch.friendly_value?.split(",")[1]?.trim() || "Close";
+        } else if (allZeros) {
+          status = "RED";
+        }
+
+        return {
+          ...pl,
+          friendlyPlacement,
+          friendlyDistance,
+          status,
+          matchedExistingProfile: exactMatch || null,
+          allZeros
+        };
+      });
+
+      setDiscoveredPlacements(processedPlacements);
       setDiscoveredProtocols(results.detectedProtocols || []);
       setViewMode('discovery');
     } catch (err: any) {
@@ -2146,6 +2295,164 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       setImportErrors([`Failed to save protocol: ${err.message || err}`]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const [confirmConflictId, setConfirmConflictId] = useState<string | null>(null);
+  const [confirmZeroId, setConfirmZeroId] = useState<string | null>(null);
+  const [placementSaveLoading, setPlacementSaveLoading] = useState<string | null>(null);
+  const [placementSuccessFeedback, setPlacementSuccessFeedback] = useState<string | null>(null);
+  const [placementErrorFeedback, setPlacementErrorFeedback] = useState<string | null>(null);
+
+  const handlePlacementLabelChange = async (id: string, field: "friendlyPlacement" | "friendlyDistance" | "notes", val: string) => {
+    const mappings = await at5DatabaseService.getMicPlacementMappings() || [];
+
+    setDiscoveredPlacements(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const updated = { ...p, [field]: val };
+      
+      const mappingLabel = field === "notes" ? p.friendlyPlacement : (field === "friendlyPlacement" ? val : p.friendlyPlacement);
+      const mappingDist = field === "notes" ? p.friendlyDistance : (field === "friendlyDistance" ? val : p.friendlyDistance);
+      
+      const label = mappingDist ? `${mappingLabel}, ${mappingDist}` : mappingLabel;
+      
+      const cleanStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+      const isCabMatch = (m: any, cName: string, cGuid: string) => {
+        if (cGuid && m.cabGuid && cGuid.toLowerCase().replace(/-/g, "") === m.cabGuid.toLowerCase().replace(/-/g, "")) {
+          return true;
+        }
+        const reqCabClean = cleanStr(cName);
+        if (m.cabName && cleanStr(m.cabName) === reqCabClean) return true;
+        if (m.gear && cleanStr(m.gear) === reqCabClean) return true;
+        if (m.cabAliases && Array.isArray(m.cabAliases)) {
+          return m.cabAliases.some((alias: string) => cleanStr(alias) === reqCabClean);
+        }
+        return false;
+      };
+
+      const isSlotMatch = (m: any, slot: string) => {
+        const mSlot = m.micSlot || m.mic_slot || m.friendly_setting || m.target;
+        if (!mSlot) return false;
+        const cleanMSlot = mSlot.toLowerCase().replace(/_/g, "");
+        const cleanSlot = slot.toLowerCase().replace(/_/g, "");
+        return cleanMSlot === cleanSlot || cleanMSlot === cleanSlot + "placement";
+      };
+
+      const isCoordinatesMatch = (m: any, xmlVals: any) => {
+        const mXml = m.maps_to || m.xml_values || {};
+        return Object.keys(xmlVals).every(k => {
+          return String(mXml[k]) === String(xmlVals[k]);
+        });
+      };
+
+      const canonReq = label.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+      
+      const isLabelMatch = (m: any, reqLabel: string) => {
+        if (!reqLabel) return false;
+        const mFriendly = m.friendly_value || m.friendly_name || m.friendly_placement;
+        if (mFriendly && mFriendly.toLowerCase().replace(/[^a-z0-9]/g, "").trim() === canonReq) return true;
+        if (m.canonicalPlacementName && m.canonicalPlacementName.toLowerCase().replace(/[^a-z0-9]/g, "").trim() === canonReq) return true;
+        if (m.placementAliases && Array.isArray(m.placementAliases)) {
+          return m.placementAliases.some((alias: string) => alias.toLowerCase().replace(/[^a-z0-9]/g, "").trim() === canonReq);
+        }
+        return false;
+      };
+
+      const exactMatch = mappings.find(m => 
+        isCabMatch(m, p.cabName, p.cabGuid) &&
+        isSlotMatch(m, p.micSlot) &&
+        isCoordinatesMatch(m, p.xml_values)
+      );
+
+      const conflictMatch = label.trim() ? mappings.find(m => 
+        isCabMatch(m, p.cabName, p.cabGuid) &&
+        isSlotMatch(m, p.micSlot) &&
+        isLabelMatch(m, label) &&
+        !isCoordinatesMatch(m, p.xml_values)
+      ) : null;
+
+      const allZeros = p.allZeros;
+
+      let status: "GREEN" | "AMBER" | "RED" | "BLUE" = "BLUE";
+      let matchedProfile = exactMatch || null;
+
+      if (exactMatch) {
+        status = "GREEN";
+      } else if (conflictMatch) {
+        status = "AMBER";
+        matchedProfile = conflictMatch;
+      } else if (allZeros) {
+        status = "RED";
+      }
+
+      return {
+        ...updated,
+        status,
+        matchedExistingProfile: matchedProfile
+      };
+    }));
+  };
+
+  const handleSaveDiscoveredPlacement = async (pl: any, forceOverwrite = false, forceZero = false) => {
+    const label = pl.friendlyDistance ? `${pl.friendlyPlacement}, ${pl.friendlyDistance}` : pl.friendlyPlacement;
+    if (!pl.friendlyPlacement.trim()) {
+      setPlacementErrorFeedback("Please enter a friendly placement label.");
+      return;
+    }
+
+    if (pl.status === "AMBER" && !forceOverwrite) {
+      setConfirmConflictId(pl.id);
+      return;
+    }
+
+    if (pl.status === "RED" && !forceZero) {
+      setConfirmZeroId(pl.id);
+      return;
+    }
+
+    setPlacementSaveLoading(pl.id);
+    setPlacementErrorFeedback(null);
+    setPlacementSuccessFeedback(null);
+
+    try {
+      const existingId = pl.matchedExistingProfile?.id || null;
+
+      const mappingToSave: MicPlacementMapping = {
+        id: existingId || undefined,
+        gear: pl.cabName,
+        cabGuid: pl.cabGuid,
+        cabName: pl.cabName,
+        micSlot: pl.micSlot,
+        friendly_setting: pl.micSlot === "Mic_1" ? "Mic_1_Placement" : "Mic_2_Placement",
+        friendly_value: label,
+        friendly_placement: pl.friendlyPlacement,
+        friendly_distance: pl.friendlyDistance || undefined,
+        canonicalPlacementName: label,
+        maps_to: pl.xml_values,
+        notes: pl.notes || undefined,
+        source: "at5p_validated",
+        status: "validated",
+        micModelGuid: pl.micModelGuid,
+        micModelName: pl.micModelName,
+        micModelScope: "specific" as const,
+        discoveredFromFileName: pl.sourcePresetFilename,
+        validationStatus: "at5p_validated"
+      };
+
+      await at5DatabaseService.saveMicPlacementMapping(mappingToSave);
+      
+      setDiscoveredPlacements(prev => prev.filter(p => p.id !== pl.id));
+      setPlacementSuccessFeedback(`Successfully saved Mic Placement Profile "${label}"!`);
+      
+      setConfirmConflictId(null);
+      setConfirmZeroId(null);
+      
+      await refreshDbParameterMappings();
+      if (onRefreshChain) onRefreshChain();
+    } catch (err: any) {
+      setPlacementErrorFeedback(`Failed to save placement mapping: ${err.message}`);
+    } finally {
+      setPlacementSaveLoading(null);
     }
   };
 
@@ -4235,6 +4542,242 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                             </button>
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {discoveredPlacements.length > 0 && (
+                    <div className="space-y-4 pt-6 border-t border-white/5">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-mono text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                          <Layers className="w-4 h-4 text-cyan-400" />
+                          Discovered Cabinet Mic Placement Profiles ({discoveredPlacements.length})
+                        </h4>
+                      </div>
+
+                      {placementSuccessFeedback && (
+                        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono rounded-xl uppercase flex items-center gap-2">
+                          <Check className="w-4 h-4" /> {placementSuccessFeedback}
+                        </div>
+                      )}
+
+                      {placementErrorFeedback && (
+                        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono rounded-xl uppercase flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" /> {placementErrorFeedback}
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 gap-6">
+                        {discoveredPlacements.map((pl) => {
+                          const isSavingThis = placementSaveLoading === pl.id;
+                          const showConflictConfirm = confirmConflictId === pl.id;
+                          const showZeroConfirm = confirmZeroId === pl.id;
+
+                          let borderClass = "border-white/5 bg-[#121215]";
+                          let badgeBg = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+                          let badgeText = "New Placement Candidate";
+
+                          if (pl.status === "GREEN") {
+                            borderClass = "border-emerald-500/20 bg-emerald-500/[0.02]";
+                            badgeBg = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                            badgeText = "Exact Match Verified";
+                          } else if (pl.status === "AMBER") {
+                            borderClass = "border-amber-500/20 bg-amber-500/[0.02]";
+                            badgeBg = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                            badgeText = "Coordinate Conflict";
+                          } else if (pl.status === "RED") {
+                            borderClass = "border-red-500/20 bg-red-500/[0.02]";
+                            badgeBg = "bg-red-500/10 text-red-400 border-red-500/20";
+                            badgeText = "Awaiting Calibration / Zero Values";
+                          }
+
+                          return (
+                            <div
+                              key={pl.id}
+                              className={`border rounded-2xl p-5 transition-all space-y-4 ${borderClass}`}
+                            >
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-white uppercase">{pl.cabName}</span>
+                                    <span className="text-[10px] font-mono text-gray-500">({pl.cabGuid.substring(0, 8)})</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[10px] font-mono text-gray-400 font-semibold uppercase">{pl.micSlot.replace("_", " ")}:</span>
+                                    <span className="text-[10px] font-mono text-cyan-400">{pl.micModelName}</span>
+                                  </div>
+                                </div>
+                                <span className={`text-[9px] font-mono px-2 py-1 rounded-lg border font-bold uppercase ${badgeBg}`}>
+                                  {badgeText}
+                                </span>
+                              </div>
+
+                              <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+                                <span className="text-[8.5px] font-mono text-gray-500 uppercase block mb-2 tracking-wider">XML Coordinate Values</span>
+                                <div className="grid grid-cols-5 gap-2 text-center">
+                                  {Object.entries(pl.xml_values).map(([k, v]) => {
+                                    const shortName = k.replace("Mic0", "").replace("Mic1", "");
+                                    return (
+                                      <div key={k} className="bg-white/[0.02] p-1.5 rounded-lg border border-white/5">
+                                        <span className="text-[8px] font-mono text-gray-500 block truncate uppercase">{shortName}</span>
+                                        <span className="text-xs font-mono font-bold text-white block mt-0.5">{String(v)}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {pl.status === "AMBER" && pl.matchedExistingProfile && (
+                                <div className="bg-amber-500/5 p-4 rounded-xl border border-amber-500/10 space-y-3">
+                                  <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-wider block">Side-by-Side Coordinate Diff</span>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-black/30 p-2.5 rounded-lg border border-white/5">
+                                      <span className="text-[9px] font-mono text-gray-500 block mb-1.5 uppercase">Existing database "{pl.matchedExistingProfile.friendly_value}" values:</span>
+                                      <div className="grid grid-cols-5 gap-1 text-center">
+                                        {Object.entries(pl.xml_values).map(([k]) => {
+                                          const shortName = k.replace("Mic0", "").replace("Mic1", "");
+                                          const existingXml = pl.matchedExistingProfile.maps_to || pl.matchedExistingProfile.xml_values || {};
+                                          const dbVal = existingXml[k] ?? "0";
+                                          return (
+                                            <div key={k} className="text-center">
+                                              <span className="text-[7.5px] font-mono text-gray-500 block truncate">{shortName}</span>
+                                              <span className="text-[10px] font-mono font-bold text-gray-400">{String(dbVal)}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                    <div className="bg-black/30 p-2.5 rounded-lg border border-cyan-500/10">
+                                      <span className="text-[9px] font-mono text-cyan-400 block mb-1.5 uppercase">New uploaded values:</span>
+                                      <div className="grid grid-cols-5 gap-1 text-center">
+                                        {Object.entries(pl.xml_values).map(([k, v]) => {
+                                          const shortName = k.replace("Mic0", "").replace("Mic1", "");
+                                          return (
+                                            <div key={k} className="text-center">
+                                              <span className="text-[7.5px] font-mono text-gray-500 block truncate">{shortName}</span>
+                                              <span className="text-[10px] font-mono font-bold text-cyan-400">{String(v)}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-[9px] font-mono text-gray-400 uppercase tracking-wider block">Placement Location Label</label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Cap Edge, Cone, Cap"
+                                    value={pl.friendlyPlacement}
+                                    onChange={(e) => handlePlacementLabelChange(pl.id, "friendlyPlacement", e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none placeholder:text-gray-600 focus:border-cyan-500/30"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <label className="text-[9px] font-mono text-gray-400 uppercase tracking-wider block">Distance Label</label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Close, On Axis, 1.00 inch"
+                                    value={pl.friendlyDistance}
+                                    onChange={(e) => handlePlacementLabelChange(pl.id, "friendlyDistance", e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none placeholder:text-gray-600 focus:border-cyan-500/30"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <label className="text-[9px] font-mono text-gray-400 uppercase tracking-wider block">Notes / Observations</label>
+                                <input
+                                  type="text"
+                                  placeholder="Provide optional calibration notes"
+                                  value={pl.notes || ''}
+                                  onChange={(e) => handlePlacementLabelChange(pl.id, "notes", e.target.value)}
+                                  className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none placeholder:text-gray-600 focus:border-cyan-500/30"
+                                />
+                              </div>
+
+                              {showConflictConfirm && (
+                                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl space-y-3">
+                                  <p className="text-xs font-mono text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                    <AlertTriangle className="w-4 h-4" /> Confirm Profile Replace
+                                  </p>
+                                  <p className="text-[11px] font-mono text-gray-400">
+                                    Profile already exists for "{pl.friendlyPlacement}{pl.friendlyDistance ? `, ${pl.friendlyDistance}` : ''}" on this cabinet. Are you sure you want to replace existing coordinates with these new values?
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleSaveDiscoveredPlacement(pl, true)}
+                                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-black text-[10px] font-mono font-bold uppercase rounded-lg transition-all"
+                                    >
+                                      Yes, Replace Existing
+                                    </button>
+                                    <button
+                                      onClick={() => setConfirmConflictId(null)}
+                                      className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-[10px] font-mono font-bold uppercase rounded-lg transition-all"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {showZeroConfirm && (
+                                <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl space-y-3">
+                                  <p className="text-xs font-mono text-red-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                    <AlertTriangle className="w-4 h-4" /> Confirm Zero Calibration
+                                  </p>
+                                  <p className="text-[11px] font-mono text-gray-400">
+                                    The coordinate values are all-zero. Some valid placements might use zero values, but require confirmation before saving. Are you sure you want to register this all-zero profile candidate?
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleSaveDiscoveredPlacement(pl, false, true)}
+                                      className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-mono font-bold uppercase rounded-lg transition-all"
+                                    >
+                                      Confirm &amp; Save All-Zero Profile
+                                    </button>
+                                    <button
+                                      onClick={() => setConfirmZeroId(null)}
+                                      className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-[10px] font-mono font-bold uppercase rounded-lg transition-all"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {!showConflictConfirm && !showZeroConfirm && (
+                                <div className="flex justify-end pt-2">
+                                  <button
+                                    onClick={() => handleSaveDiscoveredPlacement(pl)}
+                                    disabled={isSavingThis || !pl.friendlyPlacement.trim()}
+                                    className={`px-4 py-2 text-[10px] font-mono font-bold uppercase rounded-xl transition-all shadow-md flex items-center gap-1.5 ${
+                                      !pl.friendlyPlacement.trim()
+                                        ? 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'
+                                        : 'bg-cyan-500 hover:bg-cyan-600 text-black hover:scale-[1.02]'
+                                    }`}
+                                  >
+                                    {isSavingThis ? (
+                                      <>
+                                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                        Saving Profile...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Database className="w-3.5 h-3.5" />
+                                        Save Placement Profile
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

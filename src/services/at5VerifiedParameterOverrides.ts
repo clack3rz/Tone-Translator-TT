@@ -19,7 +19,8 @@ export interface VerifiedParamDef {
     | "noiseGateDepth"
     | "noiseGateRelease"
     | "black76InputOutput"
-    | "black76Ratio";
+    | "black76Ratio"
+    | "vibratoChorusJC120";
   kind?: "continuous_knob" | "switch_boolean" | "enum" | "frequency" | "gain_db" | "time_ms" | "semantic";
 }
 
@@ -88,7 +89,9 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
       { friendlyName: "Bass", xmlName: "Bass_JC120AT4", min: 0, max: 10, defaultValue: 5, aliases: ["bass"] },
       { friendlyName: "Distortion", xmlName: "Distortion_JC120AT4", min: 0, max: 10, defaultValue: 0, aliases: ["distortion", "gain"] },
       { friendlyName: "Reverb", xmlName: "Reverb_JC120AT4", min: 0, max: 10, defaultValue: 3, aliases: ["reverb"] },
-      { friendlyName: "Vib/Chorus", xmlName: "VibratoChorus_JC120AT4", min: 0, max: 2, defaultValue: 0, aliases: ["mode", "vibrato", "chorus"] },
+      { friendlyName: "Vib/Chorus", xmlName: "VibratoChorus_JC120AT4", min: 0, max: 2, defaultValue: 0, aliases: ["mode", "vibrato", "chorus", "vib/off/chorus", "vib_off_chorus"], transform: "vibratoChorusJC120" },
+      { friendlyName: "Speed", xmlName: "Speed_JC120AT4", min: 0, max: 10, defaultValue: 5, aliases: ["speed", "rate"] },
+      { friendlyName: "Depth", xmlName: "Depth_JC120AT4", min: 0, max: 10, defaultValue: 5, aliases: ["depth"] },
     ],
   },
   {
@@ -127,7 +130,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     aliases: ["compressor", "stomp_compressor", "classic compressor", "stomp_classic_compressor"],
     preferredSection: "StompB1",
     params: [
-      { friendlyName: "Comp", xmlName: "Comp", min: 0, max: 100, aliases: ["comp", "compression", "amount", "sustain"] },
+      { friendlyName: "Comp", xmlName: "Comp", min: 0, max: 10, aliases: ["comp", "compression", "amount", "sustain", "sensitivity", "sens", "compress"] },
       { friendlyName: "Level", xmlName: "Level", min: 0.177828, max: 5.62341, aliases: ["level", "volume", "output"] },
     ],
   },
@@ -422,6 +425,21 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
       { friendlyName: "Rhythm 2", xmlName: "Rhythm2_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["rhythm 2", "rhythm2", "rhythm2_mesamkiiilead"] },
       { friendlyName: "Deep", xmlName: "Deep_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["deep", "deep_mesamkiiilead"] },
       { friendlyName: "EQ", xmlName: "Eq_MesaMKIIILead", min: 0, max: 1, defaultValue: 0, kind: "switch_boolean", aliases: ["eq", "eq_mesamkiiilead", "eq on/off"] }
+    ]
+  },
+  {
+    name: "Digital Reverb",
+    category: "rack",
+    realId: "59ab0817-b168-4bdc-b837-e3cba1efb2dd",
+    aliases: ["digital reverb", "rack_digital_reverb", "digital_reverb", "reverb"],
+    preferredSection: "RackA",
+    isVerified: true,
+    params: [
+      { friendlyName: "Decay", xmlName: "DecayTime", min: 0.6, max: 14, defaultValue: 2, aliases: ["decay", "decaytime", "decay_time", "time"] },
+      { friendlyName: "Tone", xmlName: "Color", min: 2, max: 20, defaultValue: 10, aliases: ["tone", "color"] },
+      { friendlyName: "Mix", xmlName: "Mix", min: 0, max: 100, defaultValue: 20, aliases: ["mix", "level", "reverb_level"] },
+      { friendlyName: "Density", xmlName: "Density", min: 0, max: 99, defaultValue: 50, aliases: ["density"] },
+      { friendlyName: "OutLevel", xmlName: "OutLevel", min: 0, max: 10, defaultValue: 5, aliases: ["outlevel", "output", "volume"] }
     ]
   }
 ];

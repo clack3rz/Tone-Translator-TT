@@ -453,7 +453,14 @@ export function getParameterDefinitions(
     ...aliases.map(a => normalise(a))
   ]);
 
-  const relevantDb = dbParameterMappings.filter(m => aliasSet.has(normalise(m.gearName)));
+  let relevantDb = dbParameterMappings.filter(m => aliasSet.has(normalise(m.gearName)));
+
+  if (best.type === "verified" && displayName === "Jazz Amp 120") {
+    relevantDb = relevantDb.filter(m => {
+      const xml = m.exportParameterName || "";
+      return !xml.endsWith("_Roland120") && !xml.includes("Roland120");
+    });
+  }
 
   const paramsMap = new Map<string, ResolvedParameter>();
   for (const p of baseParams) {
@@ -547,6 +554,15 @@ export const parseSettingValue = (
   const text = String(value).trim().toLowerCase();
   if (text === "" || text === "undefined" || text === "null") return undefined;
   
+  if (transform === "vibratoChorusJC120") {
+    if (text === "off" || text === "0") return 0;
+    if (text === "chorus" || text === "chr" || text === "1") return 1;
+    if (text === "vibrato" || text === "vib" || text === "2") return 2;
+    const num = parseFloat(text);
+    if (!isNaN(num)) return Math.min(2, Math.max(0, num));
+    return 0;
+  }
+
   if (transform === "black76Ratio") {
     if (text.includes("20")) return "_20";
     if (text.includes("12")) return "_12";

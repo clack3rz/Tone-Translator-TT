@@ -282,6 +282,36 @@ export interface MicPlacementMapping {
   source?: string;
   updatedAt?: any;
   updatedBy?: string;
+
+  // New formalized identity fields
+  cabGuid?: string;
+  cabName?: string;
+  cabAliases?: string[];
+  micSlot?: "Mic_1" | "Mic_2";
+  micIndex?: 0 | 1;
+  canonicalPlacementName?: string;
+  placementAliases?: string[];
+  friendlyPlacement?: string;
+  friendlyDistance?: string;
+  micModelName?: string;
+  micModelGuid?: string;
+  micModelScope?: "any" | "specific";
+
+  // New formalized provenance fields
+  validationStatus?: "at5p_validated" | "validated" | "needs_review" | "conflict" | "rejected";
+  confidence?: "high" | "medium" | "low";
+  discoveredFromPresetName?: string;
+  discoveredFromFileName?: string;
+  discoveredAt?: string;
+  notes?: string;
+  rawXmlSource?: string;
+
+  // New formalized status fields
+  isActive?: boolean;
+  isDefault?: boolean;
+  isDeprecated?: boolean;
+  conflictReason?: string;
+  lastVerifiedAgainstAt5p?: string;
 }
 
 export interface IKMPAKCandidate {

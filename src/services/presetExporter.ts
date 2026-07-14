@@ -987,19 +987,27 @@ export function isUnspecifiedPlacementValue(value: any): boolean {
   );
 }
 
+export function canonicalizePlacementLabel(label: string): string {
+  if (!label) return "";
+  if (label.includes(",")) {
+    return label.split(",").map(part => part.trim()).filter(Boolean).join(", ");
+  }
+  return label.trim();
+}
+
 export function isPlacementProfileValid(m: MicPlacementMapping): boolean {
   if (!m) return false;
   
   // cab identity
-  const cabIdentity = m.gear;
+  const cabIdentity = m.gear || m.cabName || m.cabGuid;
   if (!cabIdentity) return false;
   
   // placementLabel
-  const placementLabel = m.friendly_value || m.friendly_name || m.friendly_placement;
+  const placementLabel = m.friendly_value || m.friendly_name || m.friendly_placement || m.canonicalPlacementName;
   if (!placementLabel) return false;
 
   // micSlot
-  const micSlot = m.mic_slot || m.friendly_setting || m.target;
+  const micSlot = m.mic_slot || m.friendly_setting || m.target || m.micSlot;
   if (!micSlot) return false;
 
   // numeric values
@@ -1008,15 +1016,139 @@ export function isPlacementProfileValid(m: MicPlacementMapping): boolean {
 
   // source validation
   const src = (m.source || "at5p_discovery").toLowerCase();
-  const validSources = ["at5p_discovery", "calibrated_profile", "manual_verified", "gear_manager_profile", "db", "persistent"];
+  const validSources = ["at5p_discovery", "calibrated_profile", "manual_verified", "gear_manager_profile", "db", "persistent", "at5p_validated"];
   if (!validSources.includes(src)) return false;
 
   // validationStatus validation
-  const status = (m.status || m.validation_status || "validated").toLowerCase();
-  const validStatuses = ["validated", "at5p_validated", "verified_calibration", "discovered", "estimated"];
+  const status = (m.status || m.validation_status || m.validationStatus || "validated").toLowerCase();
+  const validStatuses = ["validated", "at5p_validated", "verified_calibration", "discovered", "estimated", "needs_review"];
   if (!validStatuses.includes(status)) return false;
 
   return true;
+}
+
+export function resolveMicPlacementProfile(
+  cabName: string,
+  cabGuid: string,
+  micSlot: "Mic_1" | "Mic_2",
+  requestedLabel: string,
+  micModelName: string,
+  micModelGuid: string,
+  mappings: MicPlacementMapping[]
+): MicPlacementMapping | null {
+  if (isUnspecifiedPlacementValue(requestedLabel)) return null;
+
+  const validMappings = mappings.filter(m => isPlacementProfileValid(m));
+
+  const isSlotMatch = (m: MicPlacementMapping, slot: "Mic_1" | "Mic_2"): boolean => {
+    const mSlot = m.micSlot || m.mic_slot || m.friendly_setting || m.target;
+    if (!mSlot) return false;
+    const cleanMSlot = mSlot.toLowerCase().replace(/_/g, "");
+    const cleanSlot = slot.toLowerCase().replace(/_/g, "");
+    return cleanMSlot === cleanSlot || cleanMSlot === cleanSlot + "placement";
+  };
+
+  const isCabMatch = (m: MicPlacementMapping, cName: string, cGuid: string): boolean => {
+    if (cGuid && m.cabGuid && cGuid.toLowerCase().replace(/-/g, "") === m.cabGuid.toLowerCase().replace(/-/g, "")) {
+      return true;
+    }
+    const cleanStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+    const reqCabClean = cleanStr(cName);
+    if (m.cabName && cleanStr(m.cabName) === reqCabClean) return true;
+    if (m.gear && cleanStr(m.gear) === reqCabClean) return true;
+    if (m.cabAliases && Array.isArray(m.cabAliases)) {
+      if (m.cabAliases.some(alias => cleanStr(alias) === reqCabClean)) return true;
+    }
+    return false;
+  };
+
+  const isLabelMatch = (m: MicPlacementMapping, reqLabel: string): boolean => {
+    const canonReq = canonicalizePlacementLabel(reqLabel).toLowerCase();
+    const reqClean = reqLabel.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+
+    if (m.canonicalPlacementName) {
+      if (canonicalizePlacementLabel(m.canonicalPlacementName).toLowerCase() === canonReq) return true;
+      if (m.canonicalPlacementName.toLowerCase().replace(/[^a-z0-9]/g, "").trim() === reqClean) return true;
+    }
+
+    const mFriendly = m.friendly_value || m.friendly_name || m.friendly_placement;
+    if (mFriendly) {
+      if (canonicalizePlacementLabel(mFriendly).toLowerCase() === canonReq) return true;
+      if (mFriendly.toLowerCase().replace(/[^a-z0-9]/g, "").trim() === reqClean) return true;
+    }
+
+    if (m.placementAliases && Array.isArray(m.placementAliases)) {
+      if (m.placementAliases.some(alias => {
+        if (canonicalizePlacementLabel(alias).toLowerCase() === canonReq) return true;
+        return alias.toLowerCase().replace(/[^a-z0-9]/g, "").trim() === reqClean;
+      })) return true;
+    }
+
+    return false;
+  };
+
+  // 1 & 2. Exact Match & Alias Match on Cab, Mic Slot, and Label
+  const cabMatches = validMappings.filter(m => 
+    isSlotMatch(m, micSlot) && 
+    isCabMatch(m, cabName, cabGuid) && 
+    isLabelMatch(m, requestedLabel)
+  );
+
+  if (cabMatches.length > 0) {
+    // 3. SPECIFIC MIC MATCH
+    const normGuid = (g: string) => g ? g.toLowerCase().replace(/[^a-z0-9]/g, "").trim() : "";
+    const cleanMicName = (n: string) => n ? n.toLowerCase().replace(/[^a-z0-9]/g, "").trim() : "";
+    const reqGuidNorm = normGuid(micModelGuid);
+    const reqNameNorm = cleanMicName(micModelName);
+
+    const specificMicMatches = cabMatches.filter(m => 
+      m.micModelScope === "specific" && (
+        (m.micModelGuid && normGuid(m.micModelGuid) === reqGuidNorm) ||
+        (m.micModelName && cleanMicName(m.micModelName) === reqNameNorm)
+      )
+    );
+    if (specificMicMatches.length > 0) {
+      return specificMicMatches[0];
+    }
+
+    // 4. SCOPE FALLBACK
+    const scopeAnyMatches = cabMatches.filter(m => m.micModelScope === "any" || !m.micModelScope);
+    if (scopeAnyMatches.length > 0) {
+      return scopeAnyMatches[0];
+    }
+    return cabMatches[0];
+  }
+
+  // 5. GLOBAL GENERIC fallbacks
+  const genericMatches = validMappings.filter(m => {
+    const isGenericCab = !m.cabGuid && (!m.cabName || m.cabName.toLowerCase() === "any") && (!m.gear || m.gear.toLowerCase() === "any");
+    return isGenericCab && isSlotMatch(m, micSlot) && isLabelMatch(m, requestedLabel);
+  });
+
+  if (genericMatches.length > 0) {
+    const normGuid = (g: string) => g ? g.toLowerCase().replace(/[^a-z0-9]/g, "").trim() : "";
+    const cleanMicName = (n: string) => n ? n.toLowerCase().replace(/[^a-z0-9]/g, "").trim() : "";
+    const reqGuidNorm = normGuid(micModelGuid);
+    const reqNameNorm = cleanMicName(micModelName);
+
+    const specificGeneric = genericMatches.filter(m => 
+      m.micModelScope === "specific" && (
+        (m.micModelGuid && normGuid(m.micModelGuid) === reqGuidNorm) ||
+        (m.micModelName && cleanMicName(m.micModelName) === reqNameNorm)
+      )
+    );
+    if (specificGeneric.length > 0) {
+      return specificGeneric[0];
+    }
+
+    const scopeAnyGeneric = genericMatches.filter(m => m.micModelScope === "any" || !m.micModelScope);
+    if (scopeAnyGeneric.length > 0) {
+      return scopeAnyGeneric[0];
+    }
+    return genericMatches[0];
+  }
+
+  return null;
 }
 
 const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
@@ -1038,19 +1170,18 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
   const settings = cab.settings || {};
   const mappings = getDbMicPlacementMappings();
 
-  const matchGear = (gearName: string) => {
-    const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-    const cleanGear = clean(gearName);
-    const cleanCab = clean(cab.name);
-    return cleanGear === cleanCab;
-  };
+  const cabName = cab.name || "";
+  const cabGuid = resolveCabGuid(cabName);
 
   const resolved = { ...defaultValues };
 
-  let m1Placement = settings.Mic_1_Placement ?? settings.mic_1_placement ?? settings["Mic_1_Placement"];
-  let m1Distance = settings.Mic_1_Distance ?? settings.mic_1_distance ?? settings["Mic_1_Distance"];
+  let m1Placement = settings.Mic_1_Placement ?? settings.mic_1_placement ?? settings["Mic_1_Placement"] ?? settings["Mic 1 Placement"] ?? settings["mic 1 placement"];
+  let m1Distance = settings.Mic_1_Distance ?? settings.mic_1_distance ?? settings["Mic_1_Distance"] ?? settings["Mic 1 Distance"] ?? settings["mic 1 distance"];
 
   if (m1Placement) {
+    const mic1Req = getSettingText(cab, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
+    const mic1Guid = getMicId(mic1Req);
+    
     let pVal = String(m1Placement).trim();
     let dVal = m1Distance ? String(m1Distance).trim() : "";
     if (pVal.includes(",")) {
@@ -1058,27 +1189,17 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
       pVal = parts[0].trim();
       dVal = parts[1].trim();
     }
+    const label = dVal ? `${pVal}, ${dVal}` : pVal;
 
-    const mapM1 = mappings.find(m => {
-      if (!matchGear(m.gear)) return false;
-      const isSlot = m.mic_slot === "Mic_1" || m.friendly_setting === "Mic_1_Placement" || m.target === "Mic_1_Placement";
-      if (!isSlot) return false;
-      if (!isPlacementProfileValid(m)) return false;
-
-      if (m.friendly_placement && m.friendly_distance && dVal) {
-        if (m.friendly_placement.toLowerCase() === pVal.toLowerCase() &&
-            m.friendly_distance.toLowerCase() === dVal.toLowerCase()) {
-          return true;
-        }
-      }
-
-      const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase().trim();
-      const inputLower = String(m1Placement).toLowerCase().trim();
-      if (fValueLower === inputLower) return true;
-
-      const fullVal = dVal ? `${pVal}_${dVal}`.toLowerCase() : pVal.toLowerCase();
-      return fValueLower === pVal.toLowerCase() || fValueLower === fullVal;
-    });
+    const mapM1 = resolveMicPlacementProfile(
+      cabName,
+      cabGuid,
+      "Mic_1",
+      label,
+      mic1Req,
+      mic1Guid,
+      mappings
+    );
 
     if (mapM1) {
       const xmlValues = mapM1.maps_to || mapM1.xml_values || {};
@@ -1090,10 +1211,13 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
     }
   }
 
-  let m2Placement = settings.Mic_2_Placement ?? settings.mic_2_placement ?? settings["Mic_2_Placement"];
-  let m2Distance = settings.Mic_2_Distance ?? settings.mic_2_distance ?? settings["Mic_2_Distance"];
+  let m2Placement = settings.Mic_2_Placement ?? settings.mic_2_placement ?? settings["Mic_2_Placement"] ?? settings["Mic 2 Placement"] ?? settings["mic 2 placement"];
+  let m2Distance = settings.Mic_2_Distance ?? settings.mic_2_distance ?? settings["Mic_2_Distance"] ?? settings["Mic 2 Distance"] ?? settings["mic 2 distance"];
 
   if (m2Placement) {
+    const mic2Req = getSettingText(cab, ["mic_2", "mic 2", "mic2"]) || "Condenser 87";
+    const mic2Guid = getMicId(mic2Req);
+
     let pVal = String(m2Placement).trim();
     let dVal = m2Distance ? String(m2Distance).trim() : "";
     if (pVal.includes(",")) {
@@ -1101,27 +1225,17 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
       pVal = parts[0].trim();
       dVal = parts[1].trim();
     }
+    const label = dVal ? `${pVal}, ${dVal}` : pVal;
 
-    const mapM2 = mappings.find(m => {
-      if (!matchGear(m.gear)) return false;
-      const isSlot = m.mic_slot === "Mic_2" || m.friendly_setting === "Mic_2_Placement" || m.target === "Mic_2_Placement";
-      if (!isSlot) return false;
-      if (!isPlacementProfileValid(m)) return false;
-
-      if (m.friendly_placement && m.friendly_distance && dVal) {
-        if (m.friendly_placement.toLowerCase() === pVal.toLowerCase() &&
-            m.friendly_distance.toLowerCase() === dVal.toLowerCase()) {
-          return true;
-        }
-      }
-
-      const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase().trim();
-      const inputLower = String(m2Placement).toLowerCase().trim();
-      if (fValueLower === inputLower) return true;
-
-      const fullVal = dVal ? `${pVal}_${dVal}`.toLowerCase() : pVal.toLowerCase();
-      return fValueLower === pVal.toLowerCase() || fValueLower === fullVal;
-    });
+    const mapM2 = resolveMicPlacementProfile(
+      cabName,
+      cabGuid,
+      "Mic_2",
+      label,
+      mic2Req,
+      mic2Guid,
+      mappings
+    );
 
     if (mapM2) {
       const xmlValues = mapM2.maps_to || mapM2.xml_values || {};
@@ -1286,6 +1400,9 @@ export interface ExportDebugItem {
     matched_export_parameter_name?: string;
     canonical_input_value?: string;
     match_source?: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" | "room_alias";
+    verification_skipped?: boolean;
+    verification_skip_reason?: string;
+    requires_mapping_review?: boolean;
   }[];
   not_exported_detail?: string[];
   tone_adjustment_intent?: Record<string, string>;
@@ -2115,6 +2232,7 @@ const makeDebugItem = (
   let parameter_mapping_status: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" = "SUCCESS";
   const mismatched_parameters: string[] = [];
   const dropped_parameters: string[] = [];
+  const disparity_parameters: string[] = [];
   const detailsList: {
     parameter: string;
     normalized_parameter?: string;
@@ -2160,6 +2278,9 @@ const makeDebugItem = (
     range_source?: string;
     range_confidence?: string;
     conversion_warning?: string;
+    verification_skipped?: boolean;
+    verification_skip_reason?: string;
+    requires_mapping_review?: boolean;
   }[] = [];
   const not_exported_detail: string[] = [];
   let hasNearestBandWarning = false;
@@ -2321,6 +2442,8 @@ const makeDebugItem = (
 
             if (isAccidentalClampingTo1) {
               mapStatus = "FAIL";
+            } else if (clamp_app) {
+              mapStatus = "DISPARITY";
             }
 
             let parameter_reason: string | undefined;
@@ -2330,6 +2453,8 @@ const makeDebugItem = (
               } else {
                 parameter_reason = `Expected ${display_value} but exported value loads as ${reverse_converted_display_value}.`;
               }
+            } else if (mapStatus === "DISPARITY") {
+              parameter_reason = `Value disparity (clamped): Intended: ${normVal}, actual exported value loads as ${reverse_converted_display_value} due to physical limits of the gear.`;
             }
 
             let match_source: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" = "unmatched";
@@ -2397,6 +2522,10 @@ const makeDebugItem = (
                 );
               }
             }
+
+            if (clamp_app && !isAccidentalClampingTo1) {
+              disparity_parameters.push(normKey);
+            }
           } else {
             mismatched_parameters.push(
               `${def.friendlyName} (Unable to map or missing in exported settings)`
@@ -2424,10 +2553,13 @@ const makeDebugItem = (
             mapping_status: "DROPPED",
             conversion_note: `Parameter '${normKey}' is dropped / not supported by the physical gear definition.`,
             input_parameter_name: normKey,
-            matched_profile_parameter: "NONE",
-            matched_export_parameter_name: "NONE",
+            matched_profile_parameter: undefined,
+            matched_export_parameter_name: undefined,
             match_source: "unmatched",
             exported_value: "DROPPED",
+            verification_skipped: true,
+            verification_skip_reason: "Parameter is unmatched/dropped; no XML attribute should be expected.",
+            requires_mapping_review: true,
           });
         }
       }
@@ -2524,26 +2656,18 @@ const makeDebugItem = (
 
         let mapM1: any = null;
         if (was_supplied) {
-          mapM1 = placementMappings.find(m => {
-            if (!matchGearName(m.gear)) return false;
-            const isSlot = m.mic_slot === "Mic_1" || m.friendly_setting === "Mic_1_Placement" || m.target === "Mic_1_Placement";
-            if (!isSlot) return false;
-            if (!isPlacementProfileValid(m)) return false;
-
-            if (m.friendly_placement && m.friendly_distance && dVal) {
-              if (m.friendly_placement.toLowerCase() === pVal.toLowerCase() &&
-                  m.friendly_distance.toLowerCase() === dVal.toLowerCase()) {
-                return true;
-              }
-            }
-
-            const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase().trim();
-            const inputLower = plVal ? String(plVal).toLowerCase().trim() : "";
-            if (fValueLower === inputLower) return true;
-
-            const fullVal = dVal ? `${pVal}_${dVal}`.toLowerCase() : pVal.toLowerCase();
-            return fValueLower === pVal.toLowerCase() || fValueLower === fullVal;
-          });
+          const mic1Req = getSettingText(gear, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
+          const mic1Guid = getMicId(mic1Req);
+          const label = dVal ? `${pVal}, ${dVal}` : pVal;
+          mapM1 = resolveMicPlacementProfile(
+            gear.name,
+            resolveCabGuid(gear.name),
+            "Mic_1",
+            label,
+            mic1Req,
+            mic1Guid,
+            placementMappings
+          );
         }
 
         const displayLabel = was_supplied ? (dVal ? `${pVal}, ${dVal}` : pVal) : "Not specified";
@@ -2695,26 +2819,18 @@ const makeDebugItem = (
 
         let mapM2: any = null;
         if (was_supplied) {
-          mapM2 = placementMappings.find(m => {
-            if (!matchGearName(m.gear)) return false;
-            const isSlot = m.mic_slot === "Mic_2" || m.friendly_setting === "Mic_2_Placement" || m.target === "Mic_2_Placement";
-            if (!isSlot) return false;
-            if (!isPlacementProfileValid(m)) return false;
-
-            if (m.friendly_placement && m.friendly_distance && dVal) {
-              if (m.friendly_placement.toLowerCase() === pVal.toLowerCase() &&
-                  m.friendly_distance.toLowerCase() === dVal.toLowerCase()) {
-                return true;
-              }
-            }
-
-            const fValueLower = (m.friendly_value || m.friendly_name || "").toLowerCase().trim();
-            const inputLower = plVal ? String(plVal).toLowerCase().trim() : "";
-            if (fValueLower === inputLower) return true;
-
-            const fullVal = dVal ? `${pVal}_${dVal}`.toLowerCase() : pVal.toLowerCase();
-            return fValueLower === pVal.toLowerCase() || fValueLower === fullVal;
-          });
+          const mic2Req = getSettingText(gear, ["mic_2", "mic 2", "mic2"]) || "Condenser 87";
+          const mic2Guid = getMicId(mic2Req);
+          const label = dVal ? `${pVal}, ${dVal}` : pVal;
+          mapM2 = resolveMicPlacementProfile(
+            gear.name,
+            resolveCabGuid(gear.name),
+            "Mic_2",
+            label,
+            mic2Req,
+            mic2Guid,
+            placementMappings
+          );
         }
 
         const displayLabel = was_supplied ? (dVal ? `${pVal}, ${dVal}` : pVal) : "Not specified";
@@ -2910,9 +3026,15 @@ const makeDebugItem = (
     } else if (parameter_mapping_status === "PARTIAL") {
       final_status = "PARTIAL";
       finalReason = `Partial: Cabinet has unexported settings: [${not_exported_detail.map(d => d.split(":")[0]).join(", ")}] that must be verified in AT5.`;
-    } else if (dropped_parameters.length > 0) {
+    } else if (dropped_parameters.length > 0 || disparity_parameters.length > 0) {
       final_status = "PASS_WITH_WARNING";
-      finalReason = `Warning: Unsupported parameters were dropped: [${dropped_parameters.join(", ")}]`;
+      if (dropped_parameters.length > 0 && disparity_parameters.length > 0) {
+        finalReason = `Warning: Unsupported parameters were dropped: [${dropped_parameters.join(", ")}] and parameter value clamping occurred (disparity): [${disparity_parameters.join(", ")}]`;
+      } else if (dropped_parameters.length > 0) {
+        finalReason = `Warning: Unsupported parameters were dropped: [${dropped_parameters.join(", ")}]`;
+      } else {
+        finalReason = `Warning: Parameter value clamping occurred (disparity): [${disparity_parameters.join(", ")}]`;
+      }
     } else if (hasNearestBandWarning) {
       final_status = "PASS_WITH_WARNING";
       const nearestBandStr = nearestBandsList.length > 0 ? nearestBandsList.join(", ") : "requested 62Hz mapped to supported AT5 band 63Hz";
@@ -3130,7 +3252,7 @@ const makeDebugItem = (
     delay_substitution_reason = planItem.delay_substitution_reason;
   }
 
-  if (dropped_parameters.length > 0) {
+  if (dropped_parameters.length > 0 || disparity_parameters.length > 0) {
     parameter_mapping_status = "PARTIAL";
   }
 
@@ -3591,7 +3713,21 @@ export const getExportDebugData = (
       if (debugItem.parameter_details && debugItem.parameter_details.length > 0) {
         debugItem.parameter_details.forEach((detail: any) => {
           const xmlName = detail.matched_export_parameter_name;
-          if (!xmlName) return;
+          if (
+            !xmlName ||
+            xmlName === "NONE" ||
+            detail.mapping_status === "DROPPED" ||
+            detail.mapping_status === "NOT_SPECIFIED" ||
+            (detail.mapping_status === "FALLBACK_USED" && !xmlName.startsWith("Mic") && !xmlName.startsWith("Room")) ||
+            detail.exported_internal_value === "DROPPED" ||
+            detail.exported_value === "DROPPED" ||
+            detail.matched_profile_parameter === "NONE" ||
+            detail.match_source === "unmatched"
+          ) {
+            detail.verification_skipped = true;
+            detail.verification_skip_reason = detail.verification_skip_reason || "Parameter is unmatched/dropped/fallback; no XML attribute verification required.";
+            return;
+          }
 
           const actualXmlVal = actualXmlItem.attrs[xmlName];
           if (actualXmlVal !== undefined) {
@@ -3612,8 +3748,8 @@ export const getExportDebugData = (
             }
 
             if (match) {
-              detail.mapping_status = "SUCCESS";
-              detail.reason = undefined;
+              detail.mapping_status = detail.clamp_applied ? "DISPARITY" : "SUCCESS";
+              detail.reason = detail.clamp_applied ? detail.reason : undefined;
             } else {
               detail.mapping_status = "FAIL";
               if (detail.conversion_warning) {

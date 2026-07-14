@@ -362,9 +362,15 @@ const normaliseOverScreamSettings = (
 };
 
 const normaliseAmpSettings = (
-  settings: Record<string, any> = {}
+  settings: Record<string, any> = {},
+  gearName?: string
 ): Record<string, string | number> => {
   const out: Record<string, string | number> = {};
+  const isJazzAmp = gearName && (
+    gearName === "Jazz Amp 120" || 
+    gearName.toLowerCase().includes("jazz amp") || 
+    gearName.toLowerCase().includes("jc120")
+  );
 
   for (const [key, value] of Object.entries(settings)) {
     const k = normalise(key);
@@ -374,7 +380,11 @@ const normaliseAmpSettings = (
     } else if (k === "mid" || k === "mids" || k === "middle") {
       out["Middle"] = value;
     } else if (k === "volume" || k === "output" || k === "master") {
-      out["Master"] = value;
+      if (isJazzAmp) {
+        out["Volume"] = value;
+      } else {
+        out["Master"] = value;
+      }
     } else if (k === "bass") {
       out["Bass"] = value;
     } else if (k === "treble") {
@@ -582,7 +592,7 @@ const normaliseSettings = (
   }
 
   if (gearType === "amp") {
-    return normaliseAmpSettings(settings);
+    return normaliseAmpSettings(settings, canonicalName);
   }
 
   if (gearType === "cab") {
