@@ -67,6 +67,24 @@ service cloud.firestore {
         && data.updatedBy == request.auth.uid;
     }
 
+    // Validation Blueprint for Requested Parameter Review
+    function isValidRequestedParameterReview(data) {
+      return data.keys().hasAll(['gearName', 'requestedParameterName', 'occurrenceCount', 'firstSeen', 'lastSeen', 'status', 'updatedAt', 'updatedBy'])
+        && data.gearName is string && data.gearName.size() <= 256
+        && data.requestedParameterName is string && data.requestedParameterName.size() <= 128
+        && data.occurrenceCount is int
+        && data.firstSeen is string && data.firstSeen.size() <= 128
+        && data.lastSeen is string && data.lastSeen.size() <= 128
+        && data.status is string && data.status.size() <= 64
+        && (!('gearGuid' in data) || (data.gearGuid is string && data.gearGuid.size() <= 128))
+        && (!('normalizedParameterName' in data) || (data.normalizedParameterName is string && data.normalizedParameterName.size() <= 128))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 1024))
+        && (!('sourceToneRequest' in data) || (data.sourceToneRequest is string && data.sourceToneRequest.size() <= 256))
+        && (!('suggestedMatches' in data) || (data.suggestedMatches is list && data.suggestedMatches.size() <= 100))
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
     // --- Main Collections ---
 
     match /catalogue/{guid} {
@@ -137,7 +155,15 @@ service cloud.firestore {
           incoming().diff(existing()).affectedKeys().hasOnly([
             'gearName', 'parameter', 'visualMin', 'visualMax', 'visualUnit',
             'exportMin', 'exportMax', 'exportParameterName', 'conversion', 'formula',
-            'updatedAt', 'updatedBy', 'id'
+            'updatedAt', 'updatedBy', 'id',
+            'gearGuid', 'displayParameterName', 'canonicalParameterName', 'aliases',
+            'at5XmlAttributeName', 'interfaceType', 'parameterKind', 'displayMin',
+            'displayMax', 'displayUnit', 'displayStep', 'decimalPlaces',
+            'defaultDisplayValue', 'exportUnit', 'exportStep', 'exportDecimalPlaces',
+            'defaultExportValue', 'translationMode', 'valueMap', 'reverseValueMap',
+            'helperDescription', 'exampleInput', 'exampleOutput', 'validationStatus',
+            'mappingConfidence', 'source', 'doNotRequestForGear', 'unsupportedReason',
+            'reviewNotes', 'optionRows', 'valueMapJson', 'reverseValueMapJson'
           ])
           && incoming().id == existing().id
         )
@@ -171,6 +197,22 @@ service cloud.firestore {
       allow read: if true;
       allow delete: if isVerified();
       allow create, update: if isVerified() && isValidId(candidateId) && (isAdmin() || isValidCandidate(incoming()));
+    }
+
+    match /requested_parameter_reviews/{reviewId} {
+      allow read: if isVerified();
+      allow delete: if isVerified();
+      allow create, update: if isVerified() && isValidId(reviewId) && isValidRequestedParameterReview(incoming()) && (
+        isAdmin() ||
+        request.method == 'create' || (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'gearName', 'gearGuid', 'requestedParameterName', 'requestedValue', 
+            'normalizedParameterName', 'occurrenceCount', 'firstSeen', 'lastSeen', 
+            'sourceToneRequest', 'suggestedMatches', 'status', 'notes', 'updatedAt', 'updatedBy', 'id'
+          ])
+          && incoming().id == existing().id
+        )
+      );
     }
 
     // System collection for connection test

@@ -388,7 +388,18 @@ export const STOMP_MANIFEST: GearItem[] = [
   { id: "stomp_10_band_graphic", category: "stomp", name: "10 Band Graphic" },
   { id: "stomp_6_band_eq", category: "stomp", name: "6 Band EQ" },
   { id: "stomp_7_band_graphic", category: "stomp", name: "7 Band Graphic" },
-  { id: "stomp_acoustic_sim", category: "stomp", name: "Acoustic Sim" },
+  { 
+    id: "stomp_acoustic_sim", 
+    category: "stomp", 
+    name: "Acoustic Sim",
+    realId: "71fe6e6d-5879-42a7-9a31-6093ecee2a1c",
+    knobs: [
+      { name: "Body", min: 0, max: 10, unit: "" },
+      { name: "Top", min: 0, max: 10, unit: "" },
+      { name: "Level", min: 0, max: 10, unit: "" },
+      { name: "Mode", min: 1, max: 4, unit: "" }
+    ]
+  },
   { id: "stomp_ampless", category: "stomp", name: "Ampless" },
   { id: "stomp_analog_chorus", category: "stomp", name: "Analog Chorus" },
   { id: "stomp_analog_delay", category: "stomp", name: "Analog Delay" },

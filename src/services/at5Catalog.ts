@@ -48,7 +48,7 @@ const MANUAL_CATALOG_ADDITIONS: AT5CatalogItem[] = [
   { displayName: "6 Band EQ", guid: "", group: "stomp", slot: "Slot" },
   { displayName: "7 Band Graphic", guid: "", group: "stomp", slot: "Slot" },
   { displayName: "10 Band Graphic", guid: "", group: "stomp", slot: "Slot" },
-  { displayName: "Acoustic Sim", guid: "", group: "stomp", slot: "Slot" },
+  { displayName: "Acoustic Sim", guid: "71fe6e6d-5879-42a7-9a31-6093ecee2a1c", group: "stomp", slot: "Slot" },
   { displayName: "Analog Flanger", guid: "", group: "stomp", slot: "Slot" },
   { displayName: "Big Pig", guid: "", group: "stomp", slot: "Slot" },
   { displayName: "Booster", guid: "", group: "stomp", slot: "Slot" },
@@ -158,12 +158,25 @@ export async function refreshCatalog() {
   }
 }
 
-const normalise = (value: string) =>
+export const normalise = (value: string) =>
   value
+    ? value
+        .toLowerCase()
+        .replace(/['’]/g, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+    : "";
+
+export function cleanGearNameForMatching(name: string): string {
+  if (!name) return "";
+  return name
     .toLowerCase()
+    .replace(/\s*\((amp|stomp|rack|cab|speaker|mic|studio|pedal)\)\s*/gi, " ")
+    .replace(/\b(amp|stomp|rack|cab|speaker|mic|studio|pedal)\b/gi, " ")
     .replace(/['’]/g, "")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+}
 
 const scoreItem = (item: AT5CatalogItem, query: string, requestedGroup: AT5GearGroup): number => {
   const q = normalise(query);

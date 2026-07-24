@@ -136,6 +136,29 @@
         "updatedBy": { "type": "string" }
       },
       "required": ["name", "candidateGearType", "guid", "importBatchId"]
+    },
+    "requested_parameter_review": {
+      "title": "Requested Parameter Review",
+      "description": "A parameter that was requested but couldn't be fully mapped, flagged for review",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "gearName": { "type": "string" },
+        "gearGuid": { "type": "string" },
+        "requestedParameterName": { "type": "string" },
+        "requestedValue": { "type": "any" },
+        "normalizedParameterName": { "type": "string" },
+        "occurrenceCount": { "type": "integer" },
+        "firstSeen": { "type": "string", "format": "date-time" },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "sourceToneRequest": { "type": "string" },
+        "suggestedMatches": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["CHECK", "ADD_MAPPING", "MAP_TO_EXISTING", "MARK_UNSUPPORTED", "IGNORE_ONCE", "DO_NOT_REQUEST"] },
+        "notes": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["gearName", "requestedParameterName", "occurrenceCount", "firstSeen", "lastSeen", "status"]
     }
   },
   "firestore": {
@@ -166,6 +189,10 @@
     "/gear_discovery_candidates/{candidateId}": {
       "schema": "gear_discovery_candidate",
       "description": "Staged unverified gear candidates"
+    },
+    "/requested_parameter_reviews/{reviewId}": {
+      "schema": "requested_parameter_review",
+      "description": "Reviews of requested parameters that were not found/mapped"
     }
   }
 }

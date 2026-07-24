@@ -1,5 +1,6 @@
 import { SignalChainElement } from "../types";
 import { findBestCatalogMatchAcrossGroups, findAT5Gear, getAt5Catalog } from "./at5Catalog";
+import { resolveGearParameters } from "./at5ParameterManifest";
 
 const normalise = (value: string) =>
   value
@@ -372,7 +373,41 @@ const normaliseAmpSettings = (
     gearName.toLowerCase().includes("jc120")
   );
 
+  let gearParams: ReturnType<typeof resolveGearParameters> = [];
+  if (gearName) {
+    try {
+      gearParams = resolveGearParameters(gearName, "amp");
+    } catch {
+      gearParams = [];
+    }
+  }
+
+  const findMatchingGearParam = (settingKey: string) => {
+    if (!gearParams || gearParams.length === 0) return null;
+    const cleanKey = settingKey.toLowerCase().replace(/[^a-z0-9.]/g, "");
+    return gearParams.find(p => {
+      const cleanFriendly = p.friendlyName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+      const cleanXml = p.xmlName.toLowerCase().replace(/[^a-z0-9.]/g, "");
+      const cleanCanonical = (p.canonicalParameterName || "").toLowerCase().replace(/[^a-z0-9.]/g, "");
+      const cleanAliases = (p.effectiveAliases || p.aliases || []).map(a => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
+      return (
+        cleanFriendly === cleanKey ||
+        cleanXml === cleanKey ||
+        (cleanCanonical && cleanCanonical === cleanKey) ||
+        cleanAliases.includes(cleanKey)
+      );
+    });
+  };
+
   for (const [key, value] of Object.entries(settings)) {
+    // 1. First check if key or its alias matches an explicit gear parameter for this amp
+    const matchedParam = findMatchingGearParam(key);
+    if (matchedParam) {
+      out[matchedParam.friendlyName] = value;
+      continue;
+    }
+
+    // 2. Otherwise fall back to standard generic amp normalization
     const k = normalise(key);
 
     if (k === "gain" || k === "preamp" || k === "preamp gain" || k === "pre amp") {

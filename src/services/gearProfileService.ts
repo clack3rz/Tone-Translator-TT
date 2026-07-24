@@ -1,6 +1,6 @@
 import { AT5_VERIFIED_GEAR, VerifiedParamDef } from './at5VerifiedParameterOverrides';
 import { getVerifiedCabs, getVerifiedMics, getVerifiedSpeakers } from './at5VerifiedProtocols';
-import { getAt5Catalog, refreshCatalog } from './at5Catalog';
+import { getAt5Catalog, refreshCatalog, cleanGearNameForMatching } from './at5Catalog';
 import { refreshDbParameterMappings } from './at5ParameterManifest';
 import { at5DatabaseService } from './at5DatabaseService';
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping } from '../types';
@@ -204,11 +204,17 @@ export const gearProfileService = {
   /**
    * Helper to check if a DB mapping matches a gear's name or aliases
    */
-  isMappingForGear(m: ParameterMapping, displayName: string, aliases: string[]): boolean {
-    const rawG = normaliseName(m.gearName);
+  isMappingForGear(m: ParameterMapping, displayName: string, aliases: string[] = [], guid?: string): boolean {
+    if (guid && m.gearGuid) {
+      const normG1 = guid.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const normG2 = m.gearGuid.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (normG1 && normG2 && normG1 === normG2) return true;
+    }
+    const rawG = cleanGearNameForMatching(m.gearName);
     if (!rawG) return false;
-    if (rawG === normaliseName(displayName)) return true;
-    return aliases.some(a => normaliseName(a) === rawG);
+    if (rawG === cleanGearNameForMatching(displayName)) return true;
+    if (normaliseName(m.gearName) === normaliseName(displayName)) return true;
+    return aliases.some(a => cleanGearNameForMatching(a) === rawG || normaliseName(a) === normaliseName(m.gearName));
   },
 
   /**
@@ -225,7 +231,8 @@ export const gearProfileService = {
     // 1. Load AT5_VERIFIED_GEAR override parameters if present
     const verifiedGear = AT5_VERIFIED_GEAR.find(v => 
       (v.realId && normalizedGuid && v.realId.toLowerCase().replace(/-/g, '') === normalizedGuid) || 
-      (normaliseName(v.name) === normaliseName(displayName))
+      (normaliseName(v.name) === normaliseName(displayName)) ||
+      (cleanGearNameForMatching(v.name) === cleanGearNameForMatching(displayName))
     );
 
     if (verifiedGear && verifiedGear.params) {
@@ -305,16 +312,55 @@ export const gearProfileService = {
     // 3. Load DB parameter_mappings list that match
     const aliasSet = new Set([
       normaliseName(displayName),
+      cleanGearNameForMatching(displayName),
       ...(item.otherNames || []).map(normaliseName),
-      ...(item.examplePresets || []).map(normaliseName)
+      ...(item.otherNames || []).map(cleanGearNameForMatching),
+      ...(item.examplePresets || []).map(normaliseName),
+      ...(item.examplePresets || []).map(cleanGearNameForMatching)
     ]);
-    const relevantDb = dbMappings.filter(m => aliasSet.has(normaliseName(m.gearName)));
+    const relevantDb = dbMappings.filter(m => {
+      if (aliasSet.has(normaliseName(m.gearName))) return true;
+      if (aliasSet.has(cleanGearNameForMatching(m.gearName))) return true;
+      if (m.gearGuid && normalizedGuid && m.gearGuid.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedGuid.toLowerCase().replace(/[^a-z0-9]/g, '')) return true;
+      return false;
+    });
 
     for (const dbM of relevantDb) {
-      const key = dbM.parameter.toLowerCase().trim();
-      const existing = paramsMap.get(key);
+      const targetKeys = [
+        dbM.parameter,
+        dbM.exportParameterName,
+        dbM.canonicalParameterName,
+        dbM.displayParameterName
+      ].filter(Boolean).map(s => s!.toLowerCase().trim());
+
+      let existing: GearProfileParameter | undefined = undefined;
+      for (const k of targetKeys) {
+        if (paramsMap.has(k)) {
+          existing = paramsMap.get(k);
+          break;
+        }
+      }
+
+      if (!existing) {
+        for (const p of paramsMap.values()) {
+          const namesToCompare = [
+            p.displayName,
+            p.canonicalName,
+            p.export?.name,
+            ...(p.aliases || []),
+            ...(p.effectiveAliases || [])
+          ].filter(Boolean).map(s => s.toLowerCase().trim());
+
+          if (targetKeys.some(tk => namesToCompare.includes(tk))) {
+            existing = p;
+            break;
+          }
+        }
+      }
 
       const valStatus = (dbM.conversion && dbM.conversion !== 'unknown') ? 'PASS' : 'WARN';
+
+      const dbAliases = Array.isArray(dbM.aliases) ? dbM.aliases : [];
 
       if (existing) {
         existing.visual = {
@@ -333,11 +379,64 @@ export const gearProfileService = {
         };
         existing.canonicalName = dbM.exportParameterName || existing.canonicalName;
         existing.validationStatus = valStatus;
+
+        if (dbAliases.length > 0) {
+          const mergedSaved = Array.from(new Set([...(existing.savedAliases || existing.aliases || []), ...dbAliases]));
+          existing.aliases = mergedSaved;
+          existing.savedAliases = mergedSaved;
+          existing.rawMappingAliases = mergedSaved;
+          existing.effectiveAliases = Array.from(new Set([
+            ...mergedSaved,
+            existing.displayName,
+            existing.canonicalName,
+            existing.export?.name
+          ].filter(Boolean)));
+        }
+
+        // Propagate extended fields
+        existing.gearGuid = dbM.gearGuid;
+        existing.displayParameterName = dbM.displayParameterName;
+        existing.canonicalParameterName = dbM.canonicalParameterName;
+        existing.at5XmlAttributeName = dbM.at5XmlAttributeName;
+        existing.interfaceType = dbM.interfaceType;
+        existing.parameterKind = dbM.parameterKind;
+        existing.displayMin = dbM.displayMin;
+        existing.displayMax = dbM.displayMax;
+        existing.displayUnit = dbM.displayUnit;
+        existing.displayStep = dbM.displayStep;
+        existing.decimalPlaces = dbM.decimalPlaces;
+        existing.defaultDisplayValue = dbM.defaultDisplayValue;
+        existing.exportUnit = dbM.exportUnit;
+        existing.exportStep = dbM.exportStep;
+        existing.exportDecimalPlaces = dbM.exportDecimalPlaces;
+        existing.defaultExportValue = dbM.defaultExportValue;
+        existing.translationMode = dbM.translationMode;
+        existing.valueMap = dbM.valueMap;
+        existing.reverseValueMap = dbM.reverseValueMap;
+        existing.helperDescription = dbM.helperDescription;
+        existing.exampleInput = dbM.exampleInput;
+        existing.exampleOutput = dbM.exampleOutput;
+        existing.mappingConfidence = dbM.mappingConfidence;
+        existing.source = dbM.source;
+        existing.doNotRequestForGear = dbM.doNotRequestForGear;
+        existing.unsupportedReason = dbM.unsupportedReason;
+        existing.reviewNotes = dbM.reviewNotes;
+        existing.optionRows = dbM.optionRows;
+        existing.valueMapJson = dbM.valueMapJson;
+        existing.reverseValueMapJson = dbM.reverseValueMapJson;
       } else {
-        paramsMap.set(key, {
+        const newKey = (dbM.exportParameterName || dbM.parameter).toLowerCase().trim();
+        paramsMap.set(newKey, {
           displayName: dbM.parameter,
           canonicalName: dbM.exportParameterName,
-          aliases: [],
+          aliases: dbAliases,
+          savedAliases: dbAliases,
+          rawMappingAliases: dbAliases,
+          effectiveAliases: Array.from(new Set([
+            ...dbAliases,
+            dbM.parameter,
+            dbM.exportParameterName
+          ].filter(Boolean))),
           visual: {
             min: dbM.visualMin,
             max: dbM.visualMax,
@@ -353,7 +452,39 @@ export const gearProfileService = {
             formula: dbM.formula || this.getFormulaForMode(dbM.conversion)
           },
           defaultValue: '',
-          validationStatus: valStatus
+          validationStatus: valStatus,
+
+          // Propagate extended fields
+          gearGuid: dbM.gearGuid,
+          displayParameterName: dbM.displayParameterName,
+          canonicalParameterName: dbM.canonicalParameterName,
+          at5XmlAttributeName: dbM.at5XmlAttributeName,
+          interfaceType: dbM.interfaceType,
+          parameterKind: dbM.parameterKind,
+          displayMin: dbM.displayMin,
+          displayMax: dbM.displayMax,
+          displayUnit: dbM.displayUnit,
+          displayStep: dbM.displayStep,
+          decimalPlaces: dbM.decimalPlaces,
+          defaultDisplayValue: dbM.defaultDisplayValue,
+          exportUnit: dbM.exportUnit,
+          exportStep: dbM.exportStep,
+          exportDecimalPlaces: dbM.exportDecimalPlaces,
+          defaultExportValue: dbM.defaultExportValue,
+          translationMode: dbM.translationMode,
+          valueMap: dbM.valueMap,
+          reverseValueMap: dbM.reverseValueMap,
+          helperDescription: dbM.helperDescription,
+          exampleInput: dbM.exampleInput,
+          exampleOutput: dbM.exampleOutput,
+          mappingConfidence: dbM.mappingConfidence,
+          source: dbM.source,
+          doNotRequestForGear: dbM.doNotRequestForGear,
+          unsupportedReason: dbM.unsupportedReason,
+          reviewNotes: dbM.reviewNotes,
+          optionRows: dbM.optionRows,
+          valueMapJson: dbM.valueMapJson,
+          reverseValueMapJson: dbM.reverseValueMapJson
         });
       }
     }
@@ -523,7 +654,7 @@ export const gearProfileService = {
 
     // 3. Prune obsolete parameter mappings and save current ones
     const dbMappings = await at5DatabaseService.getParameterMappings();
-    const relevantDb = dbMappings.filter(m => this.isMappingForGear(m, profile.displayName, profile.aliases || []));
+    const relevantDb = dbMappings.filter(m => this.isMappingForGear(m, profile.displayName, profile.aliases || [], profile.guid));
     const currentParamNames = new Set(
       profile.parameters.map(p => p.displayName.toLowerCase().trim())
     );
@@ -549,7 +680,41 @@ export const gearProfileService = {
           exportMax: p.export?.max ?? 1,
           exportParameterName: p.export?.name || p.canonicalName,
           conversion: (p.conversion?.mode ?? 'direct') as any,
-          formula: p.conversion?.formula ?? ''
+          formula: p.conversion?.formula ?? '',
+          
+          // Extended fields
+          gearGuid: p.gearGuid || profile.guid,
+          displayParameterName: p.displayParameterName || p.displayName,
+          canonicalParameterName: p.canonicalParameterName || p.canonicalName || p.export?.name,
+          aliases: Array.from(new Set([...(p.savedAliases || []), ...(p.aliases || []), ...(p.effectiveAliases || [])])),
+          at5XmlAttributeName: p.at5XmlAttributeName,
+          interfaceType: p.interfaceType,
+          parameterKind: p.parameterKind,
+          displayMin: p.displayMin,
+          displayMax: p.displayMax,
+          displayUnit: p.displayUnit,
+          displayStep: p.displayStep,
+          decimalPlaces: p.decimalPlaces,
+          defaultDisplayValue: p.defaultDisplayValue,
+          exportUnit: p.exportUnit,
+          exportStep: p.exportStep,
+          exportDecimalPlaces: p.exportDecimalPlaces,
+          defaultExportValue: p.defaultExportValue,
+          translationMode: p.translationMode,
+          valueMap: p.valueMap,
+          reverseValueMap: p.reverseValueMap,
+          helperDescription: p.helperDescription,
+          exampleInput: p.exampleInput,
+          exampleOutput: p.exampleOutput,
+          validationStatus: p.validationStatus as any,
+          mappingConfidence: p.mappingConfidence,
+          source: p.source,
+          doNotRequestForGear: p.doNotRequestForGear,
+          unsupportedReason: p.unsupportedReason,
+          reviewNotes: p.reviewNotes,
+          optionRows: p.optionRows,
+          valueMapJson: p.valueMapJson,
+          reverseValueMapJson: p.reverseValueMapJson,
         };
         await at5DatabaseService.saveParameterMapping(mapping);
       }

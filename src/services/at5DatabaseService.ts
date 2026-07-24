@@ -12,7 +12,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
-import { AT5CatalogItem, ParameterMapping, MicPlacementMapping, IKMPAKCandidate } from '../types';
+import { AT5CatalogItem, ParameterMapping, MicPlacementMapping, IKMPAKCandidate, RequestedParameterReview } from '../types';
 import { VerifiedMapping } from './at5VerifiedProtocols';
 
 // Enum for Operation Types (Mandatory for error logging)
@@ -398,6 +398,99 @@ export const at5DatabaseService = {
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, 'CLEAR_CANDIDATES');
+    }
+  },
+
+  /**
+   * Requested Parameter Reviews
+   */
+  async getRequestedParameterReviews(): Promise<RequestedParameterReview[]> {
+    const path = 'requested_parameter_reviews';
+    try {
+      const snapshot = await getDocs(collection(db, path));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id
+        } as RequestedParameterReview;
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  },
+
+  async saveRequestedParameterReview(review: RequestedParameterReview) {
+    if (!auth.currentUser) throw new Error("Must be signed in to save parameter review");
+    const docId = review.id || `${review.gearGuid || review.gearName}_${review.requestedParameterName}`.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const path = `requested_parameter_reviews/${docId}`;
+    try {
+      const data = sanitize({
+        ...review,
+        id: docId,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid
+      });
+      await setDoc(doc(db, 'requested_parameter_reviews', docId), data);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
+  async deleteRequestedParameterReview(id: string) {
+    if (!auth.currentUser) throw new Error("Must be signed in to delete parameter review");
+    const path = `requested_parameter_reviews/${id}`;
+    try {
+      await deleteDoc(doc(db, 'requested_parameter_reviews', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, path);
+    }
+  },
+
+  async recordRequestedParameterForReview(
+    gearName: string,
+    gearGuid: string | undefined,
+    requestedParameterName: string,
+    requestedValue: any,
+    suggestedMatches: string[] = [],
+    sourceToneRequest?: string
+  ): Promise<void> {
+    try {
+      const cleanParamName = requestedParameterName.trim();
+      const reviews = await this.getRequestedParameterReviews();
+      const docId = `${gearGuid || gearName}_${cleanParamName}`.replace(/[^a-zA-Z0-9_\-]/g, '_');
+      const existing = reviews.find(r => r.id === docId);
+
+      const nowStr = new Date().toISOString();
+
+      if (existing) {
+        existing.occurrenceCount = (existing.occurrenceCount || 0) + 1;
+        existing.lastSeen = nowStr;
+        existing.requestedValue = requestedValue;
+        if (sourceToneRequest) {
+          existing.sourceToneRequest = sourceToneRequest;
+        }
+        await this.saveRequestedParameterReview(existing);
+      } else {
+        const newReview: RequestedParameterReview = {
+          id: docId,
+          gearName,
+          gearGuid,
+          requestedParameterName: cleanParamName,
+          requestedValue,
+          occurrenceCount: 1,
+          firstSeen: nowStr,
+          lastSeen: nowStr,
+          sourceToneRequest: sourceToneRequest || 'Direct Export Request',
+          suggestedMatches,
+          status: 'CHECK',
+          notes: ''
+        };
+        await this.saveRequestedParameterReview(newReview);
+      }
+    } catch (e) {
+      console.error("Failed to record requested parameter for review:", e);
     }
   }
 };

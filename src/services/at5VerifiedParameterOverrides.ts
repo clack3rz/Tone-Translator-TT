@@ -36,6 +36,19 @@ export interface VerifiedGearDef {
 
 export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
   {
+    name: "Acoustic Sim",
+    category: "stomp",
+    realId: "71fe6e6d-5879-42a7-9a31-6093ecee2a1c",
+    aliases: ["acoustic_sim", "acoustic simulator", "acoustic-sim"],
+    isVerified: true,
+    params: [
+      { friendlyName: "Body", xmlName: "Body", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob" },
+      { friendlyName: "Top", xmlName: "Top", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob" },
+      { friendlyName: "Level", xmlName: "Level", min: 0, max: 10, defaultValue: 5, kind: "continuous_knob" },
+      { friendlyName: "Mode", xmlName: "Mode", min: 1, max: 4, defaultValue: 1, kind: "enum" }
+    ]
+  },
+  {
     name: "Brit 8000",
     category: "amp",
     realId: "8fe96936-5178-4950-9b80-d89c32534bad",
