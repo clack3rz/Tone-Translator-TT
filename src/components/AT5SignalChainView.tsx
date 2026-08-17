@@ -525,6 +525,18 @@ const SelectedGearDetailPanel = ({
               {item.slot_section}
               {item.slot_index >= 0 ? ` / Slot ${item.slot_index}` : ""}
             </span>
+
+            {onJumpToCatalogue && (
+              <button 
+                type="button"
+                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name)}
+                className="px-3 py-1 rounded-full bg-gear-accent/20 text-gear-accent hover:bg-gear-accent hover:text-black text-[10px] font-bold font-mono border border-gear-accent/30 transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-sm ml-1"
+                title="Open directly in Gear Manager to review or edit translation parameters"
+              >
+                <Sliders className="w-3 h-3" />
+                Review in Gear Manager
+              </button>
+            )}
           </div>
         </div>
 
@@ -533,15 +545,16 @@ const SelectedGearDetailPanel = ({
             <span className="font-bold text-slate-400 mr-2">Type:</span>
             <span className="font-mono font-semibold">{item.type}</span>
           </div>
-          <div>
-            <span className="font-bold text-slate-400 mr-2">GUID:</span>
-            <span className="break-all font-mono font-semibold bg-black/40 px-2 py-0.5 rounded border border-white/5 text-[12px]">{item.resolved_guid}</span>
-            {onJumpToCatalogue && item.resolved_guid && isGuid(item.resolved_guid) && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold text-slate-400 mr-1">GUID:</span>
+            <span className="break-all font-mono font-semibold bg-black/40 px-2 py-0.5 rounded border border-white/5 text-[12px]">{item.resolved_guid || "None"}</span>
+            {onJumpToCatalogue && (
               <button 
-                onClick={() => onJumpToCatalogue(item.resolved_guid)}
-                className="ml-3 px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[9px] font-mono border border-purple-500/20 hover:bg-purple-500/20 transition-all uppercase tracking-tighter"
+                type="button"
+                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name)}
+                className="px-2 py-0.5 rounded bg-gear-accent/15 text-gear-accent text-[9px] font-mono border border-gear-accent/30 hover:bg-gear-accent hover:text-black transition-all uppercase tracking-tighter flex items-center gap-1"
               >
-                Manage entry
+                Manage Profile
               </button>
             )}
           </div>

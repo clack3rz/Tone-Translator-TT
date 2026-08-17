@@ -36,11 +36,11 @@ import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IK
 import { gearProfileService } from '../services/gearProfileService';
 import { parseAt5pPreset } from '../services/at5PresetImporter';
 import { at5DatabaseService } from '../services/at5DatabaseService';
-import { refreshDbParameterMappings, generateAliasesForXmlParam } from '../services/at5ParameterManifest';
+import { refreshDbParameterMappings, generateAliasesForXmlParam, testSingleParameterTranslation } from '../services/at5ParameterManifest';
 import { auth, signInWithGoogle } from '../services/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { evaluateCandidate, parseCSV, parseJSON, evaluateAliasSafety, isSlotTypeValid, normalizeGuid, checkProfileMatch, normalizeAliasComparison } from '../services/ikmpakService';
-import { getAt5Catalog, cleanGearNameForMatching } from '../services/at5Catalog';
+import { getAt5Catalog, cleanGearNameForMatching, normalizeGearIdentityName, normalizeGearNameLoose } from '../services/at5Catalog';
 import { getVerifiedMics } from '../services/at5VerifiedProtocols';
 
 function getChildGearType(fieldName: string): "speaker" | "mic" | "room" | "room_mic" | null {
@@ -387,6 +387,9 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingParamEdit, setIsSavingParamEdit] = useState(false);
+  const [paramSaveError, setParamSaveError] = useState<string | null>(null);
+  const [paramSaveSuccess, setParamSaveSuccess] = useState<string | null>(null);
   const [user, setUser] = useState<FirebaseUser | null>(null);
 
   // Active view tab: 'profiles' | 'discovery' | 'gaps' | 'ikmpak'
@@ -431,6 +434,48 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
   const [showBulkParamAliasTextarea, setShowBulkParamAliasTextarea] = useState<boolean>(false);
   const [paramAliasError, setParamAliasError] = useState<string | null>(null);
   const [aliasGroupTab, setAliasGroupTab] = useState<'all' | 'saved' | 'raw' | 'auto' | 'effective'>('all');
+
+  // Test translation editor preview state
+  const [testInputValue, setTestInputValue] = useState<string>('');
+  const [copiedTestXml, setCopiedTestXml] = useState<boolean>(false);
+
+  // Live test translation calculation using current unsaved parameter form rules
+  const testTranslationResult = useMemo(() => {
+    if (!paramForm || testInputValue === undefined || testInputValue === '') {
+      return null;
+    }
+
+    const valueMapFromRows: Record<string, string | number> = {};
+    if (optionRows && optionRows.length > 0) {
+      optionRows.forEach(row => {
+        if (row.displayLabel && row.displayLabel.trim()) {
+          const val = parseFloat(String(row.exportValue));
+          valueMapFromRows[row.displayLabel.trim()] = isNaN(val) ? row.exportValue : val;
+          if (row.aliases) {
+            row.aliases.forEach(a => {
+              if (a.trim()) valueMapFromRows[a.trim()] = isNaN(val) ? row.exportValue : val;
+            });
+          }
+        }
+      });
+    }
+
+    const paramForTest: GearProfileParameter = {
+      ...paramForm,
+      optionRows,
+      valueMap: Object.keys(valueMapFromRows).length > 0 ? valueMapFromRows : paramForm.valueMap
+    };
+
+    return testSingleParameterTranslation(
+      paramForTest,
+      testInputValue,
+      {
+        gearType: editedProfile?.type,
+        gearDisplayName: editedProfile?.displayName,
+        gearGuid: editedProfile?.guid
+      }
+    );
+  }, [paramForm, optionRows, testInputValue, editedProfile]);
 
   // Import/Discovery states
   const [dragActive, setDragActive] = useState(false);
@@ -993,14 +1038,19 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       setBulkParamAliasText('');
       setShowBulkParamAliasTextarea(false);
       setParamAliasError(null);
+      setParamSaveError(null);
+      setParamSaveSuccess(null);
       setAliasGroupTab('all');
+
+      setTestInputValue(rawParam.exampleInput || (rawParam.defaultDisplayValue !== undefined ? String(rawParam.defaultDisplayValue) : '5.0'));
+      setCopiedTestXml(false);
     } else {
       setParamForm(null);
     }
     setIsEditingParameter(true);
   };
 
-  const handleSaveParamEdit = () => {
+  const handleSaveParamEdit = async () => {
     if (!editedProfile || editingParamIndex === null || !paramForm) return;
 
     // Validate structured options first
@@ -1061,6 +1111,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       }
     }
 
+    const rawParamSavedAliases = editedProfile.parameters[editingParamIndex]?.savedAliases || editedProfile.parameters[editingParamIndex]?.aliases || [];
     const savedAliases = getParamSavedAliases(paramForm);
     const autoGenAliases = paramForm.autoGeneratedAliases && paramForm.autoGeneratedAliases.length > 0
       ? paramForm.autoGeneratedAliases
@@ -1091,13 +1142,89 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
 
     const updatedParams = [...editedProfile.parameters];
     updatedParams[editingParamIndex] = finalForm;
-    setEditedProfile({
+
+    const updatedProfile: GearProfile = {
       ...editedProfile,
       parameters: updatedParams
-    });
-    setIsEditingParameter(false);
-    setEditingParamIndex(null);
-    setParamForm(null);
+    };
+
+    setIsSavingParamEdit(true);
+    setParamSaveError(null);
+    setParamSaveSuccess(null);
+
+    try {
+      setEditedProfile(updatedProfile);
+
+      // Persist profile with updated parameter directly to Firestore
+      await gearProfileService.saveGearProfile(updatedProfile);
+
+      // Refresh DB parameter mappings and reload gear profiles
+      await refreshDbParameterMappings();
+      const reloadedProfiles = await gearProfileService.getGearProfiles();
+      setProfiles(reloadedProfiles);
+
+      const savedProfile = reloadedProfiles.find(p => 
+        (p.guid && updatedProfile.guid && p.guid.toLowerCase().replace(/[^a-z0-9]/g, '') === updatedProfile.guid.toLowerCase().replace(/[^a-z0-9]/g, '')) ||
+        cleanGearNameForMatching(p.displayName) === cleanGearNameForMatching(updatedProfile.displayName)
+      );
+
+      const savedParamInReloadedProfile = savedProfile?.parameters.find(p => 
+        p.displayName.toLowerCase().trim() === finalForm.displayName.toLowerCase().trim() ||
+        p.canonicalName.toLowerCase().trim() === finalForm.canonicalName.toLowerCase().trim() ||
+        (p.export?.name && finalForm.export?.name && p.export.name.toLowerCase().trim() === finalForm.export.name.toLowerCase().trim())
+      );
+
+      const persistedAliases = savedParamInReloadedProfile
+        ? Array.from(new Set([
+            ...(savedParamInReloadedProfile.savedAliases || []),
+            ...(savedParamInReloadedProfile.aliases || []),
+            ...(savedParamInReloadedProfile.effectiveAliases || [])
+          ]))
+        : [];
+
+      const saveVerified = Boolean(
+        savedProfile &&
+        savedParamInReloadedProfile &&
+        savedAliases.every(a => persistedAliases.includes(a))
+      );
+
+      console.log({
+        action: "parameter_alias_save",
+        gearName: updatedProfile.displayName,
+        gearGuid: updatedProfile.guid,
+        parameterName: finalForm.displayName,
+        savedAliasesBefore: rawParamSavedAliases,
+        savedAliasesAfter: savedAliases,
+        persistedAliasesAfterReload: persistedAliases,
+        parameterMappingId: `${updatedProfile.displayName}_${finalForm.displayName}`,
+        saveVerified
+      });
+
+      if (!saveVerified) {
+        throw new Error("Alias save verification failed. Alias was not found after reload.");
+      }
+
+      if (savedProfile) {
+        setSelectedProfile(savedProfile);
+        setEditedProfile(JSON.parse(JSON.stringify(savedProfile)));
+      }
+
+      setImportFeedback(`Parameter aliases saved for ${finalForm.displayName}.`);
+      setTimeout(() => setImportFeedback(null), 4000);
+
+      if (onRefreshChain) {
+        onRefreshChain();
+      }
+
+      setIsEditingParameter(false);
+      setEditingParamIndex(null);
+      setParamForm(null);
+    } catch (err: any) {
+      console.error("Parameter alias save failed:", err);
+      setParamSaveError(err.message || String(err));
+    } finally {
+      setIsSavingParamEdit(false);
+    }
   };
 
   const handleAddNewParam = () => {
@@ -1801,8 +1928,11 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         }
 
         const normGuidForMatch = (g: string) => g ? g.toLowerCase().replace(/[^a-z0-9]/g, '').trim() : '';
+        const normExactDiscovered = normalizeGearIdentityName(dg.displayName || '');
+        const normLooseDiscovered = normalizeGearNameLoose(dg.displayName || '');
+
         const matchesAmericanLeadMKIII = (name: string): boolean => {
-          const norm = name.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+          const norm = normalizeGearIdentityName(name);
           const validNorms = ["mesamkiiilead", "mesamkiii", "mesamarkiiilead", "mesaboogiemarkiiilead", "markiiilead", "mkiiilead", "americanleadmkiii"];
           return validNorms.includes(norm) || norm.includes("mesamkiiilead") || norm.includes("mesamkiii");
         };
@@ -1814,79 +1944,149 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         let updatesExisting = false;
         let blocked = false;
         let blockReason = "";
+        let duplicateProfile: GearProfile | null = null;
+        let duplicateWasConvertedToSafeUpdate = false;
 
-        // Priority 1: Exact GUID Match
+        const typeMatchingProfiles = profiles.filter(p => {
+          const pTypeLower = (p.type || '').toLowerCase().trim();
+          if (pTypeLower !== dgTypeLower) return false;
+          if (p.id === "amp_darrell_100" && !isDarrellDiscovered) return false;
+          return true;
+        });
+
+        // Step 1: Exact GUID Match
         if (dgGuidNorm) {
-          const exactGuidMatch = profiles.find(p => {
-            const pTypeLower = (p.type || '').toLowerCase().trim();
-            if (pTypeLower !== dgTypeLower) return false;
-            if (!p.guid || !isGuidValid(p.guid)) return false;
-            return normGuidForMatch(p.guid) === dgGuidNorm;
-          });
-
+          const exactGuidMatch = typeMatchingProfiles.find(p => p.guid && isGuidValid(p.guid) && normGuidForMatch(p.guid) === dgGuidNorm);
           if (exactGuidMatch) {
             matched = exactGuidMatch;
             matchResultStatus = "EXACT_GUID_MATCH";
             updatesExisting = true;
-            matchReason = "Exact GUID Match";
+            matchReason = `Matched existing profile "${exactGuidMatch.displayName}" via exact GUID (${exactGuidMatch.guid})`;
             matchConfidence = "High (GUID verified)";
           }
         }
 
-        // Priority 2: Empty-GUID profile name/alias match
-        if (!matched && dg.displayName) {
-          const lName = dg.displayName.toLowerCase().trim();
-          const candidate = profiles.find(p => {
-            const pTypeLower = (p.type || '').toLowerCase().trim();
-            if (pTypeLower !== dgTypeLower) return false;
-
-            // Darrell 100 must not match unless discovered is Darrell 100
-            if (p.id === "amp_darrell_100" && !isDarrellDiscovered) return false;
-
-            // Check name / alias matches
-            if (p.displayName.toLowerCase().trim() === lName) return true;
-            if (p.aliases && p.aliases.some(a => a.toLowerCase().trim() === lName)) return true;
-
-            // Support the specific American Lead MKIII aliases
-            if (p.displayName.toLowerCase().trim() === "american lead mkiii") {
-              if (matchesAmericanLeadMKIII(dg.displayName)) return true;
-            }
-
+        // Step 2: Exact Normalized Name Match (Exact Normalized Identity or Compact)
+        if (!matched && normExactDiscovered) {
+          const exactNameMatch = typeMatchingProfiles.find(p => {
+            const pExact = normalizeGearIdentityName(p.displayName);
+            const pLoose = normalizeGearNameLoose(p.displayName);
+            if (pExact === normExactDiscovered || pLoose === normLooseDiscovered) return true;
+            if (p.displayName.toLowerCase().trim() === "american lead mkiii" && matchesAmericanLeadMKIII(dg.displayName)) return true;
             return false;
           });
 
-          if (candidate) {
-            const candHasGuid = candidate.guid && isGuidValid(candidate.guid);
-            const candGuidNorm = candidate.guid ? normGuidForMatch(candidate.guid) : '';
+          if (exactNameMatch) {
+            const pHasGuid = exactNameMatch.guid && isGuidValid(exactNameMatch.guid);
+            const pGuidNorm = pHasGuid ? normGuidForMatch(exactNameMatch.guid) : '';
 
-            if (candHasGuid && dgGuidNorm && candGuidNorm !== dgGuidNorm) {
-              // Priority 4 / 8: GUID Conflict Blocked
-              matched = candidate;
+            if (pHasGuid && dgGuidNorm && pGuidNorm !== dgGuidNorm) {
+              matched = exactNameMatch;
               matchResultStatus = "GUID_CONFLICT_BLOCKED";
-              updatesExisting = false; // Block updating!
+              updatesExisting = false;
               blocked = true;
               matchReason = "GUID conflict detected";
               matchConfidence = "blocked";
-              blockReason = "GUID conflict detected. The discovered gear does not match the selected profile. Updating is blocked to prevent overwriting a validated profile.";
-            } else if (!candHasGuid) {
-              // Priority 2: Empty GUID Profile Match
-              matched = candidate;
-              matchResultStatus = "EMPTY_GUID_PROFILE_MATCH";
-              updatesExisting = true;
-              matchReason = "alias / identity mapping";
-              matchConfidence = "safe empty-GUID profile match";
+              blockReason = `GUID conflict detected. Discovered gear GUID (${dg.modelGuid}) does not match existing profile GUID (${exactNameMatch.guid}) for "${exactNameMatch.displayName}". Overwriting is blocked.`;
             } else {
-              matched = candidate;
-              if (candidate.displayName.toLowerCase().trim() === lName) {
-                matchResultStatus = "ALIAS_MATCH";
-                matchReason = "Matched profile name directly";
-              } else {
-                matchResultStatus = "IDENTITY_HINT_MATCH";
-                matchReason = "Matched via known catalog identity hints or alias";
-              }
+              matched = exactNameMatch;
               updatesExisting = true;
-              matchConfidence = "medium";
+              matchResultStatus = !pHasGuid ? "EMPTY_GUID_PROFILE_MATCH" : "EXACT_NAME_MATCH";
+              matchReason = !pHasGuid
+                ? `Matched existing empty-GUID profile "${exactNameMatch.displayName}" via normalized identity ("${normExactDiscovered}")`
+                : `Matched existing profile "${exactNameMatch.displayName}" via exact normalized name`;
+              matchConfidence = !pHasGuid ? "safe empty-GUID profile match" : "High (Exact Name)";
             }
+          }
+        }
+
+        // Step 3: Exact Alias Match
+        if (!matched && normExactDiscovered) {
+          const aliasMatch = typeMatchingProfiles.find(p => {
+            if (!p.aliases || p.aliases.length === 0) return false;
+            return p.aliases.some(a => {
+              const normAExact = normalizeGearIdentityName(a);
+              const normALoose = normalizeGearNameLoose(a);
+              return normAExact === normExactDiscovered || normALoose === normLooseDiscovered;
+            });
+          });
+
+          if (aliasMatch) {
+            const pHasGuid = aliasMatch.guid && isGuidValid(aliasMatch.guid);
+            const pGuidNorm = pHasGuid ? normGuidForMatch(aliasMatch.guid) : '';
+
+            if (pHasGuid && dgGuidNorm && pGuidNorm !== dgGuidNorm) {
+              matched = aliasMatch;
+              matchResultStatus = "GUID_CONFLICT_BLOCKED";
+              updatesExisting = false;
+              blocked = true;
+              matchReason = "GUID conflict detected via alias match";
+              matchConfidence = "blocked";
+              blockReason = `GUID conflict detected. Discovered gear GUID (${dg.modelGuid}) does not match existing profile GUID (${aliasMatch.guid}) for "${aliasMatch.displayName}". Overwriting is blocked.`;
+            } else {
+              matched = aliasMatch;
+              updatesExisting = true;
+              matchResultStatus = !pHasGuid ? "EMPTY_GUID_PROFILE_MATCH" : "EXACT_ALIAS_MATCH";
+              matchReason = `Matched existing profile "${aliasMatch.displayName}" via alias ("${dg.displayName}")`;
+              matchConfidence = "Medium-High (Alias match)";
+            }
+          }
+        }
+
+        // Step 4 & Step 6: Loose Normalized Match (e.g. "American Tube Clean 2" vs "American Tube Clean2")
+        if (!matched && normLooseDiscovered) {
+          const looseMatch = typeMatchingProfiles.find(p => {
+            const pLoose = normalizeGearNameLoose(p.displayName);
+            if (pLoose && pLoose === normLooseDiscovered) return true;
+            if (p.aliases && p.aliases.some(a => normalizeGearNameLoose(a) === normLooseDiscovered)) return true;
+            return false;
+          });
+
+          if (looseMatch) {
+            const pHasGuid = looseMatch.guid && isGuidValid(looseMatch.guid);
+            const pGuidNorm = pHasGuid ? normGuidForMatch(looseMatch.guid) : '';
+
+            if (pHasGuid && dgGuidNorm && pGuidNorm !== dgGuidNorm) {
+              matched = looseMatch;
+              matchResultStatus = "GUID_CONFLICT_BLOCKED";
+              updatesExisting = false;
+              blocked = true;
+              matchReason = "GUID conflict detected via loose normalized match";
+              matchConfidence = "blocked";
+              blockReason = `GUID conflict detected. Discovered gear GUID (${dg.modelGuid}) does not match existing profile GUID (${looseMatch.guid}) for "${looseMatch.displayName}". Overwriting is blocked.`;
+            } else {
+              matched = looseMatch;
+              updatesExisting = true;
+              matchResultStatus = !pHasGuid ? "EMPTY_GUID_PROFILE_MATCH" : "LOOSE_NORMALIZED_MATCH";
+              matchReason = `Matched existing empty-GUID profile "${looseMatch.displayName}" via loose normalized name ("${normLooseDiscovered}")`;
+              matchConfidence = "safe empty-GUID profile match";
+            }
+          }
+        }
+
+        // Step 5: Duplicate Detection Guard & Auto-Conversion
+        const proposedName = (dg as any).proposedDisplayName || dg.displayName || '';
+        const normProposedExact = normalizeGearIdentityName(proposedName);
+        const normProposedLoose = normalizeGearNameLoose(proposedName);
+
+        if (!matched && (normProposedExact || normProposedLoose)) {
+          const existingDup = typeMatchingProfiles.find(p => {
+            const pExact = normalizeGearIdentityName(p.displayName);
+            const pLoose = normalizeGearNameLoose(p.displayName);
+            return (pExact && pExact === normProposedExact) || (pLoose && pLoose === normProposedLoose);
+          });
+
+          if (existingDup) {
+            duplicateProfile = existingDup;
+            const dupHasGuid = existingDup.guid && isGuidValid(existingDup.guid);
+
+            // Convert duplicate to SAFE UPDATE of that existing profile instead of forcing duplicate profile creation or blocking
+            matched = existingDup;
+            updatesExisting = true;
+            duplicateWasConvertedToSafeUpdate = true;
+            matchResultStatus = !dupHasGuid ? "EMPTY_GUID_PROFILE_MATCH" : "DUPLICATE_CONVERTED_TO_SAFE_UPDATE";
+            matchReason = `Discovered name matches existing profile "${existingDup.displayName}". Converted duplicate creation into safe profile update.`;
+            matchConfidence = "Safe Update (Existing profile matched)";
           }
         }
 
@@ -1959,6 +2159,8 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
           matchResultStatus: matchResultStatus,
           matchReason: matchReason,
           matchConfidence: matchConfidence,
+          duplicateProfile: duplicateProfile || null,
+          duplicateWasConvertedToSafeUpdate: duplicateWasConvertedToSafeUpdate || false,
           statusLabel: blocked 
             ? `Blocked (GUID Conflict)` 
             : matched 
@@ -2372,25 +2574,39 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       };
 
       // 2. Apply and save
+      const oldProfileId = dg.matchedProfile?.id;
+      const targetGuid = dg.modelGuid || dg.matchedProfile?.guid || '';
+      let oldSyntheticDeleted = false;
+      let migrationPerformed = false;
+
       await gearProfileService.saveGearProfile(mergedProfile);
 
-      // 3. Post-Apply Verification Check
-      const updatedProfiles = await gearProfileService.getGearProfiles();
-      const expectedNewId = dg.modelGuid 
-        ? `gear-${dg.modelGuid.toLowerCase().replace(/-/g, '').trim()}` 
-        : profileId;
+      // Delete old synthetic document if profile ID migrated from synthetic ID to GUID doc
+      if (oldProfileId && oldProfileId !== targetGuid && oldProfileId !== profileId && oldProfileId.includes('gear-')) {
+        try {
+          await at5DatabaseService.deleteGearItem(oldProfileId);
+          oldSyntheticDeleted = true;
+          migrationPerformed = true;
+        } catch (e) {
+          console.warn(`Could not delete old synthetic profile doc ${oldProfileId}:`, e);
+        }
+      }
+
+      // 3. Post-Apply Verification Check (force refresh)
+      const updatedProfiles = await gearProfileService.getGearProfiles(true);
+      const expectedNewId = targetGuid || profileId;
 
       const verifiedProfile = updatedProfiles.find(p => 
         p.id === profileId || 
         p.id === expectedNewId || 
-        (dg.modelGuid && p.guid && p.guid.toLowerCase().replace(/-/g, '').trim() === dg.modelGuid.toLowerCase().replace(/-/g, '').trim())
+        (targetGuid && p.guid && p.guid.toLowerCase().replace(/-/g, '').trim() === targetGuid.toLowerCase().replace(/-/g, '').trim())
       );
 
       if (!verifiedProfile) {
         throw new Error(`Post-Apply Verification Failed: Profile for "${displayName}" (${profileId}) does not exist in the catalog after saving.`);
       }
-      if (!verifiedProfile.guid || verifiedProfile.guid.toLowerCase().replace(/-/g, '').trim() !== (dg.modelGuid || '').toLowerCase().replace(/-/g, '').trim()) {
-        throw new Error(`Profile update failed because GUID was missing or mismatched. Expected "${dg.modelGuid}", got "${verifiedProfile.guid}"`);
+      if (targetGuid && (!verifiedProfile.guid || verifiedProfile.guid.toLowerCase().replace(/-/g, '').trim() !== targetGuid.toLowerCase().replace(/-/g, '').trim())) {
+        throw new Error(`Profile update failed because GUID was missing or mismatched. Expected "${targetGuid}", got "${verifiedProfile.guid}"`);
       }
       if (!verifiedProfile.parameters || verifiedProfile.parameters.length === 0) {
         throw new Error(`Post-Apply Verification Failed: Profile was saved but has no parameters configured.`);
@@ -2408,13 +2624,31 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         throw new Error(`Post-Apply Verification Failed: Profile was saved but is not searchable in catalog.`);
       }
 
-      // 4. Debug output format for Point 7
+      // 4. Debug output format
       const debugOutput = {
         action: "apply_at5p_discovery",
         discovered_name: dg.displayName,
-        normalized_discovered_name: dg.displayName.toLowerCase().replace(/[^a-z0-9]/g, "").trim(),
+        discovered_name_normalized_exact: normalizeGearIdentityName(dg.displayName),
+        discovered_name_normalized_compact: normalizeGearNameLoose(dg.displayName),
+        proposed_display_name: dg.proposedDisplayName || displayName,
+        proposed_name_normalized_compact: normalizeGearNameLoose(dg.proposedDisplayName || displayName),
         matched_profile_id: verifiedProfile.id,
         matched_profile_name: displayName,
+        matched_profile_guid: verifiedProfile.guid,
+        matched_profile_validation_status: valStatusBefore,
+        match_result_status: dg.matchResultStatus,
+        match_reason: dg.matchReason,
+        match_confidence: dg.matchConfidence,
+        duplicate_profile_found: !!dg.duplicateProfile,
+        duplicate_profile_id: dg.duplicateProfile?.id || null,
+        duplicate_profile_name: dg.duplicateProfile?.displayName || null,
+        duplicate_profile_guid: dg.duplicateProfile?.guid || null,
+        duplicate_was_converted_to_safe_update: dg.duplicateWasConvertedToSafeUpdate || false,
+        create_new_blocked_reason: dg.blockReason || null,
+        migration_performed: migrationPerformed,
+        old_profile_id: oldProfileId || null,
+        new_profile_id: verifiedProfile.id,
+        old_synthetic_profile_deleted: oldSyntheticDeleted,
         fields_updated: fieldsUpdated,
         validation_status_before: valStatusBefore,
         validation_status_after: "at5p_validated",
@@ -2984,6 +3218,59 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
           )}
         </div>
       </div>
+
+      {/* SIGNAL CHAIN REVIEW CONTEXT BANNER */}
+      {initialSelectedGuid && (
+        <div className="bg-gradient-to-r from-purple-950/40 via-gear-card to-purple-950/30 border border-purple-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 font-bold">
+              <Activity className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-purple-300 font-bold">
+                  Signal Chain Review Mode
+                </span>
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
+                  Active Link
+                </span>
+              </div>
+              <p className="text-sm font-bold text-white font-display mt-0.5">
+                {selectedProfile ? selectedProfile.displayName : initialSelectedGuid}
+                {selectedProfile?.guid && (
+                  <span className="text-xs text-gray-400 font-mono font-normal ml-2">
+                    [{selectedProfile.guid}]
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {onRefreshChain && (
+              <button
+                type="button"
+                onClick={onRefreshChain}
+                className="px-3.5 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold text-xs hover:bg-cyan-500/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                title="Rebuild signal chain export preview with updated parameter translation rules"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Refresh Signal Chain
+              </button>
+            )}
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-xl bg-gear-accent text-black font-bold text-xs hover:bg-yellow-400 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-gear-accent/20"
+              >
+                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                Return to Signal Chain
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {importFeedback && (
         <motion.div
@@ -4422,16 +4709,33 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
             <div className="bg-[#121215] border border-white/10 rounded-2xl p-6 space-y-6">
               <div className="flex justify-between items-center border-b border-white/5 pb-4">
                 <span className="text-sm font-bold font-mono text-gear-accent uppercase">Preset File: {importedPresetName}</span>
-                <button
-                  onClick={() => {
-                    setImportedPresetName('');
-                    setDiscoveredGears([]);
-                    setDiscoveredProtocols([]);
-                  }}
-                  className="p-1 hover:bg-white/10 rounded-md transition-colors"
-                >
-                  <X className="w-4 h-4 text-gray-500 hover:text-white" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const refreshed = await gearProfileService.getGearProfiles(true);
+                        setProfiles(refreshed);
+                      } catch (e) {
+                        console.error("Failed to refresh gear profiles cache:", e);
+                      }
+                    }}
+                    className="px-3 py-1 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-mono font-bold uppercase rounded-lg border border-white/10 transition-all flex items-center gap-1.5"
+                    title="Force refresh catalog cache and reload gear profiles"
+                  >
+                    <RefreshCw className="w-3 h-3 text-gear-accent" />
+                    Refresh Discovery Data
+                  </button>
+                  <button
+                    onClick={() => {
+                      setImportedPresetName('');
+                      setDiscoveredGears([]);
+                      setDiscoveredProtocols([]);
+                    }}
+                    className="p-1 hover:bg-white/10 rounded-md transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-500 hover:text-white" />
+                  </button>
+                </div>
               </div>
 
               {/* Detected Gear list */}
@@ -7243,28 +7547,212 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                   </div>
                 </div>
 
+                {/* 7. TEST PARAMETER TRANSLATION / XML PREVIEW */}
+                <div className="border border-gear-accent/30 p-5 rounded-2xl bg-gradient-to-br from-black/60 to-gear-accent/5 space-y-4 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
+                    <div>
+                      <span className="text-[11px] font-mono text-gear-accent uppercase font-bold tracking-wider flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        7. Test Parameter Translation &amp; XML Preview
+                      </span>
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        Test how input setting values convert into AmpliTube 5 XML attributes in real-time using current unsaved rules.
+                      </p>
+                    </div>
+                    {testTranslationResult && testTranslationResult.xmlPreview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(testTranslationResult.xmlPreview);
+                          setCopiedTestXml(true);
+                          setTimeout(() => setCopiedTestXml(false), 2000);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono bg-gear-accent/15 hover:bg-gear-accent/25 text-gear-accent border border-gear-accent/30 rounded-lg transition-all cursor-pointer shrink-0"
+                      >
+                        {copiedTestXml ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-emerald-400 font-bold">Copied XML!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy XML</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Input control row */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-[10px] font-mono text-gray-400 uppercase flex items-center justify-between">
+                        <span>Test Input Value (User Setting / Tone Request)</span>
+                        <span className="text-[9px] text-gray-500 font-normal">e.g. 7.5, -6 dB, Off, 440 Hz</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-gear-accent/40"
+                        value={testInputValue}
+                        onChange={(e) => setTestInputValue(e.target.value)}
+                        placeholder="Enter test value (e.g. 7.5, -6 dB, On, Off, 2.5)..."
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      {paramForm.exampleInput && (
+                        <button
+                          type="button"
+                          onClick={() => setTestInputValue(paramForm.exampleInput!)}
+                          className="px-2.5 py-2 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-mono rounded-xl border border-white/10 transition-all truncate"
+                          title="Use configured example input"
+                        >
+                          Use Example ({paramForm.exampleInput})
+                        </button>
+                      )}
+                      {paramForm.defaultDisplayValue !== undefined && (
+                        <button
+                          type="button"
+                          onClick={() => setTestInputValue(String(paramForm.defaultDisplayValue))}
+                          className="px-2.5 py-2 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-mono rounded-xl border border-white/10 transition-all truncate"
+                          title="Use default display value"
+                        >
+                          Use Default ({String(paramForm.defaultDisplayValue)})
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Output Panel */}
+                  {testTranslationResult ? (
+                    <div className="space-y-3 pt-2">
+                      {/* Live XML Code Block */}
+                      <div className="bg-black/80 border border-gear-accent/40 rounded-xl p-3 space-y-1">
+                        <div className="flex justify-between items-center text-[9px] font-mono text-gray-500 uppercase">
+                          <span>Generated AmpliTube 5 XML Attribute</span>
+                          <span className="text-cyan-400 font-semibold">{testTranslationResult.conversionMode} mode</span>
+                        </div>
+                        <div className="text-sm font-mono text-gear-accent font-bold tracking-wide select-all">
+                          {testTranslationResult.xmlPreview}
+                        </div>
+                      </div>
+
+                      {/* Translation Details Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 text-[10.5px] font-mono bg-black/30 p-3 rounded-xl border border-white/5">
+                        <div>
+                          <span className="text-[8.5px] text-gray-500 uppercase block">Raw Input Value</span>
+                          <span className="text-white font-bold">{String(testTranslationResult.inputValue)}</span>
+                        </div>
+                        <div>
+                          <span className="text-[8.5px] text-gray-500 uppercase block">Parsed Numeric</span>
+                          <span className="text-cyan-300 font-bold">
+                            {testTranslationResult.parsedNumericValue !== undefined ? testTranslationResult.parsedNumericValue : 'N/A'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[8.5px] text-gray-500 uppercase block">Export Float / Raw</span>
+                          <span className="text-emerald-400 font-bold">{String(testTranslationResult.resolvedExportValue)}</span>
+                        </div>
+                        <div>
+                          <span className="text-[8.5px] text-gray-500 uppercase block">Reverse GUI Value</span>
+                          <span className="text-amber-300 font-bold">
+                            {testTranslationResult.reverseConvertedDisplayValue || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Conversion Metadata & Ranges */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-gray-400 bg-white/[0.02] p-2.5 rounded-lg border border-white/5">
+                        <div>
+                          Visual Range: <span className="text-gray-200">{testTranslationResult.visualRange.min} – {testTranslationResult.visualRange.max} {testTranslationResult.visualRange.unit || ''}</span>
+                        </div>
+                        <div>
+                          Export Range: <span className="text-gray-200">{testTranslationResult.exportRange.min} – {testTranslationResult.exportRange.max}</span>
+                        </div>
+                        {testTranslationResult.formulaDescription && (
+                          <div className="truncate max-w-xs" title={testTranslationResult.formulaDescription}>
+                            Formula: <span className="text-gray-200">{testTranslationResult.formulaDescription}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Warning indicators */}
+                      {testTranslationResult.isClamped && (
+                        <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-2 text-[10px] font-mono text-amber-300">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>Notice: Value was clamped to fit valid export range [{testTranslationResult.exportRange.min}, {testTranslationResult.exportRange.max}].</span>
+                        </div>
+                      )}
+
+                      {testTranslationResult.warnings && testTranslationResult.warnings.length > 0 && (
+                        <div className="p-2.5 bg-red-500/10 border border-red-500/30 rounded-xl space-y-1 text-[10px] font-mono text-red-300">
+                          <div className="font-bold flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                            <span>Translation Warnings:</span>
+                          </div>
+                          <ul className="list-disc list-inside pl-1 space-y-0.5">
+                            {testTranslationResult.warnings.map((w, idx) => (
+                              <li key={idx}>{w}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-black/20 border border-white/5 rounded-xl text-center text-[10.5px] font-mono text-gray-500">
+                      Enter a test input value above to preview the XML attribute translation in real-time.
+                    </div>
+                  )}
+                </div>
+
               </div>
 
               {/* ACTION FOOTER */}
-              <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                <div className="text-[10px] font-mono text-gray-500">
-                  Parameter index: #{editingParamIndex}
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingParameter(false)}
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-gray-300 font-mono uppercase rounded-xl transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveParamEdit}
-                    className="px-5 py-2 bg-gear-accent hover:bg-gear-accent/80 text-black text-xs font-mono font-bold uppercase rounded-xl transition-all shadow-lg"
-                  >
-                    Save Changes
-                  </button>
+              <div className="flex flex-col gap-3 pt-4 border-t border-white/5">
+                {paramSaveError && (
+                  <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-300 font-mono">
+                    {paramSaveError}
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-[10px] font-mono text-gray-500">
+                      Parameter index: #{editingParamIndex}
+                    </div>
+                    <div className="text-[10px] font-mono text-gear-accent/80">
+                      Saves this parameter mapping and aliases directly to Gear Manager.
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      disabled={isSavingParamEdit}
+                      onClick={() => {
+                        if (!isSavingParamEdit) {
+                          setIsEditingParameter(false);
+                        }
+                      }}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-50 border border-white/10 text-xs text-gray-300 font-mono uppercase rounded-xl transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSavingParamEdit}
+                      onClick={handleSaveParamEdit}
+                      className="px-5 py-2 bg-gear-accent hover:bg-gear-accent/80 disabled:opacity-50 text-black text-xs font-mono font-bold uppercase rounded-xl transition-all shadow-lg flex items-center gap-2"
+                    >
+                      {isSavingParamEdit ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                          <span>Persisting...</span>
+                        </>
+                      ) : (
+                        <span>Save Parameter &amp; Persist</span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

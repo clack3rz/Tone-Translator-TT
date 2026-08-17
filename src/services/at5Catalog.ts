@@ -237,6 +237,27 @@ export function findAT5Gear(
   return match;
 }
 
+export function normalizeGearIdentityName(value: string | undefined | null): string {
+  if (!value) return '';
+  return String(value)
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
+export function normalizeGearNameLoose(value: string | undefined | null): string {
+  if (!value) return '';
+  return String(value)
+    .toLowerCase()
+    .replace(/['’"`]/g, '')
+    .replace(/&/g, 'and')
+    .replace(/([^0-9\s])([0-9]+)/g, '$1 $2')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
 export function findBestCatalogMatchAcrossGroups(query: string | undefined): AT5CatalogItem | undefined {
   if (!query) return undefined;
   const catalog = getAt5Catalog() || [];

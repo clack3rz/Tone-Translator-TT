@@ -17,6 +17,7 @@ import {
   generateAliasesForXmlParam,
   inferParameterKind,
   parseSettingValue,
+  convertParameterValueForExport,
 } from "./at5ParameterManifest";
 
 import { at5DatabaseService } from "./at5DatabaseService";
@@ -2385,16 +2386,23 @@ const makeDebugItem = (
           }
           const expVal = parsedExported[def.xmlName];
           if (expVal !== undefined) {
-            const resolvedIntended = resolveParameterValue(normVal, def.min, def.max, def.transform, def.visualMin, def.visualMax);
-            
-            const nv = typeof resolvedIntended === "number" ? resolvedIntended : parseFloat(String(resolvedIntended));
+            const convRes = convertParameterValueForExport({
+              inputValue: normVal,
+              parameterDef: def,
+              conversionMode: def.transform,
+              displayMin: def.visualMin,
+              displayMax: def.visualMax,
+              exportMin: def.min,
+              exportMax: def.max,
+              displayUnit: def.unit || def.displayUnit,
+              exportDecimalPlaces: def.exportDecimalPlaces,
+            });
+
+            const resolvedIntended = convRes.formattedExportValue;
+            const nv = typeof convRes.finalExportValue === "number" ? convRes.finalExportValue : parseFloat(String(convRes.finalExportValue));
             const ev = typeof expVal === "number" ? expVal : parseFloat(String(expVal));
 
-            // Calculate clamp and type metadata diagnostics
-            const pre_clamp_val = parseSettingValue(normVal, def.transform, def.min, def.max, def.visualMin, def.visualMax);
-            const clamp_app = (typeof pre_clamp_val === "number" && typeof nv === "number")
-              ? (Math.abs(pre_clamp_val - nv) > 0.001)
-              : false;
+            const clamp_app = convRes.clampApplied;
 
             const isKnownContinuousAmpKnob = def.kind === "continuous_knob" || 
               (def.max > 1 && inferParameterKind(def.friendlyName, def.xmlName) === "continuous_knob") ||
@@ -2412,7 +2420,7 @@ const makeDebugItem = (
             } else if (isAccidentalClampingTo1) {
               match = false; // Never SUCCESS if clamped down from a valid 0-10 request to 1
             } else if (!isNaN(nv) && !isNaN(ev)) {
-              match = Math.abs(nv - ev) <= 0.15;
+              match = Math.abs(nv - ev) <= 0.05 || String(resolvedIntended) === String(expVal);
             } else {
               match = String(resolvedIntended).trim().toLowerCase() === String(expVal).trim().toLowerCase();
             }
@@ -2428,7 +2436,7 @@ const makeDebugItem = (
             };
 
             let conversion_note: string | undefined;
-            let display_value = def.unit ? appendUnitIdNotPresent(normVal, def.unit) : String(normVal);
+            let display_value = convRes.displayUnit ? appendUnitIdNotPresent(convRes.inputDisplayValue, convRes.displayUnit) : String(convRes.inputDisplayValue);
 
             const normalizedGearName = gear.name.toLowerCase();
             if (isNearestBandMapping) {
@@ -2458,17 +2466,7 @@ const makeDebugItem = (
               }
             }
 
-            const reverse_converted_display_value = reverseConvertExportValueToDisplayValue(
-              def.xmlName,
-              ev,
-              def.transform,
-              def.min,
-              def.max,
-              def.visualMin,
-              def.visualMax,
-              def.unit,
-              def
-            );
+            const reverse_converted_display_value = convRes.reverseDisplayValue;
 
             let mapStatus = isNearestBandMapping 
               ? (match ? "SUCCESS_NEAREST_BAND" : "FAIL") 
@@ -2523,17 +2521,27 @@ const makeDebugItem = (
             let conversion_warning: string | undefined = undefined;
             if (isAccidentalClampingTo1) {
               conversion_warning = `Input value ${normVal} was clamped to ${resolvedIntended} because exportMax is 1. This appears invalid for a continuous amp knob.`;
+            } else if (convRes.warnings.length > 0) {
+              conversion_warning = convRes.warnings.join("; ");
             }
 
             detailsList.push({
               parameter: normKey,
               normalized_parameter: isNearestBandMapping ? nearestBandMappedXmlName : undefined,
               input_value: normVal,
+              input_display_value: convRes.inputDisplayValue,
               display_value,
+              display_unit: convRes.displayUnit,
+              display_min: convRes.displayMin,
+              display_max: convRes.displayMax,
+              conversion_mode: convRes.conversionMode,
+              display_clamp_applied: convRes.displayClampApplied,
+              clamped_display_value: convRes.clampedDisplayValue,
+              converted_raw_value: convRes.convertedRawValue,
               exported_internal_value: String(expVal),
               mapping_status: mapStatus,
               conversion_note,
-              expected_export_value: typeof resolvedIntended === "number" ? Number(resolvedIntended.toFixed(6)) : String(resolvedIntended),
+              expected_export_value: convRes.formattedExportValue,
               actual_export_value: String(ev),
               reverse_converted_display_value,
               reason: parameter_reason,
@@ -2542,14 +2550,14 @@ const makeDebugItem = (
               matched_export_parameter_name: def.xmlName,
               match_source,
               exported_value: expVal,
-              conversion_mode: def.transform || "direct",
-              visual_min: def.visualMin ?? 0,
-              visual_max: def.visualMax ?? 10,
-              export_min: def.min,
-              export_max: def.max,
-              pre_clamp_value: typeof pre_clamp_val === "number" ? Number(pre_clamp_val.toFixed(6)) : pre_clamp_val,
+              visual_min: convRes.displayMin,
+              visual_max: convRes.displayMax,
+              export_min: convRes.exportMin,
+              export_max: convRes.exportMax,
+              raw_clamp_applied: convRes.rawClampApplied,
+              pre_clamp_value: convRes.inputDisplayValue,
               post_clamp_value: typeof nv === "number" ? Number(nv.toFixed(6)) : nv,
-              clamp_applied: clamp_app,
+              clamp_applied: convRes.clampApplied,
               final_export_value: typeof nv === "number" ? Number(nv.toFixed(6)) : nv,
               range_source: "Gear Manager / DB mapping",
               range_confidence: isAccidentalClampingTo1 ? "low / conflicting" : "high",
@@ -2597,15 +2605,15 @@ const makeDebugItem = (
             input_value: normVal,
             display_value: String(normVal),
             exported_internal_value: "DROPPED",
-            mapping_status: "DROPPED",
-            conversion_note: `Parameter '${normKey}' is dropped / not supported by the physical gear definition.`,
+            mapping_status: "PARAMETER_ALIAS_RESOLUTION_FAILED",
+            conversion_note: `PARAMETER_ALIAS_RESOLUTION_FAILED: Parameter '${normKey}' is dropped / not supported by the physical gear definition.`,
             input_parameter_name: normKey,
             matched_profile_parameter: undefined,
             matched_export_parameter_name: undefined,
             match_source: "unmatched",
             exported_value: "DROPPED",
             verification_skipped: true,
-            verification_skip_reason: "Parameter is unmatched/dropped; no XML attribute should be expected.",
+            verification_skip_reason: "PARAMETER_ALIAS_RESOLUTION_FAILED: Parameter is unmatched/dropped; no XML attribute should be expected.",
             requires_mapping_review: true,
           });
 

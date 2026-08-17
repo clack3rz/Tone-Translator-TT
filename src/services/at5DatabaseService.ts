@@ -78,15 +78,44 @@ function sanitize(data: any): any {
   return result;
 }
 
+let catalogueCache: { data: AT5CatalogItem[]; timestamp: number } | null = null;
+let parameterMappingsCache: { data: ParameterMapping[]; timestamp: number } | null = null;
+let discoveryCandidatesCache: { data: IKMPAKCandidate[]; timestamp: number } | null = null;
+const CACHE_TTL_MS = 60000;
+
 export const at5DatabaseService = {
+  clearCache() {
+    catalogueCache = null;
+    parameterMappingsCache = null;
+    discoveryCandidatesCache = null;
+  },
+
   /**
    * Main Catalogue
    */
-  async getCatalogue(): Promise<AT5CatalogItem[]> {
+  async getCatalogue(forceRefresh = false): Promise<AT5CatalogItem[]> {
+    const t0 = performance.now();
+    if (!forceRefresh && catalogueCache && (Date.now() - catalogueCache.timestamp < CACHE_TTL_MS)) {
+      console.log(JSON.stringify({
+        operation: 'getCatalogue',
+        durationMs: Math.round(performance.now() - t0),
+        docCount: catalogueCache.data.length,
+        source: 'cache'
+      }));
+      return catalogueCache.data;
+    }
     const path = 'catalogue';
     try {
       const snapshot = await getDocs(collection(db, path));
-      return snapshot.docs.map(doc => doc.data() as AT5CatalogItem);
+      const data = snapshot.docs.map(doc => doc.data() as AT5CatalogItem);
+      catalogueCache = { data, timestamp: Date.now() };
+      console.log(JSON.stringify({
+        operation: 'getCatalogue',
+        durationMs: Math.round(performance.now() - t0),
+        docCount: data.length,
+        source: 'firestore'
+      }));
+      return data;
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, path);
       return [];
@@ -94,6 +123,7 @@ export const at5DatabaseService = {
   },
 
   async saveGearItem(gear: AT5CatalogItem) {
+    catalogueCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to save gear");
     if (!gear.guid || gear.guid.length < 5) throw new Error(`Invalid GUID: ${gear.guid}`);
     
@@ -142,6 +172,7 @@ export const at5DatabaseService = {
   },
 
   async deleteGearItem(guid: string) {
+    catalogueCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to delete gear");
     const path = `catalogue/${guid}`;
     try {
@@ -207,17 +238,35 @@ export const at5DatabaseService = {
   /**
    * Gear Discovery Parameter Mappings
    */
-  async getParameterMappings(): Promise<ParameterMapping[]> {
+  async getParameterMappings(forceRefresh = false): Promise<ParameterMapping[]> {
+    const t0 = performance.now();
+    if (!forceRefresh && parameterMappingsCache && (Date.now() - parameterMappingsCache.timestamp < CACHE_TTL_MS)) {
+      console.log(JSON.stringify({
+        operation: 'getParameterMappings',
+        durationMs: Math.round(performance.now() - t0),
+        parameterMappingCount: parameterMappingsCache.data.length,
+        source: 'cache'
+      }));
+      return parameterMappingsCache.data;
+    }
     const path = 'parameter_mappings';
     try {
       const snapshot = await getDocs(collection(db, path));
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
+      const data = snapshot.docs.map(doc => {
+        const d = doc.data();
         return {
-          ...data,
+          ...d,
           id: doc.id
         } as ParameterMapping;
       });
+      parameterMappingsCache = { data, timestamp: Date.now() };
+      console.log(JSON.stringify({
+        operation: 'getParameterMappings',
+        durationMs: Math.round(performance.now() - t0),
+        parameterMappingCount: data.length,
+        source: 'firestore'
+      }));
+      return data;
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, path);
       return [];
@@ -225,6 +274,7 @@ export const at5DatabaseService = {
   },
 
   async saveParameterMapping(mapping: ParameterMapping) {
+    parameterMappingsCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to save parameter mappings");
     
     // Generate a unique doc id: gearName_parameter (clean the string to be valid ID)
@@ -246,6 +296,7 @@ export const at5DatabaseService = {
   },
 
   async deleteParameterMapping(id: string) {
+    parameterMappingsCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to delete parameter mappings");
     const path = `parameter_mappings/${id}`;
     try {
@@ -313,17 +364,35 @@ export const at5DatabaseService = {
   /**
    * IKMPAK Gear Discovery Accelerator Candidates (Staging)
    */
-  async getDiscoveryCandidates(): Promise<IKMPAKCandidate[]> {
+  async getDiscoveryCandidates(forceRefresh = false): Promise<IKMPAKCandidate[]> {
+    const t0 = performance.now();
+    if (!forceRefresh && discoveryCandidatesCache && (Date.now() - discoveryCandidatesCache.timestamp < CACHE_TTL_MS)) {
+      console.log(JSON.stringify({
+        operation: 'getDiscoveryCandidates',
+        durationMs: Math.round(performance.now() - t0),
+        docCount: discoveryCandidatesCache.data.length,
+        source: 'cache'
+      }));
+      return discoveryCandidatesCache.data;
+    }
     const path = 'gear_discovery_candidates';
     try {
       const snapshot = await getDocs(collection(db, path));
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
+      const data = snapshot.docs.map(doc => {
+        const d = doc.data();
         return {
-          ...data,
+          ...d,
           id: doc.id
         } as IKMPAKCandidate;
       });
+      discoveryCandidatesCache = { data, timestamp: Date.now() };
+      console.log(JSON.stringify({
+        operation: 'getDiscoveryCandidates',
+        durationMs: Math.round(performance.now() - t0),
+        docCount: data.length,
+        source: 'firestore'
+      }));
+      return data;
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, path);
       return [];
@@ -331,6 +400,7 @@ export const at5DatabaseService = {
   },
 
   async saveDiscoveryCandidate(candidate: IKMPAKCandidate) {
+    discoveryCandidatesCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to save discovery candidate");
     const docId = candidate.id || candidate.guid || `${candidate.candidateGearType}-${candidate.name}`.replace(/[^a-zA-Z0-9_\-]/g, '_');
     const path = `gear_discovery_candidates/${docId}`;
@@ -348,6 +418,7 @@ export const at5DatabaseService = {
   },
 
   async saveDiscoveryCandidates(candidates: IKMPAKCandidate[]) {
+    discoveryCandidatesCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to save candidates");
     const batchSize = 400;
     try {
@@ -372,6 +443,7 @@ export const at5DatabaseService = {
   },
 
   async deleteDiscoveryCandidate(id: string) {
+    discoveryCandidatesCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to delete discovery candidate");
     const path = `gear_discovery_candidates/${id}`;
     try {
@@ -382,6 +454,7 @@ export const at5DatabaseService = {
   },
 
   async clearAllDiscoveryCandidates() {
+    discoveryCandidatesCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to clear candidates");
     const path = 'gear_discovery_candidates';
     try {

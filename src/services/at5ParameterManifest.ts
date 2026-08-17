@@ -573,10 +573,16 @@ export function getParameterDefinitions(
       existing.visualMin = dbM.visualMin;
       existing.visualMax = dbM.visualMax;
 
-      if (dbM.aliases && dbM.aliases.length > 0) {
-        existing.savedAliases = Array.from(new Set([...(existing.savedAliases || []), ...dbM.aliases]));
-        existing.rawMappingAliases = Array.from(new Set([...(existing.rawMappingAliases || []), ...dbM.aliases]));
-        existing.aliases = Array.from(new Set([...(existing.aliases || []), ...dbM.aliases]));
+      const dbCombinedAliases = Array.from(new Set([
+        ...(dbM.aliases || []),
+        ...(dbM.savedAliases || []),
+        ...(dbM.effectiveAliases || [])
+      ].filter(Boolean)));
+
+      if (dbCombinedAliases.length > 0) {
+        existing.savedAliases = Array.from(new Set([...(existing.savedAliases || []), ...dbCombinedAliases]));
+        existing.rawMappingAliases = Array.from(new Set([...(existing.rawMappingAliases || []), ...dbCombinedAliases]));
+        existing.aliases = Array.from(new Set([...(existing.aliases || []), ...dbCombinedAliases]));
         existing.effectiveAliases = Array.from(new Set([
           ...(existing.effectiveAliases || []),
           ...(existing.aliases || []),
@@ -630,7 +636,11 @@ export function getParameterDefinitions(
         finalMax = 10;
       }
       
-      const dbAliases = dbM.aliases || [];
+      const dbCombinedAliases = Array.from(new Set([
+        ...(dbM.aliases || []),
+        ...(dbM.savedAliases || []),
+        ...(dbM.effectiveAliases || [])
+      ].filter(Boolean)));
       const newKey = (dbM.exportParameterName || dbM.parameter).toLowerCase().trim();
 
       paramsMap.set(newKey, {
@@ -639,11 +649,11 @@ export function getParameterDefinitions(
         min: finalMin,
         max: finalMax,
         transform: dbM.conversion as any,
-        aliases: [...dbAliases],
-        savedAliases: [...dbAliases],
-        rawMappingAliases: [...dbAliases],
+        aliases: dbCombinedAliases,
+        savedAliases: dbCombinedAliases,
+        rawMappingAliases: dbCombinedAliases,
         effectiveAliases: Array.from(new Set([
-          ...dbAliases,
+          ...dbCombinedAliases,
           dbM.parameter,
           dbM.exportParameterName
         ].filter(Boolean))),
@@ -851,7 +861,32 @@ export const parseSettingValue = (
   }
   if (!Number.isFinite(n)) return undefined;
 
-  if (transform === "dbThresholdToLinear" || transform === "db_to_linear") {
+  if (transform === "db_to_linear") {
+    // Determine effective display dB range
+    let dMin = def?.displayMin ?? def?.visual?.min ?? visualMin;
+    let dMax = def?.displayMax ?? def?.visual?.max ?? visualMax;
+    const expMin = def?.exportMin ?? def?.export?.min ?? min ?? 0.177828;
+    const expMax = def?.exportMax ?? def?.export?.max ?? max ?? 5.62341;
+
+    // Check if visual range is corrupted (equals export range) or missing
+    if (dMin === undefined || dMax === undefined || (dMin === expMin && dMax === expMax) || (dMin >= 0 && dMax > 1 && dMax <= 10)) {
+      if (def?.displayMin !== undefined && def?.displayMax !== undefined && (def.displayMin !== expMin || def.displayMax !== expMax)) {
+        dMin = def.displayMin;
+        dMax = def.displayMax;
+      } else {
+        dMin = -15;
+        dMax = 15;
+      }
+    }
+
+    const actualDMin = Math.min(dMin, dMax);
+    const actualDMax = Math.max(dMin, dMax);
+
+    // 1. Clamp display dB value against display range
+    const clampedDb = Math.min(actualDMax, Math.max(actualDMin, n));
+    // 2. Convert display dB to linear raw value
+    n = Math.pow(10, clampedDb / 20);
+  } else if (transform === "dbThresholdToLinear") {
     const db = Math.min(0, Math.max(-100, n));
     n = Math.pow(10, db / 20);
   }
@@ -912,6 +947,292 @@ export const parseSettingValue = (
   return n;
 };
 
+export interface ConvertParameterOptions {
+  inputValue: unknown;
+  parameterDef?: any;
+  conversionMode?: string;
+  displayMin?: number;
+  displayMax?: number;
+  exportMin?: number;
+  exportMax?: number;
+  displayUnit?: string;
+  exportDecimalPlaces?: number;
+}
+
+export interface ConvertParameterResult {
+  inputValue: unknown;
+  inputDisplayValue: number | string;
+  parsedNumericValue?: number;
+  conversionMode: string;
+  displayUnit: string;
+  displayMin: number;
+  displayMax: number;
+  displayClampApplied: boolean;
+  clampedDisplayValue: number | string;
+  convertedRawValue: number;
+  exportMin: number;
+  exportMax: number;
+  rawClampApplied: boolean;
+  clampApplied: boolean;
+  finalExportValue: number;
+  formattedExportValue: string;
+  reverseDisplayValue: string;
+  warnings: string[];
+}
+
+export function convertParameterValueForExport(options: ConvertParameterOptions): ConvertParameterResult {
+  const { inputValue, parameterDef } = options;
+  const warnings: string[] = [];
+
+  let mode = (options.conversionMode || parameterDef?.transform || parameterDef?.conversion?.mode || parameterDef?.translationMode || parameterDef?.conversion || "direct") as string;
+  if (mode === "gain_db") mode = "db_to_linear";
+
+  let val = inputValue;
+  if (val === undefined || val === null || val === "") {
+    val = parameterDef?.defaultValue ?? parameterDef?.defaultDisplayValue ?? 0;
+  }
+
+  const valStr = String(val).trim();
+  const valStrLower = valStr.toLowerCase();
+
+  // Option rows & valueMap handling for enums/switches
+  if (parameterDef) {
+    if (parameterDef.optionRows && Array.isArray(parameterDef.optionRows)) {
+      const match = parameterDef.optionRows.find((r: any) =>
+        String(r.displayLabel).trim().toLowerCase() === valStrLower ||
+        String(r.canonicalValue).trim().toLowerCase() === valStrLower
+      );
+      if (match && match.exportValue !== undefined) {
+        val = match.exportValue;
+      }
+    } else if (parameterDef.valueMap && typeof parameterDef.valueMap === "object") {
+      const keys = Object.keys(parameterDef.valueMap);
+      const matchKey = keys.find(k => k.trim().toLowerCase() === valStrLower);
+      if (matchKey !== undefined) {
+        val = parameterDef.valueMap[matchKey];
+      }
+    }
+  }
+
+  // Unit
+  const unit = options.displayUnit ?? parameterDef?.displayUnit ?? parameterDef?.unit ?? (
+    mode === "db_to_linear" || mode === "dbThresholdToLinear" || mode === "noiseGateDepth" || mode === "linear_to_db" ? "dB" : ""
+  );
+
+  // Decimal places
+  const decPlaces = options.exportDecimalPlaces ?? parameterDef?.exportDecimalPlaces ?? parameterDef?.decimalPlaces ?? 6;
+
+  // Export Range
+  const expMin = options.exportMin ?? parameterDef?.exportMin ?? parameterDef?.export?.min ?? parameterDef?.min ?? (mode === "db_to_linear" ? 0.177828 : 0);
+  const expMax = options.exportMax ?? parameterDef?.exportMax ?? parameterDef?.export?.max ?? parameterDef?.max ?? (mode === "db_to_linear" ? 5.62341 : 1);
+  const actualExpMin = Math.min(expMin, expMax);
+  const actualExpMax = Math.max(expMin, expMax);
+
+  // Display Range
+  let dMin = options.displayMin ?? parameterDef?.displayMin ?? parameterDef?.visualMin ?? parameterDef?.visual?.min;
+  let dMax = options.displayMax ?? parameterDef?.displayMax ?? parameterDef?.visualMax ?? parameterDef?.visual?.max;
+
+  if (mode === "db_to_linear") {
+    if (dMin === undefined || dMax === undefined || (dMin === expMin && dMax === expMax) || (dMin >= 0 && dMax > 1 && dMax <= 10)) {
+      if (parameterDef?.displayMin !== undefined && parameterDef?.displayMax !== undefined && (parameterDef.displayMin !== expMin || parameterDef.displayMax !== expMax)) {
+        dMin = parameterDef.displayMin;
+        dMax = parameterDef.displayMax;
+      } else {
+        dMin = -15;
+        dMax = 15;
+      }
+    }
+  } else if (mode === "dbThresholdToLinear") {
+    dMin = -100;
+    dMax = 0;
+  } else {
+    if (dMin === undefined) dMin = 0;
+    if (dMax === undefined) dMax = (mode === "scaled_range" ? 10 : expMax);
+  }
+
+  const displayMin = Math.min(dMin, dMax);
+  const displayMax = Math.max(dMin, dMax);
+
+  // Parse numeric
+  let numVal: number | undefined;
+  if (typeof val === "number") {
+    numVal = val;
+  } else {
+    const match = valStr.match(/-?\d+(?:\.\d+)?(?:e-?\d+)?/i);
+    if (match) {
+      numVal = parseFloat(match[0]);
+    }
+  }
+
+  // Non-numeric fallback (e.g. enum strings "Low", "All")
+  if (numVal === undefined || !Number.isFinite(numVal)) {
+    return {
+      inputValue,
+      inputDisplayValue: valStr,
+      conversionMode: mode,
+      displayUnit: unit,
+      displayMin,
+      displayMax,
+      displayClampApplied: false,
+      clampedDisplayValue: valStr,
+      convertedRawValue: 0,
+      exportMin: actualExpMin,
+      exportMax: actualExpMax,
+      rawClampApplied: false,
+      clampApplied: false,
+      finalExportValue: 0,
+      formattedExportValue: valStr,
+      reverseDisplayValue: valStr,
+      warnings: []
+    };
+  }
+
+  const inputDisplayVal = numVal;
+  let clampedDisplayVal = numVal;
+  let displayClampApplied = false;
+  let rawVal = numVal;
+  let clampedRawVal = numVal;
+  let rawClampApplied = false;
+
+  if (mode === "db_to_linear") {
+    // 1. Clamp display dB value to display range
+    if (numVal < displayMin || numVal > displayMax) {
+      clampedDisplayVal = Math.min(displayMax, Math.max(displayMin, numVal));
+      displayClampApplied = true;
+      warnings.push(`Input display value was clamped from ${numVal} dB to ${clampedDisplayVal} dB.`);
+    } else {
+      clampedDisplayVal = numVal;
+    }
+    // 2. Convert dB to raw linear value
+    rawVal = Math.pow(10, clampedDisplayVal / 20);
+
+    // 3. Clamp raw linear value to export range
+    if (rawVal < actualExpMin || rawVal > actualExpMax) {
+      clampedRawVal = Math.min(actualExpMax, Math.max(actualExpMin, rawVal));
+      if (Math.abs(clampedRawVal - rawVal) > 1e-5) {
+        rawClampApplied = true;
+        warnings.push(`Converted raw linear value ${rawVal.toFixed(6)} was clamped to export bounds [${actualExpMin}, ${actualExpMax}].`);
+      } else {
+        clampedRawVal = rawVal;
+      }
+    } else {
+      clampedRawVal = rawVal;
+    }
+  } else if (mode === "dbThresholdToLinear") {
+    // Negative threshold control (-100 to 0 dB)
+    if (numVal < -100 || numVal > 0) {
+      clampedDisplayVal = Math.min(0, Math.max(-100, numVal));
+      displayClampApplied = true;
+      warnings.push(`Threshold dB value ${numVal >= 0 ? "+" + numVal : numVal} dB was clamped to threshold bounds [-100, 0] dB (${clampedDisplayVal} dB).`);
+    } else {
+      clampedDisplayVal = numVal;
+    }
+    rawVal = Math.pow(10, clampedDisplayVal / 20);
+    if (rawVal < actualExpMin || rawVal > actualExpMax) {
+      clampedRawVal = Math.min(actualExpMax, Math.max(actualExpMin, rawVal));
+      if (Math.abs(clampedRawVal - rawVal) > 1e-5) {
+        rawClampApplied = true;
+        warnings.push(`Converted raw linear value ${rawVal.toFixed(6)} was clamped to export bounds [${actualExpMin}, ${actualExpMax}].`);
+      } else {
+        clampedRawVal = rawVal;
+      }
+    } else {
+      clampedRawVal = rawVal;
+    }
+  } else if (mode === "linear_to_db") {
+    const db = numVal <= 0 ? -100 : 20 * Math.log10(numVal);
+    rawVal = Math.min(actualExpMax, Math.max(actualExpMin, db));
+    clampedRawVal = rawVal;
+  } else if (mode === "scaled_range") {
+    const span = displayMax - displayMin;
+    const pct = span === 0 ? 0 : (numVal - displayMin) / span;
+    const clampedPct = Math.min(1, Math.max(0, pct));
+    if (clampedPct !== pct) {
+      displayClampApplied = true;
+    }
+    rawVal = actualExpMin + clampedPct * (actualExpMax - actualExpMin);
+    clampedRawVal = Math.min(actualExpMax, Math.max(actualExpMin, rawVal));
+  } else if (mode === "khzToHzIfNeeded") {
+    let hz = numVal;
+    if (valStrLower.includes("khz")) hz *= 1000;
+    rawVal = Math.min(actualExpMax, Math.max(actualExpMin, hz));
+    clampedRawVal = rawVal;
+  } else if (mode === "noiseGateRelease") {
+    let ms = numVal;
+    if (valStrLower.includes("s") && !valStrLower.includes("ms")) ms *= 1000;
+    else if (numVal > 1.5 && numVal <= 10) ms = 20 + numVal * 148;
+    else if (numVal <= 1.5) ms *= 1000;
+    rawVal = Math.min(actualExpMax, Math.max(actualExpMin, ms));
+    clampedRawVal = rawVal;
+  } else if (mode === "noiseGateDepth") {
+    let depth = numVal;
+    if (!valStrLower.includes("db") && numVal >= 0 && numVal <= 10) depth = -100 + numVal * 8;
+    rawVal = Math.min(actualExpMax, Math.max(actualExpMin, depth));
+    clampedRawVal = rawVal;
+  } else if (mode === "black76InputOutput") {
+    let db = numVal;
+    if (db > 0) db = 0;
+    if (db < -99) db = -99;
+    rawVal = Math.pow(10, db / 20);
+    clampedRawVal = Math.min(actualExpMax, Math.max(actualExpMin, rawVal));
+  } else {
+    // Direct
+    if (numVal < actualExpMin || numVal > actualExpMax) {
+      clampedRawVal = Math.min(actualExpMax, Math.max(actualExpMin, numVal));
+      rawClampApplied = true;
+      warnings.push(`Input value ${numVal} was clamped to export bounds [${actualExpMin}, ${actualExpMax}].`);
+    } else {
+      clampedRawVal = numVal;
+    }
+    rawVal = numVal;
+  }
+
+  const clampApplied = displayClampApplied || rawClampApplied;
+  const finalVal = clampedRawVal;
+
+  let formatted = "";
+  if (Math.abs(finalVal - Math.round(finalVal)) < 1e-7) {
+    formatted = String(Math.round(finalVal));
+  } else {
+    formatted = parseFloat(finalVal.toFixed(decPlaces)).toString();
+  }
+
+  let reverseDisplay = "";
+  if (mode === "db_to_linear" || mode === "dbThresholdToLinear") {
+    const revDb = 20 * Math.log10(Math.max(1e-6, finalVal));
+    const signStr = revDb >= 0 ? "+" : "";
+    reverseDisplay = `${signStr}${revDb.toFixed(2)} dB`;
+  } else if (mode === "linear_to_db") {
+    const revLin = Math.pow(10, finalVal / 20);
+    reverseDisplay = revLin.toFixed(4);
+  } else if (unit) {
+    reverseDisplay = `${clampedDisplayVal} ${unit}`.trim();
+  } else {
+    reverseDisplay = String(clampedDisplayVal);
+  }
+
+  return {
+    inputValue,
+    inputDisplayValue: inputDisplayVal,
+    parsedNumericValue: numVal,
+    conversionMode: mode,
+    displayUnit: unit,
+    displayMin,
+    displayMax,
+    displayClampApplied,
+    clampedDisplayValue: clampedDisplayVal,
+    convertedRawValue: rawVal,
+    exportMin: actualExpMin,
+    exportMax: actualExpMax,
+    rawClampApplied,
+    clampApplied,
+    finalExportValue: finalVal,
+    formattedExportValue: formatted,
+    reverseDisplayValue: reverseDisplay,
+    warnings
+  };
+}
+
 export function resolveParameterValue(
   value: unknown,
   min: number,
@@ -921,14 +1242,25 @@ export function resolveParameterValue(
   visualMax?: number,
   def?: any
 ): string | number | undefined {
-  const v = parseSettingValue(value, transform, min, max, visualMin, visualMax, def);
-  if (typeof v === "string") return v;
-  if (v === undefined || !Number.isFinite(v)) return undefined;
-  
-  // Safe clamping handles reversed / descending ranges (min > max)
-  const actualMin = Math.min(min, max);
-  const actualMax = Math.max(min, max);
-  return Math.min(actualMax, Math.max(actualMin, v as number));
+  const res = convertParameterValueForExport({
+    inputValue: value,
+    parameterDef: def,
+    conversionMode: transform,
+    displayMin: visualMin,
+    displayMax: visualMax,
+    exportMin: min,
+    exportMax: max,
+  });
+
+  if (typeof res.formattedExportValue === "string" && res.formattedExportValue !== "") {
+    const num = parseFloat(res.formattedExportValue);
+    if (!isNaN(num)) return num;
+    return res.formattedExportValue;
+  }
+  if (typeof res.finalExportValue === "number" && Number.isFinite(res.finalExportValue)) {
+    return res.finalExportValue;
+  }
+  return undefined;
 }
 
 export function normalizeSettingsToCanonical(
@@ -948,7 +1280,13 @@ export function normalizeSettingsToCanonical(
     const def = defs.find((d) => {
       const cleanFriendly = d.friendlyName.toLowerCase().replace(/[^a-z0-9.]/g, "");
       const cleanXml = d.xmlName.toLowerCase().replace(/[^a-z0-9.]/g, "");
-      const cleanAliases = (d.aliases ?? []).map((a) => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
+      const cleanAliases = [
+        ...(d.aliases ?? []),
+        ...(d.savedAliases ?? []),
+        ...(d.rawMappingAliases ?? []),
+        ...(d.autoGeneratedAliases ?? []),
+        ...(d.effectiveAliases ?? [])
+      ].map((a) => a.toLowerCase().replace(/[^a-z0-9.]/g, ""));
       return (
         cleanFriendly === cleanKey ||
         cleanXml === cleanKey ||
@@ -1031,7 +1369,15 @@ export function buildMappedParameterAttrs(
   const attributes: { xmlName: string; attrValue: string; isDefault: boolean }[] = [];
 
   for (const def of defs) {
-    const lookupNames = [def.friendlyName, def.xmlName, ...(def.aliases ?? [])];
+    const lookupNames = [
+      def.friendlyName,
+      def.xmlName,
+      ...(def.aliases ?? []),
+      ...(def.savedAliases ?? []),
+      ...(def.rawMappingAliases ?? []),
+      ...(def.autoGeneratedAliases ?? []),
+      ...(def.effectiveAliases ?? [])
+    ];
     let raw = lookupNames
       .map((name) => normalisedSettings.get(normalise(name)))
       .find((value) => value !== undefined);
@@ -1085,4 +1431,74 @@ export function buildMappedParameterAttrs(
   return Array.from(finalMap.values())
     .map(attr => `${attr.xmlName}="${attr.attrValue}"`)
     .join(" ");
+}
+
+export interface TestTranslationResult {
+  inputValue: string | number;
+  parsedNumericValue?: number | string;
+  resolvedExportValue: string | number;
+  conversionMode: string;
+  isClamped: boolean;
+  visualRange: { min: number; max: number; unit?: string };
+  exportRange: { min: number; max: number };
+  formulaDescription?: string;
+  xmlPreview: string;
+  reverseConvertedDisplayValue?: string;
+  warnings?: string[];
+}
+
+export function testSingleParameterTranslation(
+  paramDef: any,
+  inputValue: string | number,
+  gearContext?: { gearType?: string; gearDisplayName?: string; gearGuid?: string }
+): TestTranslationResult {
+  const warnings: string[] = [];
+
+  const xmlAttr = paramDef.export?.name || paramDef.at5XmlAttributeName || paramDef.canonicalName || paramDef.displayName || paramDef.xmlName || "Param";
+  const convMode = paramDef.conversion?.mode || paramDef.translationMode || paramDef.transform || paramDef.conversion || "direct";
+
+  const res = convertParameterValueForExport({
+    inputValue,
+    parameterDef: paramDef,
+    conversionMode: convMode,
+    displayMin: paramDef.visual?.min ?? paramDef.displayMin ?? paramDef.visualMin,
+    displayMax: paramDef.visual?.max ?? paramDef.displayMax ?? paramDef.visualMax,
+    exportMin: paramDef.export?.min ?? paramDef.exportMin ?? paramDef.min,
+    exportMax: paramDef.export?.max ?? paramDef.exportMax ?? paramDef.max,
+    displayUnit: paramDef.visual?.unit ?? paramDef.displayUnit ?? paramDef.unit,
+    exportDecimalPlaces: paramDef.exportDecimalPlaces ?? paramDef.decimalPlaces
+  });
+
+  if (!paramDef.export?.name && !paramDef.at5XmlAttributeName && !paramDef.xmlName) {
+    warnings.push("No explicit AT5 XML attribute ID configured.");
+  }
+
+  // Check for bad / suspicious mapping configuration
+  if (res.conversionMode === "db_to_linear" || paramDef.parameterKind === "gain_db") {
+    if ((res.displayMin === res.exportMin && res.displayMax === res.exportMax) || (res.displayMin >= 0 && res.displayMax > 1 && res.displayMax <= 10)) {
+      warnings.push(
+        `CHECK / FAIL_MAPPING_CONFIGURATION: Visual range [${res.displayMin}, ${res.displayMax}] appears to contain raw AmpliTube float values. For db_to_linear, set UI Visual range to display dB values (e.g. -15 to +15 dB).`
+      );
+    }
+  }
+
+  if (res.warnings && res.warnings.length > 0) {
+    warnings.push(...res.warnings);
+  }
+
+  const xmlPreview = `${xmlAttr}="${escapeXmlAttr(res.formattedExportValue)}"`;
+
+  return {
+    inputValue,
+    parsedNumericValue: res.parsedNumericValue,
+    resolvedExportValue: res.formattedExportValue,
+    conversionMode: res.conversionMode,
+    isClamped: res.clampApplied,
+    visualRange: { min: res.displayMin, max: res.displayMax, unit: res.displayUnit },
+    exportRange: { min: res.exportMin, max: res.exportMax },
+    formulaDescription: paramDef.conversion?.formula || paramDef.helperDescription,
+    xmlPreview,
+    reverseConvertedDisplayValue: res.reverseDisplayValue,
+    warnings: warnings.length > 0 ? warnings : undefined
+  };
 }

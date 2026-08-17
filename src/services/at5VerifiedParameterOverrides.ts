@@ -9,18 +9,31 @@ export interface VerifiedParamDef {
   xmlName: string;
   min: number;
   max: number;
+  visualMin?: number;
+  visualMax?: number;
   unit?: string;
+  displayMin?: number;
+  displayMax?: number;
+  displayUnit?: string;
+  exportMin?: number;
+  exportMax?: number;
+  exportDecimalPlaces?: number;
   aliases?: string[];
   defaultValue?: number | string;
   /** Converts AI/debug-friendly values into the AT5 XML value. */
   transform?:
+    | "db_to_linear"
     | "dbThresholdToLinear"
+    | "linear_to_db"
+    | "scaled_range"
+    | "direct"
     | "khzToHzIfNeeded"
     | "noiseGateDepth"
     | "noiseGateRelease"
     | "black76InputOutput"
     | "black76Ratio"
-    | "vibratoChorusJC120";
+    | "vibratoChorusJC120"
+    | string;
   kind?: "continuous_knob" | "switch_boolean" | "enum" | "frequency" | "gain_db" | "time_ms" | "semantic";
 }
 
@@ -143,8 +156,25 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     aliases: ["compressor", "stomp_compressor", "classic compressor", "stomp_classic_compressor"],
     preferredSection: "StompB1",
     params: [
-      { friendlyName: "Comp", xmlName: "Comp", min: 0, max: 10, aliases: ["comp", "compression", "amount", "sustain", "sensitivity", "sens", "compress"] },
-      { friendlyName: "Level", xmlName: "Level", min: 0.177828, max: 5.62341, aliases: ["level", "volume", "output"] },
+      { friendlyName: "Comp", xmlName: "Comp", min: 0, max: 10, defaultValue: 5, visualMin: 0, visualMax: 10, aliases: ["comp", "compression", "amount", "sustain", "sensitivity", "sens", "compress"] },
+      { 
+        friendlyName: "Level", 
+        xmlName: "Level", 
+        min: 0.177828, 
+        max: 5.62341, 
+        defaultValue: 1.0, 
+        transform: "db_to_linear", 
+        visualMin: -15, 
+        visualMax: 15, 
+        unit: "dB", 
+        displayMin: -15, 
+        displayMax: 15, 
+        displayUnit: "dB", 
+        exportMin: 0.177828, 
+        exportMax: 5.62341, 
+        exportDecimalPlaces: 6, 
+        aliases: ["level", "volume", "output"] 
+      },
     ],
   },
   {
