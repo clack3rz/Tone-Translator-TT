@@ -7665,10 +7665,10 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                       {/* Conversion Metadata & Ranges */}
                       <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-gray-400 bg-white/[0.02] p-2.5 rounded-lg border border-white/5">
                         <div>
-                          Visual Range: <span className="text-gray-200">{testTranslationResult.visualRange.min} – {testTranslationResult.visualRange.max} {testTranslationResult.visualRange.unit || ''}</span>
+                          Visual Range: <span className="text-gray-200">{testTranslationResult.visualRange.formattedMin ?? testTranslationResult.visualRange.min} – {testTranslationResult.visualRange.formattedMax ?? testTranslationResult.visualRange.max} {testTranslationResult.visualRange.unit || ''}</span>
                         </div>
                         <div>
-                          Export Range: <span className="text-gray-200">{testTranslationResult.exportRange.min} – {testTranslationResult.exportRange.max}</span>
+                          Export Range: <span className="text-gray-200">{testTranslationResult.exportRange.formattedMin ?? testTranslationResult.exportRange.min} – {testTranslationResult.exportRange.formattedMax ?? testTranslationResult.exportRange.max}</span>
                         </div>
                         {testTranslationResult.formulaDescription && (
                           <div className="truncate max-w-xs" title={testTranslationResult.formulaDescription}>

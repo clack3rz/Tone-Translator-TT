@@ -533,7 +533,22 @@
   { "group": "rack", "guid": "", "slot": "Rack", "display_name": "AutoPan" },
   { "group": "rack", "guid": "", "slot": "Rack", "display_name": "Compressor" },
   { "group": "rack", "guid": "", "slot": "Rack", "display_name": "Digital Chorus" },
-  { "group": "rack", "guid": "", "slot": "Rack", "display_name": "Digital Delay" },
+  {
+    "group": "rack",
+    "guid": "1189979a-db5d-4dc1-9228-7bd974d8a8c5",
+    "slot": "Rack",
+    "display_name": "Digital Delay",
+    "knobs": [
+      { "name": "Feedback", "type": "range", "min": 0, "max": 100, "unit": "%", "default": 0 },
+      { "name": "Mix", "type": "range", "min": 0, "max": 100, "unit": "%", "default": 50 },
+      { "name": "Delay Time", "type": "range", "min": 1, "max": 2000, "unit": "ms", "default": 500 },
+      { "name": "BPM Meter", "type": "range", "min": 0, "max": 10, "default": 0 },
+      { "name": "BPM Sync", "type": "range", "min": 0, "max": 10, "default": 0 },
+      { "name": "Filter", "type": "range", "min": 0, "max": 10, "default": 10 },
+      { "name": "Mode", "type": "range", "min": 0, "max": 10, "default": 0 },
+      { "name": "Out Level", "type": "range", "min": 0, "max": 10, "default": 5 }
+    ]
+  },
   { "group": "rack", "guid": "", "slot": "Rack", "display_name": "Digital Flanger" },
   { "group": "rack", "guid": "", "slot": "Rack", "display_name": "EQ 81" },
   { "group": "rack", "guid": "", "slot": "Rack", "display_name": "EQ PG" },

@@ -15,9 +15,14 @@ export interface VerifiedParamDef {
   displayMin?: number;
   displayMax?: number;
   displayUnit?: string;
+  exportUnit?: string;
   exportMin?: number;
   exportMax?: number;
+  decimalPlaces?: number;
+  displayPrecision?: number;
+  displayDecimalPlaces?: number;
   exportDecimalPlaces?: number;
+  exportPrecision?: number;
   aliases?: string[];
   defaultValue?: number | string;
   /** Converts AI/debug-friendly values into the AT5 XML value. */
@@ -127,7 +132,7 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     aliases: ["gate", "hard gate", "noise gate", "stomp_noise_gate", "noise_gate"],
     preferredSection: "StompB1",
     params: [
-      { friendlyName: "Threshold", xmlName: "Threshold", min: 0.00001, max: 1, unit: "linear", aliases: ["threshold", "gate threshold", "threshold db", "gate", "noise threshold", "gate_threshold", "threshold_db"], transform: "dbThresholdToLinear" },
+      { friendlyName: "Threshold", xmlName: "Threshold", min: 0.00001, max: 1, unit: "dB", exportUnit: "linear", visualMin: -100, visualMax: 0, exportDecimalPlaces: 6, aliases: ["threshold", "gate threshold", "threshold db", "gate", "noise threshold", "gate_threshold", "threshold_db"], transform: "dbThresholdToLinear" },
       { friendlyName: "Release", xmlName: "Release", min: 20, max: 1500, unit: "ms", aliases: ["release", "release time", "decay", "release_time"], transform: "noiseGateRelease" },
       { friendlyName: "Depth", xmlName: "Depth", min: -100, max: -20, unit: "dB", aliases: ["depth", "attenuation", "reduction", "depth_db"], transform: "noiseGateDepth" },
     ],
@@ -483,6 +488,24 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
       { friendlyName: "Mix", xmlName: "Mix", min: 0, max: 100, defaultValue: 20, aliases: ["mix", "level", "reverb_level"] },
       { friendlyName: "Density", xmlName: "Density", min: 0, max: 99, defaultValue: 50, aliases: ["density"] },
       { friendlyName: "OutLevel", xmlName: "OutLevel", min: 0, max: 10, defaultValue: 5, aliases: ["outlevel", "output", "volume"] }
+    ]
+  },
+  {
+    name: "Digital Delay",
+    category: "rack",
+    realId: "1189979a-db5d-4dc1-9228-7bd974d8a8c5",
+    aliases: ["digital delay", "rack_digital_delay", "digital_delay", "delay rack", "rack delay"],
+    preferredSection: "RackA",
+    isVerified: true,
+    params: [
+      { friendlyName: "Feedback", xmlName: "Feedback", min: 0, max: 100, defaultValue: 0, unit: "%", transform: "direct", aliases: ["feedback", "repeats", "fback"] },
+      { friendlyName: "Mix", xmlName: "Mix", min: 0, max: 100, defaultValue: 50, unit: "%", transform: "direct", aliases: ["mix", "blend", "wet/dry", "level"] },
+      { friendlyName: "Delay Time", xmlName: "DelayTime", min: 1, max: 2000, defaultValue: 500, unit: "ms", kind: "time_ms", transform: "direct", aliases: ["time", "delay_time", "delaytime", "delay", "delay_ms"] },
+      { friendlyName: "BPM Meter", xmlName: "BPMMeter", min: 0, max: 10, defaultValue: 0, aliases: ["bpm_meter", "bpmmeter", "bpm meter", "meter"] },
+      { friendlyName: "BPM Sync", xmlName: "BPMSync", min: 0, max: 10, defaultValue: 0, aliases: ["bpm_sync", "bpmsync", "sync"] },
+      { friendlyName: "Filter", xmlName: "Filter", min: 0, max: 10, defaultValue: 10, aliases: ["filter", "tone", "cutoff", "hi_cut"] },
+      { friendlyName: "Mode", xmlName: "Mode", min: 0, max: 10, defaultValue: 0, aliases: ["mode", "type"] },
+      { friendlyName: "Out Level", xmlName: "OutLevel", min: 0, max: 10, defaultValue: 5, aliases: ["outlevel", "output", "out_level", "volume", "master"] }
     ]
   }
 ];

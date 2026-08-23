@@ -85,6 +85,8 @@ export interface ResolvedParameter {
   visualMin?: number;
   visualMax?: number;
   kind?: "continuous_knob" | "switch_boolean" | "enum" | "frequency" | "gain_db" | "time_ms" | "semantic";
+  definitionSource?: "db_mapping" | "verified_override" | "catalog_explicit" | "catalog_fallback" | "generic_fallback";
+  authoritativeRange?: [number, number];
 
   // Extended fields
   gearGuid?: string;
@@ -98,10 +100,13 @@ export interface ResolvedParameter {
   displayUnit?: string;
   displayStep?: number;
   decimalPlaces?: number;
+  displayPrecision?: number;
+  displayDecimalPlaces?: number;
   defaultDisplayValue?: string | number;
   exportUnit?: string;
   exportStep?: number;
   exportDecimalPlaces?: number;
+  exportPrecision?: number;
   defaultExportValue?: string | number;
   translationMode?: string;
   valueMap?: Record<string, string | number>;
@@ -396,6 +401,8 @@ export function getParameterDefinitions(
   gearNameOrId: string | undefined,
   category?: string
 ): ResolvedParameter[] {
+  if (!gearNameOrId) return [];
+
   const verifiedMatch = findVerifiedGearWithScore(gearNameOrId, category);
   const manifestMatch = findManifestGearWithScore(gearNameOrId, category);
   const catalogMatch = findCatalogGearWithScore(gearNameOrId, category);
@@ -411,8 +418,6 @@ export function getParameterDefinitions(
   if (catalogMatch) {
     candidates.push({ type: "catalog", score: catalogMatch.score, data: catalogMatch.gear });
   }
-
-  if (candidates.length === 0) return [];
 
   const getScoringTier = (score: number) => {
     if (score >= 1000) return 3; // EXACT MATCH
@@ -433,83 +438,112 @@ export function getParameterDefinitions(
     return (b.score + bBonus) - (a.score + aBonus);
   });
 
-  const best = candidates[0];
+  const best = candidates.length > 0 ? candidates[0] : undefined;
 
   let baseParams: ResolvedParameter[] = [];
 
-  if (best.type === "verified") {
-    baseParams = best.data.params.map((p: any) => ({ ...p }));
-  } else if (best.type === "catalog") {
-    const gear = best.data;
-    if (gear.knobs) {
-      baseParams = gear.knobs.map((knob: any) => {
-        const baseXmlName = compact(knob.name);
-        return {
-          friendlyName: knob.name,
-          xmlName: gear.group === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
-          min: knob.min ?? 0,
-          max: knob.max ?? 10,
-          defaultValue: knob.default !== undefined ? knob.default : undefined,
-        };
-      });
-    }
-  } else {
-    const gear = best.data;
-    if (gear.knobs) {
-      baseParams = gear.knobs.filter(isKnobDefinition).map((knob: any) => {
-        const baseXmlName = compact(knob.name);
-        return {
-          friendlyName: knob.name,
-          xmlName: gear.category === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
-          min: knob.min,
-          max: knob.max,
-          unit: knob.unit,
-        };
-      });
+  if (best) {
+    if (best.type === "verified") {
+      baseParams = best.data.params.map((p: any) => ({
+        ...p,
+        definitionSource: "verified_override" as const,
+        authoritativeRange: [p.min, p.max] as [number, number],
+      }));
+    } else if (best.type === "catalog") {
+      const gear = best.data;
+      if (gear.knobs) {
+        baseParams = gear.knobs.map((knob: any) => {
+          const baseXmlName = compact(knob.name);
+          const isExplicit = knob.max !== undefined;
+          return {
+            friendlyName: knob.name,
+            xmlName: gear.group === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
+            min: knob.min ?? 0,
+            max: knob.max ?? 10,
+            defaultValue: knob.default !== undefined ? knob.default : undefined,
+            definitionSource: isExplicit ? ("catalog_explicit" as const) : ("catalog_fallback" as const),
+            authoritativeRange: isExplicit ? ([knob.min ?? 0, knob.max] as [number, number]) : undefined,
+          };
+        });
+      }
+    } else {
+      const gear = best.data;
+      if (gear.knobs) {
+        baseParams = gear.knobs.filter(isKnobDefinition).map((knob: any) => {
+          const baseXmlName = compact(knob.name);
+          const isExplicit = knob.max !== undefined;
+          return {
+            friendlyName: knob.name,
+            xmlName: gear.category === "amp" && gear.paramSuffix ? `${baseXmlName}${gear.paramSuffix}` : baseXmlName,
+            min: knob.min ?? 0,
+            max: knob.max ?? 10,
+            unit: knob.unit,
+            definitionSource: isExplicit ? ("catalog_explicit" as const) : ("catalog_fallback" as const),
+            authoritativeRange: isExplicit ? ([knob.min ?? 0, knob.max] as [number, number]) : undefined,
+          };
+        });
+      }
     }
   }
 
   // Merge dynamic database mapping overrides to resolve discrepancies and keep the Exporter matched to the Profile Management source of truth
   let displayName = "";
   let aliases: string[] = [];
-  if (best.type === "verified") {
-    displayName = best.data.name;
-    aliases = best.data.aliases ?? [];
-  } else if (best.type === "catalog") {
-    displayName = best.data.displayName;
-    aliases = [
-      ...(best.data.otherNames || []),
-      ...(best.data.examplePresets || [])
-    ];
+  let bestGuid = "";
+  if (best) {
+    if (best.type === "verified") {
+      displayName = best.data.name;
+      aliases = best.data.aliases ?? [];
+      bestGuid = best.data.realId ?? "";
+    } else if (best.type === "catalog") {
+      displayName = best.data.displayName;
+      aliases = [
+        ...(best.data.otherNames || []),
+        ...(best.data.examplePresets || [])
+      ];
+      bestGuid = best.data.guid ?? "";
+    } else {
+      displayName = best.data.name;
+      aliases = [];
+      bestGuid = best.data.realId ?? "";
+    }
   } else {
-    displayName = best.data.name;
+    displayName = gearNameOrId;
     aliases = [];
   }
 
   const aliasSet = new Set([
+    normalise(gearNameOrId),
+    cleanGearNameForMatching(gearNameOrId),
     normalise(displayName),
     cleanGearNameForMatching(displayName),
     ...aliases.map(a => normalise(a)),
     ...aliases.map(a => cleanGearNameForMatching(a))
   ]);
 
+  const rawCleanGuid = (bestGuid || gearNameOrId).toLowerCase().replace(/[^a-z0-9]/g, '');
+
   let relevantDb = dbParameterMappings.filter(m => {
     if (aliasSet.has(normalise(m.gearName))) return true;
     if (aliasSet.has(cleanGearNameForMatching(m.gearName))) return true;
-    if (m.gearGuid && best.data) {
-      const bestGuid = best.data.guid || (best.data as any).realId;
-      if (bestGuid && m.gearGuid.toLowerCase().replace(/[^a-z0-9]/g, '') === bestGuid.toLowerCase().replace(/[^a-z0-9]/g, '')) {
+    if (m.gearGuid) {
+      const mGuid = m.gearGuid.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (mGuid && (mGuid === rawCleanGuid || (bestGuid && mGuid === bestGuid.toLowerCase().replace(/[^a-z0-9]/g, '')))) {
         return true;
       }
     }
     return false;
   });
 
-  if (best.type === "verified" && displayName === "Jazz Amp 120") {
+  if (best && best.type === "verified" && displayName === "Jazz Amp 120") {
     relevantDb = relevantDb.filter(m => {
       const xml = m.exportParameterName || "";
       return !xml.endsWith("_Roland120") && !xml.includes("Roland120");
     });
+  }
+
+  if (!best && relevantDb.length === 0) {
+    return [];
   }
 
   const paramsMap = new Map<string, ResolvedParameter>();
@@ -565,8 +599,18 @@ export function getParameterDefinitions(
         // Prevent downgrading a known continuous amp knob from 0-10 to 0-1
         // Keep existing.min and existing.max as they are
       } else {
+        // Diagnostic Protection: Warn if authoritative DB mapping resolves a conflicting range over lower-priority source
+        if (existing.definitionSource && existing.definitionSource !== "db_mapping") {
+          if (existing.min !== dbM.exportMin || existing.max !== dbM.exportMax) {
+            console.warn(
+              `[AT5 Parameter Resolution Priority] Authoritative range [${dbM.exportMin}, ${dbM.exportMax}] from DB mapping (${dbM.source || 'db_mapping'}) applied over lower-priority [${existing.min}, ${existing.max}] from ${existing.definitionSource} for gear "${displayName}" (GUID: ${dbM.gearGuid || bestGuid || 'none'}), parameter "${dbM.parameter}".`
+            );
+          }
+        }
         existing.min = dbM.exportMin;
         existing.max = dbM.exportMax;
+        existing.definitionSource = "db_mapping";
+        existing.authoritativeRange = [dbM.exportMin, dbM.exportMax];
       }
       
       existing.transform = dbM.conversion as any;
@@ -605,10 +649,13 @@ export function getParameterDefinitions(
       existing.displayUnit = dbM.displayUnit;
       existing.displayStep = dbM.displayStep;
       existing.decimalPlaces = dbM.decimalPlaces;
+      existing.displayPrecision = dbM.displayPrecision;
+      existing.displayDecimalPlaces = dbM.displayDecimalPlaces;
       existing.defaultDisplayValue = dbM.defaultDisplayValue;
       existing.exportUnit = dbM.exportUnit;
       existing.exportStep = dbM.exportStep;
       existing.exportDecimalPlaces = dbM.exportDecimalPlaces;
+      existing.exportPrecision = dbM.exportPrecision;
       existing.defaultExportValue = dbM.defaultExportValue;
       existing.translationMode = dbM.translationMode;
       existing.valueMap = dbM.valueMap;
@@ -660,6 +707,8 @@ export function getParameterDefinitions(
         visualMin: dbM.visualMin,
         visualMax: dbM.visualMax,
         kind: inferredKind,
+        definitionSource: "db_mapping",
+        authoritativeRange: [finalMin, finalMax],
 
         // Propagate extended fields
         gearGuid: dbM.gearGuid,
@@ -673,10 +722,13 @@ export function getParameterDefinitions(
         displayUnit: dbM.displayUnit,
         displayStep: dbM.displayStep,
         decimalPlaces: dbM.decimalPlaces,
+        displayPrecision: dbM.displayPrecision,
+        displayDecimalPlaces: dbM.displayDecimalPlaces,
         defaultDisplayValue: dbM.defaultDisplayValue,
         exportUnit: dbM.exportUnit,
         exportStep: dbM.exportStep,
         exportDecimalPlaces: dbM.exportDecimalPlaces,
+        exportPrecision: dbM.exportPrecision,
         defaultExportValue: dbM.defaultExportValue,
         translationMode: dbM.translationMode,
         valueMap: dbM.valueMap,
@@ -956,7 +1008,10 @@ export interface ConvertParameterOptions {
   exportMin?: number;
   exportMax?: number;
   displayUnit?: string;
+  displayPrecision?: number;
+  displayDecimalPlaces?: number;
   exportDecimalPlaces?: number;
+  exportPrecision?: number;
 }
 
 export interface ConvertParameterResult {
@@ -977,6 +1032,12 @@ export interface ConvertParameterResult {
   finalExportValue: number;
   formattedExportValue: string;
   reverseDisplayValue: string;
+  displayPrecision: number;
+  exportPrecision?: number;
+  formattedVisualMin: string;
+  formattedVisualMax: string;
+  formattedExportMin: string;
+  formattedExportMax: string;
   warnings: string[];
 }
 
@@ -1015,18 +1076,65 @@ export function convertParameterValueForExport(options: ConvertParameterOptions)
   }
 
   // Unit
-  const unit = options.displayUnit ?? parameterDef?.displayUnit ?? parameterDef?.unit ?? (
+  let rawUnit = options.displayUnit ?? parameterDef?.displayUnit ?? parameterDef?.unit ?? "";
+  if (rawUnit.toLowerCase() === "linear" && (mode === "db_to_linear" || mode === "dbThresholdToLinear")) {
+    rawUnit = "dB";
+  }
+  const unit = rawUnit || (
     mode === "db_to_linear" || mode === "dbThresholdToLinear" || mode === "noiseGateDepth" || mode === "linear_to_db" ? "dB" : ""
   );
 
-  // Decimal places
-  const decPlaces = options.exportDecimalPlaces ?? parameterDef?.exportDecimalPlaces ?? parameterDef?.decimalPlaces ?? 6;
+  // Decimal places for export and display formatting
+  const isLinearFloatMode = mode === "db_to_linear" || mode === "dbThresholdToLinear" || mode === "black76InputOutput" || mode === "linear_to_db";
 
   // Export Range
-  const expMin = options.exportMin ?? parameterDef?.exportMin ?? parameterDef?.export?.min ?? parameterDef?.min ?? (mode === "db_to_linear" ? 0.177828 : 0);
-  const expMax = options.exportMax ?? parameterDef?.exportMax ?? parameterDef?.export?.max ?? parameterDef?.max ?? (mode === "db_to_linear" ? 5.62341 : 1);
+  const authoritativeMin = parameterDef?.authoritativeRange?.[0];
+  const authoritativeMax = parameterDef?.authoritativeRange?.[1];
+
+  let expMin: number;
+  let expMax: number;
+
+  if (authoritativeMin !== undefined && authoritativeMax !== undefined && (parameterDef?.definitionSource === "db_mapping" || parameterDef?.definitionSource === "verified_override")) {
+    expMin = authoritativeMin;
+    expMax = authoritativeMax;
+    if (options.exportMin !== undefined && options.exportMax !== undefined && (options.exportMin !== expMin || options.exportMax !== expMax)) {
+      console.warn(
+        `[AT5 Exporter Resolution Priority] Authoritative range [${expMin}, ${expMax}] from ${parameterDef.definitionSource} takes precedence over options bounds [${options.exportMin}, ${options.exportMax}] for parameter "${parameterDef.friendlyName || parameterDef.xmlName}".`
+      );
+    }
+  } else {
+    expMin = options.exportMin ?? parameterDef?.exportMin ?? parameterDef?.export?.min ?? parameterDef?.min ?? (mode === "db_to_linear" ? 0.177828 : 0);
+    expMax = options.exportMax ?? parameterDef?.exportMax ?? parameterDef?.export?.max ?? parameterDef?.max ?? (mode === "db_to_linear" ? 5.62341 : 1);
+  }
+
   const actualExpMin = Math.min(expMin, expMax);
   const actualExpMax = Math.max(expMin, expMax);
+
+  const isSubOneExportRange = actualExpMax <= 1.05 && mode !== "boolean" && mode !== "enum";
+
+  // Precision resolution: Display precision vs Export precision
+  const rawDispPrec = options.displayPrecision ?? options.displayDecimalPlaces ?? parameterDef?.displayPrecision ?? parameterDef?.displayDecimalPlaces ?? parameterDef?.decimalPlaces;
+  const isDiscrete = mode === "boolean" || mode === "enum" || parameterDef?.parameterKind === "boolean" || parameterDef?.parameterKind === "enum" || parameterDef?.parameterKind === "selector";
+  const dispPrecision: number = rawDispPrec !== undefined && rawDispPrec !== null ? Math.max(0, Math.round(Number(rawDispPrec))) : (isDiscrete ? 0 : 2);
+
+  const rawExpPrec = options.exportPrecision ?? options.exportDecimalPlaces ?? parameterDef?.exportPrecision ?? parameterDef?.exportDecimalPlaces;
+  const explicitExpPrecision = rawExpPrec !== undefined && rawExpPrec !== null ? Math.max(0, Math.round(Number(rawExpPrec))) : undefined;
+
+  let decPlaces: number;
+  if (explicitExpPrecision !== undefined) {
+    decPlaces = explicitExpPrecision;
+  } else if (isLinearFloatMode || isSubOneExportRange) {
+    // Float modes and small linear export ranges require 6 decimal places to prevent truncation to 0
+    decPlaces = 6;
+  } else if (parameterDef?.decimalPlaces !== undefined) {
+    decPlaces = Math.max(0, Math.round(Number(parameterDef.decimalPlaces)));
+  } else {
+    decPlaces = 6;
+  }
+
+  if (isLinearFloatMode && decPlaces < 6 && explicitExpPrecision === undefined) {
+    decPlaces = 6;
+  }
 
   // Display Range
   let dMin = options.displayMin ?? parameterDef?.displayMin ?? parameterDef?.visualMin ?? parameterDef?.visual?.min;
@@ -1064,6 +1172,11 @@ export function convertParameterValueForExport(options: ConvertParameterOptions)
     }
   }
 
+  const formattedVisualMin = displayMin.toFixed(dispPrecision);
+  const formattedVisualMax = displayMax.toFixed(dispPrecision);
+  const formattedExportMin = explicitExpPrecision !== undefined ? actualExpMin.toFixed(explicitExpPrecision) : (isLinearFloatMode ? actualExpMin.toFixed(6) : String(actualExpMin));
+  const formattedExportMax = explicitExpPrecision !== undefined ? actualExpMax.toFixed(explicitExpPrecision) : (isLinearFloatMode ? actualExpMax.toFixed(6) : String(actualExpMax));
+
   // Non-numeric fallback (e.g. enum strings "Low", "All")
   if (numVal === undefined || !Number.isFinite(numVal)) {
     return {
@@ -1083,6 +1196,12 @@ export function convertParameterValueForExport(options: ConvertParameterOptions)
       finalExportValue: 0,
       formattedExportValue: valStr,
       reverseDisplayValue: valStr,
+      displayPrecision: dispPrecision,
+      exportPrecision: explicitExpPrecision,
+      formattedVisualMin,
+      formattedVisualMax,
+      formattedExportMin,
+      formattedExportMax,
       warnings: []
     };
   }
@@ -1191,24 +1310,45 @@ export function convertParameterValueForExport(options: ConvertParameterOptions)
   const finalVal = clampedRawVal;
 
   let formatted = "";
-  if (Math.abs(finalVal - Math.round(finalVal)) < 1e-7) {
+  if (explicitExpPrecision !== undefined) {
+    formatted = finalVal.toFixed(explicitExpPrecision);
+  } else if (Math.abs(finalVal - Math.round(finalVal)) < 1e-7 && !isLinearFloatMode && actualExpMin >= 1) {
     formatted = String(Math.round(finalVal));
+  } else if (Math.abs(finalVal) < 1e-9 && (mode === "db_to_linear" || mode === "dbThresholdToLinear")) {
+    formatted = "0";
   } else {
-    formatted = parseFloat(finalVal.toFixed(decPlaces)).toString();
+    const fixedStr = finalVal.toFixed(decPlaces);
+    formatted = parseFloat(fixedStr).toString();
+    if (formatted === "0" && Math.abs(finalVal) > 1e-7) {
+      formatted = parseFloat(finalVal.toFixed(6)).toString();
+    }
   }
 
   let reverseDisplay = "";
   if (mode === "db_to_linear" || mode === "dbThresholdToLinear") {
     const revDb = 20 * Math.log10(Math.max(1e-6, finalVal));
     const signStr = revDb >= 0 ? "+" : "";
-    reverseDisplay = `${signStr}${revDb.toFixed(2)} dB`;
+    reverseDisplay = `${signStr}${revDb.toFixed(dispPrecision)} dB`;
   } else if (mode === "linear_to_db") {
     const revLin = Math.pow(10, finalVal / 20);
-    reverseDisplay = revLin.toFixed(4);
+    reverseDisplay = revLin.toFixed(dispPrecision);
+  } else if (mode === "scaled_range") {
+    const span = actualExpMax - actualExpMin;
+    const pct = span === 0 ? 0 : (finalVal - actualExpMin) / span;
+    const revDisp = displayMin + pct * (displayMax - displayMin);
+    reverseDisplay = `${revDisp.toFixed(dispPrecision)}${unit ? ' ' + unit : ''}`.trim();
   } else if (unit) {
-    reverseDisplay = `${clampedDisplayVal} ${unit}`.trim();
+    if (typeof clampedDisplayVal === "number") {
+      reverseDisplay = `${clampedDisplayVal.toFixed(dispPrecision)} ${unit}`.trim();
+    } else {
+      reverseDisplay = `${clampedDisplayVal} ${unit}`.trim();
+    }
   } else {
-    reverseDisplay = String(clampedDisplayVal);
+    if (typeof clampedDisplayVal === "number") {
+      reverseDisplay = clampedDisplayVal.toFixed(dispPrecision);
+    } else {
+      reverseDisplay = String(clampedDisplayVal);
+    }
   }
 
   return {
@@ -1229,7 +1369,163 @@ export function convertParameterValueForExport(options: ConvertParameterOptions)
     finalExportValue: finalVal,
     formattedExportValue: formatted,
     reverseDisplayValue: reverseDisplay,
+    displayPrecision: dispPrecision,
+    exportPrecision: explicitExpPrecision,
+    formattedVisualMin,
+    formattedVisualMax,
+    formattedExportMin,
+    formattedExportMax,
     warnings
+  };
+}
+
+export interface ParameterVerificationResult {
+  match: boolean;
+  status: "SUCCESS" | "SUCCESS_NEAREST_BAND" | "DISPARITY" | "WARNING" | "FAIL" | "FAIL_MAPPING_CONFIGURATION" | "MISMATCH";
+  reason?: string;
+  warning?: string;
+  isAccidentalClampingTo1: boolean;
+  isMappingConfigSuspicious: boolean;
+  toleranceUsed: number;
+}
+
+export function verifyParameterExportMatch(options: {
+  intendedDisplayValue: string | number;
+  expectedExportValue: string | number;
+  actualExportValue: string | number | undefined;
+  parameterDef?: ResolvedParameter | any;
+  conversionResult?: ConvertParameterResult;
+  isNearestBandMapping?: boolean;
+  nearestBandFreq?: number;
+}): ParameterVerificationResult {
+  const {
+    intendedDisplayValue,
+    expectedExportValue,
+    actualExportValue,
+    parameterDef,
+    conversionResult,
+    isNearestBandMapping,
+    nearestBandFreq,
+  } = options;
+
+  // 1. Check for missing actual export value
+  if (actualExportValue === undefined || actualExportValue === "MISSING" || actualExportValue === null || String(actualExportValue).trim() === "") {
+    return {
+      match: false,
+      status: "FAIL",
+      reason: `Expected ${intendedDisplayValue} (raw: ${expectedExportValue}) but parameter "${parameterDef?.xmlName || parameterDef?.friendlyName || 'unknown'}" is missing in exported XML.`,
+      warning: undefined,
+      isAccidentalClampingTo1: false,
+      isMappingConfigSuspicious: false,
+      toleranceUsed: 0,
+    };
+  }
+
+  // 2. Check for accidental continuous knob clamping down to 1
+  const isKnownContinuousAmpKnob = parameterDef?.kind === "continuous_knob" || 
+    (parameterDef?.max > 1 && inferParameterKind(parameterDef?.friendlyName, parameterDef?.xmlName) === "continuous_knob") ||
+    (inferParameterKind(parameterDef?.friendlyName, parameterDef?.xmlName) === "continuous_knob");
+
+  const isAccidentalClampingTo1 = !!(isKnownContinuousAmpKnob && parameterDef?.max === 1 && conversionResult?.clampApplied);
+
+  if (isAccidentalClampingTo1) {
+    return {
+      match: false,
+      status: "FAIL",
+      reason: `Accidental continuous knob clamping: Intended display: ${intendedDisplayValue}, clamped to ${expectedExportValue} because exportMax is ${parameterDef?.max}`,
+      warning: `Input value ${intendedDisplayValue} was clamped to ${expectedExportValue} because exportMax is 1. This appears invalid for a continuous amp knob.`,
+      isAccidentalClampingTo1: true,
+      isMappingConfigSuspicious: false,
+      toleranceUsed: 0,
+    };
+  }
+
+  // 3. Numeric extraction & comparison
+  const nv = typeof expectedExportValue === "number" ? expectedExportValue : parseFloat(String(expectedExportValue));
+  const ev = typeof actualExportValue === "number" ? actualExportValue : parseFloat(String(actualExportValue));
+  const displayNum = typeof intendedDisplayValue === "number" ? intendedDisplayValue : parseFloat(String(intendedDisplayValue));
+
+  let isMappingConfigSuspicious = false;
+  let match = false;
+  let toleranceUsed = 0.05;
+
+  if (!isNaN(nv) && !isNaN(ev)) {
+    // Check if actual XML value matched intended display directly but mapping wanted a drastically different value
+    if (!isNaN(displayNum) && Math.abs(displayNum - ev) <= 0.15 && Math.abs(nv - ev) > 0.5 && Math.abs(displayNum) > 1e-4) {
+      // Intended display equals actual exported XML, but mapping was different
+      isMappingConfigSuspicious = true;
+      match = false;
+    } else {
+      // Determine parameter scale and calculate scale-appropriate tolerance
+      const expMin = parameterDef?.min ?? conversionResult?.exportMin ?? 0;
+      const expMax = parameterDef?.max ?? conversionResult?.exportMax ?? Math.max(Math.abs(nv), 10);
+      const span = Math.max(1e-6, Math.abs(expMax - expMin));
+
+      if (span <= 1.05) {
+        // Small linear scale e.g. [0, 1] or [0.00001, 1] (Threshold linear, Gate linear, Gain 0-1)
+        toleranceUsed = 1e-4;
+      } else if (span <= 12) {
+        // Standard 0-10 scale
+        toleranceUsed = 0.02;
+      } else if (span <= 120) {
+        // 0-100 percentage or dB scale (-100 to 0)
+        toleranceUsed = 0.25;
+      } else {
+        // Large frequency or delay time scale (20 to 20000 Hz, 0 to 2000 ms)
+        toleranceUsed = Math.max(1.0, span * 0.01);
+      }
+
+      // Check if one value is zero and other is non-zero (strict zero guard)
+      if ((Math.abs(ev) < 1e-6 && Math.abs(nv) > 1e-4) || (Math.abs(nv) < 1e-6 && Math.abs(ev) > 1e-4)) {
+        match = false;
+      } else {
+        const diff = Math.abs(nv - ev);
+        match = diff <= toleranceUsed || String(expectedExportValue).trim().toLowerCase() === String(actualExportValue).trim().toLowerCase();
+      }
+    }
+  } else {
+    // String comparison (enums, discrete text)
+    const expStr = String(expectedExportValue).trim().toLowerCase();
+    const actStr = String(actualExportValue).trim().toLowerCase();
+    match = expStr === actStr;
+  }
+
+  // 4. Status determination
+  let status: ParameterVerificationResult["status"] = "SUCCESS";
+  let reason: string | undefined = undefined;
+  let warning: string | undefined = undefined;
+
+  if (isMappingConfigSuspicious) {
+    status = "FAIL_MAPPING_CONFIGURATION";
+    reason = `Mapping configuration appears wrong: actual AT5 XML preserved ${ev} but current mapping expected ${nv} for ${parameterDef?.friendlyName || 'parameter'}.`;
+  } else if (!match) {
+    status = "FAIL";
+    reason = `Expected ${intendedDisplayValue} (expected raw: ${expectedExportValue}) but exported value loads as ${conversionResult?.reverseDisplayValue || actualExportValue} (raw: "${actualExportValue}").`;
+  } else if (isNearestBandMapping) {
+    status = "SUCCESS_NEAREST_BAND";
+    reason = `Mapped to nearest supported AT5 band ${nearestBandFreq}Hz.`;
+  } else if (conversionResult?.clampApplied) {
+    status = "DISPARITY";
+    reason = `Value disparity (clamped): Intended: ${intendedDisplayValue}, actual exported value loads as ${conversionResult.reverseDisplayValue} due to physical limits of the gear.`;
+    if (conversionResult.warnings && conversionResult.warnings.length > 0) {
+      warning = conversionResult.warnings.join("; ");
+    }
+  } else if (conversionResult?.warnings && conversionResult.warnings.length > 0) {
+    status = "WARNING";
+    warning = conversionResult.warnings.join("; ");
+    reason = warning;
+  } else {
+    status = "SUCCESS";
+  }
+
+  return {
+    match,
+    status,
+    reason,
+    warning,
+    isAccidentalClampingTo1,
+    isMappingConfigSuspicious,
+    toleranceUsed,
   };
 }
 
@@ -1439,8 +1735,10 @@ export interface TestTranslationResult {
   resolvedExportValue: string | number;
   conversionMode: string;
   isClamped: boolean;
-  visualRange: { min: number; max: number; unit?: string };
-  exportRange: { min: number; max: number };
+  displayPrecision?: number;
+  exportPrecision?: number;
+  visualRange: { min: number; max: number; unit?: string; formattedMin?: string; formattedMax?: string };
+  exportRange: { min: number; max: number; formattedMin?: string; formattedMax?: string };
   formulaDescription?: string;
   xmlPreview: string;
   reverseConvertedDisplayValue?: string;
@@ -1466,7 +1764,9 @@ export function testSingleParameterTranslation(
     exportMin: paramDef.export?.min ?? paramDef.exportMin ?? paramDef.min,
     exportMax: paramDef.export?.max ?? paramDef.exportMax ?? paramDef.max,
     displayUnit: paramDef.visual?.unit ?? paramDef.displayUnit ?? paramDef.unit,
-    exportDecimalPlaces: paramDef.exportDecimalPlaces ?? paramDef.decimalPlaces
+    displayPrecision: paramDef.displayPrecision ?? paramDef.displayDecimalPlaces ?? paramDef.decimalPlaces,
+    exportPrecision: paramDef.exportPrecision ?? paramDef.exportDecimalPlaces,
+    exportDecimalPlaces: paramDef.exportPrecision ?? paramDef.exportDecimalPlaces
   });
 
   if (!paramDef.export?.name && !paramDef.at5XmlAttributeName && !paramDef.xmlName) {
@@ -1494,8 +1794,21 @@ export function testSingleParameterTranslation(
     resolvedExportValue: res.formattedExportValue,
     conversionMode: res.conversionMode,
     isClamped: res.clampApplied,
-    visualRange: { min: res.displayMin, max: res.displayMax, unit: res.displayUnit },
-    exportRange: { min: res.exportMin, max: res.exportMax },
+    displayPrecision: res.displayPrecision,
+    exportPrecision: res.exportPrecision,
+    visualRange: {
+      min: res.displayMin,
+      max: res.displayMax,
+      unit: res.displayUnit,
+      formattedMin: res.formattedVisualMin,
+      formattedMax: res.formattedVisualMax
+    },
+    exportRange: {
+      min: res.exportMin,
+      max: res.exportMax,
+      formattedMin: res.formattedExportMin,
+      formattedMax: res.formattedExportMax
+    },
     formulaDescription: paramDef.conversion?.formula || paramDef.helperDescription,
     xmlPreview,
     reverseConvertedDisplayValue: res.reverseDisplayValue,

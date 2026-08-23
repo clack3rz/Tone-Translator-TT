@@ -208,9 +208,21 @@ export default function App() {
 
     const rawStatus = (item.final_status || "PASS") as string;
     const reason = item.reason || "";
+
+    const hasParamFails = item.parameter_mapping_status === "MISMATCH" ||
+      item.parameter_mapping_status === "FAILED" ||
+      (item.mismatched_parameters && item.mismatched_parameters.length > 0) ||
+      item.parameter_details?.some((p: any) => p.mapping_status === "FAIL" || p.mapping_status === "MISMATCH" || p.mapping_status === "FAIL_MAPPING_CONFIGURATION");
+
+    const hasParamWarnings = (item.disparity_parameters && item.disparity_parameters.length > 0) ||
+      (item.dropped_parameters && item.dropped_parameters.length > 0) ||
+      item.parameter_mapping_status === "PARTIAL" ||
+      item.parameter_mapping_status === "PARTIAL_WITH_FALLBACK" ||
+      item.parameter_mapping_status === "UNVERIFIED" ||
+      item.parameter_details?.some((p: any) => p.mapping_status === "DISPARITY" || p.mapping_status === "WARNING" || p.mapping_status === "SUCCESS_NEAREST_BAND" || p.mapping_status === "FALLBACK_USED" || p.conversion_warning);
     
-    if (rawStatus === "FAIL") {
-      return { type: 'fail', label: 'FAIL', reason };
+    if (rawStatus === "FAIL" || hasParamFails) {
+      return { type: 'fail', label: 'FAIL', reason: reason || 'Parameter validation mismatch' };
     }
     if (rawStatus === "SKIPPED") {
       return { type: 'skipped', label: 'SKIPPED', reason };
@@ -227,8 +239,8 @@ export default function App() {
     if (rawStatus === "PARTIAL") {
       return { type: 'partial', label: 'PARTIAL', reason };
     }
-    if (rawStatus === "PASS_WITH_WARNING" || rawStatus === "WARN") {
-      return { type: 'warn', label: 'WARN', reason };
+    if (rawStatus === "PASS_WITH_WARNING" || rawStatus === "WARN" || hasParamWarnings) {
+      return { type: 'warn', label: 'WARN', reason: reason || 'Parameter conversion warnings detected' };
     }
     if (rawStatus === "PASS") {
       return { type: 'pass', label: 'PASS', reason };

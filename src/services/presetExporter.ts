@@ -18,6 +18,7 @@ import {
   inferParameterKind,
   parseSettingValue,
   convertParameterValueForExport,
+  verifyParameterExportMatch,
 } from "./at5ParameterManifest";
 
 import { at5DatabaseService } from "./at5DatabaseService";
@@ -1368,20 +1369,43 @@ export interface ExportDebugItem {
   gear_attempted_to_xml?: boolean;
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
   mismatched_parameters?: string[];
+  disparity_parameters?: string[];
   dropped_parameters?: string[];
   final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
     input_value?: any;
+    input_display_value?: any;
     display_value: string;
+    display_unit?: string;
+    display_min?: number;
+    display_max?: number;
+    conversion_mode?: string;
+    display_clamp_applied?: boolean;
+    clamped_display_value?: any;
+    converted_raw_value?: any;
     exported_internal_value: string;
     mapping_status: string;
     conversion_note?: string;
+    conversion_warning?: string;
+    reason?: string;
     expected_export_value?: any;
+    serialized_export_value?: any;
+    actual_xml_value?: any;
     actual_export_value?: any;
     reverse_converted_display_value?: string;
-    reason?: string;
+    visual_min?: number;
+    visual_max?: number;
+    export_min?: number;
+    export_max?: number;
+    raw_clamp_applied?: boolean;
+    pre_clamp_value?: any;
+    post_clamp_value?: any;
+    clamp_applied?: boolean;
+    final_export_value?: any;
+    range_source?: string;
+    range_confidence?: string;
     intended_semantic_value?: string;
     resolved_profile_found?: boolean;
     resolved_profile_value?: any;
@@ -1402,7 +1426,7 @@ export interface ExportDebugItem {
     matched_profile_parameter?: string;
     matched_export_parameter_name?: string;
     canonical_input_value?: string;
-    match_source?: "exact_xml" | "friendly_name" | "alias" | "generated_alias" | "fallback" | "unmatched" | "room_alias";
+    match_source?: "exact_xml" | "friendly_name" | "saved_alias" | "raw_mapping_alias" | "generated_alias" | "alias" | "fallback" | "unmatched" | "room_alias";
     verification_skipped?: boolean;
     verification_skip_reason?: string;
     requires_mapping_review?: boolean;
@@ -2390,40 +2414,25 @@ const makeDebugItem = (
               inputValue: normVal,
               parameterDef: def,
               conversionMode: def.transform,
-              displayMin: def.visualMin,
-              displayMax: def.visualMax,
+              displayMin: def.visualMin ?? def.displayMin,
+              displayMax: def.visualMax ?? def.displayMax,
               exportMin: def.min,
               exportMax: def.max,
               displayUnit: def.unit || def.displayUnit,
-              exportDecimalPlaces: def.exportDecimalPlaces,
+              displayPrecision: def.displayPrecision ?? def.displayDecimalPlaces ?? def.decimalPlaces,
+              exportPrecision: def.exportPrecision ?? def.exportDecimalPlaces,
+              exportDecimalPlaces: def.exportPrecision ?? def.exportDecimalPlaces,
             });
 
-            const resolvedIntended = convRes.formattedExportValue;
+            const authoritativeExpectedValue = typeof convRes.finalExportValue === "number"
+              ? (Math.abs(convRes.finalExportValue) < 1e-9 && (convRes.conversionMode === "db_to_linear" || convRes.conversionMode === "dbThresholdToLinear") ? 0 : Number(convRes.finalExportValue.toFixed(6)))
+              : convRes.formattedExportValue;
+
+            const serializedExpectedValue = convRes.formattedExportValue;
             const nv = typeof convRes.finalExportValue === "number" ? convRes.finalExportValue : parseFloat(String(convRes.finalExportValue));
             const ev = typeof expVal === "number" ? expVal : parseFloat(String(expVal));
 
             const clamp_app = convRes.clampApplied;
-
-            const isKnownContinuousAmpKnob = def.kind === "continuous_knob" || 
-              (def.max > 1 && inferParameterKind(def.friendlyName, def.xmlName) === "continuous_knob") ||
-              (inferParameterKind(def.friendlyName, def.xmlName) === "continuous_knob");
-
-            const isAccidentalClampingTo1 = isKnownContinuousAmpKnob && def.max === 1 && clamp_app;
-
-            let match = false;
-            let isMappingConfigSuspicious = false;
-            
-            // Check if actual XML value matched intended display but mapping wanted clamped expected value
-            if (Math.abs(parseFloat(String(normVal)) - ev) <= 0.15 && Math.abs(nv - ev) > 0.15) {
-              match = true; // Intended display equals actual exported XML! Do not FAIL.
-              isMappingConfigSuspicious = true;
-            } else if (isAccidentalClampingTo1) {
-              match = false; // Never SUCCESS if clamped down from a valid 0-10 request to 1
-            } else if (!isNaN(nv) && !isNaN(ev)) {
-              match = Math.abs(nv - ev) <= 0.05 || String(resolvedIntended) === String(expVal);
-            } else {
-              match = String(resolvedIntended).trim().toLowerCase() === String(expVal).trim().toLowerCase();
-            }
 
             const appendUnitIdNotPresent = (val: string | number, unit: string) => {
               const strVal = String(val);
@@ -2466,34 +2475,29 @@ const makeDebugItem = (
               }
             }
 
-            const reverse_converted_display_value = convRes.reverseDisplayValue;
+            const verif = verifyParameterExportMatch({
+              intendedDisplayValue: display_value,
+              expectedExportValue: authoritativeExpectedValue,
+              actualExportValue: expVal,
+              parameterDef: def,
+              conversionResult: convRes,
+              isNearestBandMapping,
+              nearestBandFreq,
+            });
 
-            let mapStatus = isNearestBandMapping 
-              ? (match ? "SUCCESS_NEAREST_BAND" : "FAIL") 
-              : (match ? "SUCCESS" : "FAIL");
+            const match = verif.match;
+            const isMappingConfigSuspicious = verif.isMappingConfigSuspicious;
+            const isAccidentalClampingTo1 = verif.isAccidentalClampingTo1;
+            const mapStatus = verif.status;
+            const parameter_reason = verif.reason;
+            const conversion_warning = verif.warning;
 
             if (isMappingConfigSuspicious) {
-              mapStatus = "FAIL_MAPPING_CONFIGURATION";
-            } else if (isAccidentalClampingTo1) {
-              mapStatus = "FAIL";
-            } else if (clamp_app) {
-              mapStatus = "DISPARITY";
-            }
-
-            let parameter_reason: string | undefined;
-            if (isMappingConfigSuspicious) {
-              parameter_reason = `Mapping configuration appears wrong: actual AT5 XML preserved ${ev} but current mapping expected ${nv} for ${def.friendlyName}.`;
               suspiciousMappingParams.push(def.friendlyName);
-              suspiciousDetails.push(`Mapping configuration appears wrong: actual AT5 XML preserved ${ev} but current mapping expected ${nv} for ${def.friendlyName}.`);
-            } else if (mapStatus === "FAIL") {
-              if (isAccidentalClampingTo1) {
-                parameter_reason = `Accidental continuous knob clamping: Intended display: ${normVal}, clamped to ${resolvedIntended} because exportMax is ${def.max}`;
-              } else {
-                parameter_reason = `Expected ${display_value} but exported value loads as ${reverse_converted_display_value}.`;
-              }
-            } else if (mapStatus === "DISPARITY") {
-              parameter_reason = `Value disparity (clamped): Intended: ${normVal}, actual exported value loads as ${reverse_converted_display_value} due to physical limits of the gear.`;
+              suspiciousDetails.push(parameter_reason || `Mapping configuration appears wrong for ${def.friendlyName}.`);
             }
+
+            const reverse_converted_display_value = convRes.reverseDisplayValue;
 
             let match_source: "exact_xml" | "friendly_name" | "saved_alias" | "raw_mapping_alias" | "generated_alias" | "fallback" | "unmatched" = "unmatched";
             const cleanXml = def.xmlName.toLowerCase().replace(/[^a-z0-9.]/g, "");
@@ -2518,13 +2522,6 @@ const makeDebugItem = (
               match_source = "saved_alias";
             }
 
-            let conversion_warning: string | undefined = undefined;
-            if (isAccidentalClampingTo1) {
-              conversion_warning = `Input value ${normVal} was clamped to ${resolvedIntended} because exportMax is 1. This appears invalid for a continuous amp knob.`;
-            } else if (convRes.warnings.length > 0) {
-              conversion_warning = convRes.warnings.join("; ");
-            }
-
             detailsList.push({
               parameter: normKey,
               normalized_parameter: isNearestBandMapping ? nearestBandMappedXmlName : undefined,
@@ -2541,8 +2538,10 @@ const makeDebugItem = (
               exported_internal_value: String(expVal),
               mapping_status: mapStatus,
               conversion_note,
-              expected_export_value: convRes.formattedExportValue,
-              actual_export_value: String(ev),
+              expected_export_value: authoritativeExpectedValue,
+              serialized_export_value: serializedExpectedValue,
+              actual_xml_value: String(expVal),
+              actual_export_value: typeof ev === "number" && !isNaN(ev) ? ev : String(expVal),
               reverse_converted_display_value,
               reason: parameter_reason,
               input_parameter_name: normKey,
@@ -2569,11 +2568,11 @@ const makeDebugItem = (
             } else if (!match && !isMappingConfigSuspicious) {
               if (isAccidentalClampingTo1) {
                 mismatched_parameters.push(
-                  `${def.friendlyName} (Accidental continuous knob clamping: Intended display: ${normVal}, clamped to ${resolvedIntended} because exportMax is ${def.max})`
+                  `${def.friendlyName} (Accidental continuous knob clamping: Intended display: ${normVal}, clamped to ${serializedExpectedValue} because exportMax is ${def.max})`
                 );
               } else {
                 mismatched_parameters.push(
-                  `${def.friendlyName} (Intended display: ${normVal}, Expected exported value: ${resolvedIntended}, Exported: ${expVal})`
+                  `${def.friendlyName} (${parameter_reason || `Intended display: ${normVal}, Expected exported value: ${authoritativeExpectedValue}, Exported: ${expVal}`})`
                 );
               }
             }
@@ -3170,7 +3169,7 @@ const makeDebugItem = (
     darrell_channel_mapping_reason = `Channel ${darrell_channel_selected} is active, so generic Gain/Master is successfully mapped to ${darrell_active_gain_parameter}/${darrell_active_master_parameter} in the verified .at5p preset.`;
 
     if (verified_guid_resolved) {
-      if (final_status === "FAIL" || final_status === "CHECK") {
+      if ((final_status === "FAIL" || final_status === "CHECK") && mismatched_parameters.length === 0 && suspiciousMappingParams.length === 0) {
         final_status = "PASS";
       }
     } else {
@@ -3425,6 +3424,7 @@ const makeDebugItem = (
     gear_attempted_to_xml,
     parameter_mapping_status,
     mismatched_parameters,
+    disparity_parameters: disparity_parameters.length > 0 ? disparity_parameters : undefined,
     dropped_parameters: dropped_parameters.length > 0 ? dropped_parameters : undefined,
     final_status,
     parameter_details: detailsList.length > 0 ? detailsList : undefined,
@@ -3810,35 +3810,38 @@ export const getExportDebugData = (
             detail.actual_export_value = isNaN(parseFloat(actualXmlVal)) ? actualXmlVal : parseFloat(actualXmlVal);
             detail.exported_internal_value = String(actualXmlVal);
 
-            // Re-evaluate match against actual XML value
-            const nv = typeof detail.expected_export_value === "number" ? detail.expected_export_value : parseFloat(String(detail.expected_export_value));
-            const ev = parseFloat(actualXmlVal);
+            // Re-evaluate match against actual XML value using precision tolerance rules
+            const verif = verifyParameterExportMatch({
+              intendedDisplayValue: detail.display_value ?? detail.input_value,
+              expectedExportValue: detail.expected_export_value,
+              actualExportValue: actualXmlVal,
+              parameterDef: {
+                min: detail.export_min,
+                max: detail.export_max,
+                friendlyName: detail.matched_profile_parameter,
+                xmlName: detail.matched_export_parameter_name,
+                kind: inferParameterKind(detail.matched_profile_parameter, detail.matched_export_parameter_name)
+              },
+              conversionResult: {
+                clampApplied: detail.clamp_applied,
+                warnings: detail.conversion_warning ? [detail.conversion_warning] : [],
+                exportMin: detail.export_min,
+                exportMax: detail.export_max,
+                reverseDisplayValue: detail.reverse_converted_display_value
+              } as any,
+              isNearestBandMapping: detail.mapping_status === "SUCCESS_NEAREST_BAND",
+            });
 
-            let match = false;
-            if (detail.conversion_warning) {
-              match = false; // Always FAIL if clamping warning is active
-            } else if (!isNaN(nv) && !isNaN(ev)) {
-              match = Math.abs(nv - ev) <= 0.15;
-            } else {
-              match = String(detail.expected_export_value).trim().toLowerCase() === String(actualXmlVal).trim().toLowerCase();
+            detail.mapping_status = verif.status;
+            detail.reason = verif.reason;
+            if (verif.warning) {
+              detail.conversion_warning = verif.warning;
             }
 
-            if (match) {
-              detail.mapping_status = detail.clamp_applied ? "DISPARITY" : "SUCCESS";
-              detail.reason = detail.clamp_applied ? detail.reason : undefined;
-            } else {
-              detail.mapping_status = "FAIL";
-              if (detail.conversion_warning) {
-                detail.reason = detail.conversion_warning;
-                final_xml_mismatched_parameters.push(
-                  `${detail.matched_profile_parameter ?? detail.parameter} (Clamping warning: ${detail.conversion_warning})`
-                );
-              } else {
-                detail.reason = `Expected ${detail.display_value} but actual exported XML contains value ${actualXmlVal}.`;
-                final_xml_mismatched_parameters.push(
-                  `${detail.matched_profile_parameter ?? detail.parameter} (XML value mismatch: expected ${detail.expected_export_value}, got ${actualXmlVal})`
-                );
-              }
+            if (!verif.match) {
+              final_xml_mismatched_parameters.push(
+                `${detail.matched_profile_parameter ?? detail.parameter} (${verif.reason || `XML value mismatch: expected ${detail.expected_export_value}, got ${actualXmlVal}`})`
+              );
             }
           } else {
             // Attribute missing in XML!
@@ -3860,6 +3863,16 @@ export const getExportDebugData = (
         final_xml_mismatched_parameters.forEach(p => {
           overall_xml_discrepancies.push(`${debugItem.normalized_name} (Slot: ${debugItem.slot_section}): ${p}`);
         });
+      } else {
+        const hasParamWarn = debugItem.parameter_details?.some(
+          (d: any) => d.mapping_status === "DISPARITY" || d.mapping_status === "WARNING" || d.mapping_status === "SUCCESS_NEAREST_BAND" || d.mapping_status === "FALLBACK_USED" || d.mapping_status === "PARTIAL_WITH_FALLBACK" || d.conversion_warning
+        );
+        if (hasParamWarn && debugItem.final_status === "PASS") {
+          debugItem.final_status = "PASS_WITH_WARNING";
+          if (!debugItem.reason || debugItem.reason === "Included" || debugItem.reason.startsWith("Included")) {
+            debugItem.reason = `Warning: Parameter adjustments or clamping occurred during export. Review parameter verification details.`;
+          }
+        }
       }
     } else {
       // Slot is missing from actual XML!
@@ -3886,23 +3899,23 @@ export const getExportDebugData = (
 
   let summaryText = `AT5 Preset with ${activeCount} active gear slots.`;
   if (failedItems.length > 0) {
-    summaryText += ` WARNING: ${failedItems.length} gear items failed validation and were blocked from exporting.`;
+    summaryText += ` WARNING: ${failedItems.length} gear items failed validation. Please review individual card details.`;
   } else if (criticalItems.length > 0) {
     summaryText += ` WARNING: ${criticalItems.length} gear items lacked verified GUID mappings and were substituted with default fallback profiles. Please review individual card details.`;
   }
 
-  // Aggregate overall parameter_mapping_status
+  // Aggregate overall parameter_mapping_status with strict severity hierarchy
   let overall_mapping_status: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" = "SUCCESS";
   const allStatuses = [...exportedChain, ...skippedGear].map(item => item.parameter_mapping_status).filter(Boolean);
 
-  if (allStatuses.includes("FAILED")) {
+  if (allStatuses.includes("FAILED") || failedItems.length > 0 || overall_xml_discrepancies.length > 0) {
     overall_mapping_status = "FAILED";
-  } else if (allStatuses.includes("PARTIAL")) {
-    overall_mapping_status = "PARTIAL";
   } else if (allStatuses.includes("MISMATCH")) {
     overall_mapping_status = "MISMATCH";
   } else if (allStatuses.includes("PARTIAL_WITH_FALLBACK")) {
     overall_mapping_status = "PARTIAL_WITH_FALLBACK";
+  } else if (allStatuses.includes("PARTIAL")) {
+    overall_mapping_status = "PARTIAL";
   } else if (allStatuses.includes("UNVERIFIED")) {
     overall_mapping_status = "UNVERIFIED";
   } else {

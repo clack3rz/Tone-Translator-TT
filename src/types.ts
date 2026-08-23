@@ -197,10 +197,13 @@ export interface ParameterMapping {
   displayUnit?: string;
   displayStep?: number;
   decimalPlaces?: number;
+  displayPrecision?: number;
+  displayDecimalPlaces?: number;
   defaultDisplayValue?: string | number;
   exportUnit?: string;
   exportStep?: number;
   exportDecimalPlaces?: number;
+  exportPrecision?: number;
   defaultExportValue?: string | number;
   translationMode?: string;
   valueMap?: Record<string, string | number>;
@@ -285,10 +288,13 @@ export interface GearProfileParameter {
   displayUnit?: string;
   displayStep?: number;
   decimalPlaces?: number;
+  displayPrecision?: number;
+  displayDecimalPlaces?: number;
   defaultDisplayValue?: string | number;
   exportUnit?: string;
   exportStep?: number;
   exportDecimalPlaces?: number;
+  exportPrecision?: number;
   defaultExportValue?: string | number;
   translationMode?: string;
   valueMap?: Record<string, string | number>;

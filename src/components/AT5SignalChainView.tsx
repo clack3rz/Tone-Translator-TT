@@ -40,15 +40,43 @@ type ExportDebugItem = {
   gear_attempted_to_xml?: boolean;
   parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
   mismatched_parameters?: string[];
+  disparity_parameters?: string[];
+  dropped_parameters?: string[];
   final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
     input_value?: any;
+    input_display_value?: any;
     display_value: string;
+    display_unit?: string;
+    display_min?: number;
+    display_max?: number;
+    conversion_mode?: string;
+    display_clamp_applied?: boolean;
+    clamped_display_value?: any;
+    converted_raw_value?: any;
     exported_internal_value: string;
     mapping_status: string;
     conversion_note?: string;
+    reason?: string;
+    conversion_warning?: string;
+    expected_export_value?: string | number;
+    serialized_export_value?: string | number;
+    actual_xml_value?: string | number;
+    actual_export_value?: string | number;
+    reverse_converted_display_value?: string;
+    visual_min?: number;
+    visual_max?: number;
+    export_min?: number;
+    export_max?: number;
+    raw_clamp_applied?: boolean;
+    pre_clamp_value?: any;
+    post_clamp_value?: any;
+    clamp_applied?: boolean;
+    final_export_value?: any;
+    range_source?: string;
+    range_confidence?: string;
     intended_semantic_value?: string;
     resolved_profile_found?: boolean;
     resolved_profile_value?: any;
@@ -436,13 +464,31 @@ const SelectedGearDetailPanel = ({
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const hasVerificationIssue = (item.parameter_mapping_status && item.parameter_mapping_status !== "SUCCESS") || (item.mismatched_parameters && item.mismatched_parameters.length > 0);
-  const verificationBadge = hasVerificationIssue ? (
+  const hasParamFails = (item.mismatched_parameters && item.mismatched_parameters.length > 0) ||
+    item.parameter_mapping_status === "MISMATCH" ||
+    item.parameter_mapping_status === "FAILED" ||
+    item.final_status === "FAIL" ||
+    item.parameter_details?.some(p => p.mapping_status === "FAIL" || p.mapping_status === "MISMATCH" || p.mapping_status === "FAIL_MAPPING_CONFIGURATION");
+
+  const hasParamWarnings = (item.disparity_parameters && item.disparity_parameters.length > 0) ||
+    (item.dropped_parameters && item.dropped_parameters.length > 0) ||
+    item.parameter_mapping_status === "PARTIAL" ||
+    item.parameter_mapping_status === "PARTIAL_WITH_FALLBACK" ||
+    item.parameter_mapping_status === "UNVERIFIED" ||
+    item.final_status === "PASS_WITH_WARNING" ||
+    item.final_status === "CHECK" ||
+    item.parameter_details?.some(p => p.mapping_status === "DISPARITY" || p.mapping_status === "WARNING" || p.mapping_status === "SUCCESS_NEAREST_BAND" || p.mapping_status === "FALLBACK_USED" || p.conversion_warning);
+
+  const verificationBadge = hasParamFails ? (
+    <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
+      FAIL
+    </span>
+  ) : hasParamWarnings ? (
     <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
       WARN
     </span>
   ) : (
-    <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">
+    <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
       PASS
     </span>
   );
@@ -766,17 +812,27 @@ const SelectedGearDetailPanel = ({
                           
                           <span
                             className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                              param.mapping_status === "SUCCESS"
-                                ? "bg-green-950/40 text-green-400"
-                                : param.mapping_status === "SUCCESS_NEAREST_BAND" || param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK"
-                                ? "bg-amber-950/40 text-amber-400"
-                                : "bg-red-950/40 text-red-100"
+                              param.mapping_status === "SUCCESS" || param.mapping_status === "RESOLVED_FROM_PROFILE"
+                                ? "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20"
+                                : param.mapping_status === "SUCCESS_NEAREST_BAND" || param.mapping_status === "DISPARITY" || param.mapping_status === "WARNING" || param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK"
+                                ? "bg-amber-950/40 text-amber-400 border border-amber-500/20"
+                                : "bg-rose-950/40 text-rose-300 border border-rose-500/30"
                             }`}
                           >
                             {param.mapping_status}
                           </span>
                         </div>
-                        {param.conversion_note && (
+                        {param.reason && (
+                          <span className={`text-[10px] ${param.mapping_status === "SUCCESS" ? "text-slate-500 italic" : param.mapping_status === "DISPARITY" || param.mapping_status === "WARNING" ? "text-amber-400 font-medium" : "text-rose-400 font-medium"}`}>
+                            {param.reason}
+                          </span>
+                        )}
+                        {param.conversion_warning && param.conversion_warning !== param.reason && (
+                          <span className="text-[10px] text-amber-400 font-medium">
+                            Warning: {param.conversion_warning}
+                          </span>
+                        )}
+                        {param.conversion_note && !param.reason && (
                           <span className="text-[10px] text-slate-500 italic">
                             Note: {param.conversion_note}
                           </span>

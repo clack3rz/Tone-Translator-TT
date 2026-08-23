@@ -446,10 +446,13 @@ export const gearProfileService = {
         existing.displayUnit = dbM.displayUnit;
         existing.displayStep = dbM.displayStep;
         existing.decimalPlaces = dbM.decimalPlaces;
+        existing.displayPrecision = dbM.displayPrecision;
+        existing.displayDecimalPlaces = dbM.displayDecimalPlaces;
         existing.defaultDisplayValue = dbM.defaultDisplayValue;
         existing.exportUnit = dbM.exportUnit;
         existing.exportStep = dbM.exportStep;
         existing.exportDecimalPlaces = dbM.exportDecimalPlaces;
+        existing.exportPrecision = dbM.exportPrecision;
         existing.defaultExportValue = dbM.defaultExportValue;
         existing.translationMode = dbM.translationMode;
         existing.valueMap = dbM.valueMap;
@@ -515,10 +518,13 @@ export const gearProfileService = {
           displayUnit: dbM.displayUnit,
           displayStep: dbM.displayStep,
           decimalPlaces: dbM.decimalPlaces,
+          displayPrecision: dbM.displayPrecision,
+          displayDecimalPlaces: dbM.displayDecimalPlaces,
           defaultDisplayValue: dbM.defaultDisplayValue,
           exportUnit: dbM.exportUnit,
           exportStep: dbM.exportStep,
           exportDecimalPlaces: dbM.exportDecimalPlaces,
+          exportPrecision: dbM.exportPrecision,
           defaultExportValue: dbM.defaultExportValue,
           translationMode: dbM.translationMode,
           valueMap: dbM.valueMap,
@@ -749,10 +755,13 @@ export const gearProfileService = {
           displayUnit: p.displayUnit,
           displayStep: p.displayStep,
           decimalPlaces: p.decimalPlaces,
+          displayPrecision: p.displayPrecision,
+          displayDecimalPlaces: p.displayDecimalPlaces,
           defaultDisplayValue: p.defaultDisplayValue,
           exportUnit: p.exportUnit,
           exportStep: p.exportStep,
           exportDecimalPlaces: p.exportDecimalPlaces,
+          exportPrecision: p.exportPrecision,
           defaultExportValue: p.defaultExportValue,
           translationMode: p.translationMode,
           valueMap: p.valueMap,
