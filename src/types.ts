@@ -310,6 +310,13 @@ export interface GearProfileParameter {
   optionRows?: ParameterOptionRow[];
   valueMapJson?: string;
   reverseValueMapJson?: string;
+  visualMin?: number;
+  visualMax?: number;
+  exportMin?: number;
+  exportMax?: number;
+  min?: number;
+  max?: number;
+  unit?: string;
 }
 
 export interface GearProfile {

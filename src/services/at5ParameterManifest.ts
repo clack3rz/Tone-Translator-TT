@@ -587,6 +587,9 @@ export function getParameterDefinitions(
     }
 
     if (existing) {
+      existing.friendlyName = dbM.displayParameterName || dbM.parameter || existing.friendlyName;
+      existing.displayParameterName = dbM.displayParameterName || dbM.parameter || existing.friendlyName;
+      existing.canonicalParameterName = dbM.canonicalParameterName || dbM.exportParameterName || existing.xmlName;
       existing.xmlName = dbM.exportParameterName || existing.xmlName;
       
       const isKnownContinuousAmpKnob = existing.kind === "continuous_knob" || 
@@ -638,39 +641,39 @@ export function getParameterDefinitions(
       }
 
       // Propagate extended fields
-      existing.gearGuid = dbM.gearGuid;
-      existing.displayParameterName = dbM.displayParameterName;
-      existing.canonicalParameterName = dbM.canonicalParameterName;
-      existing.at5XmlAttributeName = dbM.at5XmlAttributeName;
-      existing.interfaceType = dbM.interfaceType;
-      existing.parameterKind = dbM.parameterKind;
-      existing.displayMin = dbM.displayMin;
-      existing.displayMax = dbM.displayMax;
-      existing.displayUnit = dbM.displayUnit;
-      existing.displayStep = dbM.displayStep;
-      existing.decimalPlaces = dbM.decimalPlaces;
-      existing.displayPrecision = dbM.displayPrecision;
-      existing.displayDecimalPlaces = dbM.displayDecimalPlaces;
-      existing.defaultDisplayValue = dbM.defaultDisplayValue;
-      existing.exportUnit = dbM.exportUnit;
-      existing.exportStep = dbM.exportStep;
-      existing.exportDecimalPlaces = dbM.exportDecimalPlaces;
-      existing.exportPrecision = dbM.exportPrecision;
-      existing.defaultExportValue = dbM.defaultExportValue;
-      existing.translationMode = dbM.translationMode;
-      existing.valueMap = dbM.valueMap;
-      existing.reverseValueMap = dbM.reverseValueMap;
-      existing.helperDescription = dbM.helperDescription;
-      existing.exampleInput = dbM.exampleInput;
-      existing.exampleOutput = dbM.exampleOutput;
-      existing.mappingConfidence = dbM.mappingConfidence;
-      existing.source = dbM.source;
-      existing.doNotRequestForGear = dbM.doNotRequestForGear;
-      existing.unsupportedReason = dbM.unsupportedReason;
-      existing.reviewNotes = dbM.reviewNotes;
-      existing.optionRows = dbM.optionRows;
-      existing.valueMapJson = dbM.valueMapJson;
-      existing.reverseValueMapJson = dbM.reverseValueMapJson;
+      existing.gearGuid = dbM.gearGuid || existing.gearGuid;
+      existing.displayParameterName = dbM.displayParameterName || existing.displayParameterName || existing.friendlyName;
+      existing.canonicalParameterName = dbM.canonicalParameterName || existing.canonicalParameterName || existing.xmlName;
+      existing.at5XmlAttributeName = dbM.at5XmlAttributeName || existing.at5XmlAttributeName || existing.xmlName;
+      existing.interfaceType = dbM.interfaceType ?? existing.interfaceType;
+      existing.parameterKind = dbM.parameterKind ?? existing.parameterKind;
+      existing.displayMin = dbM.displayMin ?? existing.displayMin;
+      existing.displayMax = dbM.displayMax ?? existing.displayMax;
+      existing.displayUnit = dbM.displayUnit ?? existing.displayUnit;
+      existing.displayStep = dbM.displayStep ?? existing.displayStep;
+      existing.decimalPlaces = dbM.decimalPlaces ?? existing.decimalPlaces;
+      existing.displayPrecision = dbM.displayPrecision ?? existing.displayPrecision;
+      existing.displayDecimalPlaces = dbM.displayDecimalPlaces ?? existing.displayDecimalPlaces;
+      existing.defaultDisplayValue = dbM.defaultDisplayValue ?? existing.defaultDisplayValue;
+      existing.exportUnit = dbM.exportUnit ?? existing.exportUnit;
+      existing.exportStep = dbM.exportStep ?? existing.exportStep;
+      existing.exportDecimalPlaces = dbM.exportDecimalPlaces ?? existing.exportDecimalPlaces;
+      existing.exportPrecision = dbM.exportPrecision ?? existing.exportPrecision;
+      existing.defaultExportValue = dbM.defaultExportValue ?? existing.defaultExportValue;
+      existing.translationMode = dbM.translationMode ?? existing.translationMode;
+      existing.valueMap = dbM.valueMap ?? existing.valueMap;
+      existing.reverseValueMap = dbM.reverseValueMap ?? existing.reverseValueMap;
+      existing.helperDescription = dbM.helperDescription ?? existing.helperDescription;
+      existing.exampleInput = dbM.exampleInput ?? existing.exampleInput;
+      existing.exampleOutput = dbM.exampleOutput ?? existing.exampleOutput;
+      existing.mappingConfidence = dbM.mappingConfidence ?? existing.mappingConfidence;
+      existing.source = dbM.source ?? existing.source;
+      existing.doNotRequestForGear = dbM.doNotRequestForGear ?? existing.doNotRequestForGear;
+      existing.unsupportedReason = dbM.unsupportedReason ?? existing.unsupportedReason;
+      existing.reviewNotes = dbM.reviewNotes ?? existing.reviewNotes;
+      existing.optionRows = dbM.optionRows ?? existing.optionRows;
+      existing.valueMapJson = dbM.valueMapJson ?? existing.valueMapJson;
+      existing.reverseValueMapJson = dbM.reverseValueMapJson ?? existing.reverseValueMapJson;
     } else {
       const inferredKind = inferParameterKind(dbM.parameter, dbM.exportParameterName);
       const isKnownContinuousAmpKnob = inferredKind === "continuous_knob";
@@ -688,11 +691,13 @@ export function getParameterDefinitions(
         ...(dbM.savedAliases || []),
         ...(dbM.effectiveAliases || [])
       ].filter(Boolean)));
-      const newKey = (dbM.exportParameterName || dbM.parameter).toLowerCase().trim();
+      const newDisplayName = dbM.displayParameterName || dbM.parameter;
+      const newCanonicalName = dbM.canonicalParameterName || dbM.exportParameterName;
+      const newKey = (newCanonicalName || newDisplayName).toLowerCase().trim();
 
       paramsMap.set(newKey, {
-        friendlyName: dbM.parameter,
-        xmlName: dbM.exportParameterName,
+        friendlyName: newDisplayName,
+        xmlName: newCanonicalName,
         min: finalMin,
         max: finalMax,
         transform: dbM.conversion as any,
@@ -701,8 +706,8 @@ export function getParameterDefinitions(
         rawMappingAliases: dbCombinedAliases,
         effectiveAliases: Array.from(new Set([
           ...dbCombinedAliases,
-          dbM.parameter,
-          dbM.exportParameterName
+          newDisplayName,
+          newCanonicalName
         ].filter(Boolean))),
         visualMin: dbM.visualMin,
         visualMax: dbM.visualMax,
@@ -712,9 +717,9 @@ export function getParameterDefinitions(
 
         // Propagate extended fields
         gearGuid: dbM.gearGuid,
-        displayParameterName: dbM.displayParameterName,
-        canonicalParameterName: dbM.canonicalParameterName,
-        at5XmlAttributeName: dbM.at5XmlAttributeName,
+        displayParameterName: dbM.displayParameterName || newDisplayName,
+        canonicalParameterName: dbM.canonicalParameterName || newCanonicalName,
+        at5XmlAttributeName: dbM.at5XmlAttributeName || newCanonicalName,
         interfaceType: dbM.interfaceType,
         parameterKind: dbM.parameterKind,
         displayMin: dbM.displayMin,
@@ -789,7 +794,23 @@ export function getParameterDefinitions(
     p.aliases = effective;
   }
 
-  return Array.from(paramsMap.values());
+  // Ensure parameters are strictly deduplicated by unique object reference and canonical identity
+  const uniqueParams: VerifiedParamDef[] = [];
+  const seenRefs = new Set<VerifiedParamDef>();
+  const seenIdentities = new Set<string>();
+
+  for (const p of paramsMap.values()) {
+    if (seenRefs.has(p)) continue;
+    seenRefs.add(p);
+
+    const identity = (p.xmlName || p.canonicalParameterName || p.displayParameterName || p.friendlyName || '').toLowerCase().trim();
+    if (identity && seenIdentities.has(identity)) continue;
+    if (identity) seenIdentities.add(identity);
+
+    uniqueParams.push(p);
+  }
+
+  return uniqueParams;
 }
 
 export const parseSettingValue = (

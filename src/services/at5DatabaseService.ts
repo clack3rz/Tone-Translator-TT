@@ -278,13 +278,17 @@ export const at5DatabaseService = {
     if (!auth.currentUser) throw new Error("Must be signed in to save parameter mappings");
     
     // Generate a unique doc id: gearName_parameter (clean the string to be valid ID)
-    const rawId = `${mapping.gearName}_${mapping.parameter}`;
-    const mappingId = rawId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const rawId = `${mapping.gearName || 'gear'}_${mapping.parameter || 'param'}`;
+    const mappingId = rawId.replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 120);
     
     const path = `parameter_mappings/${mappingId}`;
     try {
+      const exportParamName = mapping.exportParameterName || mapping.canonicalParameterName || mapping.parameter || 'unknown';
+      const conversionMode = mapping.conversion || 'direct';
       const data = sanitize({
         ...mapping,
+        exportParameterName: exportParamName,
+        conversion: conversionMode,
         id: mappingId,
         updatedAt: serverTimestamp(),
         updatedBy: auth.currentUser.uid
