@@ -356,34 +356,41 @@ export const gearProfileService = {
 
     for (const dbM of relevantDb) {
       const targetKeys = [
-        dbM.parameter,
         dbM.exportParameterName,
+        dbM.at5XmlAttributeName,
         dbM.canonicalParameterName,
-        dbM.displayParameterName
+        dbM.parameter,
+        dbM.displayParameterName,
+        ...(Array.isArray(dbM.savedAliases) ? dbM.savedAliases : []),
+        ...(Array.isArray(dbM.aliases) ? dbM.aliases : [])
       ].filter(Boolean).map(s => s!.toLowerCase().trim());
 
-      let existing: GearProfileParameter | undefined = undefined;
-      for (const k of targetKeys) {
-        if (paramsMap.has(k)) {
-          existing = paramsMap.get(k);
-          break;
+      const matchingKeys: string[] = [];
+      for (const [k, p] of paramsMap.entries()) {
+        const pNames = [
+          k,
+          p.canonicalName,
+          p.canonicalParameterName,
+          p.export?.name,
+          p.at5XmlAttributeName,
+          p.displayName,
+          p.displayParameterName,
+          ...(p.aliases || []),
+          ...(p.savedAliases || []),
+          ...(p.effectiveAliases || [])
+        ].filter(Boolean).map(s => s.toLowerCase().trim());
+
+        if (targetKeys.some(tk => pNames.includes(tk))) {
+          matchingKeys.push(k);
         }
       }
 
-      if (!existing) {
-        for (const p of paramsMap.values()) {
-          const namesToCompare = [
-            p.displayName,
-            p.canonicalName,
-            p.export?.name,
-            ...(p.aliases || []),
-            ...(p.effectiveAliases || [])
-          ].filter(Boolean).map(s => s.toLowerCase().trim());
-
-          if (targetKeys.some(tk => namesToCompare.includes(tk))) {
-            existing = p;
-            break;
-          }
+      let existing: GearProfileParameter | undefined = undefined;
+      if (matchingKeys.length > 0) {
+        existing = paramsMap.get(matchingKeys[0]);
+        // Clean up redundant duplicate entries from paramsMap so only one authoritative entry remains
+        for (let i = 1; i < matchingKeys.length; i++) {
+          paramsMap.delete(matchingKeys[i]);
         }
       }
 
@@ -392,6 +399,32 @@ export const gearProfileService = {
       const dbAliases = Array.isArray(dbM.aliases) ? dbM.aliases : [];
 
       if (existing) {
+        if (displayName.toLowerCase().includes('overscream') || dbM.gearName?.toLowerCase().includes('overscream')) {
+          console.log('[PARAM_TRACE:HYDRATION_BEFORE]', JSON.stringify({
+            gearDisplayName: displayName,
+            existingParam: {
+              displayName: existing.displayName,
+              displayParameterName: existing.displayParameterName,
+              canonicalName: existing.canonicalName,
+              canonicalParameterName: existing.canonicalParameterName,
+              exportName: existing.export?.name,
+              exportPrecision: existing.exportPrecision,
+              exportDecimalPlaces: existing.exportDecimalPlaces
+            }
+          }));
+          console.log('[PARAM_TRACE:HYDRATION_MAPPING_SELECTED]', JSON.stringify({
+            mappingId: dbM.id,
+            gearName: dbM.gearName,
+            parameter: dbM.parameter,
+            displayParameterName: dbM.displayParameterName,
+            canonicalParameterName: dbM.canonicalParameterName,
+            exportParameterName: dbM.exportParameterName,
+            at5XmlAttributeName: dbM.at5XmlAttributeName,
+            exportPrecision: dbM.exportPrecision,
+            exportDecimalPlaces: dbM.exportDecimalPlaces
+          }));
+        }
+
         existing.displayName = dbM.displayParameterName || dbM.parameter || existing.displayName;
         existing.displayParameterName = dbM.displayParameterName || dbM.parameter || existing.displayName;
         existing.canonicalName = dbM.canonicalParameterName || dbM.exportParameterName || existing.canonicalName;
@@ -473,6 +506,24 @@ export const gearProfileService = {
         existing.optionRows = dbM.optionRows ?? existing.optionRows;
         existing.valueMapJson = dbM.valueMapJson ?? existing.valueMapJson;
         existing.reverseValueMapJson = dbM.reverseValueMapJson ?? existing.reverseValueMapJson;
+        (existing as any)._isDbHydrated = true;
+
+        if (displayName.toLowerCase().includes('overscream') || dbM.gearName?.toLowerCase().includes('overscream')) {
+          console.log('[PARAM_TRACE:HYDRATION_AFTER]', JSON.stringify({
+            gearDisplayName: displayName,
+            hydratedParam: {
+              displayName: existing.displayName,
+              displayParameterName: existing.displayParameterName,
+              canonicalName: existing.canonicalName,
+              canonicalParameterName: existing.canonicalParameterName,
+              exportName: existing.export?.name,
+              at5XmlAttributeName: existing.at5XmlAttributeName,
+              exportPrecision: existing.exportPrecision,
+              exportDecimalPlaces: existing.exportDecimalPlaces,
+              displayPrecision: existing.displayPrecision
+            }
+          }));
+        }
       } else {
         const dbSavedAliases = (dbM.savedAliases && dbM.savedAliases.length > 0) ? dbM.savedAliases : (dbM.aliases || []);
         const dbRawAliases = dbM.rawMappingAliases || dbM.aliases || [];
@@ -481,7 +532,7 @@ export const gearProfileService = {
         const newDisplayName = dbM.displayParameterName || dbM.parameter;
         const newCanonicalName = dbM.canonicalParameterName || dbM.exportParameterName;
         const newKey = (newCanonicalName || newDisplayName).toLowerCase().trim();
-        paramsMap.set(newKey, {
+        const newParam: GearProfileParameter = {
           displayName: newDisplayName,
           canonicalName: newCanonicalName,
           aliases: dbSavedAliases,
@@ -547,27 +598,39 @@ export const gearProfileService = {
           optionRows: dbM.optionRows,
           valueMapJson: dbM.valueMapJson,
           reverseValueMapJson: dbM.reverseValueMapJson,
-        });
+        };
+        (newParam as any)._isDbHydrated = true;
+        paramsMap.set(newKey, newParam);
       }
     }
 
-    // Ensure parameters are strictly deduplicated by unique object reference and canonical identity
-    const uniqueParams: GearProfileParameter[] = [];
-    const seenRefs = new Set<GearProfileParameter>();
-    const seenIdentities = new Set<string>();
+    // Ensure parameters are strictly deduplicated with authoritative priority to DB-hydrated parameters
+    const canonicalMap = new Map<string, GearProfileParameter>();
+    const extraParams: GearProfileParameter[] = [];
 
     for (const p of paramsMap.values()) {
-      if (seenRefs.has(p)) continue;
-      seenRefs.add(p);
+      const canonicalKey = (p.canonicalName || p.export?.name || p.canonicalParameterName || p.at5XmlAttributeName || p.displayParameterName || p.displayName || '').toLowerCase().trim();
+      if (!canonicalKey) {
+        extraParams.push(p);
+        continue;
+      }
 
-      const identity = (p.canonicalName || p.export?.name || p.canonicalParameterName || p.displayParameterName || p.displayName || '').toLowerCase().trim();
-      if (identity && seenIdentities.has(identity)) continue;
-      if (identity) seenIdentities.add(identity);
+      const existingInMap = canonicalMap.get(canonicalKey);
+      if (!existingInMap) {
+        canonicalMap.set(canonicalKey, p);
+      } else {
+        const incomingIsDb = !!(p as any)._isDbHydrated;
+        const existingIsDb = !!(existingInMap as any)._isDbHydrated;
 
-      uniqueParams.push(p);
+        if (incomingIsDb && !existingIsDb) {
+          canonicalMap.set(canonicalKey, p);
+        } else if (incomingIsDb && existingIsDb) {
+          canonicalMap.set(canonicalKey, p);
+        }
+      }
     }
 
-    return uniqueParams;
+    return [...Array.from(canonicalMap.values()), ...extraParams];
   },
 
   /**
@@ -731,15 +794,15 @@ export const gearProfileService = {
       await at5DatabaseService.saveVerifiedMapping(dbType, mappingItem);
     }
 
-    // 3. Prune obsolete parameter mappings and save current ones
+    // 3. Prune obsolete and renamed parameter mappings and save current ones
     const dbMappings = await at5DatabaseService.getParameterMappings(true);
     const relevantDb = dbMappings.filter(m => this.isMappingForGear(m, profile.displayName, profile.aliases || [], profile.guid));
     
-    // Deduplicate current parameters by canonical name / display name to ensure unique list
+    // Deduplicate current parameters by canonical export name / XML attribute to ensure unique list
     const deduplicatedParams: GearProfileParameter[] = [];
     const seenParamKeys = new Set<string>();
     for (const p of (profile.parameters || [])) {
-      const key = (p.canonicalName || p.export?.name || p.canonicalParameterName || p.displayParameterName || p.displayName || '').toLowerCase().trim();
+      const key = (p.export?.name || p.at5XmlAttributeName || p.canonicalName || p.canonicalParameterName || p.displayParameterName || p.displayName || '').toLowerCase().trim();
       if (key && !seenParamKeys.has(key)) {
         seenParamKeys.add(key);
         deduplicatedParams.push(p);
@@ -748,45 +811,47 @@ export const gearProfileService = {
       }
     }
 
-    const currentParamNames = new Set(
+    const currentExportNames = new Set(
       deduplicatedParams.flatMap(p => [
-        p.displayName?.toLowerCase().trim(),
-        p.displayParameterName?.toLowerCase().trim(),
+        p.export?.name?.toLowerCase().trim(),
+        p.at5XmlAttributeName?.toLowerCase().trim(),
         p.canonicalName?.toLowerCase().trim(),
         p.canonicalParameterName?.toLowerCase().trim(),
-        p.export?.name?.toLowerCase().trim(),
-        p.at5XmlAttributeName?.toLowerCase().trim()
+        p.displayParameterName?.toLowerCase().trim(),
+        p.displayName?.toLowerCase().trim()
       ]).filter(Boolean) as string[]
     );
 
-    // Identify and delete mappings that are no longer in the parameters list
-    for (const m of relevantDb) {
-      const mKeys = [
-        m.parameter?.toLowerCase().trim(),
-        m.displayParameterName?.toLowerCase().trim(),
-        m.canonicalParameterName?.toLowerCase().trim(),
-        m.exportParameterName?.toLowerCase().trim()
-      ].filter(Boolean) as string[];
-
-      const matchesAnyCurrent = mKeys.some(k => currentParamNames.has(k));
-      if (!matchesAnyCurrent && m.id) {
-        await at5DatabaseService.deleteParameterMapping(m.id);
-      }
-    }
-
-    // Save/update current parameters
-    const savedMappingIds = new Set<string>();
+    // Save/update current parameters with canonical doc IDs
+    const activeDocIds = new Set<string>();
     for (const p of deduplicatedParams) {
-      const exportParamName = p.export?.name || p.canonicalName || p.at5XmlAttributeName || p.displayName;
-      if (!exportParamName && !p.displayName) continue;
+      if (profile.displayName.toLowerCase().includes('overscream') || (p.displayName && p.displayName.toLowerCase().includes('drive'))) {
+        console.log('[PARAM_TRACE:PROFILE_PARAM_BEFORE_MAPPING]', JSON.stringify({
+          profileDisplayName: profile.displayName,
+          param_displayName: p.displayName,
+          param_displayParameterName: p.displayParameterName,
+          param_canonicalName: p.canonicalName,
+          param_canonicalParameterName: p.canonicalParameterName,
+          param_exportName: p.export?.name,
+          param_at5XmlAttributeName: p.at5XmlAttributeName,
+          param_exportPrecision: p.exportPrecision,
+          param_exportDecimalPlaces: p.exportDecimalPlaces,
+          param_displayPrecision: p.displayPrecision
+        }));
+      }
 
-      const mappingIdKey = `${profile.displayName}_${p.displayName || exportParamName}`.toLowerCase().trim();
-      if (savedMappingIds.has(mappingIdKey)) continue;
-      savedMappingIds.add(mappingIdKey);
+      const exportParamName = p.export?.name || p.at5XmlAttributeName || p.canonicalName || p.displayName || 'Param';
+      const canonicalParamName = p.canonicalParameterName || p.canonicalName || exportParamName;
+      const displayParamName = p.displayParameterName || p.displayName || exportParamName;
+
+      const rawId = `${profile.displayName}_${exportParamName}`;
+      const mappingId = rawId.replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 120);
+      activeDocIds.add(mappingId);
 
       const mapping: ParameterMapping = {
+        id: mappingId,
         gearName: profile.displayName,
-        parameter: p.displayName || exportParamName,
+        parameter: displayParamName,
         visualMin: p.visual?.min !== undefined ? Number(p.visual.min) : (p.visualMin !== undefined ? Number(p.visualMin) : 0),
         visualMax: p.visual?.max !== undefined ? Number(p.visual.max) : (p.visualMax !== undefined ? Number(p.visualMax) : 10),
         visualUnit: p.visual?.unit || p.unit || '',
@@ -798,13 +863,13 @@ export const gearProfileService = {
         
         // Extended fields
         gearGuid: p.gearGuid || profile.guid,
-        displayParameterName: p.displayParameterName || p.displayName,
-        canonicalParameterName: p.canonicalParameterName || p.canonicalName || exportParamName,
+        displayParameterName: displayParamName,
+        canonicalParameterName: canonicalParamName,
         aliases: p.savedAliases || p.aliases || [],
         savedAliases: p.savedAliases || p.aliases || [],
         rawMappingAliases: p.rawMappingAliases || [],
         autoGeneratedAliases: p.autoGeneratedAliases || [],
-        effectiveAliases: p.effectiveAliases || Array.from(new Set([...(p.savedAliases || []), ...(p.aliases || []), p.displayName, p.canonicalName, exportParamName].filter(Boolean))),
+        effectiveAliases: p.effectiveAliases || Array.from(new Set([...(p.savedAliases || []), ...(p.aliases || []), displayParamName, canonicalParamName, exportParamName].filter(Boolean))),
         at5XmlAttributeName: p.at5XmlAttributeName || exportParamName,
         interfaceType: p.interfaceType,
         parameterKind: p.parameterKind,
@@ -837,7 +902,45 @@ export const gearProfileService = {
         valueMapJson: p.valueMapJson,
         reverseValueMapJson: p.reverseValueMapJson,
       };
+
+      if (profile.displayName.toLowerCase().includes('overscream') || (p.displayName && p.displayName.toLowerCase().includes('drive'))) {
+        console.log('[PARAM_TRACE:MAPPING_BEFORE_FIRESTORE]', JSON.stringify({
+          mappingId: mapping.id,
+          gearName: mapping.gearName,
+          parameter: mapping.parameter,
+          displayParameterName: mapping.displayParameterName,
+          canonicalParameterName: mapping.canonicalParameterName,
+          exportParameterName: mapping.exportParameterName,
+          at5XmlAttributeName: mapping.at5XmlAttributeName,
+          exportPrecision: mapping.exportPrecision,
+          exportDecimalPlaces: mapping.exportDecimalPlaces,
+          displayPrecision: mapping.displayPrecision
+        }));
+      }
+
       await at5DatabaseService.saveParameterMapping(mapping);
+    }
+
+    // Identify and delete orphaned or duplicate mappings in Firestore
+    for (const m of relevantDb) {
+      if (m.id && !activeDocIds.has(m.id)) {
+        const mKeys = [
+          m.parameter?.toLowerCase().trim(),
+          m.displayParameterName?.toLowerCase().trim(),
+          m.canonicalParameterName?.toLowerCase().trim(),
+          m.exportParameterName?.toLowerCase().trim()
+        ].filter(Boolean) as string[];
+
+        const matchesAnyCurrent = mKeys.some(k => currentExportNames.has(k));
+        // If it does not match any current parameter OR is an outdated duplicate doc ID, prune it
+        if (!matchesAnyCurrent || relevantDb.some(other => other.id !== m.id && other.exportParameterName === m.exportParameterName)) {
+          try {
+            await at5DatabaseService.deleteParameterMapping(m.id);
+          } catch (delErr) {
+            console.warn(`Could not prune obsolete mapping ${m.id}:`, delErr);
+          }
+        }
+      }
     }
 
     // Invalidate caches

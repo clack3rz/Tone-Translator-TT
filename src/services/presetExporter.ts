@@ -2309,12 +2309,14 @@ const makeDebugItem = (
   const fallbackWarningsList: string[] = [];
 
   const parsedExported: Record<string, number | string> = {};
+  const rawExportedStrings: Record<string, string> = {};
   const attrRegex = /([A-Za-z0-9_]+)="([^"]*)"/g;
   let attrMatch;
   while ((attrMatch = attrRegex.exec(attrs)) !== null) {
     const [_, name, val] = attrMatch;
     const num = parseFloat(val);
     parsedExported[name] = isNaN(num) ? val : num;
+    rawExportedStrings[name] = val;
   }
 
   const normSettings = gear.settings ?? {};
@@ -2522,6 +2524,8 @@ const makeDebugItem = (
               match_source = "saved_alias";
             }
 
+            const rawXmlVal = rawExportedStrings[def.xmlName] ?? String(expVal);
+
             detailsList.push({
               parameter: normKey,
               normalized_parameter: isNearestBandMapping ? nearestBandMappedXmlName : undefined,
@@ -2535,18 +2539,20 @@ const makeDebugItem = (
               display_clamp_applied: convRes.displayClampApplied,
               clamped_display_value: convRes.clampedDisplayValue,
               converted_raw_value: convRes.convertedRawValue,
-              exported_internal_value: String(expVal),
+              exported_internal_value: rawXmlVal,
               mapping_status: mapStatus,
               conversion_note,
               expected_export_value: authoritativeExpectedValue,
               serialized_export_value: serializedExpectedValue,
-              actual_xml_value: String(expVal),
-              actual_export_value: typeof ev === "number" && !isNaN(ev) ? ev : String(expVal),
+              actual_xml_value: rawXmlVal,
+              actual_export_value: typeof ev === "number" && !isNaN(ev) ? ev : rawXmlVal,
               reverse_converted_display_value,
+              display_precision: convRes.displayPrecision,
+              export_precision: convRes.exportPrecision,
               reason: parameter_reason,
               input_parameter_name: normKey,
-              matched_profile_parameter: def.friendlyName,
-              matched_export_parameter_name: def.xmlName,
+              matched_profile_parameter: def.displayParameterName || (def as any).displayName || def.friendlyName,
+              matched_export_parameter_name: def.at5XmlAttributeName || (def as any).exportParameterName || (def as any).exportName || def.xmlName,
               match_source,
               exported_value: expVal,
               visual_min: convRes.displayMin,

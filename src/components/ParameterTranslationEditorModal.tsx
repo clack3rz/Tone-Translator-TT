@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -25,6 +25,120 @@ import {
 } from 'lucide-react';
 import { GearProfile, GearProfileParameter, ParameterOptionRow } from '../types';
 import { TestTranslationResult } from '../services/at5ParameterManifest';
+
+interface FormattedNumericInputProps {
+  value: number | undefined;
+  precision: number;
+  onChange: (val: number | undefined) => void;
+  defaultValue?: number;
+  allowEmpty?: boolean;
+  placeholder?: string;
+  className?: string;
+  id?: string;
+  disabled?: boolean;
+}
+
+const FormattedNumericInput: React.FC<FormattedNumericInputProps> = ({
+  value,
+  precision,
+  onChange,
+  defaultValue,
+  allowEmpty = false,
+  placeholder,
+  className = "w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40",
+  id,
+  disabled = false
+}) => {
+  const formatDisplay = (val: number | undefined, prec: number): string => {
+    if (val === undefined || val === null || isNaN(val)) {
+      return allowEmpty ? "" : (defaultValue !== undefined ? formatDisplay(defaultValue, prec) : "");
+    }
+    if (!Number.isFinite(val)) return "";
+    const strVal = String(val);
+    const parts = strVal.split('.');
+    const existingDecimals = parts[1] ? parts[1].length : 0;
+    if (existingDecimals > prec) {
+      return strVal;
+    }
+    return val.toFixed(prec);
+  };
+
+  const [isFocused, setIsFocused] = useState(false);
+  const [text, setText] = useState<string>(() => formatDisplay(value, precision));
+
+  useEffect(() => {
+    if (!isFocused) {
+      setText(formatDisplay(value, precision));
+    }
+  }, [value, precision, isFocused]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setText(raw);
+
+    const trimmed = raw.trim();
+    if (trimmed === "") {
+      if (allowEmpty) {
+        onChange(undefined);
+      }
+      return;
+    }
+
+    if (/^-?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(trimmed)) {
+      const parsed = parseFloat(trimmed);
+      if (!isNaN(parsed) && Number.isFinite(parsed)) {
+        onChange(parsed);
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    const trimmed = text.trim();
+
+    if (trimmed === "") {
+      if (allowEmpty) {
+        onChange(undefined);
+        setText("");
+      } else {
+        const fallback = defaultValue !== undefined ? defaultValue : 0;
+        onChange(fallback);
+        setText(formatDisplay(fallback, precision));
+      }
+      return;
+    }
+
+    if (/^-?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(trimmed)) {
+      const parsed = parseFloat(trimmed);
+      if (!isNaN(parsed) && Number.isFinite(parsed)) {
+        onChange(parsed);
+        setText(formatDisplay(parsed, precision));
+        return;
+      }
+    }
+
+    setText(formatDisplay(value, precision));
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      id={id}
+      disabled={disabled}
+      className={className}
+      value={text}
+      onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      placeholder={placeholder}
+    />
+  );
+};
 
 interface ParameterTranslationEditorModalProps {
   isOpen: boolean;
@@ -265,11 +379,26 @@ export const ParameterTranslationEditorModal: React.FC<ParameterTranslationEdito
                     type="text"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:border-gear-accent/40"
                     value={paramForm.displayName !== undefined ? paramForm.displayName : (paramForm.displayParameterName ?? '')}
-                    onChange={(e) => setParamForm({
-                      ...paramForm,
-                      displayName: e.target.value,
-                      displayParameterName: e.target.value
-                    })}
+                    onChange={(e) => {
+                      const updated = {
+                        ...paramForm,
+                        displayName: e.target.value,
+                        displayParameterName: e.target.value
+                      };
+                      console.log('[PARAM_TRACE:EDITOR_CHANGE]', JSON.stringify({
+                        field: 'displayName',
+                        displayName: updated.displayName,
+                        displayParameterName: updated.displayParameterName,
+                        canonicalName: updated.canonicalName,
+                        canonicalParameterName: updated.canonicalParameterName,
+                        exportName: updated.export?.name,
+                        at5XmlAttributeName: updated.at5XmlAttributeName,
+                        exportPrecision: updated.exportPrecision,
+                        exportDecimalPlaces: updated.exportDecimalPlaces,
+                        id: (updated as any).id
+                      }));
+                      setParamForm(updated);
+                    }}
                     placeholder="e.g. Drive, Bass, Mid, Master"
                   />
                 </div>
@@ -359,27 +488,25 @@ export const ParameterTranslationEditorModal: React.FC<ParameterTranslationEdito
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1">
                     <label className="text-[9px] font-mono text-gray-400 uppercase">AT5 Visual Min</label>
-                    <input
-                      type="number"
-                      step="any"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
+                    <FormattedNumericInput
                       value={paramForm.visual?.min !== undefined ? paramForm.visual.min : 0}
-                      onChange={(e) => setParamForm({
+                      precision={displayPrecision}
+                      defaultValue={0}
+                      onChange={(val) => setParamForm({
                         ...paramForm,
-                        visual: { ...paramForm.visual, min: parseFloat(e.target.value) || 0 }
+                        visual: { ...paramForm.visual, min: val !== undefined ? val : 0 }
                       })}
                     />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[9px] font-mono text-gray-400 uppercase">AT5 Visual Max</label>
-                    <input
-                      type="number"
-                      step="any"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
+                    <FormattedNumericInput
                       value={paramForm.visual?.max !== undefined ? paramForm.visual.max : 10}
-                      onChange={(e) => setParamForm({
+                      precision={displayPrecision}
+                      defaultValue={10}
+                      onChange={(val) => setParamForm({
                         ...paramForm,
-                        visual: { ...paramForm.visual, max: parseFloat(e.target.value) || 0 }
+                        visual: { ...paramForm.visual, max: val !== undefined ? val : 10 }
                       })}
                     />
                   </div>
@@ -405,24 +532,28 @@ export const ParameterTranslationEditorModal: React.FC<ParameterTranslationEdito
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   <div className="space-y-1">
                     <label className="text-[9px] font-mono text-gray-400 uppercase">TT Display Min</label>
-                    <input
-                      type="number"
-                      step="any"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
-                      value={paramForm.displayMin !== undefined ? paramForm.displayMin : ''}
-                      onChange={(e) => setParamForm({ ...paramForm, displayMin: e.target.value !== '' ? parseFloat(e.target.value) : undefined })}
+                    <FormattedNumericInput
+                      value={paramForm.displayMin}
+                      precision={displayPrecision}
+                      allowEmpty={true}
                       placeholder="e.g. 0"
+                      onChange={(val) => setParamForm({
+                        ...paramForm,
+                        displayMin: val
+                      })}
                     />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[9px] font-mono text-gray-400 uppercase">TT Display Max</label>
-                    <input
-                      type="number"
-                      step="any"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
-                      value={paramForm.displayMax !== undefined ? paramForm.displayMax : ''}
-                      onChange={(e) => setParamForm({ ...paramForm, displayMax: e.target.value !== '' ? parseFloat(e.target.value) : undefined })}
+                    <FormattedNumericInput
+                      value={paramForm.displayMax}
+                      precision={displayPrecision}
+                      allowEmpty={true}
                       placeholder="e.g. 10"
+                      onChange={(val) => setParamForm({
+                        ...paramForm,
+                        displayMax: val
+                      })}
                     />
                   </div>
                   <div className="space-y-1">
@@ -492,79 +623,93 @@ export const ParameterTranslationEditorModal: React.FC<ParameterTranslationEdito
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-                <div className="space-y-1 col-span-2">
-                  <label className="text-[9px] font-mono text-gray-400 uppercase">Target AT5 XML Attribute ID</label>
-                  <input
-                    type="text"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
-                    value={paramForm.export?.name || paramForm.at5XmlAttributeName || ''}
-                    onChange={(e) => setParamForm({
-                      ...paramForm,
-                      at5XmlAttributeName: e.target.value,
-                      export: { ...paramForm.export, name: e.target.value }
-                    })}
-                    placeholder="e.g. Drive, Bass, Mid, Threshold"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] font-mono text-gray-400 uppercase">AmpliTube Float Min</label>
-                  <input
-                    type="number"
-                    step="any"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
-                    value={paramForm.export?.min !== undefined ? paramForm.export.min : 0}
-                    onChange={(e) => setParamForm({
-                      ...paramForm,
-                      export: { ...paramForm.export, min: parseFloat(e.target.value) || 0 }
-                    })}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] font-mono text-gray-400 uppercase">AmpliTube Float Max</label>
-                  <input
-                    type="number"
-                    step="any"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
-                    value={paramForm.export?.max !== undefined ? paramForm.export.max : 1}
-                    onChange={(e) => setParamForm({
-                      ...paramForm,
-                      export: { ...paramForm.export, max: parseFloat(e.target.value) || 0 }
-                    })}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] font-mono text-gray-400 uppercase">Export Decimal Precision</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="8"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
-                    value={paramForm.exportPrecision !== undefined ? paramForm.exportPrecision : ''}
-                    onChange={(e) => {
-                      const val = e.target.value !== '' ? parseInt(e.target.value, 10) : undefined;
-                      setParamForm({
+              <div className="bg-black/20 p-3.5 rounded-xl border border-white/5 space-y-3">
+                <span className="text-[9.5px] font-mono text-emerald-400 uppercase font-bold tracking-wider block">Target Serialization &amp; Boundaries</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  <div className="space-y-1 sm:col-span-2 lg:col-span-1">
+                    <label className="text-[9px] font-mono text-gray-400 uppercase whitespace-nowrap block">Target AT5 XML Attribute ID</label>
+                    <input
+                      type="text"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
+                      value={paramForm.export?.name || paramForm.at5XmlAttributeName || ''}
+                      onChange={(e) => setParamForm({
                         ...paramForm,
-                        exportPrecision: val,
-                        exportDecimalPlaces: val
-                      });
-                    }}
-                    placeholder="e.g. 5 (for 3.28171)"
-                  />
-                </div>
+                        at5XmlAttributeName: e.target.value,
+                        export: { ...paramForm.export, name: e.target.value }
+                      })}
+                      placeholder="e.g. Drive, Bass, Mid, Threshold"
+                    />
+                  </div>
 
-                <div className="space-y-1">
-                  <label className="text-[9px] font-mono text-gray-400 uppercase">Default Export Value</label>
-                  <input
-                    type="text"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
-                    value={paramForm.defaultExportValue !== undefined ? paramForm.defaultExportValue : ''}
-                    onChange={(e) => setParamForm({ ...paramForm, defaultExportValue: e.target.value })}
-                    placeholder="e.g. 0.5, 1.0"
-                  />
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono text-gray-400 uppercase whitespace-nowrap block">AmpliTube Float Min</label>
+                    <FormattedNumericInput
+                      value={paramForm.export?.min !== undefined ? paramForm.export.min : 0}
+                      precision={exportPrecision}
+                      defaultValue={0}
+                      onChange={(val) => setParamForm({
+                        ...paramForm,
+                        export: { ...paramForm.export, min: val !== undefined ? val : 0 }
+                      })}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono text-gray-400 uppercase whitespace-nowrap block">AmpliTube Float Max</label>
+                    <FormattedNumericInput
+                      value={paramForm.export?.max !== undefined ? paramForm.export.max : 1}
+                      precision={exportPrecision}
+                      defaultValue={1}
+                      onChange={(val) => setParamForm({
+                        ...paramForm,
+                        export: { ...paramForm.export, max: val !== undefined ? val : 1 }
+                      })}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono text-gray-400 uppercase whitespace-nowrap block">Export Decimal Precision</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="8"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
+                      value={paramForm.exportPrecision !== undefined ? paramForm.exportPrecision : ''}
+                      onChange={(e) => {
+                        const val = e.target.value !== '' ? parseInt(e.target.value, 10) : undefined;
+                        const updated = {
+                          ...paramForm,
+                          exportPrecision: val,
+                          exportDecimalPlaces: val
+                        };
+                        console.log('[PARAM_TRACE:EDITOR_CHANGE]', JSON.stringify({
+                          field: 'exportPrecision',
+                          displayName: updated.displayName,
+                          displayParameterName: updated.displayParameterName,
+                          canonicalName: updated.canonicalName,
+                          canonicalParameterName: updated.canonicalParameterName,
+                          exportName: updated.export?.name,
+                          at5XmlAttributeName: updated.at5XmlAttributeName,
+                          exportPrecision: updated.exportPrecision,
+                          exportDecimalPlaces: updated.exportDecimalPlaces,
+                          id: (updated as any).id
+                        }));
+                        setParamForm(updated);
+                      }}
+                      placeholder="e.g. 5 (for 3.28171)"
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2 lg:col-span-1">
+                    <label className="text-[9px] font-mono text-gray-400 uppercase whitespace-nowrap block">Default Export Value</label>
+                    <input
+                      type="text"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-gear-accent/40"
+                      value={paramForm.defaultExportValue !== undefined ? paramForm.defaultExportValue : ''}
+                      onChange={(e) => setParamForm({ ...paramForm, defaultExportValue: e.target.value })}
+                      placeholder="e.g. 0.5, 1.0"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -66,6 +66,10 @@ type ExportDebugItem = {
     actual_xml_value?: string | number;
     actual_export_value?: string | number;
     reverse_converted_display_value?: string;
+    display_precision?: number;
+    export_precision?: number;
+    matched_profile_parameter?: string;
+    matched_export_parameter_name?: string;
     visual_min?: number;
     visual_max?: number;
     export_min?: number;
@@ -334,10 +338,14 @@ const SettingsTable = ({
   title,
   data,
   onJumpToCatalogue,
+  paramDetails,
+  isExportDomain = false,
 }: {
   title: string;
   data: Record<string, unknown>;
   onJumpToCatalogue?: (guid: string) => void;
+  paramDetails?: any[];
+  isExportDomain?: boolean;
 }) => {
   const entries = Object.entries(data ?? {});
 
@@ -372,16 +380,52 @@ const SettingsTable = ({
           const isGuidDef = valStr.length >= 30 && (valStr.includes("-") || /^[a-fA-F0-9]{32}$/.test(valStr));
           const resolvedName = isGuidDef ? resolveGuidName(valStr, key) : null;
 
+          // Find parameter detail for precision formatting
+          const cleanKey = key.toLowerCase().replace(/[^a-z0-9.]/g, "");
+          const matchedDetail = paramDetails?.find(p => {
+            const pName = (p.parameter || "").toLowerCase().replace(/[^a-z0-9.]/g, "");
+            const mProf = (p.matched_profile_parameter || "").toLowerCase().replace(/[^a-z0-9.]/g, "");
+            const mExp = (p.matched_export_parameter_name || "").toLowerCase().replace(/[^a-z0-9.]/g, "");
+            const nParam = (p.normalized_parameter || "").toLowerCase().replace(/[^a-z0-9.]/g, "");
+            return cleanKey === pName || cleanKey === mProf || cleanKey === mExp || cleanKey === nParam;
+          });
+
+          let displayFormattedValue = formatValue(value);
+          if (!isGuidDef && matchedDetail) {
+            if (isExportDomain) {
+              if (matchedDetail.actual_xml_value !== undefined) {
+                displayFormattedValue = String(matchedDetail.actual_xml_value);
+              } else if (matchedDetail.serialized_export_value !== undefined) {
+                displayFormattedValue = String(matchedDetail.serialized_export_value);
+              }
+            } else {
+              if (matchedDetail.reverse_converted_display_value) {
+                displayFormattedValue = matchedDetail.reverse_converted_display_value;
+              } else if (typeof value === "number" && matchedDetail.display_precision !== undefined) {
+                displayFormattedValue = value.toFixed(matchedDetail.display_precision);
+              }
+            }
+          } else if (!isGuidDef && typeof value === "number") {
+            if (!Number.isInteger(value)) {
+              displayFormattedValue = value.toFixed(2);
+            }
+          }
+
+          const labelName = (!isExportDomain && matchedDetail?.matched_profile_parameter)
+            ? (matchedDetail.matched_profile_parameter !== key ? `${matchedDetail.matched_profile_parameter} (${key})` : key)
+            : key;
+
           return (
             <div
               key={key}
               className="grid grid-cols-[170px_1fr] gap-2 border-b border-white/5 pb-1 text-xs leading-tight last:border-0 last:pb-0"
             >
               <div
-                className="font-mono font-semibold"
+                className="font-mono font-semibold truncate"
                 style={{ color: "#94a3b8" }}
+                title={labelName}
               >
-                {key}
+                {labelName}
               </div>
               <div
                 className="break-all font-mono font-semibold flex flex-col"
@@ -406,7 +450,7 @@ const SettingsTable = ({
                     )}
                   </div>
                 ) : (
-                  <span>{formatValue(value)}</span>
+                  <span>{displayFormattedValue}</span>
                 )}
               </div>
             </div>
@@ -680,13 +724,69 @@ const SelectedGearDetailPanel = ({
           badge={settingsBadge}
         >
           <div className="grid gap-3 pt-1">
-            <SettingsTable title="Original settings" data={item.original_settings} onJumpToCatalogue={onJumpToCatalogue} />
+            {item.parameter_details && item.parameter_details.length > 0 && (
+              <div className="rounded-xl border border-cyan-500/20 p-3.5 bg-[#080d1a] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold text-cyan-400 font-mono uppercase tracking-wider flex items-center gap-2">
+                    <Sliders className="w-3.5 h-3.5" />
+                    Parameter Translation & Domain Map
+                  </div>
+                  <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">
+                    Display Domain ↔ AT5 Export Domain
+                  </span>
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  {item.parameter_details.map((param, pIdx) => {
+                    const dispName = param.matched_profile_parameter || param.parameter;
+                    const dispVal = param.reverse_converted_display_value || (typeof param.display_value === "number" && param.display_precision !== undefined ? Number(param.display_value).toFixed(param.display_precision) : String(param.display_value));
+                    const expName = param.matched_export_parameter_name || param.normalized_parameter || param.parameter;
+                    const expVal = param.actual_xml_value ?? param.serialized_export_value ?? param.exported_internal_value;
+
+                    return (
+                      <div key={pIdx} className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-2 items-center bg-slate-900/50 p-2 rounded-lg border border-white/5 text-xs font-mono">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] text-cyan-400 font-bold uppercase bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/20">Display</span>
+                          <span className="text-slate-300 font-semibold">{dispName} =</span>
+                          <strong className="text-white font-bold">{dispVal}</strong>
+                          {param.display_precision !== undefined && (
+                            <span className="text-[9px] text-cyan-400/70 font-mono">(prec: {param.display_precision})</span>
+                          )}
+                        </div>
+                        <span className="text-slate-600 font-mono hidden md:inline">→</span>
+                        <div className="flex items-center gap-1.5 flex-wrap md:justify-end">
+                          <span className="text-[10px] text-amber-400 font-bold uppercase bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-500/20">Export</span>
+                          <span className="text-slate-300 font-semibold">{expName} =</span>
+                          <strong className="text-yellow-300 font-bold font-mono">"{expVal}"</strong>
+                          {param.export_precision !== undefined && (
+                            <span className="text-[9px] text-amber-400/70 font-mono">(prec: {param.export_precision})</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <SettingsTable
+              title="Original settings"
+              data={item.original_settings}
+              onJumpToCatalogue={onJumpToCatalogue}
+              paramDetails={item.parameter_details}
+            />
             <SettingsTable
               title="Normalised settings"
               data={item.normalized_settings}
               onJumpToCatalogue={onJumpToCatalogue}
+              paramDetails={item.parameter_details}
             />
-            <SettingsTable title="Exported XML settings" data={exportedAttrs} onJumpToCatalogue={onJumpToCatalogue} />
+            <SettingsTable
+              title="Exported XML settings"
+              data={exportedAttrs}
+              onJumpToCatalogue={onJumpToCatalogue}
+              paramDetails={item.parameter_details}
+              isExportDomain={true}
+            />
           </div>
         </Accordion>
 
@@ -791,24 +891,38 @@ const SelectedGearDetailPanel = ({
                     );
                   }
 
+                  const dispName = param.matched_profile_parameter || param.parameter;
+                  const dispVal = param.reverse_converted_display_value || (typeof param.display_value === "number" && param.display_precision !== undefined ? Number(param.display_value).toFixed(param.display_precision) : String(param.display_value));
+                  const expName = param.matched_export_parameter_name || param.normalized_parameter || param.parameter;
+                  const expVal = param.actual_xml_value ?? param.serialized_export_value ?? param.exported_internal_value;
+
                   return (
                     <div
                       key={pIdx}
-                      className="grid grid-cols-[140px_1fr] gap-3 border-b border-white/5 pb-2 text-xs leading-tight last:border-0 last:pb-0"
+                      className="grid grid-cols-[140px_1fr] gap-3 border-b border-white/5 pb-2.5 text-xs leading-tight last:border-0 last:pb-0"
                     >
                       <div className="font-mono font-semibold text-slate-400">
                         {param.parameter}
                       </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-slate-300">Intended: <strong className="text-slate-100">{param.display_value}</strong></span>
-                          {param.normalized_parameter && (
-                            <span className="text-slate-400 font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
-                              ({param.normalized_parameter})
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5 bg-slate-900/60 px-2 py-1 rounded border border-white/5">
+                            <span className="text-[10px] text-cyan-400 font-bold uppercase">Display:</span>
+                            <span className="text-slate-300 font-semibold">{dispName} =</span>
+                            <strong className="text-slate-100 font-bold">{dispVal}</strong>
+                            {param.display_precision !== undefined && (
+                              <span className="text-[8.5px] text-cyan-400/70 font-mono">(p:{param.display_precision})</span>
+                            )}
+                          </div>
                           <span className="text-slate-500 font-mono">→</span>
-                          <span className="text-slate-400">Exported Raw: <strong className="font-mono text-slate-100">"{param.exported_internal_value}"</strong></span>
+                          <div className="flex items-center gap-1.5 bg-slate-900/60 px-2 py-1 rounded border border-white/5">
+                            <span className="text-[10px] text-amber-400 font-bold uppercase">Export:</span>
+                            <span className="text-slate-300 font-semibold">{expName} =</span>
+                            <strong className="font-mono text-yellow-300 font-bold">"{expVal}"</strong>
+                            {param.export_precision !== undefined && (
+                              <span className="text-[8.5px] text-amber-400/70 font-mono">(p:{param.export_precision})</span>
+                            )}
+                          </div>
                           
                           <span
                             className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
