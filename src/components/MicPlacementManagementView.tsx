@@ -19,7 +19,6 @@ import {
   VIRCoordinates
 } from '../services/at5MicPlacementService';
 import { at5DatabaseService } from '../services/at5DatabaseService';
-import { refreshDbParameterMappings } from '../services/at5ParameterManifest';
 import { 
   Sliders, 
   CheckCircle2, 
@@ -67,10 +66,10 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [newDistance, setNewDistance] = useState<SemanticDistance>('Close');
   const [newAngle, setNewAngle] = useState<SemanticAngle>('On Axis');
   const [newSpeaker, setNewSpeaker] = useState<'0' | '1' | '2' | '3'>('0');
-  const [customX, setCustomX] = useState('0.468750');
-  const [customY, setCustomY] = useState('0.500000');
-  const [customDist, setCustomDist] = useState('0.000000');
-  const [customAng, setCustomAng] = useState('0.000000');
+  const [customX, setCustomX] = useState('-0.214223');
+  const [customY, setCustomY] = useState('-0.00519017');
+  const [customDist, setCustomDist] = useState('0');
+  const [customAng, setCustomAng] = useState('0');
   const [useManualCoordinates, setUseManualCoordinates] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -132,29 +131,30 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
     try {
       const prefix = newSlot === 'Mic_1' ? 'Mic0' : 'Mic1';
-      let coords: { Angle: string | number; XAxis: string | number; YAxis: string | number; Distance: string | number; Speaker: string | number };
+      let coords: { Angle: number; XAxis: number; YAxis: number; Distance: number; Speaker: number };
 
       if (useManualCoordinates) {
         coords = {
-          Angle: customAng,
-          XAxis: customX,
-          YAxis: customY,
-          Distance: customDist,
-          Speaker: newSpeaker
+          Angle: Number(customAng) || 0,
+          XAxis: Number(customX) || 0,
+          YAxis: Number(customY) || 0,
+          Distance: Number(customDist) || 0,
+          Speaker: Number(newSpeaker) || (newSlot === 'Mic_1' ? 0 : 1)
         };
       } else {
-        const composed = composeVIRCoordinates(newPosition, newDistance, newAngle, newSlot, newSpeaker);
+        const composed = composeVIRCoordinates(newPosition, newDistance, newAngle, newSlot, Number(newSpeaker));
         coords = composed;
       }
 
-      const xmlValues = {
-        [`${prefix}Angle`]: String(coords.Angle),
-        [`${prefix}XAxis`]: String(coords.XAxis),
-        [`${prefix}YAxis`]: String(coords.YAxis),
-        [`${prefix}Distance`]: String(coords.Distance),
-        [`${prefix}Speaker`]: String(coords.Speaker)
+      const xmlValues: Record<string, number> = {
+        [`${prefix}Angle`]: coords.Angle,
+        [`${prefix}XAxis`]: coords.XAxis,
+        [`${prefix}YAxis`]: coords.YAxis,
+        [`${prefix}Distance`]: coords.Distance,
+        [`${prefix}Speaker`]: coords.Speaker
       };
 
+      // Manual coordinate edits or new entries must be marked as needs_review, not at5p_validated
       await at5DatabaseService.saveMicPlacementMapping({
         gear: cabName,
         cabName,
@@ -163,16 +163,22 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
         friendly_value: newLabel.trim(),
         friendly_placement: newPosition,
         friendly_distance: newDistance,
+        friendly_angle: newAngle,
+        friendlyPlacement: newPosition,
+        friendlyDistance: newDistance,
+        friendlyAngle: newAngle,
         maps_to: xmlValues,
-        status: 'validated',
+        status: 'needs_review',
+        validationStatus: 'needs_review',
+        confidence: useManualCoordinates ? 'low' : 'medium',
         source: 'manual_calibration'
       });
 
-      await refreshDbParameterMappings();
+      // Dedicated refresh path - do NOT trigger global parameter manifest refresh
       await loadMappings();
       if (onRefreshChain) onRefreshChain();
 
-      setSaveSuccessMsg(`Saved mapping "${newLabel}" for cabinet "${cabName}".`);
+      setSaveSuccessMsg(`Saved mapping "${newLabel}" for cabinet "${cabName}" (Status: Needs Review).`);
       setShowAddModal(false);
       setNewLabel('');
     } catch (err: any) {
@@ -187,7 +193,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     if (!window.confirm('Delete this mic placement profile?')) return;
     try {
       await at5DatabaseService.deleteMicPlacementMapping(id);
-      await refreshDbParameterMappings();
+      // Dedicated refresh path - do NOT trigger global parameter manifest refresh
       await loadMappings();
       if (onRefreshChain) onRefreshChain();
       setSaveSuccessMsg('Mapping deleted successfully.');
@@ -214,7 +220,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               Semantic 3D Coordinate Calibration & Precedence Resolver
             </h3>
             <p className="text-xs text-gray-400 font-mono max-w-3xl leading-relaxed">
-              Maps human semantic microphone placement labels (e.g. <span className="text-white font-bold">Cap Edge, Close</span>, <span className="text-white font-bold">Cone 45°</span>) into exact AmpliTube 5 VIR grid coordinates with strict hierarchical precedence and scope-limited reference protection.
+              Maps human semantic microphone placement labels (e.g. <span className="text-white font-bold">Cap Edge, Close</span>, <span className="text-white font-bold">Cone, 45° Off Axis</span>) into exact AmpliTube 5 VIR grid coordinates with strict hierarchical precedence and scope-limited reference protection.
             </p>
           </div>
 
@@ -271,23 +277,23 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Tier 2: VIR Reference</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Scope Limited</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Mic 1 Only</span>
             </div>
-            <p className="text-[11px] text-gray-300 font-medium">Verified calibration on 4x12 Brit 8000 + reference mics.</p>
+            <p className="text-[11px] text-gray-300 font-medium">Verified on 4x12 Brit 8000 + Dynamic 57. Mic 2 is a calibration gap.</p>
           </div>
 
           <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Tier 3: Estimated</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">Fallback</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">Needs Review</span>
             </div>
-            <p className="text-[11px] text-gray-300 font-medium">Explicitly tagged estimated fallback mapping in Firestore.</p>
+            <p className="text-[11px] text-gray-300 font-medium">Estimated/discovered mapping in Firestore requiring review.</p>
           </div>
 
           <div className="p-3 rounded-xl bg-gray-800/40 border border-white/10 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tier 4: Safe Default</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300 font-bold">Warning</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300 font-bold">Fallback</span>
             </div>
             <p className="text-[11px] text-gray-400 font-medium">Safe coordinates (0) with warning. Never silent contamination.</p>
           </div>
@@ -300,13 +306,13 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono uppercase text-gray-500 font-bold tracking-wider">Active Target Cabinet:</span>
             <span className="text-sm font-bold font-mono text-white">{cabName}</span>
-            <span className="text-[10px] font-mono text-gray-500 truncate max-w-[200px]">({cabGuid})</span>
+            <span className="text-[10px] font-mono text-gray-500 truncate max-w-[280px]">({cabGuid})</span>
           </div>
           <p className="text-xs text-gray-400 font-mono">
             {isReferenceCab ? (
               <span className="text-emerald-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                This cabinet is a verified VIR reference model. Built-in VIR calibration coordinates are active.
+                This cabinet is the verified VIR reference model (4x12 Brit 8000). Built-in reference calibration is active for Mic 1.
               </span>
             ) : (
               <span className="text-amber-400 flex items-center gap-1.5">
@@ -368,8 +374,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               onChange={(e) => setTestSlot(e.target.value as any)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
             >
-              <option value="Mic_1">Mic 1 (Mic 0 XML Slot / Speaker 0)</option>
-              <option value="Mic_2">Mic 2 (Mic 1 XML Slot / Speaker 1)</option>
+              <option value="Mic_1">Mic 1 (Mic0 Slot / Speaker 0 - Calibrated)</option>
+              <option value="Mic_2">Mic 2 (Mic1 Slot / Speaker 1 - Calibration Gap)</option>
             </select>
           </div>
 
@@ -380,11 +386,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               onChange={(e) => setTestMicModel(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
             >
-              <option value="Dynamic 57">Dynamic 57 (Reference)</option>
-              <option value="Condenser 87">Condenser 87 (Reference)</option>
-              <option value="Ribbon 121">Ribbon 121</option>
-              <option value="Dynamic 421">Dynamic 421</option>
-              <option value="Custom Uncalibrated Mic">Custom Uncalibrated Mic</option>
+              <option value="Dynamic 57">Dynamic 57 (Verified Reference Mic)</option>
+              <option value="Condenser 87">Condenser 87 (Unverified Mic)</option>
+              <option value="Ribbon 121">Ribbon 121 (Unverified Mic)</option>
+              <option value="Dynamic 421">Dynamic 421 (Unverified Mic)</option>
+              <option value="Custom Mic">Custom Uncalibrated Mic</option>
             </select>
           </div>
 
@@ -397,7 +403,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                   onChange={(e) => setTestPosition(e.target.value as any)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
                 >
-                  <option value="Cap Center">Cap Center</option>
+                  <option value="Cap">Cap (Center)</option>
                   <option value="Cap Edge">Cap Edge</option>
                   <option value="Cone">Cone</option>
                   <option value="Cone Edge">Cone Edge</option>
@@ -413,8 +419,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-2 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
                   >
                     <option value="Close">Close</option>
-                    <option value="1.5 in">1.5 in</option>
-                    <option value="Distant">Distant</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Far">Far</option>
                   </select>
                   <select
                     value={testAngle}
@@ -422,7 +428,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-2 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
                   >
                     <option value="On Axis">On Axis (0°)</option>
-                    <option value="45 Degrees">45 Degrees</option>
+                    <option value="45° Off Axis">45° Off Axis</option>
                   </select>
                 </div>
               </div>
@@ -432,7 +438,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               <label className="text-[9.5px] font-mono text-gray-400 uppercase tracking-wider block font-bold">Custom Semantic String Input</label>
               <input
                 type="text"
-                placeholder='e.g. "Cap Edge, Close", "Cone 45°", "Off-axis Edge"'
+                placeholder='e.g. "Cap Edge, Close", "Cone, 45° Off Axis", "Cone Edge, Far"'
                 value={customTestInput}
                 onChange={(e) => setCustomTestInput(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 placeholder:text-gray-600"
@@ -445,15 +451,21 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
         <div className="bg-[#18181f] border border-white/10 rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-gray-400 uppercase font-bold">Resolver Status:</span>
+              <span className="text-[10px] font-mono text-gray-400 uppercase font-bold">Resolver Tier / Source:</span>
               <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
-                liveResolution.resolved
-                  ? liveResolution.resolutionSource === 'firestore_verified'
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                    : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
-                  : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
+                liveResolution.resolutionSource === 'firestore_verified'
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : liveResolution.resolutionSource === 'reference_calibration_vir'
+                    ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
+                    : liveResolution.resolutionSource === 'estimated_profile'
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                      : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
               }`}>
-                {liveResolution.resolved ? `RESOLVED (${liveResolution.resolutionSource.toUpperCase()})` : 'FALLBACK / DEFAULT (SAFE)'}
+                {liveResolution.resolutionSource === 'firestore_verified' && 'TIER 1: FIRESTORE VERIFIED'}
+                {liveResolution.resolutionSource === 'reference_calibration_vir' && 'TIER 2: VIR REFERENCE CALIBRATION (MIC 1 ONLY)'}
+                {liveResolution.resolutionSource === 'estimated_profile' && 'TIER 3: ESTIMATED PROFILE (NEEDS REVIEW)'}
+                {liveResolution.resolutionSource === 'safe_default' && 'TIER 4: SAFE DEFAULT / UNCALIBRATED GAP'}
+                {liveResolution.resolutionSource === 'cab_default' && 'CAB DEFAULT (UNSPECIFIED)'}
               </span>
             </div>
 
@@ -489,11 +501,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-cyan-400" />
               <h4 className="text-sm font-bold font-mono text-white uppercase tracking-wider">
-                Built-in VIR Reference Calibration Coordinates
+                Built-in VIR Reference Calibration Coordinates (Numeric)
               </h4>
             </div>
             <p className="text-xs text-gray-400 font-mono">
-              Calibrated values for reference cabinet (<span className="text-gray-300">4x12 Brit 8000</span>) and reference mics (<span className="text-gray-300">Dynamic 57, Condenser 87</span>).
+              Calibrated values from 7 controlled AT5P exports for reference cabinet (<span className="text-gray-300">4x12 Brit 8000</span>, GUID: <span className="text-gray-300">7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b</span>) and reference mic (<span className="text-gray-300">Dynamic 57</span>, GUID: <span className="text-gray-300">1e41acc4-85af-4e84-bee4-eabc0be5fef1</span>).
             </p>
           </div>
 
@@ -564,6 +576,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               const xml = m.maps_to || m.xml_values || {};
               const slot = m.friendly_setting || m.target || 'Mic_1_Placement';
               const label = m.friendly_value || m.friendly_name || 'Placement';
+              const status = m.status || m.validationStatus || 'needs_review';
 
               return (
                 <div key={m.id || idx} className="bg-black/30 border border-white/5 rounded-2xl p-4 space-y-3">
@@ -573,8 +586,12 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                       <h5 className="text-sm font-bold font-mono text-white">{label}</h5>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[8px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase font-bold">
-                        {m.status || 'Validated'}
+                      <span className={`text-[8px] font-mono px-2 py-0.5 rounded uppercase font-bold border ${
+                        status === 'validated' || status === 'at5p_validated'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      }`}>
+                        {status.replace(/_/g, ' ')}
                       </span>
                       <button
                         onClick={() => handleDeleteMapping(m.id)}
@@ -623,7 +640,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                 <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Semantic Label / Name</label>
                 <input
                   type="text"
-                  placeholder='e.g. "Cap Edge, Close", "Cone Edge 45°"'
+                  placeholder='e.g. "Cap Edge, Close", "Cone, 45° Off Axis"'
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
@@ -681,7 +698,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                       onChange={(e) => setNewPosition(e.target.value as any)}
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                     >
-                      <option value="Cap Center">Cap Center</option>
+                      <option value="Cap">Cap (Center)</option>
                       <option value="Cap Edge">Cap Edge</option>
                       <option value="Cone">Cone</option>
                       <option value="Cone Edge">Cone Edge</option>
@@ -696,8 +713,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                     >
                       <option value="Close">Close</option>
-                      <option value="1.5 in">1.5 in</option>
-                      <option value="Distant">Distant</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Far">Far</option>
                     </select>
                   </div>
 
@@ -709,7 +726,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                     >
                       <option value="On Axis">On Axis (0°)</option>
-                      <option value="45 Degrees">45 Degrees</option>
+                      <option value="45° Off Axis">45° Off Axis</option>
                     </select>
                   </div>
                 </div>

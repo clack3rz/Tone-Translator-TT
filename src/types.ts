@@ -390,9 +390,10 @@ export interface MicPlacementMapping {
   friendly_name?: string; // Alias for friendly_value
   friendly_placement?: string;
   friendly_distance?: string;
+  friendly_angle?: string;
   maps_to: Record<string, string | number>;
   xml_values?: Record<string, string | number>; // Alias for maps_to
-  status: "validated" | "estimated" | "discovered";
+  status: "validated" | "estimated" | "discovered" | "needs_review";
   validation_status?: string; // Alias for status
   source?: string;
   updatedAt?: any;
@@ -408,6 +409,7 @@ export interface MicPlacementMapping {
   placementAliases?: string[];
   friendlyPlacement?: string;
   friendlyDistance?: string;
+  friendlyAngle?: string;
   micModelName?: string;
   micModelGuid?: string;
   micModelScope?: "any" | "specific";

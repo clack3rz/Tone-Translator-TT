@@ -8,11 +8,11 @@ export type SemanticDistance = "Close" | "Medium" | "Far";
 export type SemanticAngle = "On Axis" | "45° Off Axis";
 
 export interface VIRCoordinates {
-  Angle: string | number;
-  XAxis: string | number;
-  YAxis: string | number;
-  Distance: string | number;
-  Speaker: string | number;
+  Angle: number;
+  XAxis: number;
+  YAxis: number;
+  Distance: number;
+  Speaker: number;
 }
 
 export interface ParsedSemanticPlacement {
@@ -39,38 +39,40 @@ export interface PlacementResolutionResult {
 }
 
 /**
- * Authoritative VIR Reference Grid Coordinates
- * Verified on IK Multimedia AmpliTube 5 VIR 3D Speaker Grid
+ * Authoritative VIR Reference Grid Coordinates (Numeric)
+ * Verified on IK Multimedia AmpliTube 5 VIR 3D Speaker Grid against 7 controlled AT5P exports
  */
 export const VIR_CALIBRATION_COORDINATES = {
   positions: {
-    "Cap": { X: "0", Y: "0", label: "Cap (Center)" },
-    "Cap Edge": { X: "-0.214223", Y: "-0.00519017", label: "Cap Edge" },
-    "Cone": { X: "-0.428446", Y: "-0.0103803", label: "Cone" },
-    "Cone Edge": { X: "-0.785484", Y: "-0.0190306", label: "Cone Edge" }
+    "Cap": { X: 0, Y: 0, label: "Cap (Center)" },
+    "Cap Edge": { X: -0.214223, Y: -0.00519017, label: "Cap Edge" },
+    "Cone": { X: -0.428446, Y: -0.0103803, label: "Cone" },
+    "Cone Edge": { X: -0.785484, Y: -0.0190306, label: "Cone Edge" }
   },
   distances: {
-    "Close": { Distance: "0", label: "Close (Grille)" },
-    "Medium": { Distance: "0.5", label: "Medium (Mid-Distance)" },
-    "Far": { Distance: "1", label: "Far (Room Offset)" }
+    "Close": { Distance: 0, label: "Close" },
+    "Medium": { Distance: 0.5, label: "Medium" },
+    "Far": { Distance: 1, label: "Far" }
   },
   angles: {
-    "On Axis": { Angle: "0", label: "On Axis (0°)" },
-    "45° Off Axis": { Angle: "1", label: "45° Off Axis" }
+    "On Axis": { Angle: 0, label: "On Axis (0°)" },
+    "45° Off Axis": { Angle: 1, label: "45° Off Axis" }
   },
   speakers: {
-    Mic_1: { defaultSpeaker: "0", label: "Speaker 1 (Top Left)" },
-    Mic_2: { defaultSpeaker: "1", label: "Speaker 2 (Top Right)" }
+    Mic_1: { defaultSpeaker: 0, label: "Speaker 1 (Top Left)" },
+    Mic_2: { defaultSpeaker: 1, label: "Speaker 2 (Top Right)" }
   }
 } as const;
 
 /**
  * Reference Cabinets verified for VIR Coordinate Grid calibration
+ * Strictly calibrated against the 7 controlled AT5P exports:
+ * CabModel = 7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b (4x12 Brit 8000)
  */
 export const VIR_REFERENCE_CABINETS: { name: string; guid: string; aliases: string[] }[] = [
   {
     name: "4x12 Brit 8000",
-    guid: "fb5fc82f-a926-4591-87d2-168906fd79d3",
+    guid: "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
     aliases: [
       "4x12 brit 8000",
       "4x12 british lead s100",
@@ -79,52 +81,20 @@ export const VIR_REFERENCE_CABINETS: { name: string; guid: string; aliases: stri
       "british lead s",
       "british lead s (jcm800)",
       "british lead s100 (jcm800)",
-      "4x12 british tube lead 1",
-      "marshall 1960",
-      "4x12 1960av sl"
-    ]
-  },
-  {
-    name: "4x12 Closed 75 C",
-    guid: "c4ea21cc-6444-4779-9eee-62d4bc085410",
-    aliases: [
-      "4x12 closed 75 c",
-      "4x12 closed 75c",
-      "4x12 british 30",
-      "closed 75",
-      "4x12 v30"
+      "4x12 british tube lead 1"
     ]
   }
 ];
 
 /**
  * Reference Microphones verified with VIR calibrations
+ * Strictly verified on Mic0Model = 1e41acc4-85af-4e84-bee4-eabc0be5fef1 (Dynamic 57)
  */
 export const VIR_REFERENCE_MICS: { name: string; guid: string; aliases: string[] }[] = [
   {
     name: "Dynamic 57",
     guid: "1e41acc4-85af-4e84-bee4-eabc0be5fef1",
     aliases: ["dynamic 57", "sm57", "57", "shure sm57"]
-  },
-  {
-    name: "Condenser 87",
-    guid: "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb",
-    aliases: ["condenser 87", "u87", "87", "neumann u87"]
-  },
-  {
-    name: "Condenser 414",
-    guid: "0f35a776-f6db-403d-930f-6b7f42fed749",
-    aliases: ["condenser 414", "c414", "414", "akg c414"]
-  },
-  {
-    name: "Dynamic 421",
-    guid: "b216abec-6fae-4fcd-95fd-c89aacf60ee2",
-    aliases: ["dynamic 421", "md 421", "421", "sennheiser 421", "md421"]
-  },
-  {
-    name: "Ribbon 121",
-    guid: "cf06582b-4b26-42ce-9491-e00e7ab2481e",
-    aliases: ["ribbon 121", "r121", "121", "royer 121", "royer r-121"]
   }
 ];
 
@@ -191,9 +161,9 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
     angle = "On Axis";
   }
 
-  // 2. Distance parsing
+  // 2. Distance parsing (Close / Medium / Far - VIR distance adjustment)
   let distance: SemanticDistance | undefined = undefined;
-  if (lower.includes("far") || lower.includes("room") || lower.includes("distant") || lower.includes("1.0") || lower.includes("back")) {
+  if (lower.includes("far") || lower.includes("distant") || lower.includes("1.0") || lower.includes("back")) {
     distance = "Far";
   } else if (lower.includes("medium") || lower.includes("mid") || lower.includes("0.5") || lower.includes("halfway")) {
     distance = "Medium";
@@ -232,7 +202,7 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
 }
 
 /**
- * Checks if a given cabinet is one of the verified VIR reference cabinets
+ * Checks if a given cabinet is the verified VIR reference cabinet (4x12 Brit 8000)
  */
 export function isVIRReferenceCabinet(cabName?: string, cabGuid?: string): boolean {
   if (!cabName && !cabGuid) return false;
@@ -251,10 +221,11 @@ export function isVIRReferenceCabinet(cabName?: string, cabGuid?: string): boole
 }
 
 /**
- * Checks if a given microphone is one of the verified VIR reference microphones
+ * Checks if a given microphone is the verified VIR reference microphone (Dynamic 57)
+ * Unspecified mic identity returns false so it does not silently qualify for AT5P-validated reference calibration.
  */
 export function isVIRReferenceMic(micName?: string, micGuid?: string): boolean {
-  if (!micName && !micGuid) return true; // If unspecified, assume compatible standard mic
+  if (!micName && !micGuid) return false; // Unspecified mic must NOT automatically qualify as reference
 
   const cleanMic = cleanPlacementStr(micName || "");
   const cleanGuid = (micGuid || "").toLowerCase().replace(/-/g, "").trim();
@@ -270,21 +241,21 @@ export function isVIRReferenceMic(micName?: string, micGuid?: string): boolean {
 }
 
 /**
- * Generates exact AT5 XML coordinates for composite semantic placement parameters
+ * Generates exact numeric VIR coordinates for composite semantic placement parameters
  */
 export function composeVIRCoordinates(
   position: SemanticPosition = "Cap Edge",
   distance: SemanticDistance = "Close",
   angle: SemanticAngle = "On Axis",
   micSlot: "Mic_1" | "Mic_2" = "Mic_1",
-  speakerOverride?: string | number
+  speakerOverride?: number
 ): VIRCoordinates {
   const posCoords = VIR_CALIBRATION_COORDINATES.positions[position] || VIR_CALIBRATION_COORDINATES.positions["Cap Edge"];
   const distCoords = VIR_CALIBRATION_COORDINATES.distances[distance] || VIR_CALIBRATION_COORDINATES.distances["Close"];
   const angleCoords = VIR_CALIBRATION_COORDINATES.angles[angle] || VIR_CALIBRATION_COORDINATES.angles["On Axis"];
   
-  const defaultSpeaker = micSlot === "Mic_2" ? "1" : "0";
-  const speakerVal = speakerOverride !== undefined ? String(speakerOverride) : defaultSpeaker;
+  const defaultSpeaker = micSlot === "Mic_2" ? 1 : 0;
+  const speakerVal = speakerOverride !== undefined ? Number(speakerOverride) : defaultSpeaker;
 
   return {
     Angle: angleCoords.Angle,
@@ -295,14 +266,20 @@ export function composeVIRCoordinates(
   };
 }
 
+function toCoordNum(val: any, fallback: number): number {
+  if (val === undefined || val === null || val === "") return fallback;
+  const n = Number(val);
+  return isNaN(n) ? fallback : n;
+}
+
 /**
  * Strict Hierarchical Resolver for Cabinet Mic Placements
  *
  * PRECEDENCE:
  * 1. Exact verified Firestore cab/mic mapping (status: 'validated' | 'at5p_validated')
- * 2. Exact built-in reference calibration for tested cab/mic configuration
- * 3. Explicitly marked estimated fallback if one exists in Firestore (status: 'estimated' | 'discovered')
- * 4. Safe default / warning if unresolved (DOES NOT silently apply reference coordinates to arbitrary cabs)
+ * 2. Exact built-in reference calibration for tested cab/mic configuration (Mic0 / Mic_1 ONLY)
+ * 3. Explicitly marked estimated fallback if one exists in Firestore (status: 'estimated' | 'discovered' | 'needs_review')
+ * 4. Safe default / calibration gap if unresolved (DOES NOT silently apply reference coordinates to arbitrary cabs or Mic2)
  */
 export function resolveCompositeMicPlacement(options: {
   cabName: string;
@@ -327,12 +304,12 @@ export function resolveCompositeMicPlacement(options: {
     dbMappings = []
   } = options;
 
-  const defaultSpeaker = micSlot === "Mic_2" ? "1" : "0";
+  const defaultSpeaker = micSlot === "Mic_2" ? 1 : 0;
   const safeDefaultCoords: VIRCoordinates = {
-    Angle: "0",
-    XAxis: "0",
-    YAxis: "0",
-    Distance: "0",
+    Angle: 0,
+    XAxis: 0,
+    YAxis: 0,
+    Distance: 0,
     Speaker: defaultSpeaker
   };
 
@@ -411,11 +388,11 @@ export function resolveCompositeMicPlacement(options: {
     return {
       resolved: true,
       coordinates: {
-        Angle: xml[`${prefix}Angle`] ?? xml.Angle ?? "0",
-        XAxis: xml[`${prefix}XAxis`] ?? xml.XAxis ?? "0",
-        YAxis: xml[`${prefix}YAxis`] ?? xml.YAxis ?? "0",
-        Distance: xml[`${prefix}Distance`] ?? xml.Distance ?? "0",
-        Speaker: xml[`${prefix}Speaker`] ?? xml.Speaker ?? defaultSpeaker
+        Angle: toCoordNum(xml[`${prefix}Angle`] ?? xml.Angle, 0),
+        XAxis: toCoordNum(xml[`${prefix}XAxis`] ?? xml.XAxis, 0),
+        YAxis: toCoordNum(xml[`${prefix}YAxis`] ?? xml.YAxis, 0),
+        Distance: toCoordNum(xml[`${prefix}Distance`] ?? xml.Distance, 0),
+        Speaker: toCoordNum(xml[`${prefix}Speaker`] ?? xml.Speaker, defaultSpeaker)
       },
       resolutionSource: "firestore_verified",
       matchedProfile: match,
@@ -428,16 +405,18 @@ export function resolveCompositeMicPlacement(options: {
     };
   }
 
-  // STEP 2: Exact Built-in Reference Calibration for tested cab/mic
+  // STEP 2: Exact Built-in Reference Calibration for tested cab/mic (Mic0 / Mic_1 ONLY)
+  // Controlled calibration manipulated Mic0 (Dynamic 57) on 4x12 Brit 8000.
+  // Mic1 (Mic_2) was untouched, so Mic_2 remains a calibration gap and does NOT resolve here.
   const isRefCab = isVIRReferenceCabinet(cabName, cabGuid);
   const isRefMic = isVIRReferenceMic(micModelName, micModelGuid);
 
-  if (isRefCab && isRefMic && parsed.position) {
+  if (micSlot === "Mic_1" && isRefCab && isRefMic && parsed.position) {
     const composed = composeVIRCoordinates(
       parsed.position,
       parsed.distance || "Close",
       parsed.angle || "On Axis",
-      micSlot
+      "Mic_1"
     );
 
     return {
@@ -471,11 +450,11 @@ export function resolveCompositeMicPlacement(options: {
     return {
       resolved: true,
       coordinates: {
-        Angle: xml[`${prefix}Angle`] ?? xml.Angle ?? "0",
-        XAxis: xml[`${prefix}XAxis`] ?? xml.XAxis ?? "0",
-        YAxis: xml[`${prefix}YAxis`] ?? xml.YAxis ?? "0",
-        Distance: xml[`${prefix}Distance`] ?? xml.Distance ?? "0",
-        Speaker: xml[`${prefix}Speaker`] ?? xml.Speaker ?? defaultSpeaker
+        Angle: toCoordNum(xml[`${prefix}Angle`] ?? xml.Angle, 0),
+        XAxis: toCoordNum(xml[`${prefix}XAxis`] ?? xml.XAxis, 0),
+        YAxis: toCoordNum(xml[`${prefix}YAxis`] ?? xml.YAxis, 0),
+        Distance: toCoordNum(xml[`${prefix}Distance`] ?? xml.Distance, 0),
+        Speaker: toCoordNum(xml[`${prefix}Speaker`] ?? xml.Speaker, defaultSpeaker)
       },
       resolutionSource: "estimated_profile",
       matchedProfile: match,
@@ -489,10 +468,17 @@ export function resolveCompositeMicPlacement(options: {
     };
   }
 
-  // STEP 4: Safe Default / Warning if Unresolved (Does NOT silently apply reference coordinates globally!)
-  const warningMsg = isRefCab 
-    ? `Semantic mic placement "${fullLabel}" could not be parsed into recognized VIR dimensions.`
-    : `No verified mic placement profile found for "${fullLabel}" on cabinet "${cabName}". Exporting safe standard coordinates (Center/Close).`;
+  // STEP 4: Safe Default / Calibration Gap if Unresolved
+  let warningMsg: string;
+  if (micSlot === "Mic_2") {
+    warningMsg = `Mic 2 (Mic 1 slot) radial calibration is uncalibrated/unverified against AT5P exports. Defaulting to safe coordinates with Speaker 1 provenance.`;
+  } else if (!isRefCab) {
+    warningMsg = `No verified mic placement profile found for "${fullLabel}" on cabinet "${cabName}". Exporting safe standard coordinates (Center/Close).`;
+  } else if (!isRefMic) {
+    warningMsg = `Microphone "${micModelName || 'unspecified'}" has not been calibrated against AT5P reference exports for "${cabName}". Exporting safe standard coordinates.`;
+  } else {
+    warningMsg = `Semantic mic placement "${fullLabel}" could not be parsed into recognized VIR dimensions.`;
+  }
 
   return {
     resolved: false,
@@ -508,3 +494,4 @@ export function resolveCompositeMicPlacement(options: {
     parsedLabel: parsed.canonicalLabel
   };
 }
+
