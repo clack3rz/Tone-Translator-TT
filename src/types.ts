@@ -413,6 +413,7 @@ export interface MicPlacementMapping {
   micModelName?: string;
   micModelGuid?: string;
   micModelScope?: "any" | "specific";
+  micAliases?: string[];
 
   // New formalized provenance fields
   validationStatus?: "at5p_validated" | "validated" | "needs_review" | "conflict" | "rejected";

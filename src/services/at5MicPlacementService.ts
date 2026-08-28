@@ -75,13 +75,9 @@ export const VIR_REFERENCE_CABINETS: { name: string; guid: string; aliases: stri
     guid: "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
     aliases: [
       "4x12 brit 8000",
-      "4x12 british lead s100",
-      "british lead s100",
-      "british tube lead 1",
-      "british lead s",
-      "british lead s (jcm800)",
-      "british lead s100 (jcm800)",
-      "4x12 british tube lead 1"
+      "4x12 brit8000",
+      "brit 8000 4x12",
+      "brit 8000"
     ]
   }
 ];
@@ -203,6 +199,10 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
 
 /**
  * Checks if a given cabinet is the verified VIR reference cabinet (4x12 Brit 8000)
+ * Strict Priority:
+ * 1. exact cab GUID match
+ * 2. exact canonical name match if GUID is unavailable
+ * 3. only proven direct aliases for that exact same AT5 cabinet identity
  */
 export function isVIRReferenceCabinet(cabName?: string, cabGuid?: string): boolean {
   if (!cabName && !cabGuid) return false;
@@ -210,18 +210,37 @@ export function isVIRReferenceCabinet(cabName?: string, cabGuid?: string): boole
   const cleanCab = cleanPlacementStr(cabName || "");
   const cleanGuid = (cabGuid || "").toLowerCase().replace(/-/g, "").trim();
 
-  return VIR_REFERENCE_CABINETS.some(ref => {
-    if (cleanGuid && ref.guid.toLowerCase().replace(/-/g, "").trim() === cleanGuid) {
-      return true;
-    }
-    const cleanRefName = cleanPlacementStr(ref.name);
-    if (cleanRefName === cleanCab) return true;
-    return ref.aliases.some(alias => cleanPlacementStr(alias) === cleanCab);
-  });
+  // Priority 1: Exact cab GUID match
+  if (cleanGuid) {
+    const isGuidMatch = VIR_REFERENCE_CABINETS.some(ref => 
+      ref.guid.toLowerCase().replace(/-/g, "").trim() === cleanGuid
+    );
+    if (isGuidMatch) return true;
+  }
+
+  // Priority 2: Exact canonical name match if GUID is unavailable or omitted
+  if (cleanCab) {
+    const isNameMatch = VIR_REFERENCE_CABINETS.some(ref => 
+      cleanPlacementStr(ref.name) === cleanCab
+    );
+    if (isNameMatch) return true;
+
+    // Priority 3: Only proven direct aliases for that exact same AT5 cabinet identity
+    const isAliasMatch = VIR_REFERENCE_CABINETS.some(ref => 
+      ref.aliases.some(alias => cleanPlacementStr(alias) === cleanCab)
+    );
+    if (isAliasMatch) return true;
+  }
+
+  return false;
 }
 
 /**
  * Checks if a given microphone is the verified VIR reference microphone (Dynamic 57)
+ * Priority:
+ * 1. exact mic GUID match
+ * 2. exact canonical name match
+ * 3. proven aliases
  * Unspecified mic identity returns false so it does not silently qualify for AT5P-validated reference calibration.
  */
 export function isVIRReferenceMic(micName?: string, micGuid?: string): boolean {
@@ -230,14 +249,29 @@ export function isVIRReferenceMic(micName?: string, micGuid?: string): boolean {
   const cleanMic = cleanPlacementStr(micName || "");
   const cleanGuid = (micGuid || "").toLowerCase().replace(/-/g, "").trim();
 
-  return VIR_REFERENCE_MICS.some(ref => {
-    if (cleanGuid && ref.guid.toLowerCase().replace(/-/g, "").trim() === cleanGuid) {
-      return true;
-    }
-    const cleanRefName = cleanPlacementStr(ref.name);
-    if (cleanRefName === cleanMic) return true;
-    return ref.aliases.some(alias => cleanPlacementStr(alias) === cleanMic);
-  });
+  // Priority 1: Exact mic GUID match
+  if (cleanGuid) {
+    const isGuidMatch = VIR_REFERENCE_MICS.some(ref => 
+      ref.guid.toLowerCase().replace(/-/g, "").trim() === cleanGuid
+    );
+    if (isGuidMatch) return true;
+  }
+
+  // Priority 2: Exact canonical name match
+  if (cleanMic) {
+    const isNameMatch = VIR_REFERENCE_MICS.some(ref => 
+      cleanPlacementStr(ref.name) === cleanMic
+    );
+    if (isNameMatch) return true;
+
+    // Priority 3: Proven aliases
+    const isAliasMatch = VIR_REFERENCE_MICS.some(ref => 
+      ref.aliases.some(alias => cleanPlacementStr(alias) === cleanMic)
+    );
+    if (isAliasMatch) return true;
+  }
+
+  return false;
 }
 
 /**
@@ -371,13 +405,75 @@ export function resolveCompositeMicPlacement(options: {
     return false;
   };
 
+  const isMicScopeMatch = (m: MicPlacementMapping): boolean => {
+    const scope = (m.micModelScope || (m as any).mic_model_scope || "").toLowerCase().trim();
+
+    // 1. Explicit "any" scope matches all requested microphones
+    if (scope === "any") {
+      return true;
+    }
+
+    const mappingMicGuid = (m.micModelGuid || (m as any).mic_model_guid || "").toLowerCase().replace(/-/g, "").trim();
+    const mappingMicName = m.micModelName || (m as any).mic_model_name || "";
+    const cleanMappingMicName = cleanPlacementStr(mappingMicName);
+
+    const cleanReqGuid = (micModelGuid || "").toLowerCase().replace(/-/g, "").trim();
+    const cleanReqName = cleanPlacementStr(micModelName || "");
+
+    const isSpecific = scope === "specific" || Boolean(mappingMicGuid || mappingMicName);
+
+    if (isSpecific) {
+      // If the mapping is specific to a mic, but no mic was requested, it cannot match as verified
+      if (!cleanReqGuid && !cleanReqName) {
+        return false;
+      }
+
+      // Priority 1: Match by GUID where available
+      if (mappingMicGuid && cleanReqGuid && mappingMicGuid === cleanReqGuid) {
+        return true;
+      }
+
+      // Priority 2: Match by normalized canonical name
+      if (cleanMappingMicName && cleanReqName && cleanMappingMicName === cleanReqName) {
+        return true;
+      }
+
+      // Priority 3: Match against mapping's custom mic aliases if present
+      if (m.micAliases && Array.isArray(m.micAliases)) {
+        if (m.micAliases.some(a => cleanPlacementStr(a) === cleanReqName)) {
+          return true;
+        }
+      }
+
+      // Priority 4: Match against verified reference mic aliases if mapping references a known reference mic
+      const refMic = VIR_REFERENCE_MICS.find(r =>
+        (mappingMicGuid && r.guid.toLowerCase().replace(/-/g, "") === mappingMicGuid) ||
+        (cleanMappingMicName && cleanPlacementStr(r.name) === cleanMappingMicName) ||
+        (cleanMappingMicName && r.aliases.some(a => cleanPlacementStr(a) === cleanMappingMicName))
+      );
+
+      if (refMic) {
+        if (cleanReqGuid && refMic.guid.toLowerCase().replace(/-/g, "") === cleanReqGuid) return true;
+        if (cleanReqName && cleanPlacementStr(refMic.name) === cleanReqName) return true;
+        if (cleanReqName && refMic.aliases.some(a => cleanPlacementStr(a) === cleanReqName)) return true;
+      }
+
+      return false;
+    }
+
+    // For legacy records with no micModelScope AND neither micModelGuid nor micModelName:
+    // Preserved for backward compatibility when no specific model conflict exists
+    return true;
+  };
+
   // STEP 1: Exact Verified Firestore cab/mic mapping
   const verifiedMappings = dbMappings.filter(m => {
     const status = (m.status || m.validation_status || m.validationStatus || "").toLowerCase();
     return (status === "validated" || status === "at5p_validated" || status === "verified_calibration") &&
       isSlotMatch(m) &&
       isCabMatch(m) &&
-      isLabelMatch(m);
+      isLabelMatch(m) &&
+      isMicScopeMatch(m);
   });
 
   if (verifiedMappings.length > 0) {
@@ -439,7 +535,8 @@ export function resolveCompositeMicPlacement(options: {
     return (status === "estimated" || status === "discovered" || status === "needs_review") &&
       isSlotMatch(m) &&
       isCabMatch(m) &&
-      isLabelMatch(m);
+      isLabelMatch(m) &&
+      isMicScopeMatch(m);
   });
 
   if (estimatedMappings.length > 0) {

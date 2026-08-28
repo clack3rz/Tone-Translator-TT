@@ -395,6 +395,8 @@ export const at5DatabaseService = {
     
     const path = `mic_placement_mappings/${mappingId}`;
     try {
+      const explicitStatus = mapping.status || mapping.validation_status || mapping.validationStatus;
+      const statusValue = explicitStatus || "needs_review";
       const data = sanitize({
         ...mapping,
         id: mappingId,
@@ -404,9 +406,9 @@ export const at5DatabaseService = {
         target: mapping.friendly_setting || mapping.target,
         friendly_name: mapping.friendly_value || mapping.friendly_name,
         xml_values: mapping.maps_to || mapping.xml_values || {},
-        status: mapping.status || mapping.validation_status || "validated",
-        validation_status: mapping.status || mapping.validation_status || "validated",
-        source: mapping.source || "AT5 preset import",
+        status: statusValue,
+        validation_status: statusValue,
+        source: mapping.source || "User Manual Entry",
         updatedAt: serverTimestamp(),
         updatedBy: auth.currentUser.uid
       });
