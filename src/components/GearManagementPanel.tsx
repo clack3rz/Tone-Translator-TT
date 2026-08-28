@@ -30,7 +30,9 @@ import {
   Zap,
   EyeOff,
   Tags,
-  FileText
+  FileText,
+  Compass,
+  Crosshair
 } from 'lucide-react';
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IKMPAKCandidate, MicPlacementMapping, ParameterOptionRow } from '../types';
 import { gearProfileService } from '../services/gearProfileService';
@@ -43,6 +45,7 @@ import { evaluateCandidate, parseCSV, parseJSON, evaluateAliasSafety, isSlotType
 import { getAt5Catalog, cleanGearNameForMatching, normalizeGearIdentityName, normalizeGearNameLoose } from '../services/at5Catalog';
 import { getVerifiedMics } from '../services/at5VerifiedProtocols';
 import { ParameterTranslationEditorModal } from './ParameterTranslationEditorModal';
+import { MicPlacementManagementView } from './MicPlacementManagementView';
 
 function getChildGearType(fieldName: string): "speaker" | "mic" | "room" | "room_mic" | null {
   const norm = fieldName.toLowerCase();
@@ -393,8 +396,8 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
   const [paramSaveSuccess, setParamSaveSuccess] = useState<string | null>(null);
   const [user, setUser] = useState<FirebaseUser | null>(null);
 
-  // Active view tab: 'profiles' | 'discovery' | 'gaps' | 'ikmpak'
-  const [viewMode, setViewMode] = useState<'profiles' | 'discovery' | 'gaps' | 'ikmpak'>('profiles');
+  // Active view tab: 'profiles' | 'discovery' | 'gaps' | 'ikmpak' | 'mic_placement'
+  const [viewMode, setViewMode] = useState<'profiles' | 'discovery' | 'gaps' | 'ikmpak' | 'mic_placement'>('profiles');
 
   // IKMPAK Discovery Accelerator states
   const [stagedCandidates, setStagedCandidates] = useState<IKMPAKCandidate[]>([]);
@@ -411,7 +414,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
   const [promotionType, setPromotionType] = useState<string>('stomp');
 
   // Active tab inside selected profile
-  const [profileTab, setProfileTab] = useState<'overview' | 'aliases' | 'parameters' | 'export' | 'conversion' | 'discovery' | 'validation' | 'raw' | 'compare'>('overview');
+  const [profileTab, setProfileTab] = useState<'overview' | 'aliases' | 'parameters' | 'export' | 'conversion' | 'discovery' | 'validation' | 'raw' | 'compare' | 'mic_placement'>('overview');
 
   // Inline profile editing forms
   const [editedProfile, setEditedProfile] = useState<GearProfile | null>(null);
@@ -3299,6 +3302,14 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
           </button>
 
           <button
+            onClick={() => setViewMode('mic_placement')}
+            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${viewMode === 'mic_placement' ? 'bg-cyan-500 text-black font-semibold' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+            VIR Mic Placement
+          </button>
+
+          <button
             onClick={loadProfiles}
             disabled={isLoading}
             className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white rounded-xl transition-all disabled:opacity-40"
@@ -3603,17 +3614,20 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
 
                 {/* Profile Tabs Navigation */}
                 <div className="flex flex-wrap gap-1 border-b border-white/5 pb-2 scrollbar-none overflow-x-auto">
-                  {([
-                    { k: 'overview', l: 'Overview' },
-                    { k: 'aliases', l: 'Aliases' },
-                    { k: 'parameters', l: 'Parameters' },
-                    { k: 'export', l: 'Export Mapping' },
-                    { k: 'conversion', l: 'Conversion Rules' },
-                    { k: 'discovery', l: 'Discovery Hist.' },
-                    { k: 'validation', l: 'Compliance Status' },
-                    { k: 'compare', l: 'AT5 Compare/Import' },
-                    { k: 'raw', l: 'Raw Sources' }
-                  ] as const).map(tab => (
+                  {(
+                    [
+                      { k: 'overview' as const, l: 'Overview' },
+                      { k: 'aliases' as const, l: 'Aliases' },
+                      { k: 'parameters' as const, l: 'Parameters' },
+                      ...(editedProfile.type === 'cab' ? [{ k: 'mic_placement' as const, l: 'VIR Mic Placement' }] : []),
+                      { k: 'export' as const, l: 'Export Mapping' },
+                      { k: 'conversion' as const, l: 'Conversion Rules' },
+                      { k: 'discovery' as const, l: 'Discovery Hist.' },
+                      { k: 'validation' as const, l: 'Compliance Status' },
+                      { k: 'compare' as const, l: 'AT5 Compare/Import' },
+                      { k: 'raw' as const, l: 'Raw Sources' }
+                    ]
+                  ).map(tab => (
                     <button
                       key={tab.k}
                       onClick={() => setProfileTab(tab.k)}
@@ -4751,6 +4765,16 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                       </div>
                     );
                   })()}
+
+                  {/* MIC PLACEMENT TAB FOR CABS */}
+                  {profileTab === 'mic_placement' && (
+                    <div className="pt-2">
+                      <MicPlacementManagementView
+                        cabProfile={editedProfile}
+                        onRefreshChain={onRefreshChain}
+                      />
+                    </div>
+                  )}
 
                 </div>
 
@@ -6618,7 +6642,17 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         </div>
       )}
 
-      {/* 5. EDIT PARAMETER INLINE DIALOG/DRAWER */}
+      {/* 5. TOP LEVEL VIR MIC PLACEMENT VIEW */}
+      {viewMode === 'mic_placement' && (
+        <div className="space-y-6">
+          <MicPlacementManagementView
+            cabProfile={selectedProfile && selectedProfile.type === 'cab' ? selectedProfile : null}
+            onRefreshChain={onRefreshChain}
+          />
+        </div>
+      )}
+
+      {/* 6. EDIT PARAMETER INLINE DIALOG/DRAWER */}
       <ParameterTranslationEditorModal
         isOpen={isEditingParameter}
         paramForm={paramForm}

@@ -22,6 +22,7 @@ import {
 } from "./at5ParameterManifest";
 
 import { at5DatabaseService } from "./at5DatabaseService";
+import { resolveCompositeMicPlacement } from "./at5MicPlacementService";
 
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "./at5VerifiedProtocols";
 
@@ -1181,73 +1182,59 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
 
   let m1Placement = settings.Mic_1_Placement ?? settings.mic_1_placement ?? settings["Mic_1_Placement"] ?? settings["Mic 1 Placement"] ?? settings["mic 1 placement"];
   let m1Distance = settings.Mic_1_Distance ?? settings.mic_1_distance ?? settings["Mic_1_Distance"] ?? settings["Mic 1 Distance"] ?? settings["mic 1 distance"];
+  let m1Angle = settings.Mic_1_Angle ?? settings.mic_1_angle ?? settings["Mic_1_Angle"] ?? settings["Mic 1 Angle"] ?? settings["mic 1 angle"];
 
   if (m1Placement) {
     const mic1Req = getSettingText(cab, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
     const mic1Guid = getMicId(mic1Req);
     
-    let pVal = String(m1Placement).trim();
-    let dVal = m1Distance ? String(m1Distance).trim() : "";
-    if (pVal.includes(",")) {
-      const parts = pVal.split(",");
-      pVal = parts[0].trim();
-      dVal = parts[1].trim();
-    }
-    const label = dVal ? `${pVal}, ${dVal}` : pVal;
-
-    const mapM1 = resolveMicPlacementProfile(
+    const resM1 = resolveCompositeMicPlacement({
       cabName,
       cabGuid,
-      "Mic_1",
-      label,
-      mic1Req,
-      mic1Guid,
-      mappings
-    );
+      micSlot: "Mic_1",
+      requestedLabel: String(m1Placement),
+      distanceLabel: m1Distance ? String(m1Distance) : undefined,
+      angleLabel: m1Angle ? String(m1Angle) : undefined,
+      micModelName: mic1Req,
+      micModelGuid: mic1Guid,
+      dbMappings: mappings
+    });
 
-    if (mapM1) {
-      const xmlValues = mapM1.maps_to || mapM1.xml_values || {};
-      for (const [k, v] of Object.entries(xmlValues)) {
-        if (k in defaultValues && k.startsWith("Mic0")) {
-          resolved[k] = v;
-        }
-      }
+    if (resM1.resolved) {
+      resolved.Mic0Angle = resM1.coordinates.Angle;
+      resolved.Mic0XAxis = resM1.coordinates.XAxis;
+      resolved.Mic0YAxis = resM1.coordinates.YAxis;
+      resolved.Mic0Distance = resM1.coordinates.Distance;
+      resolved.Mic0Speaker = resM1.coordinates.Speaker;
     }
   }
 
   let m2Placement = settings.Mic_2_Placement ?? settings.mic_2_placement ?? settings["Mic_2_Placement"] ?? settings["Mic 2 Placement"] ?? settings["mic 2 placement"];
   let m2Distance = settings.Mic_2_Distance ?? settings.mic_2_distance ?? settings["Mic_2_Distance"] ?? settings["Mic 2 Distance"] ?? settings["mic 2 distance"];
+  let m2Angle = settings.Mic_2_Angle ?? settings.mic_2_angle ?? settings["Mic_2_Angle"] ?? settings["Mic 2 Angle"] ?? settings["mic 2 angle"];
 
   if (m2Placement) {
     const mic2Req = getSettingText(cab, ["mic_2", "mic 2", "mic2"]) || "Condenser 87";
     const mic2Guid = getMicId(mic2Req);
 
-    let pVal = String(m2Placement).trim();
-    let dVal = m2Distance ? String(m2Distance).trim() : "";
-    if (pVal.includes(",")) {
-      const parts = pVal.split(",");
-      pVal = parts[0].trim();
-      dVal = parts[1].trim();
-    }
-    const label = dVal ? `${pVal}, ${dVal}` : pVal;
-
-    const mapM2 = resolveMicPlacementProfile(
+    const resM2 = resolveCompositeMicPlacement({
       cabName,
       cabGuid,
-      "Mic_2",
-      label,
-      mic2Req,
-      mic2Guid,
-      mappings
-    );
+      micSlot: "Mic_2",
+      requestedLabel: String(m2Placement),
+      distanceLabel: m2Distance ? String(m2Distance) : undefined,
+      angleLabel: m2Angle ? String(m2Angle) : undefined,
+      micModelName: mic2Req,
+      micModelGuid: mic2Guid,
+      dbMappings: mappings
+    });
 
-    if (mapM2) {
-      const xmlValues = mapM2.maps_to || mapM2.xml_values || {};
-      for (const [k, v] of Object.entries(xmlValues)) {
-        if (k in defaultValues && k.startsWith("Mic1")) {
-          resolved[k] = v;
-        }
-      }
+    if (resM2.resolved) {
+      resolved.Mic1Angle = resM2.coordinates.Angle;
+      resolved.Mic1XAxis = resM2.coordinates.XAxis;
+      resolved.Mic1YAxis = resM2.coordinates.YAxis;
+      resolved.Mic1Distance = resM2.coordinates.Distance;
+      resolved.Mic1Speaker = resM2.coordinates.Speaker;
     }
   }
 
@@ -2719,36 +2706,36 @@ const makeDebugItem = (
       if (k === "mic_1_placement" || k === "mic 1 placement") {
         const plVal = normSettings.Mic_1_Placement ?? normSettings.mic_1_placement ?? normSettings["Mic_1_Placement"] ?? normSettings["Mic 1 Placement"] ?? normSettings["mic 1 placement"];
         const distVal = normSettings.Mic_1_Distance ?? normSettings.mic_1_distance ?? normSettings["Mic_1_Distance"] ?? normSettings["Mic 1 Distance"] ?? normSettings["mic 1 distance"];
+        const angVal = normSettings.Mic_1_Angle ?? normSettings.mic_1_angle ?? normSettings["Mic_1_Angle"] ?? normSettings["Mic 1 Angle"] ?? normSettings["mic 1 angle"];
 
         const was_supplied = !isUnspecifiedPlacementValue(plVal);
-        
-        let pVal = was_supplied && plVal ? String(plVal).trim() : "";
-        let dVal = was_supplied && distVal ? String(distVal).trim() : "";
-        if (pVal.includes(",")) {
-          const parts = pVal.split(",");
-          pVal = parts[0].trim();
-          dVal = parts[1].trim();
-        }
+        const mic1Req = getSettingText(gear, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
+        const mic1Guid = getMicId(mic1Req);
 
-        let mapM1: any = null;
+        let resM1: any = null;
         if (was_supplied) {
-          const mic1Req = getSettingText(gear, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
-          const mic1Guid = getMicId(mic1Req);
-          const label = dVal ? `${pVal}, ${dVal}` : pVal;
-          mapM1 = resolveMicPlacementProfile(
-            gear.name,
-            resolveCabGuid(gear.name),
-            "Mic_1",
-            label,
-            mic1Req,
-            mic1Guid,
-            placementMappings
-          );
+          resM1 = resolveCompositeMicPlacement({
+            cabName: gear.name,
+            cabGuid: resolveCabGuid(gear.name),
+            micSlot: "Mic_1",
+            requestedLabel: String(plVal),
+            distanceLabel: distVal ? String(distVal) : undefined,
+            angleLabel: angVal ? String(angVal) : undefined,
+            micModelName: mic1Req,
+            micModelGuid: mic1Guid,
+            dbMappings: placementMappings
+          });
         }
 
-        const displayLabel = was_supplied ? (dVal ? `${pVal}, ${dVal}` : pVal) : "Not specified";
-        const resolved_profile_found = was_supplied && !!(mapM1 && isPlacementProfileValid(mapM1));
-        const xmlValues = resolved_profile_found && mapM1 ? (mapM1.maps_to || mapM1.xml_values || {}) : null;
+        const displayLabel = was_supplied ? (resM1?.parsedLabel || (distVal ? `${plVal}, ${distVal}` : String(plVal))) : "Not specified";
+        const resolved_profile_found = was_supplied && !!(resM1 && resM1.resolved);
+        const xmlValues = resolved_profile_found && resM1 ? {
+          Mic0Angle: resM1.coordinates.Angle,
+          Mic0XAxis: resM1.coordinates.XAxis,
+          Mic0YAxis: resM1.coordinates.YAxis,
+          Mic0Distance: resM1.coordinates.Distance,
+          Mic0Speaker: resM1.coordinates.Speaker
+        } : null;
 
         const fallback_value = {
           Mic0Angle: 0,
@@ -2793,7 +2780,7 @@ const makeDebugItem = (
             placement_source: "cab_default",
             resolved_at5_fields: fallback_value
           });
-        } else if (resolved_profile_found && mapM1 && xmlValues) {
+        } else if (resolved_profile_found && resM1 && xmlValues) {
           let allMatch = true;
           const detailStrings: string[] = [];
           const expectedStrings: string[] = [];
@@ -2825,6 +2812,10 @@ const makeDebugItem = (
             mismatched_parameters.push("Mic_1_Placement (coordinate mismatch)");
           }
 
+          const profileSource = resM1.resolutionSource === "reference_calibration_vir"
+            ? "reference_calibration_vir"
+            : (resM1.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
+
           detailsList.push({
             parameter: "Mic 1 Placement",
             display_value: displayLabel,
@@ -2838,18 +2829,18 @@ const makeDebugItem = (
             fallback_value: fallback_value,
             exported_value: exported_value,
             placement_label: displayLabel,
-            placement_profile_source: mapM1.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile",
-            placement_profile_id: mapM1.id,
+            placement_profile_source: profileSource,
+            placement_profile_id: resM1.matchedProfile?.id,
             fallback_used: false,
             resolved_numeric_values: xmlValues,
             exported_numeric_values: exported_value,
             verification_status: status,
             placement_was_supplied_by_chain: true,
-            placement_source: mapM1.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile",
+            placement_source: profileSource,
             resolved_at5_fields: xmlValues
           });
         } else {
-          const warningMsg = `No AT5 mic placement profile found for ${displayLabel} on this cab. Using fallback placement.`;
+          const warningMsg = resM1?.warning || `No AT5 mic placement profile found for ${displayLabel} on this cab. Using fallback placement.`;
           hasFallbackWarning = true;
           fallbackWarningsList.push(warningMsg);
 
@@ -2882,36 +2873,36 @@ const makeDebugItem = (
       } else if (k === "mic_2_placement" || k === "mic 2 placement") {
         const plVal = normSettings.Mic_2_Placement ?? normSettings.mic_2_placement ?? normSettings["Mic_2_Placement"] ?? normSettings["Mic 2 Placement"] ?? normSettings["mic 2 placement"];
         const distVal = normSettings.Mic_2_Distance ?? normSettings.mic_2_distance ?? normSettings["Mic_2_Distance"] ?? normSettings["Mic 2 Distance"] ?? normSettings["mic 2 distance"];
+        const angVal = normSettings.Mic_2_Angle ?? normSettings.mic_2_angle ?? normSettings["Mic_2_Angle"] ?? normSettings["Mic 2 Angle"] ?? normSettings["mic 2 angle"];
 
         const was_supplied = !isUnspecifiedPlacementValue(plVal);
+        const mic2Req = getSettingText(gear, ["mic_2", "mic 2", "mic2"]) || "Condenser 87";
+        const mic2Guid = getMicId(mic2Req);
 
-        let pVal = was_supplied && plVal ? String(plVal).trim() : "";
-        let dVal = was_supplied && distVal ? String(distVal).trim() : "";
-        if (pVal.includes(",")) {
-          const parts = pVal.split(",");
-          pVal = parts[0].trim();
-          dVal = parts[1].trim();
-        }
-
-        let mapM2: any = null;
+        let resM2: any = null;
         if (was_supplied) {
-          const mic2Req = getSettingText(gear, ["mic_2", "mic 2", "mic2"]) || "Condenser 87";
-          const mic2Guid = getMicId(mic2Req);
-          const label = dVal ? `${pVal}, ${dVal}` : pVal;
-          mapM2 = resolveMicPlacementProfile(
-            gear.name,
-            resolveCabGuid(gear.name),
-            "Mic_2",
-            label,
-            mic2Req,
-            mic2Guid,
-            placementMappings
-          );
+          resM2 = resolveCompositeMicPlacement({
+            cabName: gear.name,
+            cabGuid: resolveCabGuid(gear.name),
+            micSlot: "Mic_2",
+            requestedLabel: String(plVal),
+            distanceLabel: distVal ? String(distVal) : undefined,
+            angleLabel: angVal ? String(angVal) : undefined,
+            micModelName: mic2Req,
+            micModelGuid: mic2Guid,
+            dbMappings: placementMappings
+          });
         }
 
-        const displayLabel = was_supplied ? (dVal ? `${pVal}, ${dVal}` : pVal) : "Not specified";
-        const resolved_profile_found = was_supplied && !!(mapM2 && isPlacementProfileValid(mapM2));
-        const xmlValues = resolved_profile_found && mapM2 ? (mapM2.maps_to || mapM2.xml_values || {}) : null;
+        const displayLabel = was_supplied ? (resM2?.parsedLabel || (distVal ? `${plVal}, ${distVal}` : String(plVal))) : "Not specified";
+        const resolved_profile_found = was_supplied && !!(resM2 && resM2.resolved);
+        const xmlValues = resolved_profile_found && resM2 ? {
+          Mic1Angle: resM2.coordinates.Angle,
+          Mic1XAxis: resM2.coordinates.XAxis,
+          Mic1YAxis: resM2.coordinates.YAxis,
+          Mic1Distance: resM2.coordinates.Distance,
+          Mic1Speaker: resM2.coordinates.Speaker
+        } : null;
 
         const fallback_value = {
           Mic1Angle: 0,
@@ -2956,7 +2947,7 @@ const makeDebugItem = (
             placement_source: "cab_default",
             resolved_at5_fields: fallback_value
           });
-        } else if (resolved_profile_found && mapM2 && xmlValues) {
+        } else if (resolved_profile_found && resM2 && xmlValues) {
           let allMatch = true;
           const detailStrings: string[] = [];
           const expectedStrings: string[] = [];
@@ -2988,6 +2979,10 @@ const makeDebugItem = (
             mismatched_parameters.push("Mic_2_Placement (coordinate mismatch)");
           }
 
+          const profileSource = resM2.resolutionSource === "reference_calibration_vir"
+            ? "reference_calibration_vir"
+            : (resM2.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
+
           detailsList.push({
             parameter: "Mic 2 Placement",
             display_value: displayLabel,
@@ -3001,18 +2996,18 @@ const makeDebugItem = (
             fallback_value: fallback_value,
             exported_value: exported_value,
             placement_label: displayLabel,
-            placement_profile_source: mapM2.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile",
-            placement_profile_id: mapM2.id,
+            placement_profile_source: profileSource,
+            placement_profile_id: resM2.matchedProfile?.id,
             fallback_used: false,
             resolved_numeric_values: xmlValues,
             exported_numeric_values: exported_value,
             verification_status: status,
             placement_was_supplied_by_chain: true,
-            placement_source: mapM2.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile",
+            placement_source: profileSource,
             resolved_at5_fields: xmlValues
           });
         } else {
-          const warningMsg = `No AT5 mic placement profile found for ${displayLabel} on this cab. Using fallback placement.`;
+          const warningMsg = resM2?.warning || `No AT5 mic placement profile found for ${displayLabel} on this cab. Using fallback placement.`;
           hasFallbackWarning = true;
           fallbackWarningsList.push(warningMsg);
 
