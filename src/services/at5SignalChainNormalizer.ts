@@ -517,6 +517,10 @@ const normaliseCabSettings = (
       out["Mic_1_Distance"] = value;
     } else if (k === "mic 2 distance" || k === "mic2 distance" || k === "mic_2_distance") {
       out["Mic_2_Distance"] = value;
+    } else if (k === "mic 1 angle" || k === "mic1 angle" || k === "mic_1_angle" || k === "mic 1 axis" || k === "mic1 axis" || k === "mic_1_axis" || k === "mic 1 off axis" || k === "mic_1_off_axis") {
+      out["Mic_1_Angle"] = value;
+    } else if (k === "mic 2 angle" || k === "mic2 angle" || k === "mic_2_angle" || k === "mic 2 axis" || k === "mic2 axis" || k === "mic_2_axis" || k === "mic 2 off axis" || k === "mic_2_off_axis") {
+      out["Mic_2_Angle"] = value;
     } else if (k === "room" || k === "room type") {
       out["Room"] = value;
     } else if (k === "room level") {

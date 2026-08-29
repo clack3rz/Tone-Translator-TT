@@ -817,12 +817,12 @@ const SelectedGearDetailPanel = ({
 
                     let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-800";
                     let badgeText = "DEFAULT USED";
-                    if (param.mapping_status === "RESOLVED_FROM_PROFILE") {
+                    if (param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE") {
                       badgeStyle = "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20";
-                      badgeText = "RESOLVED FROM PROFILE";
-                    } else if (param.mapping_status === "FALLBACK_USED") {
+                      badgeText = "RESOLVED COMPOSITE";
+                    } else if (param.mapping_status === "FALLBACK_USED" || param.mapping_status === "FALLBACK_COMPOSITE") {
                       badgeStyle = "bg-amber-950/40 text-amber-400 border border-amber-500/20";
-                      badgeText = "FALLBACK USED";
+                      badgeText = "FALLBACK COMPOSITE";
                     } else if (param.mapping_status === "NOT_SPECIFIED") {
                       badgeStyle = "bg-blue-950/20 text-blue-400 border border-blue-500/20";
                       badgeText = "DEFAULT USED";
@@ -926,9 +926,9 @@ const SelectedGearDetailPanel = ({
                           
                           <span
                             className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                              param.mapping_status === "SUCCESS" || param.mapping_status === "RESOLVED_FROM_PROFILE"
+                              param.mapping_status === "SUCCESS" || param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE"
                                 ? "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20"
-                                : param.mapping_status === "SUCCESS_NEAREST_BAND" || param.mapping_status === "DISPARITY" || param.mapping_status === "WARNING" || param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK"
+                                : param.mapping_status === "SUCCESS_NEAREST_BAND" || param.mapping_status === "DISPARITY" || param.mapping_status === "WARNING" || param.mapping_status === "FALLBACK_USED" || param.mapping_status === "FALLBACK_COMPOSITE" || param.mapping_status === "PARTIAL_WITH_FALLBACK"
                                 ? "bg-amber-950/40 text-amber-400 border border-amber-500/20"
                                 : "bg-rose-950/40 text-rose-300 border border-rose-500/30"
                             }`}

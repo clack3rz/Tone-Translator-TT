@@ -4070,12 +4070,12 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                                       // Styled status badge
                                       let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-800";
                                       let badgeText = "DEFAULT USED";
-                                      if (detail.mapping_status === "RESOLVED_FROM_PROFILE") {
+                                      if (detail.mapping_status === "RESOLVED_FROM_PROFILE" || detail.mapping_status === "RESOLVED_COMPOSITE") {
                                         badgeStyle = "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20";
-                                        badgeText = "RESOLVED FROM PROFILE";
-                                      } else if (detail.mapping_status === "FALLBACK_USED") {
+                                        badgeText = "RESOLVED COMPOSITE";
+                                      } else if (detail.mapping_status === "FALLBACK_USED" || detail.mapping_status === "FALLBACK_COMPOSITE") {
                                         badgeStyle = "bg-amber-950/40 text-amber-400 border border-amber-500/20";
-                                        badgeText = "FALLBACK USED";
+                                        badgeText = "FALLBACK COMPOSITE";
                                       } else if (detail.mapping_status === "NOT_SPECIFIED") {
                                         badgeStyle = "bg-blue-950/20 text-blue-400 border border-blue-500/20";
                                         badgeText = "DEFAULT USED";
@@ -4156,13 +4156,13 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
                                             )}
                                           </div>
                                           <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
-                                            detail.mapping_status === "SUCCESS" || detail.mapping_status === "SUCCESS_NEAREST_BAND"
+                                            detail.mapping_status === "SUCCESS" || detail.mapping_status === "SUCCESS_NEAREST_BAND" || detail.mapping_status === "RESOLVED_FROM_PROFILE" || detail.mapping_status === "RESOLVED_COMPOSITE"
                                               ? "bg-emerald-500/10 text-emerald-400"
-                                              : detail.mapping_status === "FALLBACK_USED" || detail.mapping_status === "PARTIAL_WITH_FALLBACK" || detail.mapping_status === "DROPPED"
+                                              : detail.mapping_status === "FALLBACK_USED" || detail.mapping_status === "FALLBACK_COMPOSITE" || detail.mapping_status === "PARTIAL_WITH_FALLBACK" || detail.mapping_status === "DROPPED"
                                               ? "bg-amber-500/10 text-amber-400 border border-amber-500/10"
                                               : "bg-red-500/10 text-red-400"
                                           }`}>
-                                            {detail.mapping_status === "SUCCESS_NEAREST_BAND" ? "CALIBRATED_BAND" : detail.mapping_status}
+                                            {detail.mapping_status === "SUCCESS_NEAREST_BAND" ? "CALIBRATED_BAND" : detail.mapping_status === "RESOLVED_FROM_PROFILE" || detail.mapping_status === "RESOLVED_COMPOSITE" ? "RESOLVED_COMPOSITE" : detail.mapping_status}
                                           </span>
                                         </div>
 

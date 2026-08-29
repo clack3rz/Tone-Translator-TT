@@ -24,6 +24,18 @@ export interface ParsedSemanticPlacement {
   canonicalLabel: string;
 }
 
+export interface CanonicalSemanticMicPlacement {
+  position?: SemanticPosition;
+  distance?: SemanticDistance;
+  angle?: SemanticAngle;
+  rawPosition?: string;
+  rawDistance?: string;
+  rawAngle?: string;
+  rawCompound?: string;
+  isUnspecified: boolean;
+  canonicalLabel: string;
+}
+
 export interface PlacementResolutionResult {
   resolved: boolean;
   coordinates: VIRCoordinates;
@@ -307,6 +319,142 @@ function toCoordNum(val: any, fallback: number): number {
 }
 
 /**
+ * Extracts and normalizes semantic mic placement from arbitrary settings keys into ONE canonical object.
+ * Maps:
+ * - TT Mic_1 (slotIndex 0) -> AT5 Mic0
+ * - TT Mic_2 (slotIndex 1) -> AT5 Mic1
+ */
+export function extractCanonicalMicPlacement(
+  settings: Record<string, any> = {},
+  slotIndex: 0 | 1 = 0
+): CanonicalSemanticMicPlacement {
+  if (!settings || typeof settings !== "object") {
+    return {
+      isUnspecified: true,
+      canonicalLabel: "Not specified"
+    };
+  }
+
+  const findVal = (keys: string[]): string | undefined => {
+    for (const key of keys) {
+      const targetNorm = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+      for (const [k, v] of Object.entries(settings)) {
+        if (v === undefined || v === null) continue;
+        const sNorm = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (sNorm === targetNorm) {
+          const str = String(v).trim();
+          if (!isUnspecifiedPlacement(str)) return str;
+        }
+      }
+    }
+    return undefined;
+  };
+
+  let rawCompound: string | undefined;
+  let rawPos: string | undefined;
+  let rawDist: string | undefined;
+  let rawAng: string | undefined;
+
+  if (slotIndex === 0) {
+    rawCompound = findVal([
+      "mic_1_placement", "mic 1 placement", "mic1_placement", "mic1 placement",
+      "placement_1", "placement 1", "placement1",
+      "mic_1", "mic 1", "mic1"
+    ]);
+    rawPos = findVal([
+      "mic_1_position", "mic 1 position", "mic1_position", "mic1 position",
+      "position_1", "position 1", "position1", "position", "pos"
+    ]);
+    rawDist = findVal([
+      "mic_1_distance", "mic 1 distance", "mic1_distance", "mic1 distance",
+      "distance_1", "distance 1", "distance1", "distance", "dist"
+    ]);
+    rawAng = findVal([
+      "mic_1_angle", "mic 1 angle", "mic1_angle", "mic1 angle",
+      "mic_1_axis", "mic 1 axis", "mic1_axis", "mic1 axis",
+      "mic_1_off_axis", "mic 1 off axis",
+      "angle_1", "angle 1", "angle1", "angle",
+      "axis_1", "axis 1", "axis1", "axis"
+    ]);
+  } else {
+    rawCompound = findVal([
+      "mic_2_placement", "mic 2 placement", "mic2_placement", "mic2 placement",
+      "placement_2", "placement 2", "placement2",
+      "mic_2", "mic 2", "mic2"
+    ]);
+    rawPos = findVal([
+      "mic_2_position", "mic 2 position", "mic2_position", "mic2 position",
+      "position_2", "position 2", "position2"
+    ]);
+    rawDist = findVal([
+      "mic_2_distance", "mic 2 distance", "mic2_distance", "mic2 distance",
+      "distance_2", "distance 2", "distance2"
+    ]);
+    rawAng = findVal([
+      "mic_2_angle", "mic 2 angle", "mic2_angle", "mic2 angle",
+      "mic_2_axis", "mic 2 axis", "mic2_axis", "mic2 axis",
+      "mic_2_off_axis", "mic 2 off axis",
+      "angle_2", "angle 2", "angle2",
+      "axis_2", "axis 2", "axis2"
+    ]);
+  }
+
+  // If rawCompound looks like a mic model instead of placement (e.g. "Dynamic 57"), ignore it
+  if (rawCompound && isVIRReferenceMic(rawCompound)) {
+    rawCompound = undefined;
+  }
+
+  // Parse compound if present
+  let posFromCompound: SemanticPosition | undefined;
+  let distFromCompound: SemanticDistance | undefined;
+  let angFromCompound: SemanticAngle | undefined;
+
+  if (rawCompound) {
+    const parsedCompound = parseSemanticPlacement(rawCompound);
+    posFromCompound = parsedCompound.position;
+    distFromCompound = parsedCompound.distance;
+    angFromCompound = parsedCompound.angle;
+  }
+
+  // Discrete fields override/supplement compound
+  const parsedPos = (rawPos ? (parseSemanticPlacement(rawPos).position || parseSemanticPlacement(rawPos + " on axis").position) : undefined) || posFromCompound;
+  const parsedDist = (rawDist ? parseSemanticPlacement("Cone, " + rawDist).distance : undefined) || distFromCompound;
+  const parsedAng = (rawAng ? parseSemanticPlacement("Cone, Close, " + rawAng).angle : undefined) || angFromCompound;
+
+  const isUnspecified = !parsedPos && !parsedDist && !parsedAng && !rawCompound && !rawPos;
+
+  if (isUnspecified) {
+    return {
+      isUnspecified: true,
+      canonicalLabel: "Not specified"
+    };
+  }
+
+  const finalPos: SemanticPosition | undefined = parsedPos;
+  const finalDist: SemanticDistance | undefined = parsedDist;
+  const finalAng: SemanticAngle | undefined = parsedAng;
+
+  const canonicalParts: string[] = [];
+  if (finalPos) canonicalParts.push(finalPos);
+  if (finalDist) canonicalParts.push(finalDist);
+  if (finalAng) canonicalParts.push(finalAng);
+
+  const canonicalLabel = canonicalParts.length > 0 ? canonicalParts.join(", ") : (rawCompound || "Not specified");
+
+  return {
+    position: finalPos,
+    distance: finalDist,
+    angle: finalAng,
+    rawPosition: rawPos,
+    rawDistance: rawDist,
+    rawAngle: rawAng,
+    rawCompound: rawCompound,
+    isUnspecified: false,
+    canonicalLabel
+  };
+}
+
+/**
  * Strict Hierarchical Resolver for Cabinet Mic Placements
  *
  * PRECEDENCE:
@@ -319,9 +467,10 @@ export function resolveCompositeMicPlacement(options: {
   cabName: string;
   cabGuid?: string;
   micSlot: "Mic_1" | "Mic_2";
-  requestedLabel: string;
+  requestedLabel?: string;
   distanceLabel?: string;
   angleLabel?: string;
+  canonicalPlacement?: CanonicalSemanticMicPlacement;
   micModelName?: string;
   micModelGuid?: string;
   dbMappings?: MicPlacementMapping[];
@@ -330,9 +479,10 @@ export function resolveCompositeMicPlacement(options: {
     cabName,
     cabGuid = "",
     micSlot,
-    requestedLabel,
+    requestedLabel = "",
     distanceLabel,
     angleLabel,
+    canonicalPlacement,
     micModelName = "",
     micModelGuid = "",
     dbMappings = []
@@ -347,8 +497,28 @@ export function resolveCompositeMicPlacement(options: {
     Speaker: defaultSpeaker
   };
 
+  // Resolve or normalize canonical placement
+  let canonical: CanonicalSemanticMicPlacement;
+  if (canonicalPlacement) {
+    canonical = canonicalPlacement;
+  } else {
+    // If not supplied, construct canonical object from individual fields
+    const mockSettings: Record<string, any> = {};
+    if (micSlot === "Mic_1") {
+      if (requestedLabel) mockSettings["Mic_1_Placement"] = requestedLabel;
+      if (distanceLabel) mockSettings["Mic_1_Distance"] = distanceLabel;
+      if (angleLabel) mockSettings["Mic_1_Angle"] = angleLabel;
+      canonical = extractCanonicalMicPlacement(mockSettings, 0);
+    } else {
+      if (requestedLabel) mockSettings["Mic_2_Placement"] = requestedLabel;
+      if (distanceLabel) mockSettings["Mic_2_Distance"] = distanceLabel;
+      if (angleLabel) mockSettings["Mic_2_Angle"] = angleLabel;
+      canonical = extractCanonicalMicPlacement(mockSettings, 1);
+    }
+  }
+
   // Case 0: Unspecified or empty placement
-  if (isUnspecifiedPlacement(requestedLabel)) {
+  if (canonical.isUnspecified) {
     return {
       resolved: false,
       coordinates: safeDefaultCoords,
@@ -360,16 +530,14 @@ export function resolveCompositeMicPlacement(options: {
     };
   }
 
-  // Combine components into composite label if separate fields were provided
-  let fullLabel = String(requestedLabel).trim();
-  if (distanceLabel && !fullLabel.toLowerCase().includes(distanceLabel.toLowerCase())) {
-    fullLabel = `${fullLabel}, ${distanceLabel}`;
-  }
-  if (angleLabel && !fullLabel.toLowerCase().includes(angleLabel.toLowerCase())) {
-    fullLabel = `${fullLabel}, ${angleLabel}`;
-  }
-
-  const parsed = parseSemanticPlacement(fullLabel);
+  const fullLabel = canonical.canonicalLabel;
+  const parsed = {
+    position: canonical.position,
+    distance: canonical.distance,
+    angle: canonical.angle,
+    canonicalLabel: canonical.canonicalLabel,
+    rawLabel: fullLabel
+  };
   const cleanCab = cleanPlacementStr(cabName);
   const cleanGuid = cabGuid.toLowerCase().replace(/-/g, "").trim();
 
