@@ -196,16 +196,12 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
   const distPart = distance || "Close";
   const angPart = angle || "On Axis";
 
-  const canonicalLabelParts: string[] = [posPart];
-  if (distance) canonicalLabelParts.push(distPart);
-  if (angle) canonicalLabelParts.push(angPart);
-
   return {
     position,
     distance,
     angle,
     rawLabel: clean,
-    canonicalLabel: canonicalLabelParts.join(", ")
+    canonicalLabel: `${posPart} · ${distPart} · ${angPart}`
   };
 }
 
@@ -434,12 +430,11 @@ export function extractCanonicalMicPlacement(
   const finalDist: SemanticDistance | undefined = parsedDist;
   const finalAng: SemanticAngle | undefined = parsedAng;
 
-  const canonicalParts: string[] = [];
-  if (finalPos) canonicalParts.push(finalPos);
-  if (finalDist) canonicalParts.push(finalDist);
-  if (finalAng) canonicalParts.push(finalAng);
+  const posPart = finalPos || "Cap Edge";
+  const distPart = finalDist || "Close";
+  const angPart = finalAng || "On Axis";
 
-  const canonicalLabel = canonicalParts.length > 0 ? canonicalParts.join(", ") : (rawCompound || "Not specified");
+  const canonicalLabel = `${posPart} · ${distPart} · ${angPart}`;
 
   return {
     position: finalPos,

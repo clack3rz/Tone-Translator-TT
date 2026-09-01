@@ -385,18 +385,6 @@ export const ParameterTranslationEditorModal: React.FC<ParameterTranslationEdito
                         displayName: e.target.value,
                         displayParameterName: e.target.value
                       };
-                      console.log('[PARAM_TRACE:EDITOR_CHANGE]', JSON.stringify({
-                        field: 'displayName',
-                        displayName: updated.displayName,
-                        displayParameterName: updated.displayParameterName,
-                        canonicalName: updated.canonicalName,
-                        canonicalParameterName: updated.canonicalParameterName,
-                        exportName: updated.export?.name,
-                        at5XmlAttributeName: updated.at5XmlAttributeName,
-                        exportPrecision: updated.exportPrecision,
-                        exportDecimalPlaces: updated.exportDecimalPlaces,
-                        id: (updated as any).id
-                      }));
                       setParamForm(updated);
                     }}
                     placeholder="e.g. Drive, Bass, Mid, Master"
@@ -682,18 +670,6 @@ export const ParameterTranslationEditorModal: React.FC<ParameterTranslationEdito
                           exportPrecision: val,
                           exportDecimalPlaces: val
                         };
-                        console.log('[PARAM_TRACE:EDITOR_CHANGE]', JSON.stringify({
-                          field: 'exportPrecision',
-                          displayName: updated.displayName,
-                          displayParameterName: updated.displayParameterName,
-                          canonicalName: updated.canonicalName,
-                          canonicalParameterName: updated.canonicalParameterName,
-                          exportName: updated.export?.name,
-                          at5XmlAttributeName: updated.at5XmlAttributeName,
-                          exportPrecision: updated.exportPrecision,
-                          exportDecimalPlaces: updated.exportDecimalPlaces,
-                          id: (updated as any).id
-                        }));
                         setParamForm(updated);
                       }}
                       placeholder="e.g. 5 (for 3.28171)"

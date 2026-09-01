@@ -260,26 +260,6 @@ export const at5DatabaseService = {
         } as ParameterMapping;
       });
       parameterMappingsCache = { data, timestamp: Date.now() };
-      
-      const overscreamMappings = data.filter(m => 
-        m.gearName?.toLowerCase().includes('overscream') || 
-        m.id?.toLowerCase().includes('overscream') ||
-        m.parameter?.toLowerCase().includes('drive')
-      );
-      if (overscreamMappings.length > 0) {
-        console.log('[PARAM_TRACE:DB_MAPPINGS_AFTER_SAVE]', JSON.stringify(overscreamMappings.map(m => ({
-          id: m.id,
-          gearName: m.gearName,
-          parameter: m.parameter,
-          displayParameterName: m.displayParameterName,
-          canonicalParameterName: m.canonicalParameterName,
-          exportParameterName: m.exportParameterName,
-          at5XmlAttributeName: m.at5XmlAttributeName,
-          exportPrecision: m.exportPrecision,
-          exportDecimalPlaces: m.exportDecimalPlaces,
-          displayPrecision: m.displayPrecision
-        }))));
-      }
 
       console.log(JSON.stringify({
         operation: 'getParameterMappings',
@@ -316,45 +296,7 @@ export const at5DatabaseService = {
         updatedBy: auth.currentUser.uid
       });
 
-      if (mapping.gearName?.toLowerCase().includes('overscream') || exportParamName.toLowerCase().includes('drive') || mapping.parameter?.toLowerCase().includes('drive')) {
-        console.log('[PARAM_TRACE:FIRESTORE_WRITE]', JSON.stringify({
-          rawIncomingId: mapping.id,
-          exportParamKey,
-          rawId,
-          mappingId,
-          data_parameter: (data as any).parameter,
-          data_displayParameterName: (data as any).displayParameterName,
-          data_canonicalParameterName: (data as any).canonicalParameterName,
-          data_exportParameterName: (data as any).exportParameterName,
-          data_at5XmlAttributeName: (data as any).at5XmlAttributeName,
-          data_exportPrecision: (data as any).exportPrecision,
-          data_exportDecimalPlaces: (data as any).exportDecimalPlaces,
-          data_displayPrecision: (data as any).displayPrecision
-        }));
-      }
-
       await setDoc(doc(db, 'parameter_mappings', mappingId), data);
-
-      if (mapping.gearName?.toLowerCase().includes('overscream') || exportParamName.toLowerCase().includes('drive') || mapping.parameter?.toLowerCase().includes('drive')) {
-        try {
-          const readSnap = await getDoc(doc(db, 'parameter_mappings', mappingId));
-          const readData = readSnap.data();
-          console.log('[PARAM_TRACE:FIRESTORE_READBACK]', JSON.stringify({
-            docId: readSnap.id,
-            exists: readSnap.exists(),
-            read_parameter: readData?.parameter,
-            read_displayParameterName: readData?.displayParameterName,
-            read_canonicalParameterName: readData?.canonicalParameterName,
-            read_exportParameterName: readData?.exportParameterName,
-            read_at5XmlAttributeName: readData?.at5XmlAttributeName,
-            read_exportPrecision: readData?.exportPrecision,
-            read_exportDecimalPlaces: readData?.exportDecimalPlaces,
-            read_displayPrecision: readData?.displayPrecision
-          }));
-        } catch (rbErr) {
-          console.error('[PARAM_TRACE:FIRESTORE_READBACK_ERROR]', rbErr);
-        }
-      }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
     }

@@ -2714,7 +2714,7 @@ const makeDebugItem = (
 
     if (!was_supplied_0) {
       detailsList.push({
-        parameter: "Mic 1 Placement",
+        parameter: "Mic 0 Placement",
         display_value: "Not specified",
         expected_export_value: "Mic0Angle: 0, Mic0XAxis: 0, Mic0YAxis: 0, Mic0Distance: 0, Mic0Speaker: 0",
         exported_internal_value: exportedString0,
@@ -2761,11 +2761,11 @@ const makeDebugItem = (
 
       const status = "RESOLVED_FROM_PROFILE";
       const conversionNote = allMatch 
-        ? `Mic 1 placement resolved and matched successfully against all AT5 XML coordinate parameters.`
+        ? `Mic 0 placement resolved and matched successfully against all AT5 XML coordinate parameters.`
         : `Discrepancy in numeric coordinates between requested intent and exported preset XML.`;
 
       if (!allMatch) {
-        mismatched_parameters.push("Mic_1_Placement (coordinate mismatch)");
+        mismatched_parameters.push("Mic_0_Placement (coordinate mismatch)");
       }
 
       const profileSource = resM1.resolutionSource === "reference_calibration_vir"
@@ -2773,7 +2773,7 @@ const makeDebugItem = (
         : (resM1.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
 
       detailsList.push({
-        parameter: "Mic 1 Placement",
+        parameter: "Mic 0 Placement",
         display_value: displayLabel0,
         expected_export_value: expectedStrings.join(", "),
         exported_internal_value: exportedString0,
@@ -2801,7 +2801,7 @@ const makeDebugItem = (
       fallbackWarningsList.push(warningMsg);
 
       detailsList.push({
-        parameter: "Mic 1 Placement",
+        parameter: "Mic 0 Placement",
         display_value: displayLabel0,
         expected_export_value: "N/A (No profile found)",
         exported_internal_value: exportedString0,
@@ -2826,10 +2826,10 @@ const makeDebugItem = (
       });
     }
 
-    // Canonical Mic 2 Placement (Slot 1 -> AT5 Mic1)
+    // Canonical Mic 1 Placement (Slot 1 -> AT5 Mic1)
     const pl1 = extractCanonicalMicPlacement(normSettings, 1);
     const was_supplied_1 = !pl1.isUnspecified;
-    const mic2Req = getSettingText(gear, ["mic_2", "mic 2", "mic2"]) || "Condenser 87";
+    const mic2Req = getSettingText(gear, ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"]) || "Condenser 87";
     const mic2Guid = getMicId(mic2Req);
 
     let resM2: any = null;
@@ -2875,7 +2875,7 @@ const makeDebugItem = (
 
     if (!was_supplied_1) {
       detailsList.push({
-        parameter: "Mic 2 Placement",
+        parameter: "Mic 1 Placement",
         display_value: "Not specified",
         expected_export_value: "Mic1Angle: 0, Mic1XAxis: 0, Mic1YAxis: 0, Mic1Distance: 0, Mic1Speaker: 1",
         exported_internal_value: exportedString1,
@@ -2922,11 +2922,11 @@ const makeDebugItem = (
 
       const status = "RESOLVED_FROM_PROFILE";
       const conversionNote = allMatch 
-        ? `Mic 2 placement resolved and matched successfully against all AT5 XML coordinate parameters.`
+        ? `Mic 1 placement resolved and matched successfully against all AT5 XML coordinate parameters.`
         : `Discrepancy in numeric coordinates between requested intent and exported preset XML.`;
 
       if (!allMatch) {
-        mismatched_parameters.push("Mic_2_Placement (coordinate mismatch)");
+        mismatched_parameters.push("Mic_1_Placement (coordinate mismatch)");
       }
 
       const profileSource = resM2.resolutionSource === "reference_calibration_vir"
@@ -2934,7 +2934,7 @@ const makeDebugItem = (
         : (resM2.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
 
       detailsList.push({
-        parameter: "Mic 2 Placement",
+        parameter: "Mic 1 Placement",
         display_value: displayLabel1,
         expected_export_value: expectedStrings.join(", "),
         exported_internal_value: exportedString1,
@@ -2962,7 +2962,7 @@ const makeDebugItem = (
       fallbackWarningsList.push(warningMsg);
 
       detailsList.push({
-        parameter: "Mic 2 Placement",
+        parameter: "Mic 1 Placement",
         display_value: displayLabel1,
         expected_export_value: "N/A (No profile found)",
         exported_internal_value: exportedString1,
@@ -3778,12 +3778,15 @@ export const getExportDebugData = (
       if (debugItem.parameter_details && debugItem.parameter_details.length > 0) {
         debugItem.parameter_details.forEach((detail: any) => {
           // Special handling for Composite Mic Placement parameters
-          if (detail.parameter === "Mic 1 Placement" || detail.parameter === "Mic 2 Placement") {
-            const isMic1 = detail.parameter === "Mic 1 Placement";
-            const prefix = isMic1 ? "Mic0" : "Mic1";
+          const isMic0 = detail.parameter === "Mic 0 Placement" || detail.parameter === "Mic_0_Placement" || (detail.parameter === "Mic 1 Placement" && detail.slot_index === 0);
+          const isMic1 = detail.parameter === "Mic 1 Placement" && !isMic0 || detail.parameter === "Mic 2 Placement" || detail.parameter === "Mic_1_Placement" || detail.parameter === "Mic_2_Placement";
+          const isMicPlacement = isMic0 || isMic1 || detail.parameter.toLowerCase().includes("placement");
+
+          if (isMicPlacement) {
+            const prefix = isMic0 ? "Mic0" : "Mic1";
             const fields = [`${prefix}Angle`, `${prefix}XAxis`, `${prefix}YAxis`, `${prefix}Distance`, `${prefix}Speaker`];
             
-            const expectedCoords = detail.resolved_numeric_values || detail.resolved_profile_value || detail.fallback_value || (isMic1 ? {
+            const expectedCoords = detail.resolved_numeric_values || detail.resolved_profile_value || detail.fallback_value || (isMic0 ? {
               Mic0Angle: 0, Mic0XAxis: 0, Mic0YAxis: 0, Mic0Distance: 0, Mic0Speaker: 0
             } : {
               Mic1Angle: 0, Mic1XAxis: 0, Mic1YAxis: 0, Mic1Distance: 0, Mic1Speaker: 1

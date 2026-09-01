@@ -737,6 +737,30 @@ const SelectedGearDetailPanel = ({
                 </div>
                 <div className="space-y-1.5 pt-1">
                   {item.parameter_details.map((param, pIdx) => {
+                    const isMic0 = param.parameter === "Mic 0 Placement" || param.parameter === "Mic_0_Placement" || (param.parameter === "Mic 1 Placement" && (param as any).slot_index === 0);
+                    const isMic1 = (param.parameter === "Mic 1 Placement" && !isMic0) || param.parameter === "Mic 2 Placement" || param.parameter === "Mic_1_Placement" || param.parameter === "Mic_2_Placement";
+                    const isMicPlacement = isMic0 || isMic1 || param.parameter.toLowerCase().includes("placement");
+
+                    if (isMicPlacement) {
+                      const slotLabel = isMic0 ? "Mic 0 Placement (AT5 Mic0)" : "Mic 1 Placement (AT5 Mic1)";
+                      const expVal = param.exported_internal_value || "Angle: 0, XAxis: 0, YAxis: 0, Distance: 0, Speaker: 0";
+                      return (
+                        <div key={pIdx} className="grid grid-cols-1 md:grid-cols-[1.2fr_auto_1.4fr] gap-2 items-center bg-slate-900/50 p-2.5 rounded-lg border border-cyan-500/20 text-xs font-mono">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] text-cyan-400 font-bold uppercase bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/20">Display</span>
+                            <span className="text-slate-300 font-semibold">{slotLabel} =</span>
+                            <strong className="text-white font-bold">{param.display_value || "Not specified"}</strong>
+                          </div>
+                          <span className="text-slate-600 font-mono hidden md:inline">→</span>
+                          <div className="flex items-center gap-1.5 flex-wrap md:justify-end">
+                            <span className="text-[10px] text-amber-400 font-bold uppercase bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-500/20">Export</span>
+                            <span className="text-slate-300 font-semibold">Composite AT5 =</span>
+                            <strong className="text-yellow-300 font-bold font-mono text-[11px] truncate max-w-xs" title={expVal}>"{expVal}"</strong>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     const dispName = param.matched_profile_parameter || param.parameter;
                     const dispVal = param.reverse_converted_display_value || (typeof param.display_value === "number" && param.display_precision !== undefined ? Number(param.display_value).toFixed(param.display_precision) : String(param.display_value));
                     const expName = param.matched_export_parameter_name || param.normalized_parameter || param.parameter;
@@ -803,38 +827,49 @@ const SelectedGearDetailPanel = ({
               </div>
               <div className="space-y-3">
                 {item.parameter_details.map((param, pIdx) => {
-                  const isMicPlacement = param.parameter === "Mic 1 Placement" || param.parameter === "Mic 2 Placement";
-                  if (isMicPlacement) {
-                    const isMic1 = param.parameter === "Mic 1 Placement";
-                    const isFallback = param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK" || !param.resolved_profile_found;
-                    
-                    let sourceLabel = "Cabinet Default Coordinates";
-                    if (param.placement_source === "calibrated_profile") sourceLabel = "Calibrated Profile";
-                    else if (param.placement_source === "at5p_discovery_profile") sourceLabel = "Imported AT5 Preset Profile";
-                    else if (param.placement_source === "fallback_default") sourceLabel = "Fallback Default Coordinates";
-                    else if (param.placement_source === "imported_existing_value") sourceLabel = "Imported AT5 Value";
-                    else if (param.placement_source === "cab_default") sourceLabel = "Cabinet Default Coordinates";
+                  const isMic0 = param.parameter === "Mic 0 Placement" || param.parameter === "Mic_0_Placement" || (param.parameter === "Mic 1 Placement" && (param as any).slot_index === 0);
+                  const isMic1 = (param.parameter === "Mic 1 Placement" && !isMic0) || param.parameter === "Mic 2 Placement" || param.parameter === "Mic_1_Placement" || param.parameter === "Mic_2_Placement";
+                  const isMicPlacement = isMic0 || isMic1 || param.parameter.toLowerCase().includes("placement");
 
-                    let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-800";
-                    let badgeText = "DEFAULT USED";
-                    if (param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE") {
+                  if (isMicPlacement) {
+                    const isFallback = param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK" || !param.resolved_profile_found;
+                    const isNotSpecified = param.mapping_status === "NOT_SPECIFIED" || param.display_value === "Not specified";
+                    const isVirRef = param.placement_source === "reference_calibration_vir" || param.placement_profile_source === "reference_calibration_vir";
+                    
+                    let sourceLabel = "Safe Fallback";
+                    if (isVirRef) sourceLabel = "VIR Reference Calibration";
+                    else if (param.placement_source === "calibrated_profile" || param.placement_source === "firestore_verified") sourceLabel = "Verified Mapping";
+                    else if (param.placement_source === "at5p_discovery_profile" || param.placement_source === "estimated_profile") sourceLabel = "Estimated Mapping";
+                    else if (param.placement_source === "imported_existing_value") sourceLabel = "Imported AT5 Value";
+                    else if (param.placement_source === "fallback_default") sourceLabel = "Safe Fallback";
+                    else if (param.placement_source === "cab_default") sourceLabel = "Safe Fallback";
+
+                    let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-700/50";
+                    let badgeText = "NOT SPECIFIED";
+                    if (isVirRef) {
+                      badgeStyle = "bg-cyan-950/40 text-cyan-400 border border-cyan-500/30";
+                      badgeText = "VIR REFERENCE CALIBRATION";
+                    } else if (param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE") {
                       badgeStyle = "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20";
-                      badgeText = "RESOLVED COMPOSITE";
+                      badgeText = "VERIFIED MAPPING";
                     } else if (param.mapping_status === "FALLBACK_USED" || param.mapping_status === "FALLBACK_COMPOSITE") {
                       badgeStyle = "bg-amber-950/40 text-amber-400 border border-amber-500/20";
-                      badgeText = "FALLBACK COMPOSITE";
-                    } else if (param.mapping_status === "NOT_SPECIFIED") {
-                      badgeStyle = "bg-blue-950/20 text-blue-400 border border-blue-500/20";
-                      badgeText = "DEFAULT USED";
+                      badgeText = "FALLBACK USED";
+                    } else if (isNotSpecified) {
+                      badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-700/50";
+                      badgeText = "NOT SPECIFIED";
                     }
+
+                    const paramTitle = isMic0 ? "Mic 0 Placement" : "Mic 1 Placement";
+                    const paramSubtitle = isMic0 ? "TT Mic 0 → AT5 Mic0" : "TT Mic 1 → AT5 Mic1";
 
                     return (
                       <div key={pIdx} className="border-b border-white/5 pb-4 text-xs leading-normal last:border-0 last:pb-0">
                         <div className="flex flex-col md:flex-row md:items-center justify-between font-mono font-semibold text-slate-400 mb-2 gap-1.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-slate-200">{param.parameter}</span>
+                            <span className="text-slate-200">{paramTitle}</span>
                             <span className="text-[10px] text-cyan-400 font-normal">
-                              ({isMic1 ? "TT Mic_1 → AT5 Mic0" : "TT Mic_2 → AT5 Mic1"})
+                              ({paramSubtitle})
                             </span>
                           </div>
                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider self-start md:self-auto ${badgeStyle}`}>
@@ -845,21 +880,21 @@ const SelectedGearDetailPanel = ({
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-300 pl-2">
                           <div>
                             <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">Intended Semantic Placement</span>
-                            <strong className="text-slate-200">{param.display_value}</strong>
-                            {param.display_value !== "Not specified" && (
-                              <span className="text-[10px] text-slate-500 block mt-1 font-mono">
-                                Provided by signal chain
-                              </span>
-                            )}
+                            <strong className={isNotSpecified ? "text-slate-400 italic font-medium" : "text-slate-100 font-bold"}>
+                              {param.display_value}
+                            </strong>
+                            <span className="text-[10px] text-slate-500 block mt-1 font-mono">
+                              {isNotSpecified ? "(No semantic placement requested)" : "Provided by signal chain"}
+                            </span>
                           </div>
                           
                           <div>
                             <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">Placement Source</span>
                             <div className="flex flex-col gap-1">
-                              <span className={param.resolved_profile_found ? "text-emerald-400 font-semibold" : isFallback ? "text-amber-400 font-semibold" : "text-blue-400 font-semibold"}>
+                              <span className={isVirRef ? "text-cyan-400 font-semibold" : param.resolved_profile_found ? "text-emerald-400 font-semibold" : isFallback ? "text-amber-400 font-semibold" : "text-slate-400 font-semibold"}>
                                 {sourceLabel}
                               </span>
-                              {param.resolved_profile_found && param.placement_profile_source && (
+                              {param.resolved_profile_found && param.placement_profile_source && param.placement_profile_source !== "reference_calibration_vir" && (
                                 <span className="text-[9px] text-slate-500 font-mono">
                                   Profile ID: {param.placement_profile_id ? param.placement_profile_id.substring(0, 8) : "N/A"}
                                 </span>
@@ -869,7 +904,7 @@ const SelectedGearDetailPanel = ({
 
                           <div>
                             <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">
-                              {isFallback ? "Fallback Exported (XML)" : "Exported (XML)"}
+                              {isNotSpecified ? "Default Safe Coordinates (AT5 XML)" : isFallback ? "Fallback Coordinates (AT5 XML)" : "Exported Coordinates (AT5 XML)"}
                             </span>
                             <div className="font-mono text-[10px] text-slate-300 bg-slate-900/60 p-2.5 rounded-lg border border-white/5 mt-1 space-y-0.5 max-w-xs">
                               {param.exported_internal_value.split(", ").map((coord, cIdx) => (

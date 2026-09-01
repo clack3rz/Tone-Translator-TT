@@ -1008,19 +1008,6 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       const displayPrecision = rawParam.displayPrecision ?? rawParam.displayDecimalPlaces ?? rawParam.decimalPlaces ?? 2;
       const exportPrecision = rawParam.exportPrecision ?? rawParam.exportDecimalPlaces;
 
-      console.log('[PARAM_TRACE:EDITOR_REHYDRATE_SOURCE]', JSON.stringify({
-        rawParam_displayName: rawParam.displayName,
-        rawParam_displayParameterName: rawParam.displayParameterName,
-        rawParam_canonicalName: rawParam.canonicalName,
-        rawParam_canonicalParameterName: rawParam.canonicalParameterName,
-        rawParam_exportName: rawParam.export?.name,
-        rawParam_at5XmlAttributeName: rawParam.at5XmlAttributeName,
-        rawParam_exportPrecision: rawParam.exportPrecision,
-        rawParam_exportDecimalPlaces: rawParam.exportDecimalPlaces,
-        computed_exportPrecision: exportPrecision,
-        computed_displayPrecision: displayPrecision
-      }));
-
       setParamForm({
         ...rawParam,
         displayName: rawParam.displayName || rawParam.displayParameterName || rawParam.canonicalName || '',
@@ -1161,18 +1148,6 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
     const dispPrec = paramForm.displayPrecision !== undefined ? Number(paramForm.displayPrecision) : undefined;
     const expPrec = paramForm.exportPrecision !== undefined ? Number(paramForm.exportPrecision) : undefined;
 
-    console.log('[PARAM_TRACE:PRE_SAVE_FORM]', JSON.stringify({
-      displayName: paramForm.displayName,
-      displayParameterName: paramForm.displayParameterName,
-      canonicalName: paramForm.canonicalName,
-      canonicalParameterName: paramForm.canonicalParameterName,
-      exportName: paramForm.export?.name,
-      at5XmlAttributeName: paramForm.at5XmlAttributeName,
-      exportPrecision: paramForm.exportPrecision,
-      exportDecimalPlaces: paramForm.exportDecimalPlaces,
-      id: (paramForm as any).id
-    }));
-
     const finalForm: GearProfileParameter = {
       ...paramForm,
       displayName: paramForm.displayName || paramForm.displayParameterName || paramForm.canonicalName,
@@ -1212,18 +1187,6 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
       min: paramForm.export?.min !== undefined ? Number(paramForm.export.min) : 0,
       max: paramForm.export?.max !== undefined ? Number(paramForm.export.max) : 1
     };
-
-    console.log('[PARAM_TRACE:FINAL_FORM]', JSON.stringify({
-      displayName: finalForm.displayName,
-      displayParameterName: finalForm.displayParameterName,
-      canonicalName: finalForm.canonicalName,
-      canonicalParameterName: finalForm.canonicalParameterName,
-      exportName: finalForm.export?.name,
-      at5XmlAttributeName: finalForm.at5XmlAttributeName,
-      exportPrecision: finalForm.exportPrecision,
-      exportDecimalPlaces: finalForm.exportDecimalPlaces,
-      id: (finalForm as any).id
-    }));
 
     const updatedParams = [...editedProfile.parameters];
     updatedParams[editingParamIndex] = finalForm;
@@ -1283,28 +1246,6 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
         p.canonicalName.toLowerCase().trim() === finalForm.canonicalName.toLowerCase().trim() ||
         (p.export?.name && finalForm.export?.name && p.export.name.toLowerCase().trim() === finalForm.export.name.toLowerCase().trim())
       );
-
-      console.log('[PARAM_TRACE:RELOADED_PROFILE]', JSON.stringify({
-        profileId: savedProfile?.id,
-        profileDisplayName: savedProfile?.displayName,
-        savedParam: savedParamInReloadedProfile ? {
-          displayName: savedParamInReloadedProfile.displayName,
-          displayParameterName: savedParamInReloadedProfile.displayParameterName,
-          canonicalName: savedParamInReloadedProfile.canonicalName,
-          canonicalParameterName: savedParamInReloadedProfile.canonicalParameterName,
-          exportName: savedParamInReloadedProfile.export?.name,
-          at5XmlAttributeName: savedParamInReloadedProfile.at5XmlAttributeName,
-          exportPrecision: savedParamInReloadedProfile.exportPrecision,
-          exportDecimalPlaces: savedParamInReloadedProfile.exportDecimalPlaces,
-          displayPrecision: savedParamInReloadedProfile.displayPrecision
-        } : null,
-        allProfileParamNames: savedProfile?.parameters?.map(p => ({
-          displayName: p.displayName,
-          displayParameterName: p.displayParameterName,
-          exportName: p.export?.name,
-          exportPrecision: p.exportPrecision
-        }))
-      }));
 
       if (savedProfile) {
         setSelectedProfile(savedProfile);

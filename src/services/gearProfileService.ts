@@ -399,32 +399,6 @@ export const gearProfileService = {
       const dbAliases = Array.isArray(dbM.aliases) ? dbM.aliases : [];
 
       if (existing) {
-        if (displayName.toLowerCase().includes('overscream') || dbM.gearName?.toLowerCase().includes('overscream')) {
-          console.log('[PARAM_TRACE:HYDRATION_BEFORE]', JSON.stringify({
-            gearDisplayName: displayName,
-            existingParam: {
-              displayName: existing.displayName,
-              displayParameterName: existing.displayParameterName,
-              canonicalName: existing.canonicalName,
-              canonicalParameterName: existing.canonicalParameterName,
-              exportName: existing.export?.name,
-              exportPrecision: existing.exportPrecision,
-              exportDecimalPlaces: existing.exportDecimalPlaces
-            }
-          }));
-          console.log('[PARAM_TRACE:HYDRATION_MAPPING_SELECTED]', JSON.stringify({
-            mappingId: dbM.id,
-            gearName: dbM.gearName,
-            parameter: dbM.parameter,
-            displayParameterName: dbM.displayParameterName,
-            canonicalParameterName: dbM.canonicalParameterName,
-            exportParameterName: dbM.exportParameterName,
-            at5XmlAttributeName: dbM.at5XmlAttributeName,
-            exportPrecision: dbM.exportPrecision,
-            exportDecimalPlaces: dbM.exportDecimalPlaces
-          }));
-        }
-
         existing.displayName = dbM.displayParameterName || dbM.parameter || existing.displayName;
         existing.displayParameterName = dbM.displayParameterName || dbM.parameter || existing.displayName;
         existing.canonicalName = dbM.canonicalParameterName || dbM.exportParameterName || existing.canonicalName;
@@ -507,23 +481,6 @@ export const gearProfileService = {
         existing.valueMapJson = dbM.valueMapJson ?? existing.valueMapJson;
         existing.reverseValueMapJson = dbM.reverseValueMapJson ?? existing.reverseValueMapJson;
         (existing as any)._isDbHydrated = true;
-
-        if (displayName.toLowerCase().includes('overscream') || dbM.gearName?.toLowerCase().includes('overscream')) {
-          console.log('[PARAM_TRACE:HYDRATION_AFTER]', JSON.stringify({
-            gearDisplayName: displayName,
-            hydratedParam: {
-              displayName: existing.displayName,
-              displayParameterName: existing.displayParameterName,
-              canonicalName: existing.canonicalName,
-              canonicalParameterName: existing.canonicalParameterName,
-              exportName: existing.export?.name,
-              at5XmlAttributeName: existing.at5XmlAttributeName,
-              exportPrecision: existing.exportPrecision,
-              exportDecimalPlaces: existing.exportDecimalPlaces,
-              displayPrecision: existing.displayPrecision
-            }
-          }));
-        }
       } else {
         const dbSavedAliases = (dbM.savedAliases && dbM.savedAliases.length > 0) ? dbM.savedAliases : (dbM.aliases || []);
         const dbRawAliases = dbM.rawMappingAliases || dbM.aliases || [];
@@ -825,21 +782,6 @@ export const gearProfileService = {
     // Save/update current parameters with canonical doc IDs
     const activeDocIds = new Set<string>();
     for (const p of deduplicatedParams) {
-      if (profile.displayName.toLowerCase().includes('overscream') || (p.displayName && p.displayName.toLowerCase().includes('drive'))) {
-        console.log('[PARAM_TRACE:PROFILE_PARAM_BEFORE_MAPPING]', JSON.stringify({
-          profileDisplayName: profile.displayName,
-          param_displayName: p.displayName,
-          param_displayParameterName: p.displayParameterName,
-          param_canonicalName: p.canonicalName,
-          param_canonicalParameterName: p.canonicalParameterName,
-          param_exportName: p.export?.name,
-          param_at5XmlAttributeName: p.at5XmlAttributeName,
-          param_exportPrecision: p.exportPrecision,
-          param_exportDecimalPlaces: p.exportDecimalPlaces,
-          param_displayPrecision: p.displayPrecision
-        }));
-      }
-
       const exportParamName = p.export?.name || p.at5XmlAttributeName || p.canonicalName || p.displayName || 'Param';
       const canonicalParamName = p.canonicalParameterName || p.canonicalName || exportParamName;
       const displayParamName = p.displayParameterName || p.displayName || exportParamName;
@@ -902,21 +844,6 @@ export const gearProfileService = {
         valueMapJson: p.valueMapJson,
         reverseValueMapJson: p.reverseValueMapJson,
       };
-
-      if (profile.displayName.toLowerCase().includes('overscream') || (p.displayName && p.displayName.toLowerCase().includes('drive'))) {
-        console.log('[PARAM_TRACE:MAPPING_BEFORE_FIRESTORE]', JSON.stringify({
-          mappingId: mapping.id,
-          gearName: mapping.gearName,
-          parameter: mapping.parameter,
-          displayParameterName: mapping.displayParameterName,
-          canonicalParameterName: mapping.canonicalParameterName,
-          exportParameterName: mapping.exportParameterName,
-          at5XmlAttributeName: mapping.at5XmlAttributeName,
-          exportPrecision: mapping.exportPrecision,
-          exportDecimalPlaces: mapping.exportDecimalPlaces,
-          displayPrecision: mapping.displayPrecision
-        }));
-      }
 
       await at5DatabaseService.saveParameterMapping(mapping);
     }

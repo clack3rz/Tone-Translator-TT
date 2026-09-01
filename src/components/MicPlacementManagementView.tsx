@@ -374,8 +374,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               onChange={(e) => setTestSlot(e.target.value as any)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
             >
-              <option value="Mic_1">Mic 1 (Mic0 Slot / Speaker 0 - Calibrated)</option>
-              <option value="Mic_2">Mic 2 (Mic1 Slot / Speaker 1 - Calibration Gap)</option>
+              <option value="Mic_1">Mic 0 (Mic0 Slot / Speaker 0 - Calibrated)</option>
+              <option value="Mic_2">Mic 1 (Mic1 Slot / Speaker 1 - Calibration Gap)</option>
             </select>
           </div>
 
@@ -659,8 +659,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                     }}
                     className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value="Mic_1">Mic 1 (Mic 0 Slot)</option>
-                    <option value="Mic_2">Mic 2 (Mic 1 Slot)</option>
+                    <option value="Mic_1">Mic 0 (Mic 0 Slot)</option>
+                    <option value="Mic_2">Mic 1 (Mic 1 Slot)</option>
                   </select>
                 </div>
 
