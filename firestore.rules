@@ -218,8 +218,11 @@ service cloud.firestore {
       );
     }
 
-    // System collection for connection test
-    match /system/connection_test {
+    // System collections for connection test
+    match /system/{document=**} {
+      allow read: if true;
+    }
+    match /test/{document=**} {
       allow read: if true;
     }
   }

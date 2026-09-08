@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'motion/react';
-import AT5SignalChainView from "./components/AT5SignalChainView";
+import AT5SignalChainView, { SignalChainNavTarget } from "./components/AT5SignalChainView";
 import { ToneProfileView } from "./components/ToneProfileView";
 import { GearManagementPanel } from './components/GearManagementPanel';
 import { 
@@ -128,11 +128,20 @@ export default function App() {
   const [isChainViewOpen, setIsChainViewOpen] = useState(false);
   const [isAdvancedDebugOpen, setIsAdvancedDebugOpen] = useState(false);
   const [isGearToolOpen, setIsGearToolOpen] = useState(false);
+  const [hasOpenedGearTool, setHasOpenedGearTool] = useState(false);
   const [gearToolTab, setGearToolTab] = useState<'discovery' | 'catalogue' | 'mappings'>('discovery');
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isDbRefreshing, setIsDbRefreshing] = useState(false);
   const [dbVersion, setDbVersion] = useState(0);
   const [catalogueSearchOverride, setCatalogueSearchOverride] = useState<string | undefined>(undefined);
+  const [sourceOriginalIndex, setSourceOriginalIndex] = useState<number | null>(null);
+  const [signalChainNavTarget, setSignalChainNavTarget] = useState<SignalChainNavTarget | null>(null);
+
+  useEffect(() => {
+    if (isGearToolOpen) {
+      setHasOpenedGearTool(true);
+    }
+  }, [isGearToolOpen]);
 
   const handleRefreshChain = useCallback(async () => {
     setIsDbRefreshing(true);
@@ -378,6 +387,8 @@ export default function App() {
 
     setIsTranslating(true);
     setError(null);
+    setSourceOriginalIndex(null);
+    setSignalChainNavTarget({ type: 'summary', token: Date.now() });
 
     const controller = new AbortController();
     setAbortController(controller);
@@ -464,10 +475,35 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleJumpToCatalogue = (guid: string) => {
+  const handleJumpToCatalogue = (guid: string, originIndex?: number) => {
     setCatalogueSearchOverride(guid);
+    setSourceOriginalIndex(originIndex !== undefined ? originIndex : null);
     setGearToolTab('catalogue');
     setIsGearToolOpen(true);
+  };
+
+  const handleReturnToSummary = () => {
+    setIsGearToolOpen(false);
+    setCatalogueSearchOverride(undefined);
+    setSourceOriginalIndex(null);
+    setSignalChainNavTarget({ type: 'summary', token: Date.now() });
+  };
+
+  const handleReturnToGearItem = () => {
+    if (sourceOriginalIndex !== null && sourceOriginalIndex !== undefined) {
+      setIsGearToolOpen(false);
+      setCatalogueSearchOverride(undefined);
+      setSignalChainNavTarget({ type: 'item', originalIndex: sourceOriginalIndex, token: Date.now() });
+    } else {
+      handleReturnToSummary();
+    }
+  };
+
+  const handleCloseGearTool = () => {
+    setIsGearToolOpen(false);
+    setCatalogueSearchOverride(undefined);
+    setSourceOriginalIndex(null);
+    setSignalChainNavTarget({ type: 'summary', token: Date.now() });
   };
 
   return (
@@ -620,39 +656,44 @@ export default function App() {
 
       <main className="flex-1 flex flex-col min-h-0 overflow-y-auto">
         <div className="p-8">
-          {isGearToolOpen ? (
-            <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+          {hasOpenedGearTool && (
+            <div className={`max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-top-4 duration-500 ${isGearToolOpen ? '' : 'hidden'}`}>
               <GearManagementPanel 
                 onRefreshChain={handleRefreshChain} 
-                onClose={() => {
-                  setIsGearToolOpen(false);
-                  setCatalogueSearchOverride(undefined);
-                }} 
+                onClose={handleCloseGearTool} 
+                onReturnToSummary={handleReturnToSummary}
+                onReturnToGearItem={handleReturnToGearItem}
+                sourceOriginalIndex={sourceOriginalIndex}
                 initialSelectedGuid={catalogueSearchOverride}
                 exportDebugData={exportDebugData}
               />
             </div>
-          ) : toneResult ? (
-            <div className="max-w-6xl mx-auto space-y-12">
-              {exportDebugData && (
-                <AT5SignalChainView 
-                  debugData={exportDebugData} 
-                  onJumpToCatalogue={handleJumpToCatalogue} 
-                  rawRequest={prompt}
-                  toneResult={toneResult}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center text-center py-24 opacity-40">
-              <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center mb-8">
-                 <Music className="w-10 h-10 text-gray-600" />
+          )}
+
+          {!isGearToolOpen && (
+            toneResult ? (
+              <div className="max-w-6xl mx-auto space-y-12">
+                {exportDebugData && (
+                  <AT5SignalChainView 
+                    debugData={exportDebugData} 
+                    onJumpToCatalogue={handleJumpToCatalogue} 
+                    rawRequest={prompt}
+                    toneResult={toneResult}
+                    requestedTarget={signalChainNavTarget}
+                  />
+                )}
               </div>
-              <h3 className="text-gray-500 font-display font-bold text-xl uppercase tracking-widest mb-3">Modular Engine Offline</h3>
-              <p className="text-[10px] text-gray-600 uppercase leading-relaxed tracking-[0.25em] font-mono max-w-sm">
-                Provide a tone description or reference signal to initialize signal chain synthesis.
-              </p>
-            </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center py-24 opacity-40">
+                <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center mb-8">
+                   <Music className="w-10 h-10 text-gray-600" />
+                </div>
+                <h3 className="text-gray-500 font-display font-bold text-xl uppercase tracking-widest mb-3">Modular Engine Offline</h3>
+                <p className="text-[10px] text-gray-600 uppercase leading-relaxed tracking-[0.25em] font-mono max-w-sm">
+                  Provide a tone description or reference signal to initialize signal chain synthesis.
+                </p>
+              </div>
+            )
           )}
         </div>
       </main>

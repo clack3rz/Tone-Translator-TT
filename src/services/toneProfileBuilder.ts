@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { ToneProfileResult } from "../types";
+import { cleanAndParseJson } from "../utils/jsonParser";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -104,7 +105,7 @@ export async function buildToneProfile(
     while (retries <= maxRetries) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
+          model: "gemini-3.8-flash",
           contents: [{ role: 'user', parts }],
           config: {
             responseMimeType: "application/json",
@@ -125,7 +126,7 @@ export async function buildToneProfile(
       }
     }
 
-    const parsed = JSON.parse(responseText) as ToneProfileResult;
+    const parsed = cleanAndParseJson<ToneProfileResult>(responseText);
     // Inject future audio-derived placeholder fields in ToneProfile to fulfill Workflow 2 structural placeholders
     if (parsed && parsed.tone_profile) {
       parsed.tone_profile.spectral_centroid = undefined;

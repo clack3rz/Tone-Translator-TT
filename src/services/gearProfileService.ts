@@ -6,19 +6,28 @@ import { at5DatabaseService } from './at5DatabaseService';
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping } from '../types';
 
 let profilesCache: { data: GearProfile[]; timestamp: number } | null = null;
+let inFlightProfilesPromise: Promise<GearProfile[]> | null = null;
+const CACHE_TTL_MS = 60000;
 
 export const gearProfileService = {
   clearCache() {
     profilesCache = null;
+    inFlightProfilesPromise = null;
     at5DatabaseService.clearCache();
   },
 
   /**
-   * Retrieves all items merged on-the-fly into GearProfile objects
+   * Retrieves all items merged on-the-fly into GearProfile objects.
+   * Features in-flight Promise deduplication:
+   * - Non-forced callers await and receive the active running Promise.
+   * - Concurrent forced refreshes collapse into the single active refresh.
+   * - Completed data is cached before clearing the in-flight Promise.
    */
   async getGearProfiles(forceRefresh = false): Promise<GearProfile[]> {
     const t0 = performance.now();
-    if (!forceRefresh && profilesCache && (Date.now() - profilesCache.timestamp < 60000)) {
+
+    // 1. Serve from completed-result memory cache if valid and not forcing a refresh
+    if (!forceRefresh && profilesCache && (Date.now() - profilesCache.timestamp < CACHE_TTL_MS)) {
       console.log(JSON.stringify({
         operation: 'getGearProfiles',
         durationMs: Math.round(performance.now() - t0),
@@ -28,16 +37,32 @@ export const gearProfileService = {
       return profilesCache.data;
     }
 
-    // 1. Fetch latest details
-    await refreshCatalog();
-    await refreshDbParameterMappings();
-    const catalogItems = getAt5Catalog() || [];
-    const cabs = getVerifiedCabs() || [];
-    const speakers = getVerifiedSpeakers() || [];
-    const mics = getVerifiedMics() || [];
-    
-    // Asynchronously download remote overrides from firestore
-    const dbMappings = await at5DatabaseService.getParameterMappings(forceRefresh);
+    // 2. In-flight request deduplication:
+    // If a request is already running, join the active in-flight Promise.
+    // Multiple simultaneous forced refreshes collapse into the single active execution.
+    if (inFlightProfilesPromise) {
+      console.log(JSON.stringify({
+        operation: 'getGearProfiles',
+        durationMs: Math.round(performance.now() - t0),
+        source: 'joined-in-flight'
+      }));
+      return inFlightProfilesPromise;
+    }
+
+    // 3. Initiate single coordinated refresh
+    inFlightProfilesPromise = (async () => {
+      const fetchT0 = performance.now();
+      try {
+        // Fetch latest catalog and parameter details
+        await refreshCatalog();
+        await refreshDbParameterMappings();
+        const catalogItems = getAt5Catalog() || [];
+        const cabs = getVerifiedCabs() || [];
+        const speakers = getVerifiedSpeakers() || [];
+        const mics = getVerifiedMics() || [];
+        
+        // Asynchronously download remote overrides from firestore
+        const dbMappings = await at5DatabaseService.getParameterMappings(forceRefresh);
 
     const profiles: GearProfile[] = [];
     const seenGuids = new Set<string>();
@@ -218,17 +243,25 @@ export const gearProfileService = {
       if (nGuid) seenGuids.add(nGuid);
     }
 
-    profilesCache = { data: profiles, timestamp: Date.now() };
-    console.log(JSON.stringify({
-      operation: 'getGearProfiles',
-      durationMs: Math.round(performance.now() - t0),
-      profileCount: profiles.length,
-      parameterMappingCount: dbMappings.length,
-      source: 'firestore'
-    }));
+      // Store completed result into memory cache before clearing in-flight tracker
+      profilesCache = { data: profiles, timestamp: Date.now() };
+      console.log(JSON.stringify({
+        operation: 'getGearProfiles',
+        durationMs: Math.round(performance.now() - fetchT0),
+        profileCount: profiles.length,
+        parameterMappingCount: dbMappings.length,
+        source: 'firestore-refresh'
+      }));
 
-    return profiles;
-  },
+      return profiles;
+    } finally {
+      // Clear in-flight promise so future calls/retries are not blocked
+      inFlightProfilesPromise = null;
+    }
+  })();
+
+  return inFlightProfilesPromise;
+},
 
   /**
    * Helper to check if a DB mapping matches a gear's name or aliases

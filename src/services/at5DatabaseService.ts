@@ -81,6 +81,10 @@ function sanitize(data: any): any {
 let catalogueCache: { data: AT5CatalogItem[]; timestamp: number } | null = null;
 let parameterMappingsCache: { data: ParameterMapping[]; timestamp: number } | null = null;
 let discoveryCandidatesCache: { data: IKMPAKCandidate[]; timestamp: number } | null = null;
+
+let inFlightCataloguePromise: Promise<AT5CatalogItem[]> | null = null;
+let inFlightParameterMappingsPromise: Promise<ParameterMapping[]> | null = null;
+let inFlightDiscoveryCandidatesPromise: Promise<IKMPAKCandidate[]> | null = null;
 const CACHE_TTL_MS = 60000;
 
 export const at5DatabaseService = {
@@ -88,6 +92,9 @@ export const at5DatabaseService = {
     catalogueCache = null;
     parameterMappingsCache = null;
     discoveryCandidatesCache = null;
+    inFlightCataloguePromise = null;
+    inFlightParameterMappingsPromise = null;
+    inFlightDiscoveryCandidatesPromise = null;
   },
 
   /**
@@ -104,22 +111,38 @@ export const at5DatabaseService = {
       }));
       return catalogueCache.data;
     }
-    const path = 'catalogue';
-    try {
-      const snapshot = await getDocs(collection(db, path));
-      const data = snapshot.docs.map(doc => doc.data() as AT5CatalogItem);
-      catalogueCache = { data, timestamp: Date.now() };
+
+    if (inFlightCataloguePromise) {
       console.log(JSON.stringify({
         operation: 'getCatalogue',
         durationMs: Math.round(performance.now() - t0),
-        docCount: data.length,
-        source: 'firestore'
+        source: 'joined-in-flight'
       }));
-      return data;
-    } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
+      return inFlightCataloguePromise;
     }
+
+    const path = 'catalogue';
+    inFlightCataloguePromise = (async () => {
+      try {
+        const snapshot = await getDocs(collection(db, path));
+        const data = snapshot.docs.map(doc => doc.data() as AT5CatalogItem);
+        catalogueCache = { data, timestamp: Date.now() };
+        console.log(JSON.stringify({
+          operation: 'getCatalogue',
+          durationMs: Math.round(performance.now() - t0),
+          docCount: data.length,
+          source: 'firestore'
+        }));
+        return data;
+      } catch (error) {
+        handleFirestoreError(error, OperationType.LIST, path);
+        return [];
+      } finally {
+        inFlightCataloguePromise = null;
+      }
+    })();
+
+    return inFlightCataloguePromise;
   },
 
   async saveGearItem(gear: AT5CatalogItem) {
@@ -249,29 +272,45 @@ export const at5DatabaseService = {
       }));
       return parameterMappingsCache.data;
     }
-    const path = 'parameter_mappings';
-    try {
-      const snapshot = await getDocs(collection(db, path));
-      const data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        return {
-          ...d,
-          id: doc.id
-        } as ParameterMapping;
-      });
-      parameterMappingsCache = { data, timestamp: Date.now() };
 
+    if (inFlightParameterMappingsPromise) {
       console.log(JSON.stringify({
         operation: 'getParameterMappings',
         durationMs: Math.round(performance.now() - t0),
-        parameterMappingCount: data.length,
-        source: 'firestore'
+        source: 'joined-in-flight'
       }));
-      return data;
-    } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
+      return inFlightParameterMappingsPromise;
     }
+
+    const path = 'parameter_mappings';
+    inFlightParameterMappingsPromise = (async () => {
+      try {
+        const snapshot = await getDocs(collection(db, path));
+        const data = snapshot.docs.map(doc => {
+          const d = doc.data();
+          return {
+            ...d,
+            id: doc.id
+          } as ParameterMapping;
+        });
+        parameterMappingsCache = { data, timestamp: Date.now() };
+
+        console.log(JSON.stringify({
+          operation: 'getParameterMappings',
+          durationMs: Math.round(performance.now() - t0),
+          parameterMappingCount: data.length,
+          source: 'firestore'
+        }));
+        return data;
+      } catch (error) {
+        handleFirestoreError(error, OperationType.LIST, path);
+        return [];
+      } finally {
+        inFlightParameterMappingsPromise = null;
+      }
+    })();
+
+    return inFlightParameterMappingsPromise;
   },
 
   async saveParameterMapping(mapping: ParameterMapping) {
@@ -384,28 +423,44 @@ export const at5DatabaseService = {
       }));
       return discoveryCandidatesCache.data;
     }
-    const path = 'gear_discovery_candidates';
-    try {
-      const snapshot = await getDocs(collection(db, path));
-      const data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        return {
-          ...d,
-          id: doc.id
-        } as IKMPAKCandidate;
-      });
-      discoveryCandidatesCache = { data, timestamp: Date.now() };
+
+    if (inFlightDiscoveryCandidatesPromise) {
       console.log(JSON.stringify({
         operation: 'getDiscoveryCandidates',
         durationMs: Math.round(performance.now() - t0),
-        docCount: data.length,
-        source: 'firestore'
+        source: 'joined-in-flight'
       }));
-      return data;
-    } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
+      return inFlightDiscoveryCandidatesPromise;
     }
+
+    const path = 'gear_discovery_candidates';
+    inFlightDiscoveryCandidatesPromise = (async () => {
+      try {
+        const snapshot = await getDocs(collection(db, path));
+        const data = snapshot.docs.map(doc => {
+          const d = doc.data();
+          return {
+            ...d,
+            id: doc.id
+          } as IKMPAKCandidate;
+        });
+        discoveryCandidatesCache = { data, timestamp: Date.now() };
+        console.log(JSON.stringify({
+          operation: 'getDiscoveryCandidates',
+          durationMs: Math.round(performance.now() - t0),
+          docCount: data.length,
+          source: 'firestore'
+        }));
+        return data;
+      } catch (error) {
+        handleFirestoreError(error, OperationType.LIST, path);
+        return [];
+      } finally {
+        inFlightDiscoveryCandidatesPromise = null;
+      }
+    })();
+
+    return inFlightDiscoveryCandidatesPromise;
   },
 
   async saveDiscoveryCandidate(candidate: IKMPAKCandidate) {

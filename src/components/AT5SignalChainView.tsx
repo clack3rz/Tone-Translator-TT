@@ -147,11 +147,16 @@ type ExportDebugData = {
   rack_decision?: any;
 };
 
+export type SignalChainNavTarget = 
+  | { type: 'summary'; token: number }
+  | { type: 'item'; originalIndex: number; token: number };
+
 type Props = {
   debugData: ExportDebugData;
-  onJumpToCatalogue?: (guid: string) => void;
+  onJumpToCatalogue?: (guid: string, originIndex?: number) => void;
   rawRequest?: string;
   toneResult?: any;
+  requestedTarget?: SignalChainNavTarget | null;
 };
 
 interface StatusStyle {
@@ -338,12 +343,14 @@ const SettingsTable = ({
   title,
   data,
   onJumpToCatalogue,
+  sourceOriginalIndex,
   paramDetails,
   isExportDomain = false,
 }: {
   title: string;
   data: Record<string, unknown>;
-  onJumpToCatalogue?: (guid: string) => void;
+  onJumpToCatalogue?: (guid: string, originIndex?: number) => void;
+  sourceOriginalIndex?: number;
   paramDetails?: any[];
   isExportDomain?: boolean;
 }) => {
@@ -441,7 +448,7 @@ const SettingsTable = ({
                     </div>
                     {onJumpToCatalogue && (
                       <button
-                        onClick={() => onJumpToCatalogue(valStr)}
+                        onClick={() => onJumpToCatalogue(valStr, sourceOriginalIndex)}
                         className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 hover:text-purple-300 text-[8px] font-mono border border-purple-500/20 hover:bg-purple-500/20 transition-all uppercase tracking-tighter shrink-0"
                         title={`Manage catalogue entry for ${resolvedName}`}
                       >
@@ -468,7 +475,7 @@ const SelectedGearDetailPanel = ({
   setOpenSections,
 }: {
   item: ExportDebugItem;
-  onJumpToCatalogue?: (guid: string) => void;
+  onJumpToCatalogue?: (guid: string, originIndex?: number) => void;
   openSections: Record<string, boolean>;
   setOpenSections: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }) => {
@@ -619,7 +626,7 @@ const SelectedGearDetailPanel = ({
             {onJumpToCatalogue && (
               <button 
                 type="button"
-                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name)}
+                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name, item.original_index)}
                 className="px-3 py-1 rounded-full bg-gear-accent/20 text-gear-accent hover:bg-gear-accent hover:text-black text-[10px] font-bold font-mono border border-gear-accent/30 transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-sm ml-1"
                 title="Open directly in Gear Manager to review or edit translation parameters"
               >
@@ -641,7 +648,7 @@ const SelectedGearDetailPanel = ({
             {onJumpToCatalogue && (
               <button 
                 type="button"
-                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name)}
+                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name, item.original_index)}
                 className="px-2 py-0.5 rounded bg-gear-accent/15 text-gear-accent text-[9px] font-mono border border-gear-accent/30 hover:bg-gear-accent hover:text-black transition-all uppercase tracking-tighter flex items-center gap-1"
               >
                 Manage Profile
@@ -796,18 +803,21 @@ const SelectedGearDetailPanel = ({
               title="Original settings"
               data={item.original_settings}
               onJumpToCatalogue={onJumpToCatalogue}
+              sourceOriginalIndex={item.original_index}
               paramDetails={item.parameter_details}
             />
             <SettingsTable
               title="Normalised settings"
               data={item.normalized_settings}
               onJumpToCatalogue={onJumpToCatalogue}
+              sourceOriginalIndex={item.original_index}
               paramDetails={item.parameter_details}
             />
             <SettingsTable
               title="Exported XML settings"
               data={exportedAttrs}
               onJumpToCatalogue={onJumpToCatalogue}
+              sourceOriginalIndex={item.original_index}
               paramDetails={item.parameter_details}
               isExportDomain={true}
             />
@@ -1283,7 +1293,8 @@ export const AT5SignalChainView: React.FC<Props> = ({
   debugData, 
   onJumpToCatalogue,
   rawRequest,
-  toneResult
+  toneResult,
+  requestedTarget,
 }) => {
   const sortedItems = useMemo(() => {
     const all = [
@@ -1337,6 +1348,41 @@ export const AT5SignalChainView: React.FC<Props> = ({
   const [copied, setCopied] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | "summary">("summary");
   const [issuesOnly, setIssuesOnly] = useState(false);
+
+  // Synchronize when requestedTarget changes from parent
+  React.useEffect(() => {
+    if (!requestedTarget) return;
+
+    if (requestedTarget.type === "summary") {
+      setSelectedIndex("summary");
+      setTimeout(() => {
+        const summaryBtn = document.getElementById("signal-chain-nav-summary");
+        if (summaryBtn) {
+          summaryBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+        }
+      }, 50);
+    } else if (requestedTarget.type === "item") {
+      const targetIdx = sortedItems.findIndex(i => i.original_index === requestedTarget.originalIndex);
+      if (targetIdx !== -1) {
+        if (issuesOnly && !hasIssue(sortedItems[targetIdx])) {
+          setIssuesOnly(false);
+        }
+        setSelectedIndex(targetIdx);
+        setTimeout(() => {
+          const navBtn = document.getElementById(`signal-chain-nav-item-${requestedTarget.originalIndex}`);
+          if (navBtn) {
+            navBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+          }
+          const detailPanel = document.getElementById("signal-chain-detail-panel");
+          if (detailPanel) {
+            detailPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 50);
+      } else {
+        setSelectedIndex("summary");
+      }
+    }
+  }, [requestedTarget, sortedItems]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     settings: true,
     verification: false,
@@ -1622,6 +1668,7 @@ export const AT5SignalChainView: React.FC<Props> = ({
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
           {/* Signal Chain Summary Link */}
           <button
+            id="signal-chain-nav-summary"
             onClick={() => setSelectedIndex("summary")}
             className={`flex items-center gap-3.5 p-3.5 rounded-xl border text-left min-w-[210px] transition-all shrink-0 select-none cursor-pointer ${
               selectedIndex === "summary"
@@ -1680,6 +1727,7 @@ export const AT5SignalChainView: React.FC<Props> = ({
 
             return (
               <button
+                id={`signal-chain-nav-item-${item.original_index}`}
                 key={`${item.slot_section}-${item.slot_index}-${index}`}
                 onClick={() => setSelectedIndex(index)}
                 className={`flex items-center gap-3.5 p-3.5 rounded-xl border text-left min-w-[210px] max-w-[260px] transition-all shrink-0 select-none cursor-pointer ${cardBorderClass}`}
@@ -2097,7 +2145,7 @@ export const AT5SignalChainView: React.FC<Props> = ({
           )}
         </div>
       ) : (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div id="signal-chain-detail-panel" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <SelectedGearDetailPanel
             item={sortedItems[selectedIndex]}
             onJumpToCatalogue={onJumpToCatalogue}

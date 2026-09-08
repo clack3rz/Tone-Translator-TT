@@ -5,6 +5,7 @@ import { AMP_MANIFEST, STOMP_MANIFEST, CAB_MANIFEST, ROOM_MANIFEST, RACK_MANIFES
 import { getAt5Catalog, findAT5Gear, AT5_EMPTY_SLOT_GUID } from "./at5Catalog";
 import { AT5_AMPLIFIER_KNOWLEDGE } from "./at5AmplifierKnowledge";
 import { AT5_CABINET_SPEAKER_KNOWLEDGE } from "./at5CabinetKnowledge";
+import { cleanAndParseJson } from "../utils/jsonParser";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -19,7 +20,8 @@ You are the world-class "Tone Translator AI", an expert product designer and mas
 You are a stateless JSON transformation function that converts natural language tone requests into professional-grade AmpliTube 5 signal chains.
 
 HARD CONSTRAINTS:
-- Return ONLY valid JSON.
+- Return ONLY valid RFC 8259 JSON.
+- All strings must be properly JSON-escaped: never output raw unescaped backslashes (use '/' instead of '\\' for delimiters or double-escape as '\\\\'), and always escape any internal double quotes as '\\\"'.
 - No conversational text, no explanations, no markdown beyond the JSON block.
 - If target audio is provided, prioritize spectral analysis of the audio over the text prompt.
 - Do NOT describe systems.
@@ -526,19 +528,22 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
     while (retries <= maxRetries) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
+          model: "gemini-3.8-flash",
           contents: [{ role: 'user', parts }],
           config: {
             responseMimeType: "application/json",
           },
         });
-        return response;
+        const toneText = response.text || "{}";
+        const result = cleanAndParseJson<ToneResult>(toneText);
+        return result;
       } catch (error: any) {
         const isRateLimit = error?.message?.includes('429') || error?.status === 'RESOURCE_EXHAUSTED';
-        if (isRateLimit && retries < maxRetries) {
+        const isParseError = error?.message?.includes('Failed to parse AI response') || error?.message?.includes('JSON');
+        if ((isRateLimit || isParseError) && retries < maxRetries) {
           retries++;
           const delay = baseDelay * Math.pow(2, retries - 1);
-          console.warn(`Rate limit hit. Retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
+          console.warn(`AI generation or parsing retry triggered (${error?.message || 'retry'}). Retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
@@ -548,7 +553,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
     throw new Error('Max retries exceeded');
   })();
 
-  const response = await Promise.race([
+  const result = await Promise.race([
     generatePromise,
     new Promise<never>((_, reject) => {
       const timeoutId = setTimeout(() => reject(new Error('TimeoutError')), 120000);
@@ -565,16 +570,9 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
     })
   ]);
 
-  const toneText = response.text || "{}";
-  try {
-    const result = JSON.parse(toneText) as ToneResult;
-    const adjusted = adjustThrashPedalSelection(result, textPrompt);
-    adjusted.tone_profile_result = toneProfileResult;
-    return adjusted;
-  } catch (error) {
-    console.error("AI Response JSON Parsing Failed:", error);
-    throw new Error("Failed to parse AI response. Please try again.");
-  }
+  const adjusted = adjustThrashPedalSelection(result, textPrompt);
+  adjusted.tone_profile_result = toneProfileResult;
+  return adjusted;
 }
 
 function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): ToneResult {

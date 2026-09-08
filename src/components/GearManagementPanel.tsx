@@ -379,13 +379,34 @@ export const doesItemMatchDiscoveryFilter = (dg: any, filter: string) => {
 interface GearManagementPanelProps {
   onRefreshChain?: () => void;
   onClose?: () => void;
+  onReturnToSummary?: () => void;
+  onReturnToGearItem?: () => void;
+  sourceOriginalIndex?: number | null;
   initialSelectedGuid?: string | null;
   exportDebugData?: any | null;
 }
 
-export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefreshChain, onClose, initialSelectedGuid, exportDebugData }) => {
+export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ 
+  onRefreshChain, 
+  onClose, 
+  onReturnToSummary,
+  onReturnToGearItem,
+  sourceOriginalIndex,
+  initialSelectedGuid, 
+  exportDebugData 
+}) => {
   const [profiles, setProfiles] = useState<GearProfile[]>([]);
   const [selectedProfile, setSelectedProfile] = useState<GearProfile | null>(null);
+
+  // Derive source gear item from exportDebugData if sourceOriginalIndex is present
+  const sourceItem = useMemo(() => {
+    if (sourceOriginalIndex === null || sourceOriginalIndex === undefined || !exportDebugData) return null;
+    const all = [
+      ...(exportDebugData.exported_chain || []),
+      ...(exportDebugData.skipped_gear || [])
+    ];
+    return all.find((item: any) => item.original_index === sourceOriginalIndex) || null;
+  }, [sourceOriginalIndex, exportDebugData]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -543,10 +564,10 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
     return () => unsub();
   }, []);
 
-  const loadProfiles = async () => {
+  const loadProfiles = async (forceRefresh = false) => {
     setIsLoading(true);
     try {
-      const data = await gearProfileService.getGearProfiles(true);
+      const data = await gearProfileService.getGearProfiles(forceRefresh);
       setProfiles(data);
       // Synchronize selection if currently editing / selected
       if (selectedProfile) {
@@ -592,7 +613,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
   };
 
   useEffect(() => {
-    loadProfiles();
+    loadProfiles(false);
   }, []);
 
   useEffect(() => {
@@ -3251,7 +3272,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
           </button>
 
           <button
-            onClick={loadProfiles}
+            onClick={() => loadProfiles(true)}
             disabled={isLoading}
             className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white rounded-xl transition-all disabled:opacity-40"
             title="Refresh database collections on-the-fly"
@@ -3297,26 +3318,47 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({ onRefr
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* 1. Refresh Signal Chain */}
             {onRefreshChain && (
               <button
                 type="button"
                 onClick={onRefreshChain}
-                className="px-3.5 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold text-xs hover:bg-cyan-500/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                className="px-3.5 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold text-xs hover:bg-cyan-500/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
                 title="Rebuild signal chain export preview with updated parameter translation rules"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Refresh Signal Chain
               </button>
             )}
-            {onClose && (
+
+            {/* 2. Return to Summary */}
+            {(onReturnToSummary || onClose) && (
               <button
                 type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-gear-accent text-black font-bold text-xs hover:bg-yellow-400 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-gear-accent/20"
+                onClick={onReturnToSummary || onClose}
+                className={`px-3.5 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 ${
+                  sourceItem && onReturnToGearItem
+                    ? 'bg-white/10 border border-white/15 text-slate-200 hover:bg-white/20 hover:text-white'
+                    : 'bg-gear-accent text-black hover:bg-yellow-400 shadow-md shadow-gear-accent/20'
+                }`}
+                title="Close Gear Manager and return to Signal Chain summary"
               >
                 <ArrowRight className="w-3.5 h-3.5 rotate-180" />
-                Return to Signal Chain
+                Return to Summary
+              </button>
+            )}
+
+            {/* 3. Return to Gear Item */}
+            {sourceItem && onReturnToGearItem && (
+              <button
+                type="button"
+                onClick={onReturnToGearItem}
+                className="px-4 py-2 rounded-xl bg-gear-accent text-black font-bold text-xs hover:bg-yellow-400 transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-gear-accent/20 shrink-0"
+                title={`Return to ${sourceItem.normalized_name || sourceItem.original_name || 'gear item'} in Signal Chain Review`}
+              >
+                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                Return to Gear Item
               </button>
             )}
           </div>
