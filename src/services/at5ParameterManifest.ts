@@ -36,6 +36,10 @@ export function getDbMicPlacementMappings(): MicPlacementMapping[] {
   return dbMicPlacementMappings;
 }
 
+export function setDbMicPlacementMappings(mappings: MicPlacementMapping[]): void {
+  dbMicPlacementMappings = mappings;
+}
+
 
 export const FILTER_BANDS = [
   20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 

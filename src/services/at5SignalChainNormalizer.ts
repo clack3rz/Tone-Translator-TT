@@ -485,42 +485,90 @@ const normaliseCabSettings = (
 ): Record<string, string | number> => {
   const out: Record<string, string | number> = {};
 
+  // Check if input uses 0-indexed mic numbering (Mic_0 / mic 0)
+  const rawKeys = Object.keys(settings);
+  const has0Key = rawKeys.some(k => {
+    const normK = normalise(k);
+    return normK === "mic 0" || normK === "mic0" || normK.startsWith("mic 0 ") || normK.startsWith("mic_0") || normK.startsWith("mic0");
+  });
+
+  let slot0Mic: string | number | undefined;
+  let slot0Placement: string | number | undefined;
+  let slot0Distance: string | number | undefined;
+  let slot0Angle: string | number | undefined;
+  let slot0Level: string | number | undefined;
+
+  let slot1Mic: string | number | undefined;
+  let slot1Placement: string | number | undefined;
+  let slot1Distance: string | number | undefined;
+  let slot1Angle: string | number | undefined;
+  let slot1Level: string | number | undefined;
+
   for (const [key, value] of Object.entries(settings)) {
     const k = normalise(key);
 
     if (k === "speaker" || k === "speaker swap" || k === "speaker type" || k === "speakers") {
       out["Speaker"] = value;
     } else if (k === "speaker a") {
-      // AI sometimes confuses mic A with speaker A
       if (/(57|87|414|421|121|mic|condenser|dynamic|ribbon)/i.test(String(value))) {
-        out["Mic_1"] = value;
+        slot0Mic = value;
       } else {
         out["Speaker"] = value;
       }
     } else if (k === "speaker b") {
       if (/(57|87|414|421|121|mic|condenser|dynamic|ribbon)/i.test(String(value))) {
-        out["Mic_2"] = value;
+        slot1Mic = value;
       }
+    } else if (k === "mic 0" || k === "mic0") {
+      slot0Mic = value;
+    } else if (k === "mic 0 level" || k === "mic0 level" || k === "mic_0_level") {
+      slot0Level = value;
+    } else if (k === "mic 0 placement" || k === "mic0 placement" || k === "mic 0 position" || k === "mic_0_placement" || k === "mic_0_position") {
+      slot0Placement = value;
+    } else if (k === "mic 0 distance" || k === "mic0 distance" || k === "mic_0_distance") {
+      slot0Distance = value;
+    } else if (k === "mic 0 angle" || k === "mic0 angle" || k === "mic_0_angle" || k === "mic 0 axis" || k === "mic0 axis" || k === "mic_0_axis" || k === "mic 0 off axis" || k === "mic_0_off_axis") {
+      slot0Angle = value;
     } else if (k === "mic 1" || k === "mic1" || k === "mic a") {
-      out["Mic_1"] = value;
-    } else if (k === "mic 2" || k === "mic2" || k === "mic b") {
-      out["Mic_2"] = value;
-    } else if (k === "mic 1 level" || k === "mic1 level") {
-      out["Mic_1_Level"] = value;
-    } else if (k === "mic 2 level" || k === "mic2 level") {
-      out["Mic_2_Level"] = value;
+      if (has0Key) {
+        slot1Mic = value;
+      } else {
+        slot0Mic = value;
+      }
+    } else if (k === "mic 1 level" || k === "mic1 level" || k === "mic_1_level") {
+      if (has0Key) {
+        slot1Level = value;
+      } else {
+        slot0Level = value;
+      }
     } else if (k === "mic 1 placement" || k === "mic1 placement" || k === "mic 1 position" || k === "mic_1_placement" || k === "mic_1_position") {
-      out["Mic_1_Placement"] = value;
-    } else if (k === "mic 2 placement" || k === "mic2 placement" || k === "mic 2 position" || k === "mic_2_placement" || k === "mic_2_position") {
-      out["Mic_2_Placement"] = value;
+      if (has0Key) {
+        slot1Placement = value;
+      } else {
+        slot0Placement = value;
+      }
     } else if (k === "mic 1 distance" || k === "mic1 distance" || k === "mic_1_distance") {
-      out["Mic_1_Distance"] = value;
-    } else if (k === "mic 2 distance" || k === "mic2 distance" || k === "mic_2_distance") {
-      out["Mic_2_Distance"] = value;
+      if (has0Key) {
+        slot1Distance = value;
+      } else {
+        slot0Distance = value;
+      }
     } else if (k === "mic 1 angle" || k === "mic1 angle" || k === "mic_1_angle" || k === "mic 1 axis" || k === "mic1 axis" || k === "mic_1_axis" || k === "mic 1 off axis" || k === "mic_1_off_axis") {
-      out["Mic_1_Angle"] = value;
+      if (has0Key) {
+        slot1Angle = value;
+      } else {
+        slot0Angle = value;
+      }
+    } else if (k === "mic 2" || k === "mic2" || k === "mic b") {
+      slot1Mic = value;
+    } else if (k === "mic 2 level" || k === "mic2 level" || k === "mic_2_level") {
+      slot1Level = value;
+    } else if (k === "mic 2 placement" || k === "mic2 placement" || k === "mic 2 position" || k === "mic_2_placement" || k === "mic_2_position") {
+      slot1Placement = value;
+    } else if (k === "mic 2 distance" || k === "mic2 distance" || k === "mic_2_distance") {
+      slot1Distance = value;
     } else if (k === "mic 2 angle" || k === "mic2 angle" || k === "mic_2_angle" || k === "mic 2 axis" || k === "mic2 axis" || k === "mic_2_axis" || k === "mic 2 off axis" || k === "mic_2_off_axis") {
-      out["Mic_2_Angle"] = value;
+      slot1Angle = value;
     } else if (k === "room" || k === "room type") {
       out["Room"] = value;
     } else if (k === "room level") {
@@ -530,6 +578,34 @@ const normaliseCabSettings = (
     } else {
       out[key] = value;
     }
+  }
+
+  // Assign canonical AT5-aligned 0-based keys: Slot 0 = Mic_0, Slot 1 = Mic_1
+  if (slot0Mic !== undefined) out["Mic_0"] = slot0Mic;
+  if (slot0Placement !== undefined) out["Mic_0_Placement"] = slot0Placement;
+  if (slot0Distance !== undefined) out["Mic_0_Distance"] = slot0Distance;
+  if (slot0Angle !== undefined) out["Mic_0_Angle"] = slot0Angle;
+  if (slot0Level !== undefined) out["Mic_0_Level"] = slot0Level;
+
+  if (slot1Mic !== undefined) {
+    out["Mic_1"] = slot1Mic;
+    out["Mic_2"] = slot1Mic; // Legacy alias
+  }
+  if (slot1Placement !== undefined) {
+    out["Mic_1_Placement"] = slot1Placement;
+    out["Mic_2_Placement"] = slot1Placement; // Legacy alias
+  }
+  if (slot1Distance !== undefined) {
+    out["Mic_1_Distance"] = slot1Distance;
+    out["Mic_2_Distance"] = slot1Distance; // Legacy alias
+  }
+  if (slot1Angle !== undefined) {
+    out["Mic_1_Angle"] = slot1Angle;
+    out["Mic_2_Angle"] = slot1Angle; // Legacy alias
+  }
+  if (slot1Level !== undefined) {
+    out["Mic_1_Level"] = slot1Level;
+    out["Mic_2_Level"] = slot1Level; // Legacy alias
   }
 
   return out;

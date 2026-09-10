@@ -384,7 +384,7 @@ export interface GearProfile {
 export interface MicPlacementMapping {
   id?: string;
   gear: string; // e.g. "4x12 Brit 8000"
-  friendly_setting: string; // "Mic_1_Placement" | "Mic_2_Placement"
+  friendly_setting: string; // "Mic_0_Placement" | "Mic_1_Placement" | "Mic_2_Placement"
   target?: string; // Alias for friendly_setting
   mic_slot?: string;
   friendly_value: string; // e.g. "Cap Edge"
@@ -404,7 +404,7 @@ export interface MicPlacementMapping {
   cabGuid?: string;
   cabName?: string;
   cabAliases?: string[];
-  micSlot?: "Mic_1" | "Mic_2";
+  micSlot?: "Mic_0" | "Mic_1" | "Mic_2";
   micIndex?: 0 | 1;
   canonicalPlacementName?: string;
   placementAliases?: string[];

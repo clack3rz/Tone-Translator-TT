@@ -1183,54 +1183,63 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
   const cabGuid = resolveCabGuid(cabName);
 
   const resolved = { ...defaultValues };
+  const has0Key = Object.keys(settings).some(k => {
+    const normK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return normK === "mic0" || normK.startsWith("mic0");
+  });
 
-  // TT Mic_1 (Slot 0 -> AT5 Mic0)
+  // Slot 0 -> AT5 Mic0
   const pl0 = extractCanonicalMicPlacement(settings, 0);
   if (!pl0.isUnspecified) {
-    const mic1Req = getSettingText(cab, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
-    const mic1Guid = getMicId(mic1Req);
+    const mic0Req = getSettingText(cab, ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"]) || "Dynamic 57";
+    const mic0Guid = getMicId(mic0Req);
     
+    const resM0 = resolveCompositeMicPlacement({
+      cabName,
+      cabGuid,
+      micSlot: "Mic_0",
+      slotIndex: 0,
+      canonicalPlacement: pl0,
+      micModelName: mic0Req,
+      micModelGuid: mic0Guid,
+      dbMappings: mappings
+    });
+
+    if (resM0.resolved) {
+      resolved.Mic0Angle = resM0.coordinates.Angle;
+      resolved.Mic0XAxis = resM0.coordinates.XAxis;
+      resolved.Mic0YAxis = resM0.coordinates.YAxis;
+      resolved.Mic0Distance = resM0.coordinates.Distance;
+      resolved.Mic0Speaker = resM0.coordinates.Speaker;
+    }
+  }
+
+  // Slot 1 -> AT5 Mic1
+  const pl1 = extractCanonicalMicPlacement(settings, 1);
+  if (!pl1.isUnspecified) {
+    const mic1Keys = has0Key
+      ? ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"]
+      : ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"];
+    const mic1Req = getSettingText(cab, mic1Keys) || "Condenser 87";
+    const mic1Guid = getMicId(mic1Req);
+
     const resM1 = resolveCompositeMicPlacement({
       cabName,
       cabGuid,
       micSlot: "Mic_1",
-      canonicalPlacement: pl0,
+      slotIndex: 1,
+      canonicalPlacement: pl1,
       micModelName: mic1Req,
       micModelGuid: mic1Guid,
       dbMappings: mappings
     });
 
     if (resM1.resolved) {
-      resolved.Mic0Angle = resM1.coordinates.Angle;
-      resolved.Mic0XAxis = resM1.coordinates.XAxis;
-      resolved.Mic0YAxis = resM1.coordinates.YAxis;
-      resolved.Mic0Distance = resM1.coordinates.Distance;
-      resolved.Mic0Speaker = resM1.coordinates.Speaker;
-    }
-  }
-
-  // TT Mic_2 (Slot 1 -> AT5 Mic1)
-  const pl1 = extractCanonicalMicPlacement(settings, 1);
-  if (!pl1.isUnspecified) {
-    const mic2Req = getSettingText(cab, ["mic_2", "mic 2", "mic2"]) || "Condenser 87";
-    const mic2Guid = getMicId(mic2Req);
-
-    const resM2 = resolveCompositeMicPlacement({
-      cabName,
-      cabGuid,
-      micSlot: "Mic_2",
-      canonicalPlacement: pl1,
-      micModelName: mic2Req,
-      micModelGuid: mic2Guid,
-      dbMappings: mappings
-    });
-
-    if (resM2.resolved) {
-      resolved.Mic1Angle = resM2.coordinates.Angle;
-      resolved.Mic1XAxis = resM2.coordinates.XAxis;
-      resolved.Mic1YAxis = resM2.coordinates.YAxis;
-      resolved.Mic1Distance = resM2.coordinates.Distance;
-      resolved.Mic1Speaker = resM2.coordinates.Speaker;
+      resolved.Mic1Angle = resM1.coordinates.Angle;
+      resolved.Mic1XAxis = resM1.coordinates.XAxis;
+      resolved.Mic1YAxis = resM1.coordinates.YAxis;
+      resolved.Mic1Distance = resM1.coordinates.Distance;
+      resolved.Mic1Speaker = resM1.coordinates.Speaker;
     }
   }
 
@@ -1244,8 +1253,12 @@ const buildCabSection = (
   const cabGuid = resolveCabGuid(cab?.name);
   const speakerGuid = resolveSpeakerGuid(getSettingText(cab, ["speaker", "speaker type", "speaker swap"]));
   
-  const mic1Req = getSettingText(cab, ["mic_1", "mic 1", "mic1"]);
-  const mic2Req = getSettingText(cab, ["mic_2", "mic 2", "mic2"]);
+  const has0 = Object.keys(cab?.settings || {}).some(k => {
+    const normK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return normK === "mic0" || normK.startsWith("mic0");
+  });
+  const mic1Req = getSettingText(cab, has0 ? ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"] : ["mic_1", "mic 1", "mic1", "mic_0", "mic 0", "mic0"]);
+  const mic2Req = getSettingText(cab, has0 ? ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"] : ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"]);
   
   const mic0 = mic1Req ? getMicId(mic1Req) : "1e41acc4-85af-4e84-bee4-eabc0be5fef1"; // Dynamic 57 fallback
   const mic1 = mic2Req ? getMicId(mic2Req) : "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb"; // Condenser 87 fallback
@@ -1545,8 +1558,12 @@ const buildCabDebugAttrs = (cab?: SignalChainElement) => {
   const cabGuid = resolveCabGuid(cab.name);
   const speakerGuid = resolveSpeakerGuid(getSettingText(cab, ["speaker", "speaker type", "speaker swap"]));
   
-  const mic1Req = getSettingText(cab, ["mic_1", "mic 1", "mic1"]);
-  const mic2Req = getSettingText(cab, ["mic_2", "mic 2", "mic2"]);
+  const has0 = Object.keys(cab?.settings || {}).some(k => {
+    const normK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return normK === "mic0" || normK.startsWith("mic0");
+  });
+  const mic1Req = getSettingText(cab, has0 ? ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"] : ["mic_1", "mic 1", "mic1", "mic_0", "mic 0", "mic0"]);
+  const mic2Req = getSettingText(cab, has0 ? ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"] : ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"]);
   
   const mic0 = mic1Req ? getMicId(mic1Req) : "1e41acc4-85af-4e84-bee4-eabc0be5fef1";
   const mic1 = mic2Req ? getMicId(mic2Req) : "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb";

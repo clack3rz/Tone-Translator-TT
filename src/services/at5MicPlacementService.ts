@@ -101,10 +101,112 @@ export const VIR_CALIBRATION_COORDINATES = {
     "45° Off Axis": { Angle: 1, label: "45° Off Axis" }
   },
   speakers: {
-    Mic_1: { defaultSpeaker: 0, label: "Speaker 1 (Top Left)" },
+    Mic_0: { defaultSpeaker: 0, label: "Speaker 1 (Top Left)" },
+    Mic_1: { defaultSpeaker: 1, label: "Speaker 2 (Top Right)" },
     Mic_2: { defaultSpeaker: 1, label: "Speaker 2 (Top Right)" }
   }
 } as const;
+
+export interface VIRReferenceOverrides {
+  positions?: Record<string, { X: number; Y: number }>;
+  distances?: Record<string, { Distance: number }>;
+  angles?: Record<string, { Angle: number }>;
+}
+
+let virCalibrationOverrides: VIRReferenceOverrides = {};
+
+if (typeof window !== "undefined") {
+  try {
+    const saved = localStorage.getItem("at5_vir_reference_overrides");
+    if (saved) {
+      virCalibrationOverrides = JSON.parse(saved);
+    }
+  } catch (e) {
+    // Ignore storage parse errors
+  }
+}
+
+export function setVIRCalibrationOverrides(overrides: VIRReferenceOverrides): void {
+  virCalibrationOverrides = overrides || {};
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("at5_vir_reference_overrides", JSON.stringify(virCalibrationOverrides));
+    } catch (e) {
+      // Ignore storage write errors
+    }
+  }
+}
+
+export function resetVIRCalibrationOverrides(): void {
+  virCalibrationOverrides = {};
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem("at5_vir_reference_overrides");
+    } catch (e) {
+      // Ignore storage removal errors
+    }
+  }
+}
+
+export function getVIRCalibrationOverrides(): VIRReferenceOverrides {
+  return virCalibrationOverrides;
+}
+
+export function getVIRCalibrationCoordinates() {
+  return {
+    positions: {
+      "Cap": {
+        X: virCalibrationOverrides.positions?.["Cap"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cap"].X,
+        Y: virCalibrationOverrides.positions?.["Cap"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cap"].Y,
+        label: "Cap (Center)"
+      },
+      "Cap Edge": {
+        X: virCalibrationOverrides.positions?.["Cap Edge"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].X,
+        Y: virCalibrationOverrides.positions?.["Cap Edge"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].Y,
+        label: "Cap Edge"
+      },
+      "Cone": {
+        X: virCalibrationOverrides.positions?.["Cone"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cone"].X,
+        Y: virCalibrationOverrides.positions?.["Cone"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cone"].Y,
+        label: "Cone"
+      },
+      "Cone Edge": {
+        X: virCalibrationOverrides.positions?.["Cone Edge"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].X,
+        Y: virCalibrationOverrides.positions?.["Cone Edge"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].Y,
+        label: "Cone Edge"
+      }
+    },
+    distances: {
+      "Close": {
+        Distance: virCalibrationOverrides.distances?.["Close"]?.Distance ?? VIR_CALIBRATION_COORDINATES.distances["Close"].Distance,
+        label: "Close"
+      },
+      "Medium": {
+        Distance: virCalibrationOverrides.distances?.["Medium"]?.Distance ?? VIR_CALIBRATION_COORDINATES.distances["Medium"].Distance,
+        label: "Medium"
+      },
+      "Far": {
+        Distance: virCalibrationOverrides.distances?.["Far"]?.Distance ?? VIR_CALIBRATION_COORDINATES.distances["Far"].Distance,
+        label: "Far"
+      }
+    },
+    angles: {
+      "On Axis": {
+        Angle: virCalibrationOverrides.angles?.["On Axis"]?.Angle ?? VIR_CALIBRATION_COORDINATES.angles["On Axis"].Angle,
+        label: "On Axis (0°)"
+      },
+      "45° Off Axis": {
+        Angle: virCalibrationOverrides.angles?.["45° Off Axis"]?.Angle ?? VIR_CALIBRATION_COORDINATES.angles["45° Off Axis"].Angle,
+        label: "45° Off Axis"
+      }
+    },
+    speakers: {
+      Mic_0: { defaultSpeaker: 0, label: "Speaker 1 (Top Left)" },
+      Mic_1: { defaultSpeaker: 1, label: "Speaker 2 (Top Right)" },
+      Mic_2: { defaultSpeaker: 1, label: "Speaker 2 (Top Right)" }
+    }
+  };
+}
 
 /**
  * Reference Cabinets verified for VIR Coordinate Grid calibration
@@ -347,14 +449,15 @@ export function composeVIRCoordinates(
   position: SemanticPosition = "Cap Edge",
   distance: SemanticDistance = "Close",
   angle: SemanticAngle = "On Axis",
-  micSlot: "Mic_1" | "Mic_2" = "Mic_1",
+  micSlot: "Mic_0" | "Mic_1" | "Mic_2" = "Mic_0",
   speakerOverride?: number
 ): VIRCoordinates {
-  const posCoords = VIR_CALIBRATION_COORDINATES.positions[position] || VIR_CALIBRATION_COORDINATES.positions["Cap Edge"];
-  const distCoords = VIR_CALIBRATION_COORDINATES.distances[distance] || VIR_CALIBRATION_COORDINATES.distances["Close"];
-  const angleCoords = VIR_CALIBRATION_COORDINATES.angles[angle] || VIR_CALIBRATION_COORDINATES.angles["On Axis"];
+  const coords = getVIRCalibrationCoordinates();
+  const posCoords = coords.positions[position] || coords.positions["Cap Edge"];
+  const distCoords = coords.distances[distance] || coords.distances["Close"];
+  const angleCoords = coords.angles[angle] || coords.angles["On Axis"];
   
-  const defaultSpeaker = micSlot === "Mic_2" ? 1 : 0;
+  const defaultSpeaker = (micSlot === "Mic_1" || micSlot === "Mic_2") ? 1 : 0;
   const speakerVal = speakerOverride !== undefined ? Number(speakerOverride) : defaultSpeaker;
 
   return {
@@ -413,22 +516,39 @@ export function extractCanonicalMicPlacement(
   let rawDist: string | undefined;
   let rawAng: string | undefined;
 
+  const rawKeys = Object.keys(settings);
+  const has0Key = rawKeys.some(k => {
+    const normK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return normK === "mic0" || normK.startsWith("mic0") || normK === "mic0placement";
+  });
+
   if (slotIndex === 0) {
-    // Only check placement keys. Do NOT check microphone model names (e.g. "mic_1").
+    // Only check placement keys. Do NOT check microphone model names (e.g. "mic_0" or "mic_1").
     rawCompound = findVal([
+      "mic_0_placement", "mic 0 placement", "mic0_placement", "mic0 placement",
+      "placement_0", "placement 0", "placement0",
       "mic_1_placement", "mic 1 placement", "mic1_placement", "mic1 placement",
       "placement_1", "placement 1", "placement1",
       "mic_placement", "mic placement", "placement"
     ]);
     rawPos = findVal([
+      "mic_0_position", "mic 0 position", "mic0_position", "mic0 position",
+      "position_0", "position 0", "position0",
       "mic_1_position", "mic 1 position", "mic1_position", "mic1 position",
       "position_1", "position 1", "position1", "position", "pos"
     ]);
     rawDist = findVal([
+      "mic_0_distance", "mic 0 distance", "mic0_distance", "mic0 distance",
+      "distance_0", "distance 0", "distance0",
       "mic_1_distance", "mic 1 distance", "mic1_distance", "mic1 distance",
       "distance_1", "distance 1", "distance1", "distance", "dist"
     ]);
     rawAng = findVal([
+      "mic_0_angle", "mic 0 angle", "mic0_angle", "mic0 angle",
+      "mic_0_axis", "mic 0 axis", "mic0_axis", "mic0 axis",
+      "mic_0_off_axis", "mic 0 off axis",
+      "angle_0", "angle 0", "angle0",
+      "axis_0", "axis 0", "axis0",
       "mic_1_angle", "mic 1 angle", "mic1_angle", "mic1 angle",
       "mic_1_axis", "mic 1 axis", "mic1_axis", "mic1 axis",
       "mic_1_off_axis", "mic 1 off axis",
@@ -436,26 +556,59 @@ export function extractCanonicalMicPlacement(
       "axis_1", "axis 1", "axis1", "axis"
     ]);
   } else {
-    // Only check placement keys. Do NOT check microphone model names (e.g. "mic_2").
-    rawCompound = findVal([
-      "mic_2_placement", "mic 2 placement", "mic2_placement", "mic2 placement",
-      "placement_2", "placement 2", "placement2"
-    ]);
-    rawPos = findVal([
-      "mic_2_position", "mic 2 position", "mic2_position", "mic2 position",
-      "position_2", "position 2", "position2"
-    ]);
-    rawDist = findVal([
-      "mic_2_distance", "mic 2 distance", "mic2_distance", "mic2 distance",
-      "distance_2", "distance 2", "distance2"
-    ]);
-    rawAng = findVal([
-      "mic_2_angle", "mic 2 angle", "mic2_angle", "mic2 angle",
-      "mic_2_axis", "mic 2 axis", "mic2_axis", "mic2 axis",
-      "mic_2_off_axis", "mic 2 off axis",
-      "angle_2", "angle 2", "angle2",
-      "axis_2", "axis 2", "axis2"
-    ]);
+    // Slot 1: Check mic_1 keys if 0-based keys exist, or fallback to mic_2 keys
+    if (has0Key) {
+      rawCompound = findVal([
+        "mic_1_placement", "mic 1 placement", "mic1_placement", "mic1 placement",
+        "placement_1", "placement 1", "placement1",
+        "mic_2_placement", "mic 2 placement", "mic2_placement", "mic2 placement",
+        "placement_2", "placement 2", "placement2"
+      ]);
+      rawPos = findVal([
+        "mic_1_position", "mic 1 position", "mic1_position", "mic1 position",
+        "position_1", "position 1", "position1",
+        "mic_2_position", "mic 2 position", "mic2_position", "mic2 position",
+        "position_2", "position 2", "position2"
+      ]);
+      rawDist = findVal([
+        "mic_1_distance", "mic 1 distance", "mic1_distance", "mic1 distance",
+        "distance_1", "distance 1", "distance1",
+        "mic_2_distance", "mic 2 distance", "mic2_distance", "mic2 distance",
+        "distance_2", "distance 2", "distance2"
+      ]);
+      rawAng = findVal([
+        "mic_1_angle", "mic 1 angle", "mic1_angle", "mic1 angle",
+        "mic_1_axis", "mic 1 axis", "mic1_axis", "mic1 axis",
+        "mic_1_off_axis", "mic 1 off axis",
+        "angle_1", "angle 1", "angle1",
+        "axis_1", "axis 1", "axis1",
+        "mic_2_angle", "mic 2 angle", "mic2_angle", "mic2 angle",
+        "mic_2_axis", "mic 2 axis", "mic2_axis", "mic2 axis",
+        "mic_2_off_axis", "mic 2 off axis",
+        "angle_2", "angle 2", "angle2",
+        "axis_2", "axis 2", "axis2"
+      ]);
+    } else {
+      rawCompound = findVal([
+        "mic_2_placement", "mic 2 placement", "mic2_placement", "mic2 placement",
+        "placement_2", "placement 2", "placement2"
+      ]);
+      rawPos = findVal([
+        "mic_2_position", "mic 2 position", "mic2_position", "mic2 position",
+        "position_2", "position 2", "position2"
+      ]);
+      rawDist = findVal([
+        "mic_2_distance", "mic 2 distance", "mic2_distance", "mic2 distance",
+        "distance_2", "distance 2", "distance2"
+      ]);
+      rawAng = findVal([
+        "mic_2_angle", "mic 2 angle", "mic2_angle", "mic2 angle",
+        "mic_2_axis", "mic 2 axis", "mic2_axis", "mic2 axis",
+        "mic_2_off_axis", "mic 2 off axis",
+        "angle_2", "angle 2", "angle2",
+        "axis_2", "axis 2", "axis2"
+      ]);
+    }
   }
 
   // Parse compound if present
@@ -533,7 +686,8 @@ export function extractCanonicalMicPlacement(
 export function resolveCompositeMicPlacement(options: {
   cabName: string;
   cabGuid?: string;
-  micSlot: "Mic_1" | "Mic_2";
+  micSlot?: "Mic_0" | "Mic_1" | "Mic_2";
+  slotIndex?: 0 | 1;
   requestedLabel?: string;
   distanceLabel?: string;
   angleLabel?: string;
@@ -546,6 +700,7 @@ export function resolveCompositeMicPlacement(options: {
     cabName,
     cabGuid = "",
     micSlot,
+    slotIndex,
     requestedLabel = "",
     distanceLabel,
     angleLabel,
@@ -555,7 +710,13 @@ export function resolveCompositeMicPlacement(options: {
     dbMappings = []
   } = options;
 
-  const defaultSpeaker = micSlot === "Mic_2" ? 1 : 0;
+  // Determine canonical slot index: 0 (AT5 Mic0) or 1 (AT5 Mic1)
+  const targetSlot: 0 | 1 = slotIndex !== undefined
+    ? slotIndex
+    : (micSlot === "Mic_0" ? 0 : (micSlot === "Mic_2" ? 1 : 0));
+
+  const prefix = targetSlot === 0 ? "Mic0" : "Mic1";
+  const defaultSpeaker = targetSlot === 1 ? 1 : 0;
   const safeDefaultCoords: VIRCoordinates = {
     Angle: 0,
     XAxis: 0,
@@ -571,17 +732,11 @@ export function resolveCompositeMicPlacement(options: {
   } else {
     // If not supplied, construct canonical object from individual fields
     const mockSettings: Record<string, any> = {};
-    if (micSlot === "Mic_1") {
-      if (requestedLabel) mockSettings["Mic_1_Placement"] = requestedLabel;
-      if (distanceLabel) mockSettings["Mic_1_Distance"] = distanceLabel;
-      if (angleLabel) mockSettings["Mic_1_Angle"] = angleLabel;
-      canonical = extractCanonicalMicPlacement(mockSettings, 0);
-    } else {
-      if (requestedLabel) mockSettings["Mic_2_Placement"] = requestedLabel;
-      if (distanceLabel) mockSettings["Mic_2_Distance"] = distanceLabel;
-      if (angleLabel) mockSettings["Mic_2_Angle"] = angleLabel;
-      canonical = extractCanonicalMicPlacement(mockSettings, 1);
-    }
+    const effectiveSlotKey = targetSlot === 0 ? "Mic_0" : "Mic_1";
+    if (requestedLabel) mockSettings[`${effectiveSlotKey}_Placement`] = requestedLabel;
+    if (distanceLabel) mockSettings[`${effectiveSlotKey}_Distance`] = distanceLabel;
+    if (angleLabel) mockSettings[`${effectiveSlotKey}_Angle`] = angleLabel;
+    canonical = extractCanonicalMicPlacement(mockSettings, targetSlot);
   }
 
   // Case 0: Unspecified or empty placement
@@ -610,10 +765,30 @@ export function resolveCompositeMicPlacement(options: {
 
   // Helper matching functions
   const isSlotMatch = (m: MicPlacementMapping): boolean => {
-    const s = m.micSlot || m.mic_slot || m.friendly_setting || m.target || "";
-    const cleanS = s.toLowerCase().replace(/_/g, "");
-    const cleanReq = micSlot.toLowerCase().replace(/_/g, "");
-    return cleanS === cleanReq || cleanS === cleanReq + "placement";
+    // 1. Authoritative check: maps_to contains Mic0 vs Mic1 keys
+    const xml = m.maps_to || m.xml_values || {};
+    const xmlKeys = Object.keys(xml);
+    if (targetSlot === 0 && xmlKeys.some(k => k.startsWith("Mic0"))) return true;
+    if (targetSlot === 1 && xmlKeys.some(k => k.startsWith("Mic1"))) return true;
+
+    // 2. Direct micIndex check
+    if (m.micIndex !== undefined) {
+      return m.micIndex === targetSlot;
+    }
+
+    // 3. Normalized slot string check
+    const s = (m.micSlot || m.mic_slot || m.friendly_setting || m.target || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (targetSlot === 0) {
+      if (s === "mic0" || s === "mic0placement") return true;
+      if ((s === "mic1" || s === "mic1placement") && !xmlKeys.some(k => k.startsWith("Mic1"))) return true;
+    } else {
+      if (s === "mic1" || s === "mic1placement") {
+        if (xmlKeys.some(k => k.startsWith("Mic1"))) return true;
+      }
+      if (s === "mic2" || s === "mic2placement") return true;
+    }
+
+    return false;
   };
 
   const isCabMatch = (m: MicPlacementMapping): boolean => {
@@ -714,7 +889,6 @@ export function resolveCompositeMicPlacement(options: {
   if (verifiedMappings.length > 0) {
     const match = verifiedMappings[0];
     const xml = match.maps_to || match.xml_values || {};
-    const prefix = micSlot === "Mic_1" ? "Mic0" : "Mic1";
     
     return {
       resolved: true,
@@ -736,18 +910,18 @@ export function resolveCompositeMicPlacement(options: {
     };
   }
 
-  // STEP 2: Exact Built-in Reference Calibration for tested cab/mic (Mic0 / Mic_1 ONLY)
+  // STEP 2: Exact Built-in Reference Calibration for tested cab/mic (Mic0 / Slot 0 ONLY)
   // Controlled calibration manipulated Mic0 (Dynamic 57) on 4x12 Brit 8000.
-  // Mic1 (Mic_2) was untouched, so Mic_2 remains a calibration gap and does NOT resolve here.
+  // Mic1 (Slot 1) remains a calibration gap and does NOT resolve here.
   const isRefCab = isVIRReferenceCabinet(cabName, cabGuid);
   const isRefMic = isVIRReferenceMic(micModelName, micModelGuid);
 
-  if (micSlot === "Mic_1" && isRefCab && isRefMic && parsed.position) {
+  if (targetSlot === 0 && isRefCab && isRefMic && parsed.position) {
     const composed = composeVIRCoordinates(
       parsed.position,
       parsed.distance || "Close",
       parsed.angle || "On Axis",
-      "Mic_1"
+      "Mic_0"
     );
 
     return {
@@ -777,7 +951,6 @@ export function resolveCompositeMicPlacement(options: {
   if (estimatedMappings.length > 0) {
     const match = estimatedMappings[0];
     const xml = match.maps_to || match.xml_values || {};
-    const prefix = micSlot === "Mic_1" ? "Mic0" : "Mic1";
 
     return {
       resolved: true,
@@ -802,8 +975,8 @@ export function resolveCompositeMicPlacement(options: {
 
   // STEP 4: Safe Default / Calibration Gap if Unresolved
   let warningMsg: string;
-  if (micSlot === "Mic_2") {
-    warningMsg = `Mic 2 (Mic 1 slot) radial calibration is uncalibrated/unverified against AT5P exports. Defaulting to safe coordinates with Speaker 1 provenance.`;
+  if (targetSlot === 1) {
+    warningMsg = `Mic 1 (Slot 1) radial calibration is uncalibrated/unverified against AT5P exports. Defaulting to safe coordinates with Speaker 1 provenance.`;
   } else if (!isRefCab) {
     warningMsg = `No verified mic placement profile found for "${fullLabel}" on cabinet "${cabName}". Exporting safe standard coordinates (Center/Close).`;
   } else if (!isRefMic) {

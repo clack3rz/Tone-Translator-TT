@@ -16,7 +16,12 @@ import {
   SemanticDistance,
   SemanticAngle,
   PlacementResolutionResult,
-  VIRCoordinates
+  VIRCoordinates,
+  getVIRCalibrationCoordinates,
+  getVIRCalibrationOverrides,
+  setVIRCalibrationOverrides,
+  resetVIRCalibrationOverrides,
+  VIRReferenceOverrides
 } from '../services/at5MicPlacementService';
 import { at5DatabaseService } from '../services/at5DatabaseService';
 import { 
@@ -32,7 +37,10 @@ import {
   HelpCircle,
   Layers,
   Crosshair,
-  Compass
+  Compass,
+  Pencil,
+  RotateCcw,
+  SlidersHorizontal
 } from 'lucide-react';
 
 interface MicPlacementManagementViewProps {
@@ -50,7 +58,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [saveErrorMsg, setSaveErrorMsg] = useState<string | null>(null);
 
   // Live Tester / Sandbox state
-  const [testSlot, setTestSlot] = useState<'Mic_1' | 'Mic_2'>('Mic_1');
+  const [testSlot, setTestSlot] = useState<'Mic_0' | 'Mic_1' | 'Mic_2'>('Mic_0');
   const [testMicModel, setTestMicModel] = useState<string>('Dynamic 57');
   const [testPosition, setTestPosition] = useState<SemanticPosition>('Cap Edge');
   const [testDistance, setTestDistance] = useState<SemanticDistance>('Close');
@@ -58,9 +66,10 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [customTestInput, setCustomTestInput] = useState<string>('');
   const [useCustomInput, setUseCustomInput] = useState<boolean>(false);
 
-  // Custom Mapping Creator state
+  // Custom Mapping Creator / Editor state
+  const [editingMapping, setEditingMapping] = useState<MicPlacementMapping | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newSlot, setNewSlot] = useState<'Mic_1' | 'Mic_2'>('Mic_1');
+  const [newSlot, setNewSlot] = useState<'Mic_0' | 'Mic_1' | 'Mic_2'>('Mic_0');
   const [newLabel, setNewLabel] = useState('');
   const [newPosition, setNewPosition] = useState<SemanticPosition>('Cap Edge');
   const [newDistance, setNewDistance] = useState<SemanticDistance>('Close');
@@ -72,6 +81,38 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [customAng, setCustomAng] = useState('0');
   const [useManualCoordinates, setUseManualCoordinates] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Built-in Reference Overrides Editor state
+  const [showRefEditModal, setShowRefEditModal] = useState(false);
+  const [refCalibrationVersion, setRefCalibrationVersion] = useState(0);
+  const [refPositions, setRefPositions] = useState<Record<string, { X: number; Y: number }>>({
+    "Cap": { X: VIR_CALIBRATION_COORDINATES.positions["Cap"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cap"].Y },
+    "Cap Edge": { X: VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].Y },
+    "Cone": { X: VIR_CALIBRATION_COORDINATES.positions["Cone"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cone"].Y },
+    "Cone Edge": { X: VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].Y },
+  });
+  const [refDistances, setRefDistances] = useState<Record<string, { Distance: number }>>({
+    "Close": { Distance: VIR_CALIBRATION_COORDINATES.distances["Close"].Distance },
+    "Medium": { Distance: VIR_CALIBRATION_COORDINATES.distances["Medium"].Distance },
+    "Far": { Distance: VIR_CALIBRATION_COORDINATES.distances["Far"].Distance },
+  });
+  const [refAngles, setRefAngles] = useState<Record<string, { Angle: number }>>({
+    "On Axis": { Angle: VIR_CALIBRATION_COORDINATES.angles["On Axis"].Angle },
+    "45° Off Axis": { Angle: VIR_CALIBRATION_COORDINATES.angles["45° Off Axis"].Angle },
+  });
+
+  const activeVIRCoordinates = useMemo(() => {
+    return getVIRCalibrationCoordinates();
+  }, [refCalibrationVersion]);
+
+  const hasRefOverrides = useMemo(() => {
+    const ov = getVIRCalibrationOverrides();
+    return Boolean(
+      (ov.positions && Object.keys(ov.positions).length > 0) ||
+      (ov.distances && Object.keys(ov.distances).length > 0) ||
+      (ov.angles && Object.keys(ov.angles).length > 0)
+    );
+  }, [refCalibrationVersion]);
 
   const cabName = cabProfile?.displayName || VIR_REFERENCE_CABINETS[0].name;
   const cabGuid = cabProfile?.guid || VIR_REFERENCE_CABINETS[0].guid;
@@ -116,10 +157,59 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
       micModelName: testMicModel,
       dbMappings
     });
-  }, [cabName, cabGuid, testSlot, testMicModel, testPosition, testDistance, testAngle, customTestInput, useCustomInput, dbMappings]);
+  }, [cabName, cabGuid, testSlot, testMicModel, testPosition, testDistance, testAngle, customTestInput, useCustomInput, dbMappings, refCalibrationVersion]);
 
-  // Handle saving new mapping
-  const handleSaveNewMapping = async () => {
+  // Handle open Add Modal (clean state)
+  const handleOpenAddModal = () => {
+    setEditingMapping(null);
+    setNewSlot('Mic_0');
+    setNewLabel('');
+    setNewPosition('Cap Edge');
+    setNewDistance('Close');
+    setNewAngle('On Axis');
+    setNewSpeaker('0');
+    setCustomX('-0.214223');
+    setCustomY('-0.00519017');
+    setCustomDist('0');
+    setCustomAng('0');
+    setUseManualCoordinates(false);
+    setShowAddModal(true);
+  };
+
+  // Handle open Edit Modal for a custom profile
+  const handleOpenEditMapping = (m: MicPlacementMapping) => {
+    setEditingMapping(m);
+    const xml = m.maps_to || m.xml_values || {};
+    const slotKey = (m.friendly_setting || m.target || 'Mic_0_Placement').toLowerCase();
+    const isSlot1 = slotKey.includes('mic1') || slotKey.includes('mic2') || m.micIndex === 1;
+    const resolvedSlot: 'Mic_0' | 'Mic_1' = isSlot1 ? 'Mic_1' : 'Mic_0';
+
+    setNewSlot(resolvedSlot);
+    setNewLabel(m.friendly_value || m.friendly_name || m.canonicalPlacementName || '');
+    setNewPosition((m.friendlyPlacement || m.friendly_placement || 'Cap Edge') as SemanticPosition);
+    setNewDistance((m.friendlyDistance || m.friendly_distance || 'Close') as SemanticDistance);
+    setNewAngle((m.friendlyAngle || m.friendly_angle || 'On Axis') as SemanticAngle);
+
+    const prefix = resolvedSlot === 'Mic_0' ? 'Mic0' : 'Mic1';
+    const spk = xml[`${prefix}Speaker`] ?? xml.Speaker ?? (resolvedSlot === 'Mic_0' ? 0 : 1);
+    setNewSpeaker(String(spk) as any);
+
+    const x = xml[`${prefix}XAxis`] ?? xml.XAxis ?? 0;
+    const y = xml[`${prefix}YAxis`] ?? xml.YAxis ?? 0;
+    const d = xml[`${prefix}Distance`] ?? xml.Distance ?? 0;
+    const a = xml[`${prefix}Angle`] ?? xml.Angle ?? 0;
+
+    setCustomX(String(x));
+    setCustomY(String(y));
+    setCustomDist(String(d));
+    setCustomAng(String(a));
+    setUseManualCoordinates(true);
+
+    setShowAddModal(true);
+  };
+
+  // Handle saving mapping (Create or Edit)
+  const handleSaveMapping = async () => {
     if (!newLabel.trim()) {
       setSaveErrorMsg('Please provide a semantic label (e.g. "Cap Edge, Close").');
       return;
@@ -130,7 +220,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     setSaveSuccessMsg(null);
 
     try {
-      const prefix = newSlot === 'Mic_1' ? 'Mic0' : 'Mic1';
+      const isSlot1 = newSlot === 'Mic_1' || newSlot === 'Mic_2';
+      const prefix = isSlot1 ? 'Mic1' : 'Mic0';
       let coords: { Angle: number; XAxis: number; YAxis: number; Distance: number; Speaker: number };
 
       if (useManualCoordinates) {
@@ -139,7 +230,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           XAxis: Number(customX) || 0,
           YAxis: Number(customY) || 0,
           Distance: Number(customDist) || 0,
-          Speaker: Number(newSpeaker) || (newSlot === 'Mic_1' ? 0 : 1)
+          Speaker: Number(newSpeaker) || (isSlot1 ? 1 : 0)
         };
       } else {
         const composed = composeVIRCoordinates(newPosition, newDistance, newAngle, newSlot, Number(newSpeaker));
@@ -154,12 +245,14 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
         [`${prefix}Speaker`]: coords.Speaker
       };
 
-      // Manual coordinate edits or new entries must be marked as needs_review, not at5p_validated
-      await at5DatabaseService.saveMicPlacementMapping({
+      const mappingData: MicPlacementMapping = {
+        id: editingMapping?.id,
         gear: cabName,
         cabName,
         cabGuid,
-        friendly_setting: newSlot === 'Mic_1' ? 'Mic_1_Placement' : 'Mic_2_Placement',
+        micSlot: isSlot1 ? 'Mic_1' : 'Mic_0',
+        micIndex: isSlot1 ? 1 : 0,
+        friendly_setting: isSlot1 ? 'Mic_1_Placement' : 'Mic_0_Placement',
         friendly_value: newLabel.trim(),
         friendly_placement: newPosition,
         friendly_distance: newDistance,
@@ -167,19 +260,24 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
         friendlyPlacement: newPosition,
         friendlyDistance: newDistance,
         friendlyAngle: newAngle,
+        canonicalPlacementName: newLabel.trim(),
         maps_to: xmlValues,
-        status: 'needs_review',
-        validationStatus: 'needs_review',
+        xml_values: xmlValues,
+        status: editingMapping?.status || 'needs_review',
+        validationStatus: editingMapping?.validationStatus || 'needs_review',
         confidence: useManualCoordinates ? 'low' : 'medium',
-        source: 'manual_calibration'
-      });
+        source: editingMapping ? (editingMapping.source || 'user_edited') : 'manual_calibration'
+      };
 
-      // Dedicated refresh path - do NOT trigger global parameter manifest refresh
+      await at5DatabaseService.saveMicPlacementMapping(mappingData);
+
       await loadMappings();
       if (onRefreshChain) onRefreshChain();
 
-      setSaveSuccessMsg(`Saved mapping "${newLabel}" for cabinet "${cabName}" (Status: Needs Review).`);
+      const actionWord = editingMapping ? 'Updated' : 'Saved';
+      setSaveSuccessMsg(`${actionWord} profile "${newLabel}" for cabinet "${cabName}".`);
       setShowAddModal(false);
+      setEditingMapping(null);
       setNewLabel('');
     } catch (err: any) {
       setSaveErrorMsg(`Failed to save mapping: ${err.message}`);
@@ -190,16 +288,72 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
   const handleDeleteMapping = async (id?: string) => {
     if (!id) return;
-    if (!window.confirm('Delete this mic placement profile?')) return;
+    if (!window.confirm('Delete this custom mic placement profile? This cannot be undone.')) return;
     try {
       await at5DatabaseService.deleteMicPlacementMapping(id);
-      // Dedicated refresh path - do NOT trigger global parameter manifest refresh
       await loadMappings();
       if (onRefreshChain) onRefreshChain();
-      setSaveSuccessMsg('Mapping deleted successfully.');
+      setSaveSuccessMsg('Custom mic placement profile deleted successfully.');
     } catch (err: any) {
       setSaveErrorMsg(`Failed to delete mapping: ${err.message}`);
     }
+  };
+
+  // Open Edit Built-in Reference Coordinates modal
+  const handleOpenRefEdit = () => {
+    const coords = getVIRCalibrationCoordinates();
+    setRefPositions({
+      "Cap": { X: coords.positions["Cap"].X, Y: coords.positions["Cap"].Y },
+      "Cap Edge": { X: coords.positions["Cap Edge"].X, Y: coords.positions["Cap Edge"].Y },
+      "Cone": { X: coords.positions["Cone"].X, Y: coords.positions["Cone"].Y },
+      "Cone Edge": { X: coords.positions["Cone Edge"].X, Y: coords.positions["Cone Edge"].Y },
+    });
+    setRefDistances({
+      "Close": { Distance: coords.distances["Close"].Distance },
+      "Medium": { Distance: coords.distances["Medium"].Distance },
+      "Far": { Distance: coords.distances["Far"].Distance },
+    });
+    setRefAngles({
+      "On Axis": { Angle: coords.angles["On Axis"].Angle },
+      "45° Off Axis": { Angle: coords.angles["45° Off Axis"].Angle },
+    });
+    setShowRefEditModal(true);
+  };
+
+  // Save Built-in Reference Calibration Overrides
+  const handleSaveRefOverrides = () => {
+    const overrides: VIRReferenceOverrides = {
+      positions: {
+        "Cap": { X: Number(refPositions["Cap"].X), Y: Number(refPositions["Cap"].Y) },
+        "Cap Edge": { X: Number(refPositions["Cap Edge"].X), Y: Number(refPositions["Cap Edge"].Y) },
+        "Cone": { X: Number(refPositions["Cone"].X), Y: Number(refPositions["Cone"].Y) },
+        "Cone Edge": { X: Number(refPositions["Cone Edge"].X), Y: Number(refPositions["Cone Edge"].Y) },
+      },
+      distances: {
+        "Close": { Distance: Number(refDistances["Close"].Distance) },
+        "Medium": { Distance: Number(refDistances["Medium"].Distance) },
+        "Far": { Distance: Number(refDistances["Far"].Distance) },
+      },
+      angles: {
+        "On Axis": { Angle: Number(refAngles["On Axis"].Angle) },
+        "45° Off Axis": { Angle: Number(refAngles["45° Off Axis"].Angle) },
+      }
+    };
+
+    setVIRCalibrationOverrides(overrides);
+    setRefCalibrationVersion(v => v + 1);
+    setSaveSuccessMsg('Updated built-in VIR Reference Calibration coordinates. Overrides are active.');
+    setShowRefEditModal(false);
+    if (onRefreshChain) onRefreshChain();
+  };
+
+  // Reset Built-in Reference to Factory Defaults
+  const handleResetRefOverrides = () => {
+    resetVIRCalibrationOverrides();
+    setRefCalibrationVersion(v => v + 1);
+    setSaveSuccessMsg('Restored built-in VIR Reference Calibration to factory verified defaults.');
+    setShowRefEditModal(false);
+    if (onRefreshChain) onRefreshChain();
   };
 
   return (
@@ -234,7 +388,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               <RefreshCw className={`w-4 h-4 ${isLoadingMappings ? 'animate-spin' : ''}`} />
             </button>
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={handleOpenAddModal}
               className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-mono font-bold uppercase rounded-xl transition-all shadow flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -277,9 +431,9 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Tier 2: VIR Reference</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Mic 1 Only</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Mic 0 Only</span>
             </div>
-            <p className="text-[11px] text-gray-300 font-medium">Verified on 4x12 Brit 8000 + Dynamic 57. Mic 2 is a calibration gap.</p>
+            <p className="text-[11px] text-gray-300 font-medium">Verified on 4x12 Brit 8000 + Dynamic 57. Mic 1 is a calibration gap.</p>
           </div>
 
           <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1">
@@ -312,7 +466,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
             {isReferenceCab ? (
               <span className="text-emerald-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                This cabinet is the verified VIR reference model (4x12 Brit 8000). Built-in reference calibration is active for Mic 1.
+                This cabinet is the verified VIR reference model (4x12 Brit 8000). Built-in reference calibration is active for Mic 0.
               </span>
             ) : (
               <span className="text-amber-400 flex items-center gap-1.5">
@@ -374,8 +528,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               onChange={(e) => setTestSlot(e.target.value as any)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
             >
-              <option value="Mic_1">Mic 0 (Mic0 Slot / Speaker 0 - Calibrated)</option>
-              <option value="Mic_2">Mic 1 (Mic1 Slot / Speaker 1 - Calibration Gap)</option>
+              <option value="Mic_0">Mic 0 (Mic0 Slot / Speaker 0 - Calibrated)</option>
+              <option value="Mic_1">Mic 1 (Mic1 Slot / Speaker 1 - Calibration Gap)</option>
             </select>
           </div>
 
@@ -462,7 +616,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                       : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
               }`}>
                 {liveResolution.resolutionSource === 'firestore_verified' && 'TIER 1: FIRESTORE VERIFIED'}
-                {liveResolution.resolutionSource === 'reference_calibration_vir' && 'TIER 2: VIR REFERENCE CALIBRATION (MIC 1 ONLY)'}
+                {liveResolution.resolutionSource === 'reference_calibration_vir' && 'TIER 2: VIR REFERENCE CALIBRATION (MIC 0 ONLY)'}
                 {liveResolution.resolutionSource === 'estimated_profile' && 'TIER 3: ESTIMATED PROFILE (NEEDS REVIEW)'}
                 {liveResolution.resolutionSource === 'safe_default' && 'TIER 4: SAFE DEFAULT / UNCALIBRATED GAP'}
                 {liveResolution.resolutionSource === 'cab_default' && 'CAB DEFAULT (UNSPECIFIED)'}
@@ -496,7 +650,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
       {/* 4. VERIFIED VIR REFERENCE CALIBRATION GRID TABLE */}
       <div className="bg-[#111116] border border-white/10 rounded-3xl p-6 space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-cyan-400" />
@@ -509,9 +663,30 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
             </p>
           </div>
 
-          <span className="text-[9px] font-mono px-2.5 py-1 rounded bg-white/5 border border-white/10 text-gray-400 uppercase">
-            Built-in Reference
-          </span>
+          <div className="flex items-center gap-2">
+            {hasRefOverrides && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[9px] font-mono font-bold uppercase">
+                <span>Overrides Active</span>
+                <button
+                  onClick={handleResetRefOverrides}
+                  title="Reset reference values to factory defaults"
+                  className="hover:text-white transition-colors"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            <button
+              onClick={handleOpenRefEdit}
+              className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/15 text-cyan-400 text-[10px] font-mono font-bold uppercase rounded-lg transition-all flex items-center gap-1.5"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Edit Reference Values</span>
+            </button>
+            <span className="text-[9px] font-mono px-2.5 py-1 rounded bg-white/5 border border-white/10 text-gray-400 uppercase">
+              Built-in Reference
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -519,7 +694,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           <div className="bg-black/30 border border-white/5 rounded-2xl p-4 space-y-3">
             <h5 className="text-[10px] font-mono text-cyan-400 uppercase font-bold tracking-wider">Position Vectors (X, Y)</h5>
             <div className="divide-y divide-white/5 font-mono text-xs">
-              {Object.entries(VIR_CALIBRATION_COORDINATES.positions).map(([pos, coords]) => (
+              {Object.entries(activeVIRCoordinates.positions).map(([pos, coords]) => (
                 <div key={pos} className="py-2 flex items-center justify-between">
                   <span className="text-gray-300 font-bold">{pos}</span>
                   <div className="flex items-center gap-4 text-gray-400">
@@ -535,13 +710,13 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           <div className="bg-black/30 border border-white/5 rounded-2xl p-4 space-y-3">
             <h5 className="text-[10px] font-mono text-cyan-400 uppercase font-bold tracking-wider">Distance & Angle Offsets</h5>
             <div className="divide-y divide-white/5 font-mono text-xs">
-              {Object.entries(VIR_CALIBRATION_COORDINATES.distances).map(([dist, coords]) => (
+              {Object.entries(activeVIRCoordinates.distances).map(([dist, coords]) => (
                 <div key={dist} className="py-2 flex items-center justify-between">
                   <span className="text-gray-300 font-bold">{dist}</span>
                   <span className="text-gray-400">Distance: <span className="text-white">{coords.Distance}</span></span>
                 </div>
               ))}
-              {Object.entries(VIR_CALIBRATION_COORDINATES.angles).map(([ang, coords]) => (
+              {Object.entries(activeVIRCoordinates.angles).map(([ang, coords]) => (
                 <div key={ang} className="py-2 flex items-center justify-between">
                   <span className="text-gray-300 font-bold">{ang}</span>
                   <span className="text-gray-400">Angle: <span className="text-white">{coords.Angle}</span></span>
@@ -574,7 +749,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {cabSpecificMappings.map((m, idx) => {
               const xml = m.maps_to || m.xml_values || {};
-              const slot = m.friendly_setting || m.target || 'Mic_1_Placement';
+              const slot = m.friendly_setting || m.target || 'Mic_0_Placement';
               const label = m.friendly_value || m.friendly_name || 'Placement';
               const status = m.status || m.validationStatus || 'needs_review';
 
@@ -594,9 +769,16 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                         {status.replace(/_/g, ' ')}
                       </span>
                       <button
+                        onClick={() => handleOpenEditMapping(m)}
+                        className="p-1.5 text-gray-400 hover:text-cyan-400 rounded-lg hover:bg-cyan-500/10 transition-all"
+                        title="Edit custom profile"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteMapping(m.id)}
                         className="p-1.5 text-gray-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-all"
-                        title="Delete mapping"
+                        title="Delete custom profile"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -618,17 +800,24 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
         )}
       </div>
 
-      {/* 6. ADD CUSTOM MAPPING MODAL */}
+      {/* 6. ADD / EDIT CUSTOM MAPPING MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16161b] border border-white/15 rounded-3xl max-w-xl w-full p-6 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="space-y-1">
-                <span className="text-[9px] font-mono text-cyan-400 uppercase font-bold tracking-wider">New Mapping Registration</span>
-                <h4 className="text-base font-bold font-display text-white">Create Custom Cabinet Mic Placement</h4>
+                <span className="text-[9px] font-mono text-cyan-400 uppercase font-bold tracking-wider">
+                  {editingMapping ? 'Custom Mapping Editor' : 'New Mapping Registration'}
+                </span>
+                <h4 className="text-base font-bold font-display text-white">
+                  {editingMapping ? 'Edit Custom Cabinet Mic Placement' : 'Create Custom Cabinet Mic Placement'}
+                </h4>
               </div>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setShowAddModal(false);
+                  setEditingMapping(null);
+                }}
                 className="text-gray-400 hover:text-white font-mono text-xs uppercase"
               >
                 ✕ Close
@@ -655,12 +844,12 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                     onChange={(e) => {
                       const s = e.target.value as any;
                       setNewSlot(s);
-                      setNewSpeaker(s === 'Mic_1' ? '0' : '1');
+                      setNewSpeaker(s === 'Mic_0' ? '0' : '1');
                     }}
                     className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value="Mic_1">Mic 0 (Mic 0 Slot)</option>
-                    <option value="Mic_2">Mic 1 (Mic 1 Slot)</option>
+                    <option value="Mic_0">Mic 0 (Slot 0 / AT5 Mic0 / Primary)</option>
+                    <option value="Mic_1">Mic 1 (Slot 1 / AT5 Mic1 / Secondary)</option>
                   </select>
                 </div>
 
@@ -671,8 +860,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                     onChange={(e) => setNewSpeaker(e.target.value as any)}
                     className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value="0">Speaker 0 (Top Left / Default Mic 1)</option>
-                    <option value="1">Speaker 1 (Top Right / Default Mic 2)</option>
+                    <option value="0">Speaker 0 (Top Left / Default Mic 0)</option>
+                    <option value="1">Speaker 1 (Top Right / Default Mic 1)</option>
                     <option value="2">Speaker 2 (Bottom Left)</option>
                     <option value="3">Speaker 3 (Bottom Right)</option>
                   </select>
@@ -774,18 +963,198 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setShowAddModal(false);
+                  setEditingMapping(null);
+                }}
                 className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 text-xs font-mono uppercase rounded-xl transition-all"
               >
                 Cancel
               </button>
               <button
-                onClick={handleSaveNewMapping}
+                onClick={handleSaveMapping}
                 disabled={isSaving}
                 className="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-mono font-bold uppercase rounded-xl transition-all shadow"
               >
-                {isSaving ? 'Saving Profile...' : 'Save Mic Placement Profile'}
+                {isSaving ? 'Saving Profile...' : (editingMapping ? 'Update Mic Placement Profile' : 'Save Mic Placement Profile')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. EDIT BUILT-IN VIR REFERENCE CALIBRATION COORDINATES MODAL */}
+      {showRefEditModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#16161b] border border-cyan-500/30 rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="p-1 rounded bg-cyan-500/10 text-cyan-400">
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="text-[9px] font-mono text-cyan-400 uppercase font-bold tracking-wider">
+                    Reference Calibration Tuning (Mic 0)
+                  </span>
+                </div>
+                <h4 className="text-base font-bold font-display text-white">
+                  Edit Built-in VIR Reference Calibration Coordinates
+                </h4>
+              </div>
+              <button
+                onClick={() => setShowRefEditModal(false)}
+                className="text-gray-400 hover:text-white font-mono text-xs uppercase"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <div className="p-3 bg-cyan-500/5 border border-cyan-500/20 rounded-xl text-cyan-300 text-xs font-mono">
+              <span className="font-bold">Edit-Only Protection:</span> Built-in reference calibrations cannot be deleted. Values tuned here override built-in VIR calculations immediately, persist across sessions, and can be restored to factory verified values at any time.
+            </div>
+
+            <div className="space-y-5 font-mono text-xs max-h-[60vh] overflow-y-auto pr-2">
+              {/* Positions */}
+              <div className="space-y-3">
+                <h5 className="text-[10px] text-cyan-400 uppercase font-bold tracking-wider">Position Vectors (X, Y)</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(refPositions).map(([pos, coords]) => (
+                    <div key={pos} className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-bold text-[11px]">{pos}</span>
+                        <span className="text-[9px] text-gray-500">
+                          Default: ({VIR_CALIBRATION_COORDINATES.positions[pos as keyof typeof VIR_CALIBRATION_COORDINATES.positions]?.X.toFixed(4)}, {VIR_CALIBRATION_COORDINATES.positions[pos as keyof typeof VIR_CALIBRATION_COORDINATES.positions]?.Y.toFixed(4)})
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[9px] text-gray-400 block mb-0.5">X Axis</label>
+                          <input
+                            type="number"
+                            step="0.000001"
+                            value={coords.X}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) || 0;
+                              setRefPositions(prev => ({
+                                ...prev,
+                                [pos]: { ...prev[pos], X: val }
+                              }));
+                            }}
+                            className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] text-gray-400 block mb-0.5">Y Axis</label>
+                          <input
+                            type="number"
+                            step="0.000001"
+                            value={coords.Y}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) || 0;
+                              setRefPositions(prev => ({
+                                ...prev,
+                                [pos]: { ...prev[pos], Y: val }
+                              }));
+                            }}
+                            className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Distances */}
+              <div className="space-y-3">
+                <h5 className="text-[10px] text-cyan-400 uppercase font-bold tracking-wider">Distance Offsets</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {Object.entries(refDistances).map(([dist, coords]) => (
+                    <div key={dist} className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-bold text-[11px]">{dist}</span>
+                        <span className="text-[9px] text-gray-500">
+                          Default: {VIR_CALIBRATION_COORDINATES.distances[dist as keyof typeof VIR_CALIBRATION_COORDINATES.distances]?.Distance}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="text-[9px] text-gray-400 block mb-0.5">Distance</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={coords.Distance}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            setRefDistances(prev => ({
+                              ...prev,
+                              [dist]: { Distance: val }
+                            }));
+                          }}
+                          className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Angles */}
+              <div className="space-y-3">
+                <h5 className="text-[10px] text-cyan-400 uppercase font-bold tracking-wider">Angle Offsets</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(refAngles).map(([ang, coords]) => (
+                    <div key={ang} className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-bold text-[11px]">{ang}</span>
+                        <span className="text-[9px] text-gray-500">
+                          Default: {VIR_CALIBRATION_COORDINATES.angles[ang as keyof typeof VIR_CALIBRATION_COORDINATES.angles]?.Angle}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="text-[9px] text-gray-400 block mb-0.5">Angle Value</label>
+                        <input
+                          type="number"
+                          step="1"
+                          value={coords.Angle}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            setRefAngles(prev => ({
+                              ...prev,
+                              [ang]: { Angle: val }
+                            }));
+                          }}
+                          className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-white/10 font-mono">
+              <button
+                onClick={handleResetRefOverrides}
+                className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs uppercase rounded-xl transition-all flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset to Factory Defaults</span>
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowRefEditModal(false)}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 text-xs uppercase rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveRefOverrides}
+                  className="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold uppercase rounded-xl transition-all shadow"
+                >
+                  Save Reference Coordinates
+                </button>
+              </div>
             </div>
           </div>
         </div>
