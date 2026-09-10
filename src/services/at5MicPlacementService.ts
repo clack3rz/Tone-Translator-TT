@@ -7,6 +7,30 @@ export type SemanticPosition = "Cap" | "Cap Edge" | "Cone" | "Cone Edge";
 export type SemanticDistance = "Close" | "Medium" | "Far";
 export type SemanticAngle = "On Axis" | "45° Off Axis";
 
+export const VALID_SEMANTIC_POSITIONS: readonly SemanticPosition[] = ["Cap", "Cap Edge", "Cone", "Cone Edge"];
+export const VALID_SEMANTIC_DISTANCES: readonly SemanticDistance[] = ["Close", "Medium", "Far"];
+export const VALID_SEMANTIC_ANGLES: readonly SemanticAngle[] = ["On Axis", "45° Off Axis"];
+
+export function isValidSemanticPosition(pos: any): pos is SemanticPosition {
+  return typeof pos === "string" && (VALID_SEMANTIC_POSITIONS as readonly string[]).includes(pos);
+}
+
+export function isValidSemanticDistance(dist: any): dist is SemanticDistance {
+  return typeof dist === "string" && (VALID_SEMANTIC_DISTANCES as readonly string[]).includes(dist);
+}
+
+export function isValidSemanticAngle(ang: any): ang is SemanticAngle {
+  return typeof ang === "string" && (VALID_SEMANTIC_ANGLES as readonly string[]).includes(ang);
+}
+
+export function formatSemanticPlacement(
+  position: SemanticPosition,
+  distance: SemanticDistance,
+  angle: SemanticAngle
+): string {
+  return `${position}, ${distance}, ${angle}`;
+}
+
 export interface VIRCoordinates {
   Angle: number;
   XAxis: number;
@@ -32,8 +56,14 @@ export interface CanonicalSemanticMicPlacement {
   rawDistance?: string;
   rawAngle?: string;
   rawCompound?: string;
+  sourceRawPlacement?: string;
+  raw_supplied_placement?: string;
+  wasSuppliedByChain: boolean;
+  placement_was_supplied_by_chain: boolean;
+  semanticProvenance: "signal_chain_generated" | "signal_chain_normalized" | "semantic_default" | "cab_default" | "safe_fallback";
   isUnspecified: boolean;
   canonicalLabel: string;
+  canonical_placement_label?: string;
 }
 
 export interface PlacementResolutionResult {
@@ -191,6 +221,14 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
     position = "Cone";
   }
 
+  // If no semantic position, distance, or angle was recognized, treat as unspecified
+  if (!position && !distance && !angle) {
+    return {
+      rawLabel: clean,
+      canonicalLabel: "Not specified"
+    };
+  }
+
   // Fallback defaults if position was identified but distance/angle omitted
   const posPart = position || "Cap Edge";
   const distPart = distance || "Close";
@@ -203,6 +241,26 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
     rawLabel: clean,
     canonicalLabel: `${posPart} · ${distPart} · ${angPart}`
   };
+}
+
+/**
+ * Checks if a string represents an explicit, complete semantic placement triplet
+ * containing all three required dimensions: Position, Distance, and Angle,
+ * strictly matching the authoritative semantic vocabulary.
+ */
+export function isCompleteSemanticPlacement(val: any): boolean {
+  if (!val || typeof val !== "string") return false;
+  const s = val.trim();
+  const parts = s.split(/[,·]/).map(p => p.trim()).filter(Boolean);
+  if (parts.length !== 3) {
+    return false;
+  }
+  const [pos, dist, ang] = parts;
+  return (
+    isValidSemanticPosition(pos) &&
+    isValidSemanticDistance(dist) &&
+    isValidSemanticAngle(ang)
+  );
 }
 
 /**
@@ -327,7 +385,11 @@ export function extractCanonicalMicPlacement(
   if (!settings || typeof settings !== "object") {
     return {
       isUnspecified: true,
-      canonicalLabel: "Not specified"
+      wasSuppliedByChain: false,
+      placement_was_supplied_by_chain: false,
+      semanticProvenance: "cab_default",
+      canonicalLabel: "Not specified",
+      canonical_placement_label: "Not specified"
     };
   }
 
@@ -352,10 +414,11 @@ export function extractCanonicalMicPlacement(
   let rawAng: string | undefined;
 
   if (slotIndex === 0) {
+    // Only check placement keys. Do NOT check microphone model names (e.g. "mic_1").
     rawCompound = findVal([
       "mic_1_placement", "mic 1 placement", "mic1_placement", "mic1 placement",
       "placement_1", "placement 1", "placement1",
-      "mic_1", "mic 1", "mic1"
+      "mic_placement", "mic placement", "placement"
     ]);
     rawPos = findVal([
       "mic_1_position", "mic 1 position", "mic1_position", "mic1 position",
@@ -373,10 +436,10 @@ export function extractCanonicalMicPlacement(
       "axis_1", "axis 1", "axis1", "axis"
     ]);
   } else {
+    // Only check placement keys. Do NOT check microphone model names (e.g. "mic_2").
     rawCompound = findVal([
       "mic_2_placement", "mic 2 placement", "mic2_placement", "mic2 placement",
-      "placement_2", "placement 2", "placement2",
-      "mic_2", "mic 2", "mic2"
+      "placement_2", "placement 2", "placement2"
     ]);
     rawPos = findVal([
       "mic_2_position", "mic 2 position", "mic2_position", "mic2 position",
@@ -393,11 +456,6 @@ export function extractCanonicalMicPlacement(
       "angle_2", "angle 2", "angle2",
       "axis_2", "axis 2", "axis2"
     ]);
-  }
-
-  // If rawCompound looks like a mic model instead of placement (e.g. "Dynamic 57"), ignore it
-  if (rawCompound && isVIRReferenceMic(rawCompound)) {
-    rawCompound = undefined;
   }
 
   // Parse compound if present
@@ -417,12 +475,19 @@ export function extractCanonicalMicPlacement(
   const parsedDist = (rawDist ? parseSemanticPlacement("Cone, " + rawDist).distance : undefined) || distFromCompound;
   const parsedAng = (rawAng ? parseSemanticPlacement("Cone, Close, " + rawAng).angle : undefined) || angFromCompound;
 
-  const isUnspecified = !parsedPos && !parsedDist && !parsedAng && !rawCompound && !rawPos;
+  // A placement is specified ONLY if at least one semantic component (position, distance, angle) was recognized!
+  const hasSemanticIntent = Boolean(parsedPos || parsedDist || parsedAng);
+  const isUnspecified = !hasSemanticIntent;
 
   if (isUnspecified) {
     return {
       isUnspecified: true,
-      canonicalLabel: "Not specified"
+      wasSuppliedByChain: false,
+      placement_was_supplied_by_chain: false,
+      semanticProvenance: "cab_default",
+      canonicalLabel: "Not specified",
+      canonical_placement_label: "Not specified",
+      raw_supplied_placement: undefined
     };
   }
 
@@ -435,6 +500,7 @@ export function extractCanonicalMicPlacement(
   const angPart = finalAng || "On Axis";
 
   const canonicalLabel = `${posPart} · ${distPart} · ${angPart}`;
+  const sourceRawPlacement = rawCompound || rawPos || (rawDist ? `Distance: ${rawDist}` : undefined) || (rawAng ? `Angle: ${rawAng}` : undefined);
 
   return {
     position: finalPos,
@@ -444,8 +510,14 @@ export function extractCanonicalMicPlacement(
     rawDistance: rawDist,
     rawAngle: rawAng,
     rawCompound: rawCompound,
+    sourceRawPlacement,
+    raw_supplied_placement: sourceRawPlacement,
+    wasSuppliedByChain: true,
+    placement_was_supplied_by_chain: true,
+    semanticProvenance: "signal_chain_generated",
     isUnspecified: false,
-    canonicalLabel
+    canonicalLabel,
+    canonical_placement_label: canonicalLabel
   };
 }
 

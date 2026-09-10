@@ -1403,7 +1403,13 @@ export interface ExportDebugItem {
     exported_numeric_values?: any;
     verification_status?: string;
     placement_was_supplied_by_chain?: boolean;
-    placement_source?: string;
+    semantic_provenance?: "signal_chain_generated" | "signal_chain_normalized" | "semantic_default" | "cab_default" | "safe_fallback";
+    source_semantic_placement?: string;
+    normalized_semantic_placement?: string;
+    canonical_semantic_placement?: string;
+    coordinate_resolution_source?: string; // Clear distinction: origin of numeric AT5 coordinate resolution (e.g. VIR, profile, safe_fallback)
+    coordinate_translation_source?: string;
+    placement_source?: string; // Maintained for backwards compatibility; alias to coordinate_resolution_source
     resolved_at5_fields?: any;
     input_parameter_name?: string;
     matched_profile_parameter?: string;
@@ -1716,14 +1722,12 @@ const makeDebugItem = (
   const originalRequestedGearName = pair.raw.name;
   const originalRequestedSettings = { ...(pair.raw.settings ?? {}) };
   const normalizedRequestedGearName = gear.name;
-  const normalizedRequestedSettings = { ...(gear.settings ?? {}) };
 
   if (group === "cab") {
-    if (!pair.raw.settings) pair.raw.settings = {};
     if (!gear.settings) gear.settings = {};
 
-    // Standardize raw settings keys
-    const rawKeys = Object.keys(pair.raw.settings);
+    // Read raw placement values without mutating pair.raw.settings
+    const rawKeys = Object.keys(pair.raw.settings ?? {});
     let m1PlaceVal: any = undefined;
     let m2PlaceVal: any = undefined;
     let m1DistVal: any = undefined;
@@ -1731,25 +1735,16 @@ const makeDebugItem = (
 
     for (const key of rawKeys) {
       const lk = key.toLowerCase().replace(/[^a-z0-9]/g, "");
-      if (lk === "mic1placement" || lk === "mic1position" || lk === "mic1placement" || lk === "mic_1_placement" || lk === "mic_1_position" || lk === "mic1position") {
-        m1PlaceVal = pair.raw.settings[key];
-        delete pair.raw.settings[key];
-      } else if (lk === "mic2placement" || lk === "mic2position" || lk === "mic2placement" || lk === "mic_2_placement" || lk === "mic_2_position" || lk === "mic2position") {
-        m2PlaceVal = pair.raw.settings[key];
-        delete pair.raw.settings[key];
+      if (lk === "mic1placement" || lk === "mic1position" || lk === "mic_1_placement" || lk === "mic_1_position") {
+        m1PlaceVal = pair.raw.settings![key];
+      } else if (lk === "mic2placement" || lk === "mic2position" || lk === "mic_2_placement" || lk === "mic_2_position") {
+        m2PlaceVal = pair.raw.settings![key];
       } else if (lk === "mic1distance" || lk === "mic_1_distance") {
-        m1DistVal = pair.raw.settings[key];
-        delete pair.raw.settings[key];
+        m1DistVal = pair.raw.settings![key];
       } else if (lk === "mic2distance" || lk === "mic_2_distance") {
-        m2DistVal = pair.raw.settings[key];
-        delete pair.raw.settings[key];
+        m2DistVal = pair.raw.settings![key];
       }
     }
-
-    pair.raw.settings["Mic_1_Placement"] = m1PlaceVal !== undefined ? m1PlaceVal : "Not specified";
-    pair.raw.settings["Mic_2_Placement"] = m2PlaceVal !== undefined ? m2PlaceVal : "Not specified";
-    if (m1DistVal !== undefined) pair.raw.settings["Mic_1_Distance"] = m1DistVal;
-    if (m2DistVal !== undefined) pair.raw.settings["Mic_2_Distance"] = m2DistVal;
 
     // Standardize gear.settings keys
     const gearKeys = Object.keys(gear.settings);
@@ -1760,10 +1755,10 @@ const makeDebugItem = (
 
     for (const key of gearKeys) {
       const lk = key.toLowerCase().replace(/[^a-z0-9]/g, "");
-      if (lk === "mic1placement" || lk === "mic1position" || lk === "mic1placement" || lk === "mic_1_placement" || lk === "mic_1_position" || lk === "mic1position") {
+      if (lk === "mic1placement" || lk === "mic1position" || lk === "mic_1_placement" || lk === "mic_1_position") {
         gearM1PlaceVal = gear.settings[key];
         delete gear.settings[key];
-      } else if (lk === "mic2placement" || lk === "mic2position" || lk === "mic2placement" || lk === "mic_2_placement" || lk === "mic_2_position" || lk === "mic2position") {
+      } else if (lk === "mic2placement" || lk === "mic2position" || lk === "mic_2_placement" || lk === "mic_2_position") {
         gearM2PlaceVal = gear.settings[key];
         delete gear.settings[key];
       } else if (lk === "mic1distance" || lk === "mic_1_distance") {
@@ -1775,14 +1770,28 @@ const makeDebugItem = (
       }
     }
 
-    gear.settings["Mic_1_Placement"] = gearM1PlaceVal !== undefined ? gearM1PlaceVal : (m1PlaceVal !== undefined ? m1PlaceVal : "Not specified");
-    gear.settings["Mic_2_Placement"] = gearM2PlaceVal !== undefined ? gearM2PlaceVal : (m2PlaceVal !== undefined ? m2PlaceVal : "Not specified");
-    if (gearM1DistVal !== undefined) gear.settings["Mic_1_Distance"] = gearM1DistVal;
-    else if (m1DistVal !== undefined) gear.settings["Mic_1_Distance"] = m1DistVal;
-    
-    if (gearM2DistVal !== undefined) gear.settings["Mic_2_Distance"] = gearM2DistVal;
-    else if (m2DistVal !== undefined) gear.settings["Mic_2_Distance"] = m2DistVal;
+    const finalM1Place = gearM1PlaceVal !== undefined ? gearM1PlaceVal : m1PlaceVal;
+    if (finalM1Place !== undefined && !isUnspecifiedPlacementValue(finalM1Place)) {
+      gear.settings["Mic_1_Placement"] = finalM1Place;
+    }
+
+    const finalM2Place = gearM2PlaceVal !== undefined ? gearM2PlaceVal : m2PlaceVal;
+    if (finalM2Place !== undefined && !isUnspecifiedPlacementValue(finalM2Place)) {
+      gear.settings["Mic_2_Placement"] = finalM2Place;
+    }
+
+    const finalM1Dist = gearM1DistVal !== undefined ? gearM1DistVal : m1DistVal;
+    if (finalM1Dist !== undefined && !isUnspecifiedPlacementValue(finalM1Dist)) {
+      gear.settings["Mic_1_Distance"] = finalM1Dist;
+    }
+
+    const finalM2Dist = gearM2DistVal !== undefined ? gearM2DistVal : m2DistVal;
+    if (finalM2Dist !== undefined && !isUnspecifiedPlacementValue(finalM2Dist)) {
+      gear.settings["Mic_2_Distance"] = finalM2Dist;
+    }
   }
+
+  const normalizedRequestedSettings = { ...(gear.settings ?? {}) };
 
   // Setup EQ collapse variables
   let tone_adjustment_intent: Record<string, string> | undefined = undefined;
@@ -2666,8 +2675,14 @@ const makeDebugItem = (
     const placementMappings = getDbMicPlacementMappings();
 
     // Canonical Mic 1 Placement (Slot 0 -> AT5 Mic0)
-    const pl0 = extractCanonicalMicPlacement(normSettings, 0);
-    const was_supplied_0 = !pl0.isUnspecified;
+    const rawPl0 = extractCanonicalMicPlacement(originalRequestedSettings, 0);
+    const normPl0 = extractCanonicalMicPlacement(normSettings, 0);
+    const was_supplied_0 = !rawPl0.isUnspecified || !normPl0.isUnspecified;
+    const semanticProvenance0: "signal_chain_generated" | "signal_chain_normalized" | "cab_default" = 
+      !rawPl0.isUnspecified ? "signal_chain_generated" : (!normPl0.isUnspecified ? "signal_chain_normalized" : "cab_default");
+    const activePl0 = !rawPl0.isUnspecified ? rawPl0 : normPl0;
+    const sourceSemantic0 = rawPl0.sourceRawPlacement || normPl0.sourceRawPlacement;
+
     const mic1Req = getSettingText(gear, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
     const mic1Guid = getMicId(mic1Req);
 
@@ -2677,14 +2692,15 @@ const makeDebugItem = (
         cabName: gear.name,
         cabGuid: resolveCabGuid(gear.name),
         micSlot: "Mic_1",
-        canonicalPlacement: pl0,
+        canonicalPlacement: activePl0,
         micModelName: mic1Req,
         micModelGuid: mic1Guid,
         dbMappings: placementMappings
       });
     }
 
-    const displayLabel0 = was_supplied_0 ? (resM1?.parsedLabel || pl0.canonicalLabel) : "Not specified";
+    const displayLabel0 = was_supplied_0 ? (resM1?.parsedLabel || activePl0.canonicalLabel) : "Not specified";
+    const intendedSemantic0 = was_supplied_0 ? (sourceSemantic0 || displayLabel0) : "Not specified";
     const resolved_profile_found_0 = was_supplied_0 && !!(resM1 && resM1.resolved);
     const xmlValues0 = resolved_profile_found_0 && resM1 ? {
       Mic0Angle: resM1.coordinates.Angle,
@@ -2721,6 +2737,12 @@ const makeDebugItem = (
         mapping_status: "NOT_SPECIFIED",
         conversion_note: "No semantic mic placement was specified in source signal chain. Exported default AT5 coordinates.",
         intended_semantic_value: "Not specified",
+        source_semantic_placement: undefined,
+        normalized_semantic_placement: undefined,
+        canonical_semantic_placement: "Not specified",
+        semantic_provenance: "cab_default",
+        coordinate_resolution_source: "cab_default",
+        coordinate_translation_source: "cab_default",
         resolved_profile_found: false,
         resolved_profile_value: fallback_value_0,
         fallback_value: fallback_value_0,
@@ -2779,7 +2801,13 @@ const makeDebugItem = (
         exported_internal_value: exportedString0,
         mapping_status: status,
         conversion_note: conversionNote,
-        intended_semantic_value: displayLabel0,
+        intended_semantic_value: intendedSemantic0,
+        source_semantic_placement: sourceSemantic0,
+        normalized_semantic_placement: normPl0.sourceRawPlacement || normPl0.canonicalLabel,
+        canonical_semantic_placement: displayLabel0,
+        semantic_provenance: semanticProvenance0,
+        coordinate_resolution_source: profileSource,
+        coordinate_translation_source: profileSource,
         resolved_profile_found: true,
         resolved_profile_value: xmlValues0,
         fallback_value: fallback_value_0,
@@ -2807,7 +2835,13 @@ const makeDebugItem = (
         exported_internal_value: exportedString0,
         mapping_status: "FALLBACK_USED",
         conversion_note: warningMsg,
-        intended_semantic_value: displayLabel0,
+        intended_semantic_value: intendedSemantic0,
+        source_semantic_placement: sourceSemantic0,
+        normalized_semantic_placement: normPl0.sourceRawPlacement || normPl0.canonicalLabel,
+        canonical_semantic_placement: displayLabel0,
+        semantic_provenance: semanticProvenance0,
+        coordinate_resolution_source: "safe_fallback",
+        coordinate_translation_source: "safe_fallback",
         resolved_profile_found: false,
         resolved_profile_value: null,
         fallback_value: fallback_value_0,
@@ -2826,9 +2860,15 @@ const makeDebugItem = (
       });
     }
 
-    // Canonical Mic 1 Placement (Slot 1 -> AT5 Mic1)
-    const pl1 = extractCanonicalMicPlacement(normSettings, 1);
-    const was_supplied_1 = !pl1.isUnspecified;
+    // Canonical Mic 2 Placement (Slot 1 -> AT5 Mic1)
+    const rawPl1 = extractCanonicalMicPlacement(originalRequestedSettings, 1);
+    const normPl1 = extractCanonicalMicPlacement(normSettings, 1);
+    const was_supplied_1 = !rawPl1.isUnspecified || !normPl1.isUnspecified;
+    const semanticProvenance1: "signal_chain_generated" | "signal_chain_normalized" | "cab_default" = 
+      !rawPl1.isUnspecified ? "signal_chain_generated" : (!normPl1.isUnspecified ? "signal_chain_normalized" : "cab_default");
+    const activePl1 = !rawPl1.isUnspecified ? rawPl1 : normPl1;
+    const sourceSemantic1 = rawPl1.sourceRawPlacement || normPl1.sourceRawPlacement;
+
     const mic2Req = getSettingText(gear, ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"]) || "Condenser 87";
     const mic2Guid = getMicId(mic2Req);
 
@@ -2838,14 +2878,15 @@ const makeDebugItem = (
         cabName: gear.name,
         cabGuid: resolveCabGuid(gear.name),
         micSlot: "Mic_2",
-        canonicalPlacement: pl1,
+        canonicalPlacement: activePl1,
         micModelName: mic2Req,
         micModelGuid: mic2Guid,
         dbMappings: placementMappings
       });
     }
 
-    const displayLabel1 = was_supplied_1 ? (resM2?.parsedLabel || pl1.canonicalLabel) : "Not specified";
+    const displayLabel1 = was_supplied_1 ? (resM2?.parsedLabel || activePl1.canonicalLabel) : "Not specified";
+    const intendedSemantic1 = was_supplied_1 ? (sourceSemantic1 || displayLabel1) : "Not specified";
     const resolved_profile_found_1 = was_supplied_1 && !!(resM2 && resM2.resolved);
     const xmlValues1 = resolved_profile_found_1 && resM2 ? {
       Mic1Angle: resM2.coordinates.Angle,
@@ -2882,6 +2923,12 @@ const makeDebugItem = (
         mapping_status: "NOT_SPECIFIED",
         conversion_note: "No semantic mic placement was specified in source signal chain. Exported default AT5 coordinates.",
         intended_semantic_value: "Not specified",
+        source_semantic_placement: undefined,
+        normalized_semantic_placement: undefined,
+        canonical_semantic_placement: "Not specified",
+        semantic_provenance: "cab_default",
+        coordinate_resolution_source: "cab_default",
+        coordinate_translation_source: "cab_default",
         resolved_profile_found: false,
         resolved_profile_value: fallback_value_1,
         fallback_value: fallback_value_1,
@@ -2940,7 +2987,13 @@ const makeDebugItem = (
         exported_internal_value: exportedString1,
         mapping_status: status,
         conversion_note: conversionNote,
-        intended_semantic_value: displayLabel1,
+        intended_semantic_value: intendedSemantic1,
+        source_semantic_placement: sourceSemantic1,
+        normalized_semantic_placement: normPl1.sourceRawPlacement || normPl1.canonicalLabel,
+        canonical_semantic_placement: displayLabel1,
+        semantic_provenance: semanticProvenance1,
+        coordinate_resolution_source: profileSource,
+        coordinate_translation_source: profileSource,
         resolved_profile_found: true,
         resolved_profile_value: xmlValues1,
         fallback_value: fallback_value_1,
@@ -2968,7 +3021,13 @@ const makeDebugItem = (
         exported_internal_value: exportedString1,
         mapping_status: "FALLBACK_USED",
         conversion_note: warningMsg,
-        intended_semantic_value: displayLabel1,
+        intended_semantic_value: intendedSemantic1,
+        source_semantic_placement: sourceSemantic1,
+        normalized_semantic_placement: normPl1.sourceRawPlacement || normPl1.canonicalLabel,
+        canonical_semantic_placement: displayLabel1,
+        semantic_provenance: semanticProvenance1,
+        coordinate_resolution_source: "safe_fallback",
+        coordinate_translation_source: "safe_fallback",
         resolved_profile_found: false,
         resolved_profile_value: null,
         fallback_value: fallback_value_1,

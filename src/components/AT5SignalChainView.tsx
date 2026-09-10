@@ -95,6 +95,12 @@ type ExportDebugItem = {
     exported_numeric_values?: any;
     verification_status?: string;
     placement_was_supplied_by_chain?: boolean;
+    semantic_provenance?: "signal_chain_generated" | "signal_chain_normalized" | "semantic_default" | "cab_default" | "safe_fallback";
+    source_semantic_placement?: string;
+    normalized_semantic_placement?: string;
+    canonical_semantic_placement?: string;
+    coordinate_resolution_source?: string;
+    coordinate_translation_source?: string;
     placement_source?: string;
     resolved_at5_fields?: any;
   }[];
@@ -844,15 +850,16 @@ const SelectedGearDetailPanel = ({
                   if (isMicPlacement) {
                     const isFallback = param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK" || !param.resolved_profile_found;
                     const isNotSpecified = param.mapping_status === "NOT_SPECIFIED" || param.display_value === "Not specified";
-                    const isVirRef = param.placement_source === "reference_calibration_vir" || param.placement_profile_source === "reference_calibration_vir";
+                    const coordResSource = param.coordinate_resolution_source || param.placement_source;
+                    const isVirRef = coordResSource === "reference_calibration_vir" || param.placement_profile_source === "reference_calibration_vir";
                     
                     let sourceLabel = "Safe Fallback";
                     if (isVirRef) sourceLabel = "VIR Reference Calibration";
-                    else if (param.placement_source === "calibrated_profile" || param.placement_source === "firestore_verified") sourceLabel = "Verified Mapping";
-                    else if (param.placement_source === "at5p_discovery_profile" || param.placement_source === "estimated_profile") sourceLabel = "Estimated Mapping";
-                    else if (param.placement_source === "imported_existing_value") sourceLabel = "Imported AT5 Value";
-                    else if (param.placement_source === "fallback_default") sourceLabel = "Safe Fallback";
-                    else if (param.placement_source === "cab_default") sourceLabel = "Safe Fallback";
+                    else if (coordResSource === "calibrated_profile" || coordResSource === "firestore_verified") sourceLabel = "Verified Mapping";
+                    else if (coordResSource === "at5p_discovery_profile" || coordResSource === "estimated_profile") sourceLabel = "Estimated Mapping";
+                    else if (coordResSource === "imported_existing_value") sourceLabel = "Imported AT5 Value";
+                    else if (coordResSource === "fallback_default") sourceLabel = "Safe Fallback";
+                    else if (coordResSource === "cab_default") sourceLabel = "Safe Fallback";
 
                     let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-700/50";
                     let badgeText = "NOT SPECIFIED";
@@ -894,16 +901,21 @@ const SelectedGearDetailPanel = ({
                               {param.display_value}
                             </strong>
                             <span className="text-[10px] text-slate-500 block mt-1 font-mono">
-                              {isNotSpecified ? "(No semantic placement requested)" : "Provided by signal chain"}
+                              {isNotSpecified || !param.placement_was_supplied_by_chain ? "(No semantic placement requested)" : "Provided by signal chain"}
                             </span>
                           </div>
                           
                           <div>
-                            <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">Placement Source</span>
+                            <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider mb-0.5">Coordinate Resolution Source</span>
                             <div className="flex flex-col gap-1">
                               <span className={isVirRef ? "text-cyan-400 font-semibold" : param.resolved_profile_found ? "text-emerald-400 font-semibold" : isFallback ? "text-amber-400 font-semibold" : "text-slate-400 font-semibold"}>
                                 {sourceLabel}
                               </span>
+                              {param.semantic_provenance && (
+                                <span className="text-[9px] text-slate-400 font-mono">
+                                  Semantic: {param.semantic_provenance}
+                                </span>
+                              )}
                               {param.resolved_profile_found && param.placement_profile_source && param.placement_profile_source !== "reference_calibration_vir" && (
                                 <span className="text-[9px] text-slate-500 font-mono">
                                   Profile ID: {param.placement_profile_id ? param.placement_profile_id.substring(0, 8) : "N/A"}
@@ -2093,6 +2105,18 @@ export const AT5SignalChainView: React.FC<Props> = ({
               </h4>
               <p className="text-slate-300 leading-relaxed whitespace-pre-line">
                 {(toneResult?.engineering_notes?.amplifier_debug || (debugData as any).engineering_notes?.amplifier_debug)}
+              </p>
+            </div>
+          )}
+
+          {/* Optional Microphone Selection & Semantic Placement Engine if data exists */}
+          {(toneResult?.engineering_notes?.microphone_debug || (debugData as any).engineering_notes?.microphone_debug) && (
+            <div className="rounded-2xl border border-indigo-500/20 p-5 bg-indigo-950/10 shadow-md font-mono text-xs">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400 mb-3">
+                Microphone Selection & Semantic Placement Engine (Stage 2 Reference)
+              </h4>
+              <p className="text-slate-300 leading-relaxed whitespace-pre-line">
+                {(toneResult?.engineering_notes?.microphone_debug || (debugData as any).engineering_notes?.microphone_debug)}
               </p>
             </div>
           )}

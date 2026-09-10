@@ -29,6 +29,7 @@ export interface EngineeringNotes {
   noise_control: string;
   eq_strategy: string;
   amplifier_debug?: string;
+  microphone_debug?: string;
 }
 
 export interface ToneProfile {

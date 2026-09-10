@@ -4082,11 +4082,9 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                             <div>
                                               <div className="text-[8.5px] text-gray-500 uppercase tracking-wider mb-0.5">Intended Semantic Placement</div>
                                               <div className="text-gray-300 font-bold">{detail.display_value}</div>
-                                              {detail.display_value !== "Not specified" && (
-                                                <span className="text-[9px] text-gray-500 block mt-0.5">
-                                                  Provided by signal chain
-                                                </span>
-                                              )}
+                                              <span className="text-[9px] text-gray-500 block mt-0.5">
+                                                {detail.display_value === "Not specified" || !detail.placement_was_supplied_by_chain ? "(No semantic placement requested)" : "Provided by signal chain"}
+                                              </span>
                                             </div>
                                             
                                             <div>
