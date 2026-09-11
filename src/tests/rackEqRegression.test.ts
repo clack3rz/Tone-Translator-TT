@@ -115,6 +115,7 @@ try {
   assert(rackEqItem!.verification_source === "final_export_xml", "verification_source is incorrect");
 
   console.log("\n=== ALL REGRESSION TESTS PASSED SUCCESSFULLY! ===");
+  process.exit(0);
 } catch (error: any) {
   console.error("\n❌ Regression test failed with error:", error.message || error);
   process.exit(1);

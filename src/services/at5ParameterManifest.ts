@@ -15,6 +15,7 @@ import { AT5_VERIFIED_GEAR, VerifiedGearDef, VerifiedParamDef } from "./at5Verif
 import { getAt5Catalog, cleanGearNameForMatching } from "./at5Catalog";
 import { ParameterMapping, MicPlacementMapping, ParameterOptionRow } from "../types";
 import { at5DatabaseService } from "./at5DatabaseService";
+import { initializeVIRCalibration } from "./at5MicPlacementService";
 
 let dbParameterMappings: ParameterMapping[] = [];
 let dbMicPlacementMappings: MicPlacementMapping[] = [];
@@ -23,6 +24,7 @@ export async function refreshDbParameterMappings(): Promise<void> {
   try {
     dbParameterMappings = await at5DatabaseService.getParameterMappings() || [];
     dbMicPlacementMappings = await at5DatabaseService.getMicPlacementMappings() || [];
+    await initializeVIRCalibration();
   } catch (error) {
     console.error("Failed to refresh db parameter mappings", error);
   }

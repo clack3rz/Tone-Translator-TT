@@ -1,7 +1,7 @@
 // src/services/presetExporter.ts
 // Deterministic AT5 .at5p XML exporter. Do not call Gemini to serialize presets.
 
-import { normaliseSignalChain, filterDuplicateEqsWithRemoved } from "./at5SignalChainNormalizer";
+import { normaliseSignalChain, filterDuplicateEqsWithRemoved, detectCabSettingsFormat } from "./at5SignalChainNormalizer";
 import { ToneResult, SignalChainElement, RackDecision, MicPlacementMapping } from "../types";
 import { AT5_EMPTY_SLOT_GUID, findAT5GearGuid, findAT5Gear, getAt5Catalog, findBestCatalogMatchAcrossGroups } from "./at5Catalog";
 import {
@@ -1183,15 +1183,13 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
   const cabGuid = resolveCabGuid(cabName);
 
   const resolved = { ...defaultValues };
-  const has0Key = Object.keys(settings).some(k => {
-    const normK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
-    return normK === "mic0" || normK.startsWith("mic0");
-  });
+  const detection = detectCabSettingsFormat(settings);
+  const isLegacy = detection.resolvedAs === "legacy_1";
 
   // Slot 0 -> AT5 Mic0
   const pl0 = extractCanonicalMicPlacement(settings, 0);
   if (!pl0.isUnspecified) {
-    const mic0Req = getSettingText(cab, ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"]) || "Dynamic 57";
+    const mic0Req = getSettingText(cab, isLegacy ? ["mic_1", "mic 1", "mic1", "mic a", "mic_0", "mic 0", "mic0"] : ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"]) || "Dynamic 57";
     const mic0Guid = getMicId(mic0Req);
     
     const resM0 = resolveCompositeMicPlacement({
@@ -1217,9 +1215,9 @@ const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
   // Slot 1 -> AT5 Mic1
   const pl1 = extractCanonicalMicPlacement(settings, 1);
   if (!pl1.isUnspecified) {
-    const mic1Keys = has0Key
-      ? ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"]
-      : ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"];
+    const mic1Keys = isLegacy
+      ? ["mic_2", "mic 2", "mic2", "mic b"]
+      : ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"];
     const mic1Req = getSettingText(cab, mic1Keys) || "Condenser 87";
     const mic1Guid = getMicId(mic1Req);
 
@@ -1253,12 +1251,11 @@ const buildCabSection = (
   const cabGuid = resolveCabGuid(cab?.name);
   const speakerGuid = resolveSpeakerGuid(getSettingText(cab, ["speaker", "speaker type", "speaker swap"]));
   
-  const has0 = Object.keys(cab?.settings || {}).some(k => {
-    const normK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
-    return normK === "mic0" || normK.startsWith("mic0");
-  });
-  const mic1Req = getSettingText(cab, has0 ? ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"] : ["mic_1", "mic 1", "mic1", "mic_0", "mic 0", "mic0"]);
-  const mic2Req = getSettingText(cab, has0 ? ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"] : ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"]);
+  const detection = detectCabSettingsFormat(cab?.settings || {});
+  const isLegacy = detection.resolvedAs === "legacy_1";
+  
+  const mic1Req = getSettingText(cab, isLegacy ? ["mic_1", "mic 1", "mic1", "mic a", "mic_0", "mic 0", "mic0"] : ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"]);
+  const mic2Req = getSettingText(cab, isLegacy ? ["mic_2", "mic 2", "mic2", "mic b"] : ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"]);
   
   const mic0 = mic1Req ? getMicId(mic1Req) : "1e41acc4-85af-4e84-bee4-eabc0be5fef1"; // Dynamic 57 fallback
   const mic1 = mic2Req ? getMicId(mic2Req) : "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb"; // Condenser 87 fallback
@@ -1280,7 +1277,7 @@ const buildStudio = (cab?: SignalChainElement) => {
   return `    <Studio Bypass="0" Mute="0" OutputVolume="1" OutputPan="0.5" DI_Level="-3" DI_Pan="0.5" DI_Mute="1" DI_Solo="0" DI_Phase="0" DI_PhaseDelay="0" Cab1_Mic1_Level="0" Cab1_Mic1_Pan="0" Cab1_Mic1_Mute="0" Cab1_Mic1_Solo="0" Cab1_Mic1_Phase="0" Cab1_Mic2_Level="-8" Cab1_Mic2_Pan="0" Cab1_Mic2_Mute="0" Cab1_Mic2_Solo="0" Cab1_Mic2_Phase="0" Cab1_Room_Level="${roomLevelVal}" Cab1_Room_Width="50" Cab1_Room_Mute="0" Cab1_Room_Solo="0" Cab1_Room_Phase="0" Cab1_Bus_Level="0" Cab1_Bus_Pan="0.5" Cab1_Bus_Mute="0" Cab1_Bus_Solo="0" Cab1_Bus_Phase="0" Cab2_Mic1_Level="-6" Cab2_Mic1_Pan="0" Cab2_Mic1_Mute="0" Cab2_Mic1_Solo="0" Cab2_Mic1_Phase="0" Cab2_Mic2_Level="-6" Cab2_Mic2_Pan="0" Cab2_Mic2_Mute="0" Cab2_Mic2_Solo="0" Cab2_Mic2_Phase="0" Cab2_Room_Level="-40" Cab2_Room_Width="50" Cab2_Room_Mute="0" Cab2_Room_Solo="0" Cab2_Room_Phase="0" Cab2_Bus_Level="-6" Cab2_Bus_Pan="1" Cab2_Bus_Mute="0" Cab2_Bus_Solo="0" Cab2_Bus_Phase="0" Cab3_Mic1_Level="-6" Cab3_Mic1_Pan="0" Cab3_Mic1_Mute="0" Cab3_Mic1_Solo="0" Cab3_Mic1_Phase="0" Cab3_Mic2_Level="-6" Cab3_Mic2_Pan="0" Cab3_Mic2_Mute="0" Cab3_Mic2_Solo="0" Cab3_Mic2_Phase="0" Cab3_Room_Level="-40" Cab3_Room_Width="50" Cab3_Room_Mute="0" Cab3_Room_Solo="0" Cab3_Room_Phase="0" Cab3_Bus_Level="-6" Cab3_Bus_Pan="0" Cab3_Bus_Mute="0" Cab3_Bus_Solo="0" Cab3_Bus_Phase="0" />`;
 };
 
-const generateXML = (result: ToneResult): string => {
+export const generateXML = (result: ToneResult): string => {
   const slotPlan = buildResolvedSlotPlan(result);
 
   const stompA1 = slotPlan.filter(item => item.final_selected_slot_section === "StompA1").map(item => item.normalized);
@@ -2700,31 +2697,34 @@ const makeDebugItem = (
     const activePl0 = !rawPl0.isUnspecified ? rawPl0 : normPl0;
     const sourceSemantic0 = rawPl0.sourceRawPlacement || normPl0.sourceRawPlacement;
 
-    const mic1Req = getSettingText(gear, ["mic_1", "mic 1", "mic1"]) || "Dynamic 57";
-    const mic1Guid = getMicId(mic1Req);
+    const detection = detectCabSettingsFormat(gear.settings || {});
+    const isLegacy = detection.resolvedAs === "legacy_1";
+    const mic0Req = getSettingText(gear, isLegacy ? ["mic_1", "mic 1", "mic1", "mic a", "mic_0", "mic 0", "mic0"] : ["mic_0", "mic 0", "mic0", "mic_1", "mic 1", "mic1"]) || "Dynamic 57";
+    const mic0Guid = getMicId(mic0Req);
 
-    let resM1: any = null;
+    let resM0: any = null;
     if (was_supplied_0) {
-      resM1 = resolveCompositeMicPlacement({
+      resM0 = resolveCompositeMicPlacement({
         cabName: gear.name,
         cabGuid: resolveCabGuid(gear.name),
-        micSlot: "Mic_1",
+        micSlot: "Mic_0",
+        slotIndex: 0,
         canonicalPlacement: activePl0,
-        micModelName: mic1Req,
-        micModelGuid: mic1Guid,
+        micModelName: mic0Req,
+        micModelGuid: mic0Guid,
         dbMappings: placementMappings
       });
     }
 
-    const displayLabel0 = was_supplied_0 ? (resM1?.parsedLabel || activePl0.canonicalLabel) : "Not specified";
+    const displayLabel0 = was_supplied_0 ? (resM0?.parsedLabel || activePl0.canonicalLabel) : "Not specified";
     const intendedSemantic0 = was_supplied_0 ? (sourceSemantic0 || displayLabel0) : "Not specified";
-    const resolved_profile_found_0 = was_supplied_0 && !!(resM1 && resM1.resolved);
-    const xmlValues0 = resolved_profile_found_0 && resM1 ? {
-      Mic0Angle: resM1.coordinates.Angle,
-      Mic0XAxis: resM1.coordinates.XAxis,
-      Mic0YAxis: resM1.coordinates.YAxis,
-      Mic0Distance: resM1.coordinates.Distance,
-      Mic0Speaker: resM1.coordinates.Speaker
+    const resolved_profile_found_0 = was_supplied_0 && !!(resM0 && resM0.resolved);
+    const xmlValues0 = resolved_profile_found_0 && resM0 ? {
+      Mic0Angle: resM0.coordinates.Angle,
+      Mic0XAxis: resM0.coordinates.XAxis,
+      Mic0YAxis: resM0.coordinates.YAxis,
+      Mic0Distance: resM0.coordinates.Distance,
+      Mic0Speaker: resM0.coordinates.Speaker
     } : null;
 
     const fallback_value_0 = {
@@ -2775,7 +2775,7 @@ const makeDebugItem = (
         placement_source: "cab_default",
         resolved_at5_fields: fallback_value_0
       });
-    } else if (resolved_profile_found_0 && resM1 && xmlValues0) {
+    } else if (resolved_profile_found_0 && resM0 && xmlValues0) {
       let allMatch = true;
       const detailStrings: string[] = [];
       const expectedStrings: string[] = [];
@@ -2807,9 +2807,9 @@ const makeDebugItem = (
         mismatched_parameters.push("Mic_0_Placement (coordinate mismatch)");
       }
 
-      const profileSource = resM1.resolutionSource === "reference_calibration_vir"
+      const profileSource = resM0.resolutionSource === "reference_calibration_vir"
         ? "reference_calibration_vir"
-        : (resM1.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
+        : (resM0.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
 
       detailsList.push({
         parameter: "Mic 0 Placement",
@@ -2831,7 +2831,7 @@ const makeDebugItem = (
         exported_value: exported_value_0,
         placement_label: displayLabel0,
         placement_profile_source: profileSource,
-        placement_profile_id: resM1.matchedProfile?.id,
+        placement_profile_id: resM0.matchedProfile?.id,
         fallback_used: false,
         resolved_numeric_values: xmlValues0,
         exported_numeric_values: exported_value_0,
@@ -2841,7 +2841,7 @@ const makeDebugItem = (
         resolved_at5_fields: xmlValues0
       });
     } else {
-      const warningMsg = resM1?.warning || `No AT5 mic placement profile found for ${displayLabel0} on this cab. Using fallback placement.`;
+      const warningMsg = resM0?.warning || `No AT5 mic placement profile found for ${displayLabel0} on this cab. Using fallback placement.`;
       hasFallbackWarning = true;
       fallbackWarningsList.push(warningMsg);
 
@@ -2886,31 +2886,32 @@ const makeDebugItem = (
     const activePl1 = !rawPl1.isUnspecified ? rawPl1 : normPl1;
     const sourceSemantic1 = rawPl1.sourceRawPlacement || normPl1.sourceRawPlacement;
 
-    const mic2Req = getSettingText(gear, ["mic_2", "mic 2", "mic2", "mic_1", "mic 1", "mic1"]) || "Condenser 87";
-    const mic2Guid = getMicId(mic2Req);
+    const mic1Req = getSettingText(gear, isLegacy ? ["mic_2", "mic 2", "mic2", "mic b"] : ["mic_1", "mic 1", "mic1", "mic_2", "mic 2", "mic2"]) || "Condenser 87";
+    const mic1Guid = getMicId(mic1Req);
 
-    let resM2: any = null;
+    let resM1: any = null;
     if (was_supplied_1) {
-      resM2 = resolveCompositeMicPlacement({
+      resM1 = resolveCompositeMicPlacement({
         cabName: gear.name,
         cabGuid: resolveCabGuid(gear.name),
-        micSlot: "Mic_2",
+        micSlot: "Mic_1",
+        slotIndex: 1,
         canonicalPlacement: activePl1,
-        micModelName: mic2Req,
-        micModelGuid: mic2Guid,
+        micModelName: mic1Req,
+        micModelGuid: mic1Guid,
         dbMappings: placementMappings
       });
     }
 
-    const displayLabel1 = was_supplied_1 ? (resM2?.parsedLabel || activePl1.canonicalLabel) : "Not specified";
+    const displayLabel1 = was_supplied_1 ? (resM1?.parsedLabel || activePl1.canonicalLabel) : "Not specified";
     const intendedSemantic1 = was_supplied_1 ? (sourceSemantic1 || displayLabel1) : "Not specified";
-    const resolved_profile_found_1 = was_supplied_1 && !!(resM2 && resM2.resolved);
-    const xmlValues1 = resolved_profile_found_1 && resM2 ? {
-      Mic1Angle: resM2.coordinates.Angle,
-      Mic1XAxis: resM2.coordinates.XAxis,
-      Mic1YAxis: resM2.coordinates.YAxis,
-      Mic1Distance: resM2.coordinates.Distance,
-      Mic1Speaker: resM2.coordinates.Speaker
+    const resolved_profile_found_1 = was_supplied_1 && !!(resM1 && resM1.resolved);
+    const xmlValues1 = resolved_profile_found_1 && resM1 ? {
+      Mic1Angle: resM1.coordinates.Angle,
+      Mic1XAxis: resM1.coordinates.XAxis,
+      Mic1YAxis: resM1.coordinates.YAxis,
+      Mic1Distance: resM1.coordinates.Distance,
+      Mic1Speaker: resM1.coordinates.Speaker
     } : null;
 
     const fallback_value_1 = {
@@ -2961,7 +2962,7 @@ const makeDebugItem = (
         placement_source: "cab_default",
         resolved_at5_fields: fallback_value_1
       });
-    } else if (resolved_profile_found_1 && resM2 && xmlValues1) {
+    } else if (resolved_profile_found_1 && resM1 && xmlValues1) {
       let allMatch = true;
       const detailStrings: string[] = [];
       const expectedStrings: string[] = [];
@@ -2993,9 +2994,9 @@ const makeDebugItem = (
         mismatched_parameters.push("Mic_1_Placement (coordinate mismatch)");
       }
 
-      const profileSource = resM2.resolutionSource === "reference_calibration_vir"
+      const profileSource = resM1.resolutionSource === "reference_calibration_vir"
         ? "reference_calibration_vir"
-        : (resM2.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
+        : (resM1.matchedProfile?.source === "at5p_discovery" ? "at5p_discovery_profile" : "calibrated_profile");
 
       detailsList.push({
         parameter: "Mic 1 Placement",
@@ -3017,7 +3018,7 @@ const makeDebugItem = (
         exported_value: exported_value_1,
         placement_label: displayLabel1,
         placement_profile_source: profileSource,
-        placement_profile_id: resM2.matchedProfile?.id,
+        placement_profile_id: resM1.matchedProfile?.id,
         fallback_used: false,
         resolved_numeric_values: xmlValues1,
         exported_numeric_values: exported_value_1,
@@ -3027,7 +3028,7 @@ const makeDebugItem = (
         resolved_at5_fields: xmlValues1
       });
     } else {
-      const warningMsg = resM2?.warning || `No AT5 mic placement profile found for ${displayLabel1} on this cab. Using fallback placement.`;
+      const warningMsg = resM1?.warning || `No AT5 mic placement profile found for ${displayLabel1} on this cab. Using fallback placement.`;
       hasFallbackWarning = true;
       fallbackWarningsList.push(warningMsg);
 

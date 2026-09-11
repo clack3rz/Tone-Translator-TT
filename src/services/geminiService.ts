@@ -44,12 +44,12 @@ ENGINEERING PHILOSOPHY (Killer Rig Systematic Tone):
    - Messy Delay? Align to tempo and move to FX Loop/Rack.
 
 5. CABINET SERIATION & EXPLICIT SEMANTIC MIC PLACEMENT:
-   - Cabinet settings MUST use standard keys: 'Speaker' (for speaker swap), 'Mic_1' (Primary microphone), 'Mic_2' (Secondary microphone), 'Room' (Room type/ambience).
+   - Cabinet settings MUST use standard keys: 'Speaker' (for speaker swap), 'Mic_0' (Primary microphone), 'Mic_1' (Secondary microphone), 'Room' (Room type/ambience).
    - Do NOT use 'speaker_a' or 'speaker_b' for microphones.
    - For every selected microphone, you MUST explicitly provide its complete semantic placement:
+     * When 'Mic_0' is selected, you MUST provide 'Mic_0_Placement'.
      * When 'Mic_1' is selected, you MUST provide 'Mic_1_Placement'.
-     * When 'Mic_2' is selected, you MUST provide 'Mic_2_Placement'.
-   - The value of 'Mic_1_Placement' and 'Mic_2_Placement' MUST be the complete semantic triplet in format: "Position, Distance, Angle"
+   - The value of 'Mic_0_Placement' and 'Mic_1_Placement' MUST be the complete semantic triplet in format: "Position, Distance, Angle"
      Permitted Position: "Cap" | "Cap Edge" | "Cone" | "Cone Edge"
      Permitted Distance: "Close" | "Medium" | "Far"
      Permitted Angle: "On Axis" | "45° Off Axis"
@@ -191,18 +191,18 @@ SYSTEMATIC MICROPHONE SELECTION, ROLE-BASED BLENDING, AND PLACEMENT RULE BOOK:
      * On Axis: Preserves direct highs, presence, and attack.
      * 45° Off Axis: Reduces direct highs, harshness, and fizz.
    - Multi-mic rule:
-     * When both Mic_1 and Mic_2 are used, ensure their placements support their distinct roles (e.g. Mic 1 at Cap Edge Close On Axis for attack, Mic 2 at Cone Close with appropriate angle for warmth and body).
+     * When both Mic_0 and Mic_1 are used, ensure their placements support their distinct roles (e.g. Mic 0 at Cap Edge Close On Axis for attack, Mic 1 at Cone Close with appropriate angle for warmth and body).
      * Do NOT treat Position, Distance, Angle as interchangeable aliases for "bright" or "dark".
      * If attack must remain sharp but highs need smoothing, prefer Cap Edge + Close + 45° Off Axis.
 
 4. Explanation & Debug Writing Standards:
    - In engineering_notes, you MUST provide "microphone_debug" clearly stating for each selected microphone:
-     Mic 1: <model>
+     Mic 0: <model>
      Role: <assigned tonal role>
      Placement: <Position> / <Distance> / <Angle>
      Reason: <concise reason for placement>
 
-     Mic 2: <model>
+     Mic 1: <model>
      Role: <assigned tonal role>
      Placement: <Position> / <Distance> / <Angle>
      Reason: <concise reason for placement>
@@ -232,10 +232,10 @@ OUTPUT SCHEMA:
       "name": "string",
       "settings": {
         "Speaker": "string (for cab)",
+        "Mic_0": "string (for cab)",
+        "Mic_0_Placement": "Position, Distance, Angle (e.g. Cap Edge, Close, On Axis)",
         "Mic_1": "string (for cab)",
-        "Mic_1_Placement": "Position, Distance, Angle (e.g. Cap Edge, Close, On Axis)",
-        "Mic_2": "string (for cab)",
-        "Mic_2_Placement": "Position, Distance, Angle (e.g. Cone, Close, 45° Off Axis)",
+        "Mic_1_Placement": "Position, Distance, Angle (e.g. Cone, Close, 45° Off Axis)",
         "Room": "string (for cab)"
       }
     }
@@ -245,7 +245,7 @@ OUTPUT SCHEMA:
     "noise_control": "How noise and transients are managed",
     "eq_strategy": "Detailed breakdown of the frequency shaping logic",
     "amplifier_debug": "selected TT Gear Name: <exact matching amp name>\nmatched aliases/tags: <comma-separated matched aliases & tags>\ntone reason: <rank candidate amps and explain why the chosen one won>\navailable controls used: <exact knobs and values set>\nany controls requested but unavailable: <any requested knobs or features that do not exist on the selected amp, or 'None'>\n\nselected Cab Name: <exact matching cab name>\nselected Speaker Name: <exact matching speaker name>\ncab, speaker & microphone reason: <explain logic behind cabinet construction, size, speaker choice, microphone roles, matching placement, and how they relate systematically to the style and amp>",
-    "microphone_debug": "Mic 1: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition while avoiding excessive direct-cap brightness.\n\nMic 2: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / 45° Off Axis\nReason: cone position captures warm low-mid body while 45° off-axis angle tames high-frequency distortion fizz."
+    "microphone_debug": "Mic 0: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition while avoiding excessive direct-cap brightness.\n\nMic 1: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / 45° Off Axis\nReason: cone position captures warm low-mid body while 45° off-axis angle tames high-frequency distortion fizz."
   },
   "confidence": 0-100,
   "tone_adjustment_intent": {
@@ -349,10 +349,10 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           name: "4x12 Brit 8000",
           settings: {
             "Speaker": "Brit Green",
-            "Mic_1": "Dynamic 57",
-            "Mic_1_Placement": "Cap Edge, Close, On Axis",
-            "Mic_2": "Ribbon 121",
-            "Mic_2_Placement": "Cone, Close, On Axis",
+            "Mic_0": "Dynamic 57",
+            "Mic_0_Placement": "Cap Edge, Close, On Axis",
+            "Mic_1": "Ribbon 121",
+            "Mic_1_Placement": "Cone, Close, On Axis",
             "Room": "Small Studio"
           }
         }
@@ -362,7 +362,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
         noise_control: "No noise gate or compression is needed. The raw, open dynamics of the guitar humbuckers directly driving the input stage of the Super Lead 100 provides organic, clear note-separation.",
         eq_strategy: "Amplifier EQ has scooped bass to keep low-end tight and clear mid-frequencies pushed to maximize crunch and projection. Cabinet features Greenback speakers for midrange emphasis.",
         amplifier_debug: "selected TT Gear Name: British Lead S100\nmatched aliases/tags: classic rock, vintage Marshall, Malcolm Young, AC/DC, rhythm, plexi, super lead\ntone reason: Chosen for authentic classic 70s British rock crunch. Malcolm Young's tone is dry, dynamic, and mid-forward without modern saturated distortion. British Lead S100 represents the iconic Plexi 1959/Super Lead 100 watt crunch perfectly.\navailable controls used: Gain: 4.0, Bass: 4.5, Middle: 7.5, Treble: 5.5, Presence: 5.0, Reverb: 0.0, Volume: 7.5\nany controls requested but unavailable: None\n\nselected Cab Name: 4x12 Brit 8000\nselected Speaker Name: Brit Green\ncab, speaker & microphone reason: British closed-back 4x12 paired with Greenback-style (Brit Green) speakers for classic organic crunch, rich midrange response, and vintage compression characteristics. Dynamic 57 as a primary close mic gives presence and pick attack, while Ribbon 121 adds warmth and body.",
-        microphone_debug: "Mic 1: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition and pick attack while avoiding excessive direct-cap harshness.\n\nMic 2: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / On Axis\nReason: cone position fills out woody lower midrange and body without over-damping highs."
+        microphone_debug: "Mic 0: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition and pick attack while avoiding excessive direct-cap harshness.\n\nMic 1: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / On Axis\nReason: cone position fills out woody lower midrange and body without over-damping highs."
       },
       confidence: 100,
       tone_profile_result: toneProfileResult,
@@ -424,10 +424,10 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           name: "4x12 Brit 8000",
           settings: {
             "Speaker": "Brit 75",
-            "Mic_1": "Dynamic 57",
-            "Mic_1_Placement": "Cap Edge, Close, On Axis",
-            "Mic_2": "Ribbon 121",
-            "Mic_2_Placement": "Cone, Close, 45° Off Axis",
+            "Mic_0": "Dynamic 57",
+            "Mic_0_Placement": "Cap Edge, Close, On Axis",
+            "Mic_1": "Ribbon 121",
+            "Mic_1_Placement": "Cone, Close, 45° Off Axis",
             "Room": "Small Studio"
           }
         },
@@ -449,7 +449,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
         noise_control: "Fast noise gate setting is mandatory for the ultra-tight stop-start syncopated riffs of Cowboys From Hell. Decay is set short to truncate any hum or feedback instantly.",
         eq_strategy: "Aggressive V-shaped equalization curve: scooped low-mid frequencies (400Hz) paired with a heavy high-mid presence boost to define the razor-sharp pick attack on palm-mutes.",
         amplifier_debug: "selected TT Gear Name: Darrell 100\nmatched aliases/tags: pantera, dimebag, solid-state, mid-scoop, rg100\ntone reason: Chosen for the authentic solid-state thrash bite of Cowboys From Hell. Darrell 100 requires Gear Discovery for proper GUID serialization; currently operating with temporary parameter mapping and a fallback GUID representation.\navailable controls used: Gain: 7.5, Master: 5.0, Bass: 6.0, Mid: 3.5, Treble: 7.0, Presence: 6.5, Pull: 1.0, Channel: 1.0\nany controls requested but unavailable: None",
-        microphone_debug: "Mic 1: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition and pick attack while avoiding excessive direct-cap harshness.\n\nMic 2: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / 45° Off Axis\nReason: cone position captures warm low-mid body while 45° off-axis angle tames high-frequency distortion fizz."
+        microphone_debug: "Mic 0: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition and pick attack while avoiding excessive direct-cap harshness.\n\nMic 1: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / 45° Off Axis\nReason: cone position captures warm low-mid body while 45° off-axis angle tames high-frequency distortion fizz."
       },
       confidence: 100,
       tone_profile_result: toneProfileResult,
@@ -514,10 +514,10 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           name: "4x12 Brit 8000",
           settings: {
             "Speaker": "Brit 75",
-            "Mic_1": "Dynamic 57",
-            "Mic_1_Placement": "Cap Edge, Close, On Axis",
-            "Mic_2": "Ribbon 121",
-            "Mic_2_Placement": "Cone, Close, 45° Off Axis",
+            "Mic_0": "Dynamic 57",
+            "Mic_0_Placement": "Cap Edge, Close, On Axis",
+            "Mic_1": "Ribbon 121",
+            "Mic_1_Placement": "Cone, Close, 45° Off Axis",
             "Room": "Large Studio"
           }
         },
@@ -539,7 +539,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
         noise_control: "Fast noise gate threshold set to clip early thrash silence.",
         eq_strategy: "V-shape with forward high-mids via Graphic EQ.",
         amplifier_debug: "selected TT Gear Name: Brit 8000\nmatched aliases/tags: early thrash, Metallica, rhythm, brit 8000\ntone reason: Matches 80s thrash metal requests ideally. JCM800/Brit 8000 selected for iconic midrange punch and raw power tube saturation.\navailable controls used: Pre Amp: 7.0, Bass: 4.0, Middle: 7.5, Treble: 7.0, Presence: 7.8, Master: 6.0\nany controls requested but unavailable: None\n\nselected Cab Name: 4x12 Brit 8000\nselected Speaker Name: Brit 75\ncab, speaker & microphone reason: Closed-back Marshall-style 4x12 chosen as the metal standard for high-end projection and controlled low-end chugs. Coupled with Brit 75 (G12T-75) speakers to capture the authentic extended highs and raw, buzzy, scooped low-end texture of early 1980s American-British thrash. Dynamic 57 provides pick attack and presence, while Ribbon 121 smooths high-frequency buzz.",
-        microphone_debug: "Mic 1: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition and pick attack while avoiding excessive direct-cap harshness.\n\nMic 2: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / 45° Off Axis\nReason: cone position captures warm low-mid body while 45° off-axis angle tames high-frequency distortion fizz."
+        microphone_debug: "Mic 0: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: preserves transient definition and pick attack while avoiding excessive direct-cap harshness.\n\nMic 1: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / 45° Off Axis\nReason: cone position captures warm low-mid body while 45° off-axis angle tames high-frequency distortion fizz."
       },
       confidence: 100,
       tone_profile_result: toneProfileResult,

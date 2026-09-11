@@ -1,4 +1,4 @@
-import { SignalChainElement } from "../types";
+import { SignalChainElement, ToneResult } from "../types";
 import { findBestCatalogMatchAcrossGroups, findAT5Gear, getAt5Catalog } from "./at5Catalog";
 import { resolveGearParameters } from "./at5ParameterManifest";
 
@@ -480,17 +480,132 @@ const normaliseCompressorSettings = (
   return out;
 };
 
-const normaliseCabSettings = (
-  settings: Record<string, any> = {}
+export type CabSettingsFormat = "canonical_0_indexed" | "legacy_1_indexed" | "single_mic_ambiguous" | "canonical_0" | "legacy_1" | "ambiguous_single_1";
+
+export interface CabFormatDetectionResult {
+  format: CabSettingsFormat;
+  reason: string;
+  isLegacy: boolean;
+  isAmbiguous: boolean;
+  resolvedAs: "canonical_0" | "legacy_1";
+}
+
+/**
+ * Normalizes cabinet settings as a whole object.
+ * Detects format explicitly:
+ * - CASE A: 0-indexed mic keys (Mic_0) -> Canonical 0-based
+ * - CASE B: 2-indexed mic keys (Mic_2) and no 0-indexed keys -> Legacy 1-based
+ * - CASE C: Single 1-indexed key (Mic_1): checks context metadata; if ambiguous, safely maps to primary slot (Mic_0)
+ */
+export function detectCabSettingsFormat(
+  settings: Record<string, any> = {},
+  context?: { schema_version?: number | string; source_format?: string; isLegacy?: boolean }
+): CabFormatDetectionResult {
+  const rawKeys = Object.keys(settings);
+  
+  let has0 = false;
+  let has1 = false;
+  let has2 = false;
+
+  for (const k of rawKeys) {
+    const normK = normalise(k);
+    if (
+      normK === "mic 0" || normK === "mic0" ||
+      normK.startsWith("mic 0 ") || normK.startsWith("mic_0") || normK.startsWith("mic0") ||
+      normK === "placement 0" || normK === "placement0"
+    ) {
+      has0 = true;
+    } else if (
+      normK === "mic 2" || normK === "mic2" ||
+      normK.startsWith("mic 2 ") || normK.startsWith("mic_2") || normK.startsWith("mic2") ||
+      normK === "placement 2" || normK === "placement2" || normK === "mic b"
+    ) {
+      has2 = true;
+    } else if (
+      normK === "mic 1" || normK === "mic1" ||
+      normK.startsWith("mic 1 ") || normK.startsWith("mic_1") || normK.startsWith("mic1") ||
+      normK === "placement 1" || normK === "placement1" || normK === "mic a"
+    ) {
+      has1 = true;
+    }
+  }
+
+  // CASE A: 0-indexed key exists -> Canonical 0-based
+  if (has0) {
+    return {
+      format: "canonical_0_indexed",
+      reason: "Detected 0-indexed microphone keys (Mic_0). Treated as Canonical AT5 0-based schema.",
+      isLegacy: false,
+      isAmbiguous: false,
+      resolvedAs: "canonical_0"
+    };
+  }
+
+  // CASE B: 2-indexed key exists and NO 0-indexed key -> Legacy 1-based
+  if (has2) {
+    return {
+      format: "legacy_1_indexed",
+      reason: "Detected 2-indexed microphone keys (Mic_2) and no 0-indexed keys. Treated as Legacy TT 1-based schema.",
+      isLegacy: true,
+      isAmbiguous: false,
+      resolvedAs: "legacy_1"
+    };
+  }
+
+  // CASE C: Only 1-indexed key exists (no 0, no 2)
+  if (has1) {
+    const schemaVer = context?.schema_version ?? settings._schema_version;
+    const srcFmt = context?.source_format ?? settings._source_format ?? settings._format;
+    const isLegacyFlag = context?.isLegacy ?? settings._is_legacy;
+
+    if (srcFmt === "canonical" || schemaVer === 2 || schemaVer === "2") {
+      return {
+        format: "canonical_0_indexed",
+        reason: "Single Mic_1 key detected with explicit canonical schema metadata.",
+        isLegacy: false,
+        isAmbiguous: false,
+        resolvedAs: "canonical_0"
+      };
+    }
+
+    if (srcFmt === "legacy" || schemaVer === 1 || schemaVer === "1" || isLegacyFlag === true) {
+      return {
+        format: "legacy_1_indexed",
+        reason: "Single Mic_1 key detected with explicit legacy schema metadata.",
+        isLegacy: true,
+        isAmbiguous: false,
+        resolvedAs: "legacy_1"
+      };
+    }
+
+    // Safe compatibility policy: Surface ambiguity and map to primary slot (Mic_0)
+    // to prevent misrouting legacy primary microphone to secondary AT5 slot.
+    return {
+      format: "single_mic_ambiguous",
+      reason: "Ambiguous single-mic key detected without schema metadata. Applied safe compatibility policy: mapped to primary slot (Mic_0) to prevent misrouting legacy primary microphone to secondary AT5 slot.",
+      isLegacy: true,
+      isAmbiguous: true,
+      resolvedAs: "legacy_1"
+    };
+  }
+
+  // Default when no mic keys present
+  return {
+    format: "canonical_0_indexed",
+    reason: "No microphone keys detected; defaulted to canonical schema.",
+    isLegacy: false,
+    isAmbiguous: false,
+    resolvedAs: "canonical_0"
+  };
+}
+
+export const normaliseCabSettings = (
+  settings: Record<string, any> = {},
+  context?: { schema_version?: number | string; source_format?: string; isLegacy?: boolean }
 ): Record<string, string | number> => {
   const out: Record<string, string | number> = {};
-
-  // Check if input uses 0-indexed mic numbering (Mic_0 / mic 0)
-  const rawKeys = Object.keys(settings);
-  const has0Key = rawKeys.some(k => {
-    const normK = normalise(k);
-    return normK === "mic 0" || normK === "mic0" || normK.startsWith("mic 0 ") || normK.startsWith("mic_0") || normK.startsWith("mic0");
-  });
+  const detection = detectCabSettingsFormat(settings, context);
+  const isLegacy = detection.resolvedAs === "legacy_1";
 
   let slot0Mic: string | number | undefined;
   let slot0Placement: string | number | undefined;
@@ -505,6 +620,7 @@ const normaliseCabSettings = (
   let slot1Level: string | number | undefined;
 
   for (const [key, value] of Object.entries(settings)) {
+    if (key.startsWith("_")) continue; // Skip internal/diagnostic keys during iteration
     const k = normalise(key);
 
     if (k === "speaker" || k === "speaker swap" || k === "speaker type" || k === "speakers") {
@@ -530,37 +646,37 @@ const normaliseCabSettings = (
     } else if (k === "mic 0 angle" || k === "mic0 angle" || k === "mic_0_angle" || k === "mic 0 axis" || k === "mic0 axis" || k === "mic_0_axis" || k === "mic 0 off axis" || k === "mic_0_off_axis") {
       slot0Angle = value;
     } else if (k === "mic 1" || k === "mic1" || k === "mic a") {
-      if (has0Key) {
-        slot1Mic = value;
+      if (isLegacy) {
+        slot0Mic = value; // In legacy schema, Mic 1 is the primary mic (Slot 0 -> AT5 Mic0)
       } else {
-        slot0Mic = value;
+        slot1Mic = value; // In canonical schema, Mic 1 is the secondary mic (Slot 1 -> AT5 Mic1)
       }
     } else if (k === "mic 1 level" || k === "mic1 level" || k === "mic_1_level") {
-      if (has0Key) {
-        slot1Level = value;
-      } else {
+      if (isLegacy) {
         slot0Level = value;
+      } else {
+        slot1Level = value;
       }
     } else if (k === "mic 1 placement" || k === "mic1 placement" || k === "mic 1 position" || k === "mic_1_placement" || k === "mic_1_position") {
-      if (has0Key) {
-        slot1Placement = value;
-      } else {
+      if (isLegacy) {
         slot0Placement = value;
+      } else {
+        slot1Placement = value;
       }
     } else if (k === "mic 1 distance" || k === "mic1 distance" || k === "mic_1_distance") {
-      if (has0Key) {
-        slot1Distance = value;
-      } else {
+      if (isLegacy) {
         slot0Distance = value;
+      } else {
+        slot1Distance = value;
       }
     } else if (k === "mic 1 angle" || k === "mic1 angle" || k === "mic_1_angle" || k === "mic 1 axis" || k === "mic1 axis" || k === "mic_1_axis" || k === "mic 1 off axis" || k === "mic_1_off_axis") {
-      if (has0Key) {
-        slot1Angle = value;
-      } else {
+      if (isLegacy) {
         slot0Angle = value;
+      } else {
+        slot1Angle = value;
       }
     } else if (k === "mic 2" || k === "mic2" || k === "mic b") {
-      slot1Mic = value;
+      slot1Mic = value; // In legacy schema, Mic 2 is the secondary mic (Slot 1 -> AT5 Mic1)
     } else if (k === "mic 2 level" || k === "mic2 level" || k === "mic_2_level") {
       slot1Level = value;
     } else if (k === "mic 2 placement" || k === "mic2 placement" || k === "mic 2 position" || k === "mic_2_placement" || k === "mic_2_position") {
@@ -580,32 +696,40 @@ const normaliseCabSettings = (
     }
   }
 
-  // Assign canonical AT5-aligned 0-based keys: Slot 0 = Mic_0, Slot 1 = Mic_1
+  // NORMALIZATION BOUNDARY:
+  // Legacy format detection and absorption occurs strictly at ingestion/normalization boundary.
+  // After normalization, internal downstream code operates ONLY on Canonical 0-based:
+  // - Slot 0 (primary mic / AT5 Mic0) -> Mic_0, Mic_0_Placement, Mic_0_Distance, Mic_0_Angle, Mic_0_Level
+  // - Slot 1 (secondary mic / AT5 Mic1) -> Mic_1, Mic_1_Placement, Mic_1_Distance, Mic_1_Angle, Mic_1_Level
+  // Legacy numbering is stripped from out and never carried downstream.
+
+  // Remove any legacy keys that might have been copied via default fallback
+  delete out["Mic_1"];
+  delete out["Mic_2"];
+  delete out["Mic_1_Placement"];
+  delete out["Mic_2_Placement"];
+  delete out["Mic_1_Distance"];
+  delete out["Mic_2_Distance"];
+  delete out["Mic_1_Angle"];
+  delete out["Mic_2_Angle"];
+  delete out["Mic_1_Level"];
+  delete out["Mic_2_Level"];
+
   if (slot0Mic !== undefined) out["Mic_0"] = slot0Mic;
   if (slot0Placement !== undefined) out["Mic_0_Placement"] = slot0Placement;
   if (slot0Distance !== undefined) out["Mic_0_Distance"] = slot0Distance;
   if (slot0Angle !== undefined) out["Mic_0_Angle"] = slot0Angle;
   if (slot0Level !== undefined) out["Mic_0_Level"] = slot0Level;
 
-  if (slot1Mic !== undefined) {
-    out["Mic_1"] = slot1Mic;
-    out["Mic_2"] = slot1Mic; // Legacy alias
-  }
-  if (slot1Placement !== undefined) {
-    out["Mic_1_Placement"] = slot1Placement;
-    out["Mic_2_Placement"] = slot1Placement; // Legacy alias
-  }
-  if (slot1Distance !== undefined) {
-    out["Mic_1_Distance"] = slot1Distance;
-    out["Mic_2_Distance"] = slot1Distance; // Legacy alias
-  }
-  if (slot1Angle !== undefined) {
-    out["Mic_1_Angle"] = slot1Angle;
-    out["Mic_2_Angle"] = slot1Angle; // Legacy alias
-  }
-  if (slot1Level !== undefined) {
-    out["Mic_1_Level"] = slot1Level;
-    out["Mic_2_Level"] = slot1Level; // Legacy alias
+  if (slot1Mic !== undefined) out["Mic_1"] = slot1Mic;
+  if (slot1Placement !== undefined) out["Mic_1_Placement"] = slot1Placement;
+  if (slot1Distance !== undefined) out["Mic_1_Distance"] = slot1Distance;
+  if (slot1Angle !== undefined) out["Mic_1_Angle"] = slot1Angle;
+  if (slot1Level !== undefined) out["Mic_1_Level"] = slot1Level;
+
+  if (detection.isAmbiguous) {
+    out["_mic_format_ambiguous"] = 1;
+    out["_mic_format_diagnostic"] = detection.reason;
   }
 
   return out;
@@ -700,6 +824,10 @@ const normaliseSettings = (
   const canonicalName = normaliseGearName(gearName);
   const n = normalise(canonicalName);
 
+  if (gearType === "cab") {
+    return normaliseCabSettings(settings);
+  }
+
   // Requirement 1 & 6: Gear-specific parameter matching MUST happen BEFORE generic parameter normalization.
   // Resolve parameters for the requested gear and check if any input setting matches a gear parameter/alias.
   let gearParams: ReturnType<typeof resolveGearParameters> = [];
@@ -779,14 +907,21 @@ const normaliseSettings = (
   return { ...gearMatchedSettings, ...normalizedRemaining };
 };
 
+export function normaliseSignalChain(chain: SignalChainElement[]): SignalChainElement[];
+export function normaliseSignalChain(result: ToneResult): ToneResult;
 export function normaliseSignalChain(
-  chain: SignalChainElement[]
-): SignalChainElement[] {
+  chainOrResult: SignalChainElement[] | ToneResult
+): SignalChainElement[] | ToneResult {
+  const isToneResult = !Array.isArray(chainOrResult) && chainOrResult && Array.isArray((chainOrResult as any).signal_chain);
+  const chain: SignalChainElement[] = isToneResult 
+    ? (chainOrResult as ToneResult).signal_chain 
+    : (chainOrResult as SignalChainElement[]);
+
   const ampIndex = chain.findIndex(el => el.type === "amp");
   const cabIndex = chain.findIndex(el => el.type === "cab");
   const thresholdIndex = ampIndex !== -1 ? ampIndex : (cabIndex !== -1 ? cabIndex : chain.length);
 
-  return chain.map((gear, index) => {
+  const normalisedChain = chain.map((gear, index) => {
     let canonicalName = normaliseGearName(gear.name);
     let canonicalType = gear.type;
 
@@ -870,6 +1005,14 @@ export function normaliseSignalChain(
       ),
     };
   });
+
+  if (isToneResult) {
+    return {
+      ...(chainOrResult as ToneResult),
+      signal_chain: normalisedChain
+    };
+  }
+  return normalisedChain;
 }
 
 export interface RemovedEqItem {

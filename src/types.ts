@@ -25,11 +25,13 @@ export interface SignalChainElement {
 }
 
 export interface EngineeringNotes {
-  gain_strategy: string;
-  noise_control: string;
-  eq_strategy: string;
+  gain_strategy?: string;
+  noise_control?: string;
+  eq_strategy?: string;
   amplifier_debug?: string;
   microphone_debug?: string;
+  signal_path_summary?: string;
+  [key: string]: any;
 }
 
 export interface ToneProfile {
@@ -415,6 +417,8 @@ export interface MicPlacementMapping {
   micModelGuid?: string;
   micModelScope?: "any" | "specific";
   micAliases?: string[];
+  speakerModelName?: string;
+  speakerModelGuid?: string;
 
   // New formalized provenance fields
   validationStatus?: "at5p_validated" | "validated" | "needs_review" | "conflict" | "rejected";

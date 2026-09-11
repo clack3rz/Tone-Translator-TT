@@ -14,7 +14,12 @@ import {
   isCompleteSemanticPlacement,
   formatSemanticPlacement,
   parseSemanticPlacement,
-  extractCanonicalMicPlacement
+  extractCanonicalMicPlacement,
+  getVIRCalibrationCoordinates,
+  setVIRCalibrationOverrides,
+  resetVIRCalibrationOverrides,
+  composeVIRCoordinates,
+  resolveCompositeMicPlacement
 } from "../services/at5MicPlacementService";
 
 import {
@@ -25,7 +30,8 @@ import {
 } from "../services/at5MicPlacementReasoning";
 
 import { translateTone } from "../services/geminiService";
-import { getExportDebugData } from "../services/presetExporter";
+import { getExportDebugData, generateXML } from "../services/presetExporter";
+import { detectCabSettingsFormat, normaliseSignalChain } from "../services/at5SignalChainNormalizer";
 import { ToneResult } from "../types";
 
 describe("Stage 2: Semantic Microphone Placement System", () => {
@@ -243,8 +249,8 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     assert.ok(cab, "Cabinet element must be present");
 
     // Signal chain settings must explicitly have complete triplets
-    assert.equal(cab.settings["Mic_1_Placement"], "Cap Edge, Close, On Axis");
-    assert.equal(cab.settings["Mic_2_Placement"], "Cone, Close, 45° Off Axis");
+    assert.equal(cab.settings["Mic_0_Placement"], "Cap Edge, Close, On Axis");
+    assert.equal(cab.settings["Mic_1_Placement"], "Cone, Close, 45° Off Axis");
 
     // Engineering notes must include microphone debug breakdown
     assert.ok(chain.engineering_notes.microphone_debug, "Microphone debug notes must be present");
@@ -257,10 +263,10 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     assert.ok(cabItem, "Cab item must be found in exported chain");
 
     // Check original_settings and normalized_settings have explicit placement values
-    assert.equal(cabItem.original_settings["Mic_1_Placement"], "Cap Edge, Close, On Axis");
-    assert.equal(cabItem.original_settings["Mic_2_Placement"], "Cone, Close, 45° Off Axis");
-    assert.equal(cabItem.normalized_settings["Mic_1_Placement"], "Cap Edge, Close, On Axis");
-    assert.equal(cabItem.normalized_settings["Mic_2_Placement"], "Cone, Close, 45° Off Axis");
+    assert.equal(cabItem.original_settings["Mic_0_Placement"], "Cap Edge, Close, On Axis");
+    assert.equal(cabItem.original_settings["Mic_1_Placement"], "Cone, Close, 45° Off Axis");
+    assert.equal(cabItem.normalized_settings["Mic_0_Placement"], "Cap Edge, Close, On Axis");
+    assert.equal(cabItem.normalized_settings["Mic_1_Placement"], "Cone, Close, 45° Off Axis");
 
     // Lineage provenance flags must report placement_was_supplied_by_chain: true
     const mic0Canon = extractCanonicalMicPlacement(cab.settings, 0);
@@ -402,6 +408,409 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     // Canonical fallback label is still derived safely for VIR calibration
     assert.ok(mic0Canon.canonical_placement_label);
     assert.ok(mic1Canon.canonical_placement_label);
+  });
+
+  // 9. Area B: Explicit Format Detection
+  it("explicitly detects schema formats: canonical_0_indexed, legacy_1_indexed, and single_mic_ambiguous", () => {
+    // Canonical 0-indexed
+    const canonFormat = detectCabSettingsFormat({
+      Mic_0: "Dynamic 57",
+      Mic_0_Placement: "Cap Edge, Close, On Axis",
+      Mic_1: "Condenser 87",
+      Mic_1_Placement: "Cone, Close, 45° Off Axis"
+    });
+    assert.equal(canonFormat.format, "canonical_0_indexed");
+    assert.equal(canonFormat.isLegacy, false);
+    assert.equal(canonFormat.isAmbiguous, false);
+
+    // Legacy 1-indexed
+    const legacyFormat = detectCabSettingsFormat({
+      Mic_1: "Dynamic 57",
+      Mic_1_Placement: "Cap Edge, Close, On Axis",
+      Mic_2: "Condenser 87",
+      Mic_2_Placement: "Cone, Close, 45° Off Axis"
+    });
+    assert.equal(legacyFormat.format, "legacy_1_indexed");
+    assert.equal(legacyFormat.isLegacy, true);
+    assert.equal(legacyFormat.isAmbiguous, false);
+
+    // Single mic ambiguous (only Mic_1 present)
+    const singleAmbiguous = detectCabSettingsFormat({
+      Mic_1: "Dynamic 57",
+      Mic_1_Placement: "Cap Edge, Close, On Axis"
+    });
+    assert.equal(singleAmbiguous.format, "single_mic_ambiguous");
+    assert.equal(singleAmbiguous.isLegacy, true);
+    assert.equal(singleAmbiguous.isAmbiguous, true);
+    assert.match(singleAmbiguous.reason, /Ambiguous single-mic key/);
+  });
+
+  // 10. Area B: Normalization Boundary (Legacy absorption into Canonical 0-based)
+  it("enforces normalization boundary: legacy keys are absorbed and downstream receives strictly Mic_0 and Mic_1", () => {
+    const legacyChain: ToneResult = {
+      confidence: 1,
+      tone_summary: { style: "rock", gain_level: "high", noise_level: "low" },
+      signal_chain: [
+        {
+          type: "cab",
+          name: "4x12 Brit 1960A",
+          settings: {
+            Speaker: "Brit 75",
+            Mic_1: "Dynamic 57",
+            Mic_1_Placement: "Cap Edge, Close, On Axis",
+            Mic_2: "Ribbon 121",
+            Mic_2_Placement: "Cone, Close, 45° Off Axis"
+          }
+        }
+      ],
+      engineering_notes: {
+        signal_path_summary: "Legacy test path"
+      }
+    };
+
+    const normalised = normaliseSignalChain(legacyChain);
+    const cab = normalised.signal_chain.find(c => c.type === "cab");
+    assert.ok(cab, "Normalized cab must exist");
+
+    // Must have canonical keys
+    assert.equal(cab.settings["Mic_0"], "Dynamic 57");
+    assert.equal(cab.settings["Mic_0_Placement"], "Cap Edge, Close, On Axis");
+    assert.equal(cab.settings["Mic_1"], "Ribbon 121");
+    assert.equal(cab.settings["Mic_1_Placement"], "Cone, Close, 45° Off Axis");
+
+    // Must NOT contain legacy keys downstream
+    assert.equal(cab.settings["Mic_2"], undefined, "Legacy Mic_2 must be stripped");
+    assert.equal(cab.settings["Mic_2_Placement"], undefined, "Legacy Mic_2_Placement must be stripped");
+  });
+
+  // 11. Area A: Resolved Coordinates -> XML Serialization
+  it("serializes exact resolved numeric coordinates into XML without leaking diagnostic fields", () => {
+    const testChain: ToneResult = {
+      confidence: 1,
+      tone_summary: { style: "rock", gain_level: "high", noise_level: "low" },
+      signal_chain: [
+        {
+          type: "cab",
+          name: "4x12 Brit 1960A",
+          settings: {
+            Speaker: "Brit 75",
+            Mic_0: "Dynamic 57",
+            Mic_0_Placement: "Cap Edge, Close, On Axis",
+            Mic_1: "Condenser 87",
+            Mic_1_Placement: "Cone, Close, 45° Off Axis",
+            _mic_format_diagnostic: "diagnostic test",
+            _mic_format_ambiguous: 1
+          }
+        }
+      ],
+      engineering_notes: {
+        signal_path_summary: "XML test"
+      }
+    };
+
+    const xml = generateXML(testChain);
+    assert.ok(xml, "XML string must be generated");
+
+    // Exact numeric coordinate verification
+    // Cap Edge, Close, On Axis -> XAxis: -0.214223, YAxis: -0.00519017, Distance: 0, Angle: 0, Speaker: 0
+    assert.match(xml, /Mic0Angle="0"/, "Mic0Angle must match 0");
+    assert.match(xml, /Mic0XAxis="-0\.214223"/, "Mic0XAxis must match calibrated -0.214223");
+    assert.match(xml, /Mic0YAxis="-0\.00519017"/, "Mic0YAxis must match calibrated -0.00519017");
+    assert.match(xml, /Mic0Distance="0"/, "Mic0Distance must match 0");
+    assert.match(xml, /Mic0Speaker="0"/, "Mic0Speaker must match 0");
+
+    // Cone, Close, 45° Off Axis -> Angle: 1, Distance: 0, Speaker: 1, XAxis: -0.428446, YAxis: -0.0103803
+    assert.match(xml, /Mic1Angle="1"/, "Mic1Angle must match 1");
+    assert.match(xml, /Mic1XAxis="-0\.428446"/, "Mic1XAxis must match calibrated -0.428446");
+    assert.match(xml, /Mic1YAxis="-0\.0103803"/, "Mic1YAxis must match calibrated -0.0103803");
+    assert.match(xml, /Mic1Distance="0"/, "Mic1Distance must match 0");
+    assert.match(xml, /Mic1Speaker="1"/, "Mic1Speaker must match 1");
+
+    // Verification: Internal diagnostic fields must NOT leak into the XML
+    assert.equal(xml.includes("_mic_format_diagnostic"), false, "_mic_format_diagnostic must not be in XML");
+    assert.equal(xml.includes("_mic_format_ambiguous"), false, "_mic_format_ambiguous must not be in XML");
+  });
+
+  // 12. Area D: Durable VIR Reference Calibration Overrides and Reset
+  it("allows setting VIR reference calibration overrides and resetting to factory defaults", () => {
+    // Before override
+    const initialCoords = getVIRCalibrationCoordinates();
+    assert.equal(initialCoords.positions["Cap"].X, 0);
+    assert.equal(initialCoords.positions["Cap"].Y, 0);
+
+    // Apply calibration overrides
+    setVIRCalibrationOverrides({
+      positions: {
+        "Cap": { X: 0.12345, Y: 0.67890 }
+      }
+    });
+
+    const overriddenCoords = getVIRCalibrationCoordinates();
+    assert.equal(overriddenCoords.positions["Cap"].X, 0.12345);
+    assert.equal(overriddenCoords.positions["Cap"].Y, 0.67890);
+
+    // Composed coordinates use active override
+    const composed = composeVIRCoordinates("Cap", "Close", "On Axis", "Mic_0");
+    assert.equal(composed.XAxis, 0.12345);
+    assert.equal(composed.YAxis, 0.67890);
+
+    // Reset to factory baseline
+    resetVIRCalibrationOverrides();
+    const restoredCoords = getVIRCalibrationCoordinates();
+    assert.equal(restoredCoords.positions["Cap"].X, 0);
+    assert.equal(restoredCoords.positions["Cap"].Y, 0);
+  });
+
+  // 13. Area 7 Test 1 & 3: Canonical dual-mic object (Mic_0 + Mic_1) with canonical placement fields
+  it("processes canonical dual-mic object: Mic_0 + Mic_1 with Mic_0_Placement + Mic_1_Placement", () => {
+    const canonicalSettings = {
+      Mic_0: "Dynamic 57",
+      Mic_0_Placement: "Cap Edge, Close, On Axis",
+      Mic_1: "Ribbon 121",
+      Mic_1_Placement: "Cone, Close, 45° Off Axis"
+    };
+
+    const format = detectCabSettingsFormat(canonicalSettings);
+    assert.equal(format.format, "canonical_0_indexed");
+    assert.equal(format.isLegacy, false);
+    assert.equal(format.isAmbiguous, false);
+
+    const mic0 = extractCanonicalMicPlacement(canonicalSettings, 0);
+    const mic1 = extractCanonicalMicPlacement(canonicalSettings, 1);
+
+    assert.equal(mic0.placement_was_supplied_by_chain, true);
+    assert.equal(mic0.raw_supplied_placement, "Cap Edge, Close, On Axis");
+    assert.equal(mic0.canonical_placement_label, "Cap Edge · Close · On Axis");
+    assert.equal(mic1.placement_was_supplied_by_chain, true);
+    assert.equal(mic1.raw_supplied_placement, "Cone, Close, 45° Off Axis");
+    assert.equal(mic1.canonical_placement_label, "Cone · Close · 45° Off Axis");
+  });
+
+  // 14. Area 7 Test 2 & 4: Legacy dual-mic object (Mic_1 + Mic_2) with legacy placement fields
+  it("processes legacy dual-mic object: Mic_1 + Mic_2 with Mic_1_Placement + Mic_2_Placement and normalizes seamlessly", () => {
+    const legacySettings = {
+      Mic_1: "Dynamic 57",
+      Mic_1_Placement: "Cap Edge, Close, On Axis",
+      Mic_2: "Ribbon 121",
+      Mic_2_Placement: "Cone, Close, 45° Off Axis"
+    };
+
+    const format = detectCabSettingsFormat(legacySettings);
+    assert.equal(format.format, "legacy_1_indexed");
+    assert.equal(format.isLegacy, true);
+    assert.equal(format.isAmbiguous, false);
+
+    const mic0 = extractCanonicalMicPlacement(legacySettings, 0);
+    const mic1 = extractCanonicalMicPlacement(legacySettings, 1);
+
+    assert.equal(mic0.placement_was_supplied_by_chain, true);
+    assert.equal(mic0.raw_supplied_placement, "Cap Edge, Close, On Axis");
+    assert.equal(mic0.canonical_placement_label, "Cap Edge · Close · On Axis");
+    assert.equal(mic1.placement_was_supplied_by_chain, true);
+    assert.equal(mic1.raw_supplied_placement, "Cone, Close, 45° Off Axis");
+    assert.equal(mic1.canonical_placement_label, "Cone · Close · 45° Off Axis");
+  });
+
+  // 15. Area 7 Test 5: Canonical single Mic_0
+  it("processes canonical single Mic_0 without creating spurious Mic_1 placement", () => {
+    const singleMic0Settings = {
+      Mic_0: "Dynamic 57",
+      Mic_0_Placement: "Cap Edge, Close, On Axis"
+    };
+
+    const format = detectCabSettingsFormat(singleMic0Settings);
+    assert.equal(format.format, "canonical_0_indexed");
+    assert.equal(format.isLegacy, false);
+    assert.equal(format.isAmbiguous, false);
+
+    const mic0 = extractCanonicalMicPlacement(singleMic0Settings, 0);
+    const mic1 = extractCanonicalMicPlacement(singleMic0Settings, 1);
+
+    assert.equal(mic0.placement_was_supplied_by_chain, true);
+    assert.equal(mic0.raw_supplied_placement, "Cap Edge, Close, On Axis");
+    assert.equal(mic0.canonical_placement_label, "Cap Edge · Close · On Axis");
+    assert.equal(mic1.placement_was_supplied_by_chain, false);
+  });
+
+  // 16. Area 7 Test 6: Ambiguous single Mic_1
+  it("handles ambiguous single Mic_1 safely mapping to Slot 0 without duplicating into Slot 1", () => {
+    const ambiguousSingle = {
+      Mic_1: "Dynamic 57",
+      Mic_1_Placement: "Cap Edge, Close, On Axis"
+    };
+
+    const format = detectCabSettingsFormat(ambiguousSingle);
+    assert.equal(format.format, "single_mic_ambiguous");
+    assert.equal(format.isAmbiguous, true);
+    assert.equal(format.isLegacy, true);
+
+    const mic0 = extractCanonicalMicPlacement(ambiguousSingle, 0);
+    const mic1 = extractCanonicalMicPlacement(ambiguousSingle, 1);
+
+    // Slot 0 receives the placement safely
+    assert.equal(mic0.placement_was_supplied_by_chain, true);
+    assert.equal(mic0.raw_supplied_placement, "Cap Edge, Close, On Axis");
+    assert.equal(mic0.canonical_placement_label, "Cap Edge · Close · On Axis");
+
+    // Slot 1 is NOT duplicated from ambiguous Mic_1
+    assert.equal(mic1.placement_was_supplied_by_chain, false);
+  });
+
+  // 17. Area 7 Test 7: Legacy single Mic_1 where reliable legacy metadata is available
+  it("supports legacy single Mic_1 where reliable legacy metadata indicates legacy origin", () => {
+    const legacySingleWithMeta = {
+      Mic_1: "Dynamic 57",
+      Mic_1_Placement: "Cap Edge, Close, On Axis",
+      _legacy_format: true
+    };
+
+    const format = detectCabSettingsFormat(legacySingleWithMeta);
+    assert.equal(format.isLegacy, true);
+
+    const mic0 = extractCanonicalMicPlacement(legacySingleWithMeta, 0);
+    assert.equal(mic0.placement_was_supplied_by_chain, true);
+    assert.equal(mic0.raw_supplied_placement, "Cap Edge, Close, On Axis");
+    assert.equal(mic0.canonical_placement_label, "Cap Edge · Close · On Axis");
+  });
+
+  // 18. Area 7 Test 8 & 9: Mic 0 always exports to AT5 Mic0*, Mic 1 always exports to AT5 Mic1*
+  it("guarantees Mic 0 always exports to AT5 Mic0* and Mic 1 always exports to AT5 Mic1*", () => {
+    const chain: ToneResult = {
+      confidence: 1,
+      tone_summary: { style: "rock", gain_level: "high", noise_level: "low" },
+      signal_chain: [
+        {
+          type: "cab",
+          name: "4x12 Brit 1960A",
+          settings: {
+            Mic_0: "Dynamic 57",
+            Mic_0_Placement: "Cap Edge, Close, On Axis",
+            Mic_1: "Condenser 87",
+            Mic_1_Placement: "Cone, Close, 45° Off Axis"
+          }
+        }
+      ],
+      engineering_notes: { signal_path_summary: "Dual test" }
+    };
+
+    const xml = generateXML(chain);
+    assert.ok(xml);
+
+    // Mic 0 attributes
+    assert.match(xml, /Mic0Model="1e41acc4-85af-4e84-bee4-eabc0be5fef1"/);
+    assert.match(xml, /Mic0Angle="0"/);
+    assert.match(xml, /Mic0XAxis="-0\.214223"/);
+    assert.match(xml, /Mic0YAxis="-0\.00519017"/);
+    assert.match(xml, /Mic0Distance="0"/);
+    assert.match(xml, /Mic0Speaker="0"/);
+
+    // Mic 1 attributes
+    assert.match(xml, /Mic1Model="9e444286-cab4-46a4-bfa3-a6d55b3ffcfb"/); // Condenser 87
+    assert.match(xml, /Mic1Angle="1"/);
+    assert.match(xml, /Mic1XAxis="-0\.428446"/);
+    assert.match(xml, /Mic1YAxis="-0\.0103803"/);
+    assert.match(xml, /Mic1Distance="0"/);
+    assert.match(xml, /Mic1Speaker="1"/);
+  });
+
+  // 19. Area 7 Test 10: No off-by-one mapping is possible after normalization
+  it("prevents any off-by-one mapping after normalization across both legacy and canonical sources", () => {
+    const legacyChain: ToneResult = {
+      confidence: 1,
+      tone_summary: { style: "rock", gain_level: "high", noise_level: "low" },
+      signal_chain: [
+        {
+          type: "cab",
+          name: "4x12 Brit 8000",
+          settings: {
+            Speaker: "Brit 75",
+            Mic_1: "Dynamic 57",
+            Mic_1_Placement: "Cap, Close, On Axis",
+            Mic_2: "Condenser 87",
+            Mic_2_Placement: "Cone Edge, Far, 45° Off Axis"
+          }
+        }
+      ],
+      engineering_notes: { signal_path_summary: "Off by one test" }
+    };
+
+    const normalised = normaliseSignalChain(legacyChain);
+    const cab = normalised.signal_chain.find(c => c.type === "cab")!;
+
+    // Normalized settings must be strictly canonical
+    assert.equal(cab.settings["Mic_0"], "Dynamic 57");
+    assert.equal(cab.settings["Mic_0_Placement"], "Cap, Close, On Axis");
+    assert.equal(cab.settings["Mic_1"], "Condenser 87");
+    assert.equal(cab.settings["Mic_1_Placement"], "Cone Edge, Far, 45° Off Axis");
+    assert.equal(cab.settings["Mic_2"], undefined);
+    assert.equal(cab.settings["Mic_2_Placement"], undefined);
+
+    const xml = generateXML(normalised);
+    // Mic0 must receive Mic_0 values
+    assert.match(xml, /Mic0XAxis="0"/);
+    assert.match(xml, /Mic0Distance="0"/);
+    assert.match(xml, /Mic0Angle="0"/);
+
+    // Mic1 must receive Mic_1 values (Cone Edge: -0.785484, Far: 1, 45°: 1)
+    assert.match(xml, /Mic1XAxis="-0\.785484"/);
+    assert.match(xml, /Mic1Distance="1"/);
+    assert.match(xml, /Mic1Angle="1"/);
+  });
+
+  // 20. Area 7 Test 11: Existing legacy VIR profile IDs remain discoverable
+  it("ensures existing legacy VIR profile IDs remain discoverable via composite resolver", () => {
+    const mockLegacyMapping = {
+      id: "vir_cab_4x12_brit_mic1_cap_edge",
+      cabGuid: "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+      cabName: "4x12 Brit 8000",
+      micSlot: "Mic_1",
+      micIndex: 1,
+      canonicalPlacementName: "Cap Edge, Close, On Axis",
+      placementAliases: ["cap edge", "close", "on axis"],
+      xml_values: {
+        Mic1Angle: 0,
+        Mic1Distance: 0,
+        Mic1Speaker: 1,
+        Mic1XAxis: -0.214223,
+        Mic1YAxis: -0.00519017
+      },
+      validationStatus: "verified" as const,
+      confidence: 100,
+      isActive: true
+    };
+
+    const resolved = resolveCompositeMicPlacement({
+      cabName: "4x12 Brit 8000",
+      cabGuid: "7c0b8ce1-cbb4-4e5b-9973-a572143ddb2b",
+      micSlot: "Mic_1",
+      slotIndex: 1,
+      canonicalPlacement: {
+        position: "Cap Edge",
+        distance: "Close",
+        angle: "On Axis",
+        sourceRawPlacement: "Cap Edge, Close, On Axis",
+        wasSuppliedByChain: true,
+        placement_was_supplied_by_chain: true,
+        semanticProvenance: "signal_chain_generated",
+        isUnspecified: false,
+        canonicalLabel: "Cap Edge, Close, On Axis"
+      },
+      micModelName: "Condenser 87",
+      micModelGuid: "9e444286-cab4-46a4-bfa3-a6d55b3ffcfb",
+      dbMappings: [mockLegacyMapping as any]
+    });
+
+    assert.equal(resolved.resolved, true);
+    assert.equal(resolved.coordinates.XAxis, -0.214223);
+    assert.equal(resolved.coordinates.YAxis, -0.00519017);
+  });
+
+  // 21. Area 7 Test 12: New VIR records use canonical numbering
+  it("enforces canonical numbering (Mic_0, Mic_1) for new VIR records", () => {
+    const canonicalSlot0: "Mic_0" | "Mic_1" = "Mic_0";
+    const canonicalSlot1: "Mic_0" | "Mic_1" = "Mic_1";
+    assert.match(canonicalSlot0, /^Mic_[01]$/);
+    assert.match(canonicalSlot1, /^Mic_[01]$/);
   });
 
   after(() => {

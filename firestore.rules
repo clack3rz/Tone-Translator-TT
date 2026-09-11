@@ -225,5 +225,22 @@ service cloud.firestore {
     match /test/{document=**} {
       allow read: if true;
     }
+
+    // System Calibrations (VIR Reference Overrides)
+    function isValidVirReferenceCalibration(data) {
+      return data.keys().hasAll(['id', 'positions', 'distances', 'angles', 'updatedAt', 'updatedBy'])
+        && data.id is string
+        && data.positions is map
+        && data.distances is map
+        && data.angles is map
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
+    match /system_calibrations/{calibrationId} {
+      allow read: if true;
+      allow delete: if isVerified();
+      allow create, update: if isVerified() && isValidId(calibrationId) && isValidVirReferenceCalibration(incoming());
+    }
   }
 }

@@ -378,17 +378,49 @@ export const at5DatabaseService = {
     try {
       const explicitStatus = mapping.status || mapping.validation_status || mapping.validationStatus;
       const statusValue = explicitStatus || "needs_review";
+
+      // If an existing mapping ID is provided, enforce that identity fields cannot be modified
+      let protectedIdentity: Partial<MicPlacementMapping> = {};
+      let existingSnap: any = undefined;
+      if (mapping.id) {
+        try {
+          existingSnap = await getDoc(doc(db, 'mic_placement_mappings', mapping.id));
+          if (existingSnap.exists()) {
+            const existingData = existingSnap.data();
+            protectedIdentity = {
+              gear: existingData.gear,
+              cabName: existingData.cabName || existingData.gear,
+              cabGuid: existingData.cabGuid,
+              micSlot: existingData.micSlot,
+              micIndex: existingData.micIndex,
+              friendly_setting: existingData.friendly_setting,
+              target: existingData.target || existingData.friendly_setting,
+              micModelName: existingData.micModelName,
+              micModelGuid: existingData.micModelGuid,
+              micModelScope: existingData.micModelScope,
+              speakerModelName: existingData.speakerModelName,
+              speakerModelGuid: existingData.speakerModelGuid
+            };
+          }
+        } catch (e) {
+          // Continue with incoming identity if read fails
+        }
+      }
+
       const data = sanitize({
         ...mapping,
+        ...protectedIdentity,
         id: mappingId,
-        friendly_setting: mapping.friendly_setting || mapping.target,
-        friendly_value: mapping.friendly_value || mapping.friendly_name,
+        friendly_setting: protectedIdentity.friendly_setting || mapping.friendly_setting || mapping.target,
+        friendly_value: mapping.friendly_value || mapping.friendly_name || mapping.canonicalPlacementName,
+        canonicalPlacementName: mapping.canonicalPlacementName || mapping.friendly_value || mapping.friendly_name,
         maps_to: mapping.maps_to || mapping.xml_values || {},
-        target: mapping.friendly_setting || mapping.target,
-        friendly_name: mapping.friendly_value || mapping.friendly_name,
+        target: protectedIdentity.target || mapping.friendly_setting || mapping.target,
+        friendly_name: mapping.friendly_value || mapping.friendly_name || mapping.canonicalPlacementName,
         xml_values: mapping.maps_to || mapping.xml_values || {},
         status: statusValue,
         validation_status: statusValue,
+        notes: mapping.notes !== undefined ? mapping.notes : (existingSnap?.exists() ? existingSnap.data().notes : undefined),
         source: mapping.source || "User Manual Entry",
         updatedAt: serverTimestamp(),
         updatedBy: auth.currentUser.uid
@@ -404,6 +436,56 @@ export const at5DatabaseService = {
     const path = `mic_placement_mappings/${id}`;
     try {
       await deleteDoc(doc(db, 'mic_placement_mappings', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, path);
+    }
+  },
+
+  /**
+   * Durable TT-managed VIR Reference Calibration Persistence (Firestore)
+   */
+  async getVIRReferenceOverrides(): Promise<{ positions?: Record<string, { X: number; Y: number }>; distances?: Record<string, { Distance: number }>; angles?: Record<string, { Angle: number }> }> {
+    const path = 'system_calibrations/vir_reference';
+    try {
+      const snap = await getDoc(doc(db, 'system_calibrations', 'vir_reference'));
+      if (snap.exists()) {
+        const d = snap.data();
+        return {
+          positions: d.positions || {},
+          distances: d.distances || {},
+          angles: d.angles || {}
+        };
+      }
+      return {};
+    } catch (error) {
+      console.warn('Could not read VIR reference overrides from Firestore, using baseline:', error);
+      return {};
+    }
+  },
+
+  async saveVIRReferenceOverrides(overrides: { positions?: Record<string, { X: number; Y: number }>; distances?: Record<string, { Distance: number }>; angles?: Record<string, { Angle: number }> }) {
+    if (!auth.currentUser) throw new Error("Must be signed in to save VIR reference calibration");
+    const path = 'system_calibrations/vir_reference';
+    try {
+      const data = sanitize({
+        id: 'vir_reference',
+        positions: overrides.positions || {},
+        distances: overrides.distances || {},
+        angles: overrides.angles || {},
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid
+      });
+      await setDoc(doc(db, 'system_calibrations', 'vir_reference'), data);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
+  async resetVIRReferenceOverrides() {
+    if (!auth.currentUser) throw new Error("Must be signed in to reset VIR reference calibration");
+    const path = 'system_calibrations/vir_reference';
+    try {
+      await deleteDoc(doc(db, 'system_calibrations', 'vir_reference'));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, path);
     }

@@ -197,6 +197,20 @@
         "updatedBy": { "type": "string" }
       },
       "required": ["gearName", "requestedParameterName", "occurrenceCount", "firstSeen", "lastSeen", "status"]
+    },
+    "system_calibration": {
+      "title": "System Calibration",
+      "description": "System-wide VIR reference calibration coordinate overrides",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "positions": { "type": "object" },
+        "distances": { "type": "object" },
+        "angles": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["id", "positions", "distances", "angles"]
     }
   },
   "firestore": {
@@ -231,6 +245,10 @@
     "/requested_parameter_reviews/{reviewId}": {
       "schema": "requested_parameter_review",
       "description": "Reviews of requested parameters that were not found/mapped"
+    },
+    "/system_calibrations/{calibrationId}": {
+      "schema": "system_calibration",
+      "description": "System-wide calibration overrides"
     }
   }
 }

@@ -15,11 +15,12 @@ import {
   parseSemanticPlacement,
   isCompleteSemanticPlacement
 } from "./at5MicPlacementService";
+import { detectCabSettingsFormat } from "./at5SignalChainNormalizer";
 import { ToneProfile, ToneResult, SignalChainElement } from "../types";
 
 export interface MicReasoningInput {
   micModel: string;
-  micSlot: "Mic_1" | "Mic_2";
+  micSlot: "Mic_0" | "Mic_1" | "Mic_2";
   cabName?: string;
   speakerName?: string;
   toneProfile?: Partial<ToneProfile>;
@@ -36,7 +37,7 @@ export interface MicReasoningInput {
 
 export interface MicPlacementDecision {
   micModel: string;
-  micSlot: "Mic_1" | "Mic_2";
+  micSlot: "Mic_0" | "Mic_1" | "Mic_2";
   role: string;
   position: SemanticPosition;
   distance: SemanticDistance;
@@ -54,7 +55,7 @@ export interface MicPlacementDecision {
 export function determineMicrophoneRole(
   micModel: string,
   toneProfile?: Partial<ToneProfile>,
-  micSlot: "Mic_1" | "Mic_2" = "Mic_1"
+  micSlot: "Mic_0" | "Mic_1" | "Mic_2" = "Mic_0"
 ): string {
   const clean = (micModel || "").toLowerCase().trim();
   const isBassTone = toneProfile?.role === "bass" || 
@@ -84,7 +85,7 @@ export function determineMicrophoneRole(
   }
 
   // General fallbacks based on slot
-  return micSlot === "Mic_1" ? "primary attack/presence mic" : "warmth/fizz-control mic";
+  return (micSlot === "Mic_0" || micSlot === "Mic_1") ? "primary attack/presence mic" : "warmth/fizz-control mic";
 }
 
 /**
@@ -261,7 +262,7 @@ export function determineMultiMicRelationship(
 
 export interface BuildAcousticReasoningInput {
   micModel: string;
-  micSlot: "Mic_1" | "Mic_2";
+  micSlot: "Mic_0" | "Mic_1" | "Mic_2";
   role: string;
   position: SemanticPosition;
   distance: SemanticDistance;
@@ -291,7 +292,7 @@ export function buildAcousticReasoning(params: BuildAcousticReasoningInput): str
   const distReason = determineDistanceReason(distance, role, promptContext);
   const angReason = determineAngleReason(angle, role);
 
-  if (micSlot === "Mic_2" && otherMic) {
+  if ((micSlot === "Mic_2" || otherMic) && otherMic) {
     const multiMic = determineMultiMicRelationship(micModel, role, position, distance, angle, otherMic);
     return `${multiMic}. ${posReason}; ${distReason}; ${angReason}.`;
   }
@@ -464,7 +465,11 @@ export function formatMicrophoneDebug(decisions: MicPlacementDecision[]): string
   if (!decisions.length) return "";
 
   return decisions.map(d => {
-    const slotLabel = d.micSlot === "Mic_1" ? "Mic 1" : "Mic 2";
+    let slotLabel = "Mic 1";
+    if (d.micSlot === "Mic_0") slotLabel = "Mic 0";
+    else if (d.micSlot === "Mic_1") slotLabel = "Mic 1";
+    else if (d.micSlot === "Mic_2") slotLabel = "Mic 2";
+
     const lines = [
       `${slotLabel}: ${d.micModel}`,
       `Role: ${d.role}`,
@@ -498,51 +503,97 @@ export function ensureSignalChainSemanticPlacements(
       const speakerName = (settings["Speaker"] || settings["speaker"] || "") as string;
       const cabName = el.name || "";
 
-      // 1. Evaluate Mic 1
-      const mic1Name = (settings["Mic_1"] || settings["mic_1"] || settings["Mic 1"] || settings["mic 1"]) as string;
-      let m1Decision: MicPlacementDecision | undefined = undefined;
+      const detection = detectCabSettingsFormat(settings);
+      const isLegacy = detection.isLegacy;
 
-      if (mic1Name) {
-        const rawM1Placement = (settings["Mic_1_Placement"] || settings["mic_1_placement"] || settings["Mic 1 Placement"]) as string;
-        m1Decision = reasonSemanticMicPlacement({
-          micModel: mic1Name,
-          micSlot: "Mic_1",
-          cabName,
-          speakerName,
-          toneProfile,
-          promptContext: promptText,
-          existingPlacement: rawM1Placement
-        });
+      if (isLegacy) {
+        // Legacy 1-indexed schema: Mic_1 is Primary, Mic_2 is Secondary
+        const mic1Name = (settings["Mic_1"] || settings["mic_1"] || settings["Mic 1"] || settings["mic 1"]) as string;
+        let m1Decision: MicPlacementDecision | undefined = undefined;
 
-        // Always set the explicit complete semantic placement
-        settings["Mic_1_Placement"] = m1Decision.placementString;
-        decisions.push(m1Decision);
-      }
+        if (mic1Name) {
+          const rawM1Placement = (settings["Mic_1_Placement"] || settings["mic_1_placement"] || settings["Mic 1 Placement"]) as string;
+          m1Decision = reasonSemanticMicPlacement({
+            micModel: mic1Name,
+            micSlot: "Mic_1",
+            cabName,
+            speakerName,
+            toneProfile,
+            promptContext: promptText,
+            existingPlacement: rawM1Placement
+          });
 
-      // 2. Evaluate Mic 2
-      const mic2Name = (settings["Mic_2"] || settings["mic_2"] || settings["Mic 2"] || settings["mic 2"]) as string;
-      if (mic2Name) {
-        const rawM2Placement = (settings["Mic_2_Placement"] || settings["mic_2_placement"] || settings["Mic 2 Placement"]) as string;
-        const m2Decision = reasonSemanticMicPlacement({
-          micModel: mic2Name,
-          micSlot: "Mic_2",
-          cabName,
-          speakerName,
-          toneProfile,
-          otherMic: m1Decision ? {
-            model: m1Decision.micModel,
-            role: m1Decision.role,
-            position: m1Decision.position,
-            distance: m1Decision.distance,
-            angle: m1Decision.angle
-          } : undefined,
-          promptContext: promptText,
-          existingPlacement: rawM2Placement
-        });
+          settings["Mic_1_Placement"] = m1Decision.placementString;
+          decisions.push(m1Decision);
+        }
 
-        // Always set the explicit complete semantic placement
-        settings["Mic_2_Placement"] = m2Decision.placementString;
-        decisions.push(m2Decision);
+        const mic2Name = (settings["Mic_2"] || settings["mic_2"] || settings["Mic 2"] || settings["mic 2"]) as string;
+        if (mic2Name) {
+          const rawM2Placement = (settings["Mic_2_Placement"] || settings["mic_2_placement"] || settings["Mic 2 Placement"]) as string;
+          const m2Decision = reasonSemanticMicPlacement({
+            micModel: mic2Name,
+            micSlot: "Mic_2",
+            cabName,
+            speakerName,
+            toneProfile,
+            otherMic: m1Decision ? {
+              model: m1Decision.micModel,
+              role: m1Decision.role,
+              position: m1Decision.position,
+              distance: m1Decision.distance,
+              angle: m1Decision.angle
+            } : undefined,
+            promptContext: promptText,
+            existingPlacement: rawM2Placement
+          });
+
+          settings["Mic_2_Placement"] = m2Decision.placementString;
+          decisions.push(m2Decision);
+        }
+      } else {
+        // Canonical 0-indexed schema: Mic_0 is Primary, Mic_1 is Secondary
+        const mic0Name = (settings["Mic_0"] || settings["mic_0"] || settings["Mic 0"] || settings["mic 0"]) as string;
+        let m0Decision: MicPlacementDecision | undefined = undefined;
+
+        if (mic0Name) {
+          const rawM0Placement = (settings["Mic_0_Placement"] || settings["mic_0_placement"] || settings["Mic 0 Placement"]) as string;
+          m0Decision = reasonSemanticMicPlacement({
+            micModel: mic0Name,
+            micSlot: "Mic_0",
+            cabName,
+            speakerName,
+            toneProfile,
+            promptContext: promptText,
+            existingPlacement: rawM0Placement
+          });
+
+          settings["Mic_0_Placement"] = m0Decision.placementString;
+          decisions.push(m0Decision);
+        }
+
+        const mic1Name = (settings["Mic_1"] || settings["mic_1"] || settings["Mic 1"] || settings["mic 1"]) as string;
+        if (mic1Name) {
+          const rawM1Placement = (settings["Mic_1_Placement"] || settings["mic_1_placement"] || settings["Mic 1 Placement"]) as string;
+          const m1Decision = reasonSemanticMicPlacement({
+            micModel: mic1Name,
+            micSlot: "Mic_1",
+            cabName,
+            speakerName,
+            toneProfile,
+            otherMic: m0Decision ? {
+              model: m0Decision.micModel,
+              role: m0Decision.role,
+              position: m0Decision.position,
+              distance: m0Decision.distance,
+              angle: m0Decision.angle
+            } : undefined,
+            promptContext: promptText,
+            existingPlacement: rawM1Placement
+          });
+
+          settings["Mic_1_Placement"] = m1Decision.placementString;
+          decisions.push(m1Decision);
+        }
       }
 
       el.settings = settings;

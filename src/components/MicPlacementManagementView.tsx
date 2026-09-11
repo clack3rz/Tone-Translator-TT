@@ -40,7 +40,8 @@ import {
   Compass,
   Pencil,
   RotateCcw,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Lock
 } from 'lucide-react';
 
 interface MicPlacementManagementViewProps {
@@ -80,6 +81,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [customDist, setCustomDist] = useState('0');
   const [customAng, setCustomAng] = useState('0');
   const [useManualCoordinates, setUseManualCoordinates] = useState(false);
+  const [newNotes, setNewNotes] = useState('');
+  const [newStatus, setNewStatus] = useState<'validated' | 'needs_review' | 'estimated'>('validated');
   const [isSaving, setIsSaving] = useState(false);
 
   // Built-in Reference Overrides Editor state
@@ -132,6 +135,15 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
   useEffect(() => {
     loadMappings();
+    // Load durable VIR Reference Calibration overrides from Firestore
+    at5DatabaseService.getVIRReferenceOverrides().then(overrides => {
+      if (overrides && (overrides.positions || overrides.distances || overrides.angles)) {
+        setVIRCalibrationOverrides(overrides);
+        setRefCalibrationVersion(v => v + 1);
+      }
+    }).catch(err => {
+      console.warn("Could not load VIR reference overrides from Firestore:", err);
+    });
   }, []);
 
   // Filter mappings for this cabinet
@@ -173,6 +185,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     setCustomDist('0');
     setCustomAng('0');
     setUseManualCoordinates(false);
+    setNewNotes('');
+    setNewStatus('needs_review');
     setShowAddModal(true);
   };
 
@@ -189,6 +203,12 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     setNewPosition((m.friendlyPlacement || m.friendly_placement || 'Cap Edge') as SemanticPosition);
     setNewDistance((m.friendlyDistance || m.friendly_distance || 'Close') as SemanticDistance);
     setNewAngle((m.friendlyAngle || m.friendly_angle || 'On Axis') as SemanticAngle);
+    setNewNotes(m.notes || '');
+    const initialStatus: 'validated' | 'needs_review' | 'estimated' = 
+      (m.status === 'validated' || m.validationStatus === 'validated' || m.validationStatus === 'at5p_validated')
+        ? 'validated'
+        : (m.status === 'estimated' ? 'estimated' : 'needs_review');
+    setNewStatus(initialStatus);
 
     const prefix = resolvedSlot === 'Mic_0' ? 'Mic0' : 'Mic1';
     const spk = xml[`${prefix}Speaker`] ?? xml.Speaker ?? (resolvedSlot === 'Mic_0' ? 0 : 1);
@@ -247,26 +267,32 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
       const mappingData: MicPlacementMapping = {
         id: editingMapping?.id,
-        gear: cabName,
-        cabName,
-        cabGuid,
-        micSlot: isSlot1 ? 'Mic_1' : 'Mic_0',
-        micIndex: isSlot1 ? 1 : 0,
-        friendly_setting: isSlot1 ? 'Mic_1_Placement' : 'Mic_0_Placement',
-        friendly_value: newLabel.trim(),
+        gear: editingMapping?.gear || cabName,
+        cabName: editingMapping?.cabName || editingMapping?.gear || cabName,
+        cabGuid: editingMapping?.cabGuid || cabGuid,
+        micSlot: editingMapping?.micSlot || (isSlot1 ? 'Mic_1' : 'Mic_0'),
+        micIndex: editingMapping?.micIndex !== undefined ? editingMapping.micIndex : (isSlot1 ? 1 : 0),
+        friendly_setting: editingMapping?.friendly_setting || (isSlot1 ? 'Mic_1_Placement' : 'Mic_0_Placement'),
+        friendly_value: newLabel.trim() || editingMapping?.friendly_value || 'Cap Edge, Close, On Axis',
         friendly_placement: newPosition,
         friendly_distance: newDistance,
         friendly_angle: newAngle,
         friendlyPlacement: newPosition,
         friendlyDistance: newDistance,
         friendlyAngle: newAngle,
-        canonicalPlacementName: newLabel.trim(),
+        canonicalPlacementName: newLabel.trim() || editingMapping?.canonicalPlacementName || 'Cap Edge, Close, On Axis',
         maps_to: xmlValues,
         xml_values: xmlValues,
-        status: editingMapping?.status || 'needs_review',
-        validationStatus: editingMapping?.validationStatus || 'needs_review',
+        status: newStatus,
+        validationStatus: newStatus === 'estimated' ? 'needs_review' : newStatus,
         confidence: useManualCoordinates ? 'low' : 'medium',
-        source: editingMapping ? (editingMapping.source || 'user_edited') : 'manual_calibration'
+        source: editingMapping ? (editingMapping.source || 'user_edited') : 'manual_calibration',
+        notes: newNotes.trim() ? newNotes.trim() : undefined,
+        micModelName: editingMapping?.micModelName,
+        micModelGuid: editingMapping?.micModelGuid,
+        micModelScope: editingMapping?.micModelScope,
+        speakerModelName: editingMapping?.speakerModelName,
+        speakerModelGuid: editingMapping?.speakerModelGuid
       };
 
       await at5DatabaseService.saveMicPlacementMapping(mappingData);
@@ -275,10 +301,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
       if (onRefreshChain) onRefreshChain();
 
       const actionWord = editingMapping ? 'Updated' : 'Saved';
-      setSaveSuccessMsg(`${actionWord} profile "${newLabel}" for cabinet "${cabName}".`);
+      setSaveSuccessMsg(`${actionWord} profile "${mappingData.friendly_value}" for cabinet "${mappingData.cabName}".`);
       setShowAddModal(false);
       setEditingMapping(null);
       setNewLabel('');
+      setNewNotes('');
     } catch (err: any) {
       setSaveErrorMsg(`Failed to save mapping: ${err.message}`);
     } finally {
@@ -293,6 +320,8 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
       await at5DatabaseService.deleteMicPlacementMapping(id);
       await loadMappings();
       if (onRefreshChain) onRefreshChain();
+      setShowAddModal(false);
+      setEditingMapping(null);
       setSaveSuccessMsg('Custom mic placement profile deleted successfully.');
     } catch (err: any) {
       setSaveErrorMsg(`Failed to delete mapping: ${err.message}`);
@@ -321,7 +350,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   };
 
   // Save Built-in Reference Calibration Overrides
-  const handleSaveRefOverrides = () => {
+  const handleSaveRefOverrides = async () => {
     const overrides: VIRReferenceOverrides = {
       positions: {
         "Cap": { X: Number(refPositions["Cap"].X), Y: Number(refPositions["Cap"].Y) },
@@ -341,6 +370,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     };
 
     setVIRCalibrationOverrides(overrides);
+    try {
+      await at5DatabaseService.saveVIRReferenceOverrides(overrides);
+    } catch (e) {
+      console.warn("Could not save VIR reference overrides to Firestore:", e);
+    }
     setRefCalibrationVersion(v => v + 1);
     setSaveSuccessMsg('Updated built-in VIR Reference Calibration coordinates. Overrides are active.');
     setShowRefEditModal(false);
@@ -348,8 +382,13 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   };
 
   // Reset Built-in Reference to Factory Defaults
-  const handleResetRefOverrides = () => {
+  const handleResetRefOverrides = async () => {
     resetVIRCalibrationOverrides();
+    try {
+      await at5DatabaseService.resetVIRReferenceOverrides();
+    } catch (e) {
+      console.warn("Could not reset VIR reference overrides in Firestore:", e);
+    }
     setRefCalibrationVersion(v => v + 1);
     setSaveSuccessMsg('Restored built-in VIR Reference Calibration to factory verified defaults.');
     setShowRefEditModal(false);
@@ -825,47 +864,117 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
             </div>
 
             <div className="space-y-4 font-mono">
+              {editingMapping && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex items-start gap-2.5 text-amber-300 text-xs">
+                  <Lock className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="font-bold text-[11px] uppercase tracking-wider text-amber-400">Record Identity Locked</div>
+                    <div className="text-[10.5px] text-amber-200/80 mt-0.5">
+                      Cabinet, Mic Slot, and bound gear identity are permanent. Placement labels, coordinate data, verification status, and notes can be edited below.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[9.5px] text-gray-400 uppercase font-bold flex items-center justify-between">
+                    <span>Cabinet Identity</span>
+                    {editingMapping && <span className="text-amber-400 flex items-center gap-1 text-[9px]"><Lock className="w-2.5 h-2.5" /> Locked</span>}
+                  </label>
+                  <div className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-300 font-mono truncate">
+                    {editingMapping ? (editingMapping.cabName || editingMapping.gear || cabName) : cabName}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9.5px] text-gray-400 uppercase font-bold flex items-center justify-between">
+                    <span>Mic Slot</span>
+                    {editingMapping && <span className="text-amber-400 flex items-center gap-1 text-[9px]"><Lock className="w-2.5 h-2.5" /> Locked</span>}
+                  </label>
+                  {editingMapping ? (
+                    <div className="w-full bg-black/60 border border-amber-500/20 rounded-xl px-3 py-2 text-xs text-gray-400 font-mono flex items-center justify-between">
+                      <span>{newSlot === 'Mic_1' ? 'Mic 1 (Slot 1 / AT5 Mic1 / Secondary)' : 'Mic 0 (Slot 0 / AT5 Mic0 / Primary)'}</span>
+                      <Lock className="w-3 h-3 text-amber-400/70" />
+                    </div>
+                  ) : (
+                    <select
+                      value={newSlot}
+                      onChange={(e) => {
+                        const s = e.target.value as any;
+                        setNewSlot(s);
+                        setNewSpeaker(s === 'Mic_0' ? '0' : '1');
+                      }}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    >
+                      <option value="Mic_0">Mic 0 (Slot 0 / AT5 Mic0 / Primary)</option>
+                      <option value="Mic_1">Mic 1 (Slot 1 / AT5 Mic1 / Secondary)</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              {editingMapping && (editingMapping.micModelName || editingMapping.speakerModelName) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {editingMapping.micModelName && (
+                    <div className="space-y-1.5">
+                      <label className="text-[9.5px] text-gray-400 uppercase font-bold flex items-center justify-between">
+                        <span>Bound Mic Model</span>
+                        <span className="text-amber-400 flex items-center gap-1 text-[9px]"><Lock className="w-2.5 h-2.5" /> Locked</span>
+                      </label>
+                      <div className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-300 font-mono truncate">
+                        {editingMapping.micModelName}
+                      </div>
+                    </div>
+                  )}
+                  {editingMapping.speakerModelName && (
+                    <div className="space-y-1.5">
+                      <label className="text-[9.5px] text-gray-400 uppercase font-bold flex items-center justify-between">
+                        <span>Bound Speaker Model</span>
+                        <span className="text-amber-400 flex items-center gap-1 text-[9px]"><Lock className="w-2.5 h-2.5" /> Locked</span>
+                      </label>
+                      <div className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-300 font-mono truncate">
+                        {editingMapping.speakerModelName}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-1.5">
-                <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Semantic Label / Name</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[9.5px] text-gray-400 uppercase font-bold">
+                    Semantic Placement Label / Triplet
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setNewLabel(`${newPosition}, ${newDistance}, ${newAngle}`)}
+                    className="text-[9.5px] text-cyan-400 hover:text-cyan-300 underline font-bold uppercase"
+                  >
+                    Auto-Fill from Triplet
+                  </button>
+                </div>
                 <input
                   type="text"
                   placeholder='e.g. "Cap Edge, Close", "Cone, 45° Off Axis"'
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-black/40 border border-white/10 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Mic Slot</label>
-                  <select
-                    value={newSlot}
-                    onChange={(e) => {
-                      const s = e.target.value as any;
-                      setNewSlot(s);
-                      setNewSpeaker(s === 'Mic_0' ? '0' : '1');
-                    }}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  >
-                    <option value="Mic_0">Mic 0 (Slot 0 / AT5 Mic0 / Primary)</option>
-                    <option value="Mic_1">Mic 1 (Slot 1 / AT5 Mic1 / Secondary)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Speaker Index</label>
-                  <select
-                    value={newSpeaker}
-                    onChange={(e) => setNewSpeaker(e.target.value as any)}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  >
-                    <option value="0">Speaker 0 (Top Left / Default Mic 0)</option>
-                    <option value="1">Speaker 1 (Top Right / Default Mic 1)</option>
-                    <option value="2">Speaker 2 (Bottom Left)</option>
-                    <option value="3">Speaker 3 (Bottom Right)</option>
-                  </select>
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Speaker Index</label>
+                <select
+                  value={newSpeaker}
+                  onChange={(e) => setNewSpeaker(e.target.value as any)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="0">Speaker 0 (Top Left / Default Mic 0)</option>
+                  <option value="1">Speaker 1 (Top Right / Default Mic 1)</option>
+                  <option value="2">Speaker 2 (Bottom Left)</option>
+                  <option value="3">Speaker 3 (Bottom Right)</option>
+                </select>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
@@ -959,25 +1068,64 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                   </div>
                 </div>
               )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                <div className="space-y-1.5">
+                  <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Verification Status</label>
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value as any)}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="validated">Approved (Validated)</option>
+                    <option value="needs_review">Needs Review</option>
+                    <option value="estimated">Estimated</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Notes / Provenance</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Measured on 1960A cab with Shure SM57"
+                    value={newNotes}
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  setEditingMapping(null);
-                }}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 text-xs font-mono uppercase rounded-xl transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveMapping}
-                disabled={isSaving}
-                className="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-mono font-bold uppercase rounded-xl transition-all shadow"
-              >
-                {isSaving ? 'Saving Profile...' : (editingMapping ? 'Update Mic Placement Profile' : 'Save Mic Placement Profile')}
-              </button>
+            <div className="flex items-center justify-between pt-4 border-t border-white/10">
+              <div>
+                {editingMapping && editingMapping.id && (
+                  <button
+                    onClick={() => handleDeleteMapping(editingMapping.id)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/25 text-xs font-mono font-bold uppercase rounded-xl transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete Profile
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setEditingMapping(null);
+                  }}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 text-xs font-mono uppercase rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveMapping}
+                  disabled={isSaving}
+                  className="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-mono font-bold uppercase rounded-xl transition-all shadow"
+                >
+                  {isSaving ? 'Saving Profile...' : (editingMapping ? 'Update Mic Placement Profile' : 'Save Mic Placement Profile')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
