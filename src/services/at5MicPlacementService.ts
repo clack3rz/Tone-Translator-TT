@@ -133,9 +133,9 @@ export function getVIRCalibrationOverrides(): VIRReferenceOverrides {
  * Loads durable TT-managed VIR reference calibration overrides from Firestore (system_calibrations/vir_reference).
  * Overrides in-memory grid and falls back safely to built-in baseline constants if offline or not yet provisioned.
  */
-export async function initializeVIRCalibration(): Promise<VIRReferenceOverrides> {
+export async function initializeVIRCalibration(forceRefresh = false): Promise<VIRReferenceOverrides> {
   try {
-    const overrides = await at5DatabaseService.getVIRReferenceOverrides();
+    const overrides = await at5DatabaseService.getVIRReferenceOverrides(forceRefresh);
     if (overrides && (overrides.positions || overrides.distances || overrides.angles)) {
       setVIRCalibrationOverrides(overrides);
       return overrides;
@@ -145,6 +145,8 @@ export async function initializeVIRCalibration(): Promise<VIRReferenceOverrides>
   }
   return virCalibrationOverrides;
 }
+
+export const refreshVIRCalibration = initializeVIRCalibration;
 
 export function getVIRCalibrationCoordinates() {
   return {

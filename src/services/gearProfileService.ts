@@ -1,7 +1,7 @@
 import { AT5_VERIFIED_GEAR, VerifiedParamDef } from './at5VerifiedParameterOverrides';
 import { getVerifiedCabs, getVerifiedMics, getVerifiedSpeakers } from './at5VerifiedProtocols';
 import { getAt5Catalog, refreshCatalog, cleanGearNameForMatching } from './at5Catalog';
-import { refreshDbParameterMappings } from './at5ParameterManifest';
+import { refreshCoreParameterMappings } from './at5ParameterManifest';
 import { at5DatabaseService } from './at5DatabaseService';
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping } from '../types';
 
@@ -53,19 +53,24 @@ export const gearProfileService = {
     inFlightProfilesPromise = (async () => {
       const fetchT0 = performance.now();
       try {
-        // Fetch latest catalog and parameter details
-        await refreshCatalog();
-        await refreshDbParameterMappings();
-        const catalogItems = getAt5Catalog() || [];
+        const prepT0 = performance.now();
+        const wasCatalogCached = at5DatabaseService.isCatalogueCached();
+        const wasMappingsCached = at5DatabaseService.isParameterMappingsCached();
+
+        // 1. Concurrently obtain catalogue and core parameter mappings
+        const [catalogItems, dbMappings] = await Promise.all([
+          refreshCatalog(forceRefresh),
+          refreshCoreParameterMappings(forceRefresh)
+        ]);
+
         const cabs = getVerifiedCabs() || [];
         const speakers = getVerifiedSpeakers() || [];
         const mics = getVerifiedMics() || [];
-        
-        // Asynchronously download remote overrides from firestore
-        const dbMappings = await at5DatabaseService.getParameterMappings(forceRefresh);
+        const prepDurationMs = Math.round(performance.now() - prepT0);
 
-    const profiles: GearProfile[] = [];
-    const seenGuids = new Set<string>();
+        const buildT0 = performance.now();
+        const profiles: GearProfile[] = [];
+        const seenGuids = new Set<string>();
 
     // Helper to normalize GUIDs for solid matching
     const normGuid = (g: string) => g ? g.toLowerCase().replace(/-/g, '').trim() : '';
@@ -243,14 +248,21 @@ export const gearProfileService = {
       if (nGuid) seenGuids.add(nGuid);
     }
 
+      const buildDurationMs = Math.round(performance.now() - buildT0);
+      const totalDurationMs = Math.round(performance.now() - fetchT0);
+
       // Store completed result into memory cache before clearing in-flight tracker
       profilesCache = { data: profiles, timestamp: Date.now() };
+
+      const isFullyCached = wasCatalogCached && wasMappingsCached && !forceRefresh;
       console.log(JSON.stringify({
         operation: 'getGearProfiles',
-        durationMs: Math.round(performance.now() - fetchT0),
+        coreDataPrepMs: prepDurationMs,
+        profileBuildMs: buildDurationMs,
+        totalDurationMs: totalDurationMs,
         profileCount: profiles.length,
         parameterMappingCount: dbMappings.length,
-        source: 'firestore-refresh'
+        source: isFullyCached ? 'cache' : 'firestore'
       }));
 
       return profiles;
@@ -907,7 +919,7 @@ export const gearProfileService = {
     this.clearCache();
 
     // Refreshes the local caches
-    await Promise.all([refreshCatalog(), refreshDbParameterMappings()]);
+    await Promise.all([refreshCatalog(true), refreshCoreParameterMappings(true)]);
   }
 };
 

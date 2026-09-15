@@ -80,10 +80,17 @@ function sanitize(data: any): any {
 
 let catalogueCache: { data: AT5CatalogItem[]; timestamp: number } | null = null;
 let parameterMappingsCache: { data: ParameterMapping[]; timestamp: number } | null = null;
+let micPlacementMappingsCache: { data: MicPlacementMapping[]; timestamp: number } | null = null;
+let virReferenceOverridesCache: { 
+  data: { positions?: Record<string, { X: number; Y: number }>; distances?: Record<string, { Distance: number }>; angles?: Record<string, { Angle: number }> }; 
+  timestamp: number 
+} | null = null;
 let discoveryCandidatesCache: { data: IKMPAKCandidate[]; timestamp: number } | null = null;
 
 let inFlightCataloguePromise: Promise<AT5CatalogItem[]> | null = null;
 let inFlightParameterMappingsPromise: Promise<ParameterMapping[]> | null = null;
+let inFlightMicPlacementMappingsPromise: Promise<MicPlacementMapping[]> | null = null;
+let inFlightVIRReferenceOverridesPromise: Promise<{ positions?: Record<string, { X: number; Y: number }>; distances?: Record<string, { Distance: number }>; angles?: Record<string, { Angle: number }> }> | null = null;
 let inFlightDiscoveryCandidatesPromise: Promise<IKMPAKCandidate[]> | null = null;
 const CACHE_TTL_MS = 60000;
 
@@ -91,10 +98,30 @@ export const at5DatabaseService = {
   clearCache() {
     catalogueCache = null;
     parameterMappingsCache = null;
+    micPlacementMappingsCache = null;
+    virReferenceOverridesCache = null;
     discoveryCandidatesCache = null;
     inFlightCataloguePromise = null;
     inFlightParameterMappingsPromise = null;
+    inFlightMicPlacementMappingsPromise = null;
+    inFlightVIRReferenceOverridesPromise = null;
     inFlightDiscoveryCandidatesPromise = null;
+  },
+
+  isCatalogueCached(): boolean {
+    return Boolean(catalogueCache && (Date.now() - catalogueCache.timestamp < CACHE_TTL_MS));
+  },
+
+  isParameterMappingsCached(): boolean {
+    return Boolean(parameterMappingsCache && (Date.now() - parameterMappingsCache.timestamp < CACHE_TTL_MS));
+  },
+
+  isMicPlacementMappingsCached(): boolean {
+    return Boolean(micPlacementMappingsCache && (Date.now() - micPlacementMappingsCache.timestamp < CACHE_TTL_MS));
+  },
+
+  isVIRReferenceOverridesCached(): boolean {
+    return Boolean(virReferenceOverridesCache && (Date.now() - virReferenceOverridesCache.timestamp < CACHE_TTL_MS));
   },
 
   /**
@@ -352,28 +379,72 @@ export const at5DatabaseService = {
     }
   },
 
-  async getMicPlacementMappings(): Promise<MicPlacementMapping[]> {
-    const path = 'mic_placement_mappings';
-    try {
-      const snapshot = await getDocs(collection(db, path));
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        const persistentDocId = doc.id;
-        return {
-          ...data,
-          id: persistentDocId,
-          firestoreDocumentId: persistentDocId,
-          firestoreDocumentPath: `mic_placement_mappings/${persistentDocId}`,
-          originalProfileId: (data.id as string) || persistentDocId
-        } as unknown as MicPlacementMapping;
-      });
-    } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
+  async getMicPlacementMappings(forceRefresh = false): Promise<MicPlacementMapping[]> {
+    const t0 = performance.now();
+    if (!forceRefresh && micPlacementMappingsCache && (Date.now() - micPlacementMappingsCache.timestamp < CACHE_TTL_MS)) {
+      console.log(JSON.stringify({
+        operation: 'getMicPlacementMappings',
+        durationMs: Math.round(performance.now() - t0),
+        mappingCount: micPlacementMappingsCache.data.length,
+        source: 'cache'
+      }));
+      return micPlacementMappingsCache.data;
     }
+
+    if (inFlightMicPlacementMappingsPromise) {
+      console.log(JSON.stringify({
+        operation: 'getMicPlacementMappings',
+        durationMs: Math.round(performance.now() - t0),
+        source: 'joined-in-flight'
+      }));
+      return inFlightMicPlacementMappingsPromise;
+    }
+
+    const path = 'mic_placement_mappings';
+    inFlightMicPlacementMappingsPromise = (async () => {
+      try {
+        const snapshot = await getDocs(collection(db, path));
+        const data = snapshot.docs.map(doc => {
+          const docData = doc.data();
+          const persistentDocId = doc.id;
+          return {
+            ...docData,
+            id: persistentDocId,
+            firestoreDocumentId: persistentDocId,
+            firestoreDocumentPath: `mic_placement_mappings/${persistentDocId}`,
+            originalProfileId: (docData.id as string) || persistentDocId
+          } as unknown as MicPlacementMapping;
+        });
+
+        micPlacementMappingsCache = {
+          data,
+          timestamp: Date.now()
+        };
+
+        console.log(JSON.stringify({
+          operation: 'getMicPlacementMappings',
+          durationMs: Math.round(performance.now() - t0),
+          mappingCount: data.length,
+          source: 'firestore'
+        }));
+
+        return data;
+      } catch (error) {
+        handleFirestoreError(error, OperationType.LIST, path);
+        if (micPlacementMappingsCache) {
+          return micPlacementMappingsCache.data;
+        }
+        return [];
+      } finally {
+        inFlightMicPlacementMappingsPromise = null;
+      }
+    })();
+
+    return inFlightMicPlacementMappingsPromise;
   },
 
   async saveMicPlacementMapping(mapping: MicPlacementMapping) {
+    micPlacementMappingsCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to save mic placement mappings");
     
     const mappingId = mapping.id || `${mapping.gear}_${mapping.friendly_setting}_${mapping.friendly_value}`.replace(/[^a-zA-Z0-9_\-]/g, '_');
@@ -436,6 +507,7 @@ export const at5DatabaseService = {
   },
 
   async deleteMicPlacementMapping(id: string) {
+    micPlacementMappingsCache = null;
     const trimmedId = id?.trim();
     if (!trimmedId) throw new Error("A valid document ID is required to delete mic placement mappings");
     if (!auth.currentUser && process.env.NODE_ENV !== 'test') {
@@ -452,26 +524,68 @@ export const at5DatabaseService = {
   /**
    * Durable TT-managed VIR Reference Calibration Persistence (Firestore)
    */
-  async getVIRReferenceOverrides(): Promise<{ positions?: Record<string, { X: number; Y: number }>; distances?: Record<string, { Distance: number }>; angles?: Record<string, { Angle: number }> }> {
-    const path = 'system_calibrations/vir_reference';
-    try {
-      const snap = await getDoc(doc(db, 'system_calibrations', 'vir_reference'));
-      if (snap.exists()) {
-        const d = snap.data();
-        return {
-          positions: d.positions || {},
-          distances: d.distances || {},
-          angles: d.angles || {}
-        };
-      }
-      return {};
-    } catch (error) {
-      console.warn('Could not read VIR reference overrides from Firestore, using baseline:', error);
-      return {};
+  async getVIRReferenceOverrides(forceRefresh = false): Promise<{ positions?: Record<string, { X: number; Y: number }>; distances?: Record<string, { Distance: number }>; angles?: Record<string, { Angle: number }> }> {
+    const t0 = performance.now();
+    if (!forceRefresh && virReferenceOverridesCache && (Date.now() - virReferenceOverridesCache.timestamp < CACHE_TTL_MS)) {
+      console.log(JSON.stringify({
+        operation: 'getVIRReferenceOverrides',
+        durationMs: Math.round(performance.now() - t0),
+        source: 'cache'
+      }));
+      return virReferenceOverridesCache.data;
     }
+
+    if (inFlightVIRReferenceOverridesPromise) {
+      console.log(JSON.stringify({
+        operation: 'getVIRReferenceOverrides',
+        durationMs: Math.round(performance.now() - t0),
+        source: 'joined-in-flight'
+      }));
+      return inFlightVIRReferenceOverridesPromise;
+    }
+
+    const path = 'system_calibrations/vir_reference';
+    inFlightVIRReferenceOverridesPromise = (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'system_calibrations', 'vir_reference'));
+        let res = {};
+        if (snap.exists()) {
+          const d = snap.data();
+          res = {
+            positions: d.positions || {},
+            distances: d.distances || {},
+            angles: d.angles || {}
+          };
+        }
+
+        virReferenceOverridesCache = {
+          data: res,
+          timestamp: Date.now()
+        };
+
+        console.log(JSON.stringify({
+          operation: 'getVIRReferenceOverrides',
+          durationMs: Math.round(performance.now() - t0),
+          source: 'firestore'
+        }));
+
+        return res;
+      } catch (error) {
+        console.warn('Could not read VIR reference overrides from Firestore, using baseline:', error);
+        if (virReferenceOverridesCache) {
+          return virReferenceOverridesCache.data;
+        }
+        return {};
+      } finally {
+        inFlightVIRReferenceOverridesPromise = null;
+      }
+    })();
+
+    return inFlightVIRReferenceOverridesPromise;
   },
 
   async saveVIRReferenceOverrides(overrides: { positions?: Record<string, { X: number; Y: number }>; distances?: Record<string, { Distance: number }>; angles?: Record<string, { Angle: number }> }) {
+    virReferenceOverridesCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to save VIR reference calibration");
     const path = 'system_calibrations/vir_reference';
     try {
@@ -490,6 +604,7 @@ export const at5DatabaseService = {
   },
 
   async resetVIRReferenceOverrides() {
+    virReferenceOverridesCache = null;
     if (!auth.currentUser) throw new Error("Must be signed in to reset VIR reference calibration");
     const path = 'system_calibrations/vir_reference';
     try {

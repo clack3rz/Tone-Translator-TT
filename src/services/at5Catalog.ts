@@ -104,9 +104,9 @@ export const getAt5Catalog = () => CURRENT_CATALOG;
 /**
  * Merges Firestore data into the local catalog
  */
-export async function refreshCatalog() {
+export async function refreshCatalog(forceRefresh = false) {
   try {
-    const dbCatalog = await at5DatabaseService.getCatalogue();
+    const dbCatalog = await at5DatabaseService.getCatalogue(forceRefresh);
     
     // Create a map by unique identifier (GUID or name+group) to deduplicate, with DB items taking priority
     const mergedMap = new Map<string, AT5CatalogItem>();

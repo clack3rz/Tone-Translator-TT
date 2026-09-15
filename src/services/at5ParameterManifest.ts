@@ -20,11 +20,62 @@ import { initializeVIRCalibration } from "./at5MicPlacementService";
 let dbParameterMappings: ParameterMapping[] = [];
 let dbMicPlacementMappings: MicPlacementMapping[] = [];
 
-export async function refreshDbParameterMappings(): Promise<void> {
+/**
+ * Refreshes only the core parameter mappings used for gear parameter resolution.
+ * Separated from mic-placement and VIR calibration to keep gear profile loading fast.
+ */
+export async function refreshCoreParameterMappings(forceRefresh = false): Promise<ParameterMapping[]> {
   try {
-    dbParameterMappings = await at5DatabaseService.getParameterMappings() || [];
-    dbMicPlacementMappings = await at5DatabaseService.getMicPlacementMappings() || [];
-    await initializeVIRCalibration();
+    dbParameterMappings = await at5DatabaseService.getParameterMappings(forceRefresh) || [];
+    return dbParameterMappings;
+  } catch (error) {
+    console.error("Failed to refresh core parameter mappings", error);
+    return dbParameterMappings;
+  }
+}
+
+/**
+ * Refreshes only the mic-placement mappings collection.
+ */
+export async function refreshDbMicPlacementMappings(forceRefresh = false): Promise<MicPlacementMapping[]> {
+  try {
+    dbMicPlacementMappings = await at5DatabaseService.getMicPlacementMappings(forceRefresh) || [];
+    return dbMicPlacementMappings;
+  } catch (error) {
+    console.error("Failed to refresh db mic placement mappings", error);
+    return dbMicPlacementMappings;
+  }
+}
+
+/**
+ * Refreshes only VIR reference calibration overrides from Firestore.
+ */
+export async function refreshVIRCalibration(forceRefresh = false) {
+  return initializeVIRCalibration(forceRefresh);
+}
+
+/**
+ * Ensures mic-placement mappings and VIR reference calibration are loaded lazily.
+ */
+export async function ensureMicPlacementDataLoaded(forceRefresh = false): Promise<MicPlacementMapping[]> {
+  const [mappings] = await Promise.all([
+    refreshDbMicPlacementMappings(forceRefresh),
+    initializeVIRCalibration(forceRefresh)
+  ]);
+  return mappings;
+}
+
+/**
+ * Full coordinated refresh for all DB mappings and calibrations.
+ * Retained for backwards compatibility or explicit global cache refresh.
+ */
+export async function refreshDbParameterMappings(forceRefresh = false): Promise<void> {
+  try {
+    await Promise.all([
+      refreshCoreParameterMappings(forceRefresh),
+      refreshDbMicPlacementMappings(forceRefresh),
+      refreshVIRCalibration(forceRefresh)
+    ]);
   } catch (error) {
     console.error("Failed to refresh db parameter mappings", error);
   }

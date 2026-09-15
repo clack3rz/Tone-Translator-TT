@@ -32,13 +32,14 @@ import {
   Tags,
   FileText,
   Compass,
-  Crosshair
+  Crosshair,
+  Loader2
 } from 'lucide-react';
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IKMPAKCandidate, MicPlacementMapping, ParameterOptionRow } from '../types';
 import { gearProfileService } from '../services/gearProfileService';
 import { parseAt5pPreset } from '../services/at5PresetImporter';
 import { at5DatabaseService } from '../services/at5DatabaseService';
-import { refreshDbParameterMappings, generateAliasesForXmlParam, testSingleParameterTranslation } from '../services/at5ParameterManifest';
+import { refreshDbParameterMappings, refreshCoreParameterMappings, refreshDbMicPlacementMappings, generateAliasesForXmlParam, testSingleParameterTranslation } from '../services/at5ParameterManifest';
 import { auth, signInWithGoogle } from '../services/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { evaluateCandidate, parseCSV, parseJSON, evaluateAliasSafety, isSlotTypeValid, normalizeGuid, checkProfileMatch, normalizeAliasComparison } from '../services/ikmpakService';
@@ -565,6 +566,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
   }, []);
 
   const loadProfiles = async (forceRefresh = false) => {
+    const t0 = performance.now();
     setIsLoading(true);
     try {
       const data = await gearProfileService.getGearProfiles(forceRefresh);
@@ -577,6 +579,12 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
           setEditedProfile(JSON.parse(JSON.stringify(found)));
         }
       }
+      console.log(JSON.stringify({
+        operation: 'loadProfiles_renderReady',
+        durationMs: Math.round(performance.now() - t0),
+        profileCount: data.length,
+        forceRefresh
+      }));
     } catch (err) {
       console.error('Error fetching gear profiles:', err);
     } finally {
@@ -1271,8 +1279,8 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
       // Persist profile with updated parameter directly to Firestore
       await gearProfileService.saveGearProfile(updatedProfile);
 
-      // Refresh DB parameter mappings and reload gear profiles
-      await refreshDbParameterMappings();
+      // Refresh core parameter mappings and reload gear profiles
+      await refreshCoreParameterMappings(true);
       const reloadedProfiles = await gearProfileService.getGearProfiles(true);
       setProfiles(reloadedProfiles);
 
@@ -1352,8 +1360,8 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
       // 1. Save using merged profile service writebacks
       await gearProfileService.saveGearProfile(editedProfile);
       
-      // 2. Refresh manifest DB mapping cache & catalog
-      await refreshDbParameterMappings();
+      // 2. Refresh core parameter mappings cache & catalog
+      await refreshCoreParameterMappings(true);
 
       // 3. Perform validation rebuild instantly
       const updatedList = await gearProfileService.getGearProfiles(true);
@@ -3202,7 +3210,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
       setConfirmConflictId(null);
       setConfirmZeroId(null);
       
-      await refreshDbParameterMappings();
+      await refreshDbMicPlacementMappings(true);
       if (onRefreshChain) onRefreshChain();
     } catch (err: any) {
       setPlacementErrorFeedback(`Failed to save placement mapping: ${err.message}`);
@@ -3449,7 +3457,12 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
             </div>
 
             <div className="max-h-[500px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
-              {filteredProfiles.length === 0 ? (
+              {isLoading && profiles.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-gray-500">
+                  <Loader2 className="w-5 h-5 animate-spin text-gear-accent" />
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">Loading Gear Profiles...</span>
+                </div>
+              ) : filteredProfiles.length === 0 ? (
                 <p className="text-xs font-mono text-gray-600 text-center py-10 uppercase">
                   No matching Gear Profiles
                 </p>
@@ -4644,7 +4657,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                                 status: "validated"
                                               });
 
-                                              await refreshDbParameterMappings();
+                                              await refreshDbMicPlacementMappings(true);
                                               if (onRefreshChain) onRefreshChain();
 
                                               setCompareSuccessMessage(`Successfully registered Mic 0 placement mapping "${labelStr}" for "${editedProfile.displayName}"!`);
@@ -4747,7 +4760,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                                 status: "validated"
                                               });
 
-                                              await refreshDbParameterMappings();
+                                              await refreshDbMicPlacementMappings(true);
                                               if (onRefreshChain) onRefreshChain();
 
                                               setCompareSuccessMessage(`Successfully registered Mic 1 placement mapping "${labelStr}" for "${editedProfile.displayName}"!`);
