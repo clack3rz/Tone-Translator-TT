@@ -5,6 +5,241 @@ import { refreshCoreParameterMappings } from './at5ParameterManifest';
 import { at5DatabaseService } from './at5DatabaseService';
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping } from '../types';
 
+export const normaliseName = (value: string) =>
+  value
+    ? value
+        .toLowerCase()
+        .replace(/['’]/g, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+    : "";
+
+interface ProfileBuildContext {
+  indexBuildMs: number;
+  normGuid: (guid: string) => string;
+  getNormName: (name: string) => string;
+  getCleanName: (name: string) => string;
+  getCleanGuid: (guid: string) => string;
+  getRelevantMappings: (guid: string, displayName: string, aliases: string[]) => ParameterMapping[];
+  getVerifiedGear: (nGuid: string, displayName: string) => any;
+}
+
+function createProfileBuildContext(dbMappings: ParameterMapping[]): ProfileBuildContext {
+  const t0 = performance.now();
+
+  const normNameCache = new Map<string, string>();
+  const cleanNameCache = new Map<string, string>();
+  const cleanGuidCache = new Map<string, string>();
+  const normGuidCache = new Map<string, string>();
+
+  const getNormName = (name: string): string => {
+    if (!name) return "";
+    let res = normNameCache.get(name);
+    if (res === undefined) {
+      res = normaliseName(name);
+      normNameCache.set(name, res);
+    }
+    return res;
+  };
+
+  const getCleanName = (name: string): string => {
+    if (!name) return "";
+    let res = cleanNameCache.get(name);
+    if (res === undefined) {
+      res = cleanGearNameForMatching(name);
+      cleanNameCache.set(name, res);
+    }
+    return res;
+  };
+
+  const getCleanGuid = (guid: string): string => {
+    if (!guid) return "";
+    let res = cleanGuidCache.get(guid);
+    if (res === undefined) {
+      res = guid.toLowerCase().replace(/[^a-z0-9]/g, "");
+      cleanGuidCache.set(guid, res);
+    }
+    return res;
+  };
+
+  const normGuid = (guid: string): string => {
+    if (!guid) return "";
+    let res = normGuidCache.get(guid);
+    if (res === undefined) {
+      res = guid.toLowerCase().replace(/-/g, "").trim();
+      normGuidCache.set(guid, res);
+    }
+    return res;
+  };
+
+  // 1. Pre-index database parameter mappings
+  const mappingIndexMap = new Map<ParameterMapping, number>();
+  const mappingsByGuid = new Map<string, ParameterMapping[]>();
+  const mappingsByNormName = new Map<string, ParameterMapping[]>();
+  const mappingsByCleanName = new Map<string, ParameterMapping[]>();
+
+  const mappingCleanGuid = new Map<ParameterMapping, string>();
+  const mappingNormName = new Map<ParameterMapping, string>();
+  const mappingCleanName = new Map<ParameterMapping, string>();
+
+  for (let i = 0; i < dbMappings.length; i++) {
+    const m = dbMappings[i];
+    mappingIndexMap.set(m, i);
+
+    const mCleanG = m.gearGuid ? getCleanGuid(m.gearGuid) : "";
+    mappingCleanGuid.set(m, mCleanG);
+    if (mCleanG) {
+      let list = mappingsByGuid.get(mCleanG);
+      if (!list) {
+        list = [];
+        mappingsByGuid.set(mCleanG, list);
+      }
+      list.push(m);
+    }
+
+    const mNormN = m.gearName ? getNormName(m.gearName) : "";
+    mappingNormName.set(m, mNormN);
+    if (mNormN) {
+      let list = mappingsByNormName.get(mNormN);
+      if (!list) {
+        list = [];
+        mappingsByNormName.set(mNormN, list);
+      }
+      list.push(m);
+    }
+
+    const mCleanN = m.gearName ? getCleanName(m.gearName) : "";
+    mappingCleanName.set(m, mCleanN);
+    if (mCleanN) {
+      let list = mappingsByCleanName.get(mCleanN);
+      if (!list) {
+        list = [];
+        mappingsByCleanName.set(mCleanN, list);
+      }
+      list.push(m);
+    }
+  }
+
+  // 2. Pre-index verified gear overrides
+  const verifiedByGuid = new Map<string, any>();
+  const verifiedByNormName = new Map<string, any>();
+  const verifiedByCleanName = new Map<string, any>();
+
+  for (const v of AT5_VERIFIED_GEAR) {
+    if (v.realId) {
+      const vGuid = normGuid(v.realId);
+      if (vGuid && !verifiedByGuid.has(vGuid)) {
+        verifiedByGuid.set(vGuid, v);
+      }
+    }
+    const vNorm = getNormName(v.name);
+    if (vNorm && !verifiedByNormName.has(vNorm)) {
+      verifiedByNormName.set(vNorm, v);
+    }
+    const vClean = getCleanName(v.name);
+    if (vClean && !verifiedByCleanName.has(vClean)) {
+      verifiedByCleanName.set(vClean, v);
+    }
+  }
+
+  const getVerifiedGear = (nGuid: string, displayName: string): any => {
+    if (nGuid) {
+      const byG = verifiedByGuid.get(nGuid);
+      if (byG) return byG;
+    }
+    const normN = getNormName(displayName);
+    const byN = verifiedByNormName.get(normN);
+    if (byN) return byN;
+
+    const cleanN = getCleanName(displayName);
+    return verifiedByCleanName.get(cleanN);
+  };
+
+  // 3. Fast candidate retrieval and verification
+  const getRelevantMappings = (guid: string, displayName: string, aliases: string[]): ParameterMapping[] => {
+    const gearCleanG = guid ? getCleanGuid(guid) : "";
+    const gearNormN = getNormName(displayName);
+    const gearCleanN = getCleanName(displayName);
+
+    const normKeys: string[] = gearNormN ? [gearNormN] : [];
+    const cleanKeys: string[] = gearCleanN ? [gearCleanN] : [];
+
+    for (let i = 0; i < aliases.length; i++) {
+      const a = aliases[i];
+      if (!a) continue;
+      const an = getNormName(a);
+      if (an) normKeys.push(an);
+      const ac = getCleanName(a);
+      if (ac) cleanKeys.push(ac);
+    }
+
+    const candidateSet = new Set<ParameterMapping>();
+
+    if (gearCleanG) {
+      const byGuid = mappingsByGuid.get(gearCleanG);
+      if (byGuid) {
+        for (let j = 0; j < byGuid.length; j++) {
+          candidateSet.add(byGuid[j]);
+        }
+      }
+    }
+
+    for (let i = 0; i < normKeys.length; i++) {
+      const byNorm = mappingsByNormName.get(normKeys[i]);
+      if (byNorm) {
+        for (let j = 0; j < byNorm.length; j++) {
+          candidateSet.add(byNorm[j]);
+        }
+      }
+    }
+
+    for (let i = 0; i < cleanKeys.length; i++) {
+      const byClean = mappingsByCleanName.get(cleanKeys[i]);
+      if (byClean) {
+        for (let j = 0; j < byClean.length; j++) {
+          candidateSet.add(byClean[j]);
+        }
+      }
+    }
+
+    if (candidateSet.size === 0) {
+      return [];
+    }
+
+    const candidates = Array.from(candidateSet);
+    candidates.sort((a, b) => (mappingIndexMap.get(a) ?? 0) - (mappingIndexMap.get(b) ?? 0));
+
+    const normKeysSet = new Set(normKeys);
+    const cleanKeysSet = new Set(cleanKeys);
+
+    return candidates.filter(m => {
+      if (gearCleanG) {
+        const mG = mappingCleanGuid.get(m);
+        if (mG && mG === gearCleanG) return true;
+      }
+      const mNorm = mappingNormName.get(m);
+      if (mNorm && normKeysSet.has(mNorm)) return true;
+
+      const mClean = mappingCleanName.get(m);
+      if (mClean && cleanKeysSet.has(mClean)) return true;
+
+      return false;
+    });
+  };
+
+  const indexBuildMs = Math.round(performance.now() - t0);
+
+  return {
+    indexBuildMs,
+    normGuid,
+    getNormName,
+    getCleanName,
+    getCleanGuid,
+    getRelevantMappings,
+    getVerifiedGear
+  };
+}
+
 let profilesCache: { data: GearProfile[]; timestamp: number } | null = null;
 let inFlightProfilesPromise: Promise<GearProfile[]> | null = null;
 const CACHE_TTL_MS = 60000;
@@ -69,203 +304,222 @@ export const gearProfileService = {
         const prepDurationMs = Math.round(performance.now() - prepT0);
 
         const buildT0 = performance.now();
+        const ctx = createProfileBuildContext(dbMappings);
         const profiles: GearProfile[] = [];
         const seenGuids = new Set<string>();
 
-    // Helper to normalize GUIDs for solid matching
-    const normGuid = (g: string) => g ? g.toLowerCase().replace(/-/g, '').trim() : '';
+        const catalogBuildT0 = performance.now();
+        // Start with catalogItems
+        for (const item of catalogItems) {
+          const guid = item.guid || '';
+          const nGuid = ctx.normGuid(guid);
+          
+          let type = item.group; // 'amp', 'stomp', 'rack', 'cab', etc.
+          let displayName = item.displayName;
+          const aliases = Array.from(new Set([
+            ...(item.otherNames || []),
+            ...(item.examplePresets || [])
+          ]));
 
-    // Combine all inputs
-    // Start with catalogItems
-    for (const item of catalogItems) {
-      const guid = item.guid || '';
-      const nGuid = normGuid(guid);
-      
-      let type = item.group; // 'amp', 'stomp', 'rack', 'cab', etc.
-      let displayName = item.displayName;
-      const aliases = Array.from(new Set([
-        ...(item.otherNames || []),
-        ...(item.examplePresets || [])
-      ]));
+          // Darrell 100 normalization
+          const cleanName = displayName.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+          let id = nGuid ? 
+            (guid.startsWith('gear-') || guid.startsWith('name-') || guid.startsWith('name_') ? guid : `gear-${nGuid}`) : 
+            `gear-${ctx.getNormName(displayName)}-${type}`;
 
-      let id = nGuid ? 
-        (guid.startsWith('gear-') || guid.startsWith('name-') || guid.startsWith('name_') ? guid : `gear-${nGuid}`) : 
-        `gear-${normaliseName(displayName)}-${type}`;
+          if (cleanName === "darrell100" || cleanName === "darrell 100" || displayName === "Darrell 100") {
+            id = "amp_darrell_100";
+            displayName = "Darrell 100";
+            type = "amp";
+          }
 
-      // Darrell 100 normalization
-      const cleanName = displayName.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
-      if (cleanName === "darrell100" || cleanName === "darrell 100" || displayName === "Darrell 100") {
-        id = "amp_darrell_100";
-        displayName = "Darrell 100";
-        type = "amp";
-      }
+          // Single lookup of relevant mappings and verified gear definition
+          const relevantMappings = ctx.getRelevantMappings(guid, displayName, aliases);
+          const verifiedGear = ctx.getVerifiedGear(nGuid, displayName);
 
-      // Build parameters base for this item
-      const parameters = this.mergeParameters(item, displayName, nGuid, dbMappings);
+          // Build parameters base for this item
+          const parameters = this.mergeParameters(item, displayName, nGuid, relevantMappings, true, verifiedGear);
 
-      // Check validation
-      const validation = this.evaluateValidation(type, guid, aliases, parameters);
+          // Check validation
+          const validation = this.evaluateValidation(type, guid, aliases, parameters);
 
-      const valStatus = (item as any).validationStatus || (guid && (cleanName === "darrell100" || cleanName === "darrell 100") ? "verified_at5p" : undefined);
+          const valStatus = (item as any).validationStatus || (guid && (cleanName === "darrell100" || cleanName === "darrell 100") ? "verified_at5p" : undefined);
 
-      profiles.push({
-        id,
-        displayName,
-        type,
-        guid,
-        slot: item.slot || '',
-        aliases,
-        parameters,
-        validation,
-        validationStatus: valStatus,
-        parameterSource: (item as any).parameterSource || undefined,
-        guidSource: (item as any).guidSource || undefined,
-        lastValidatedAt: (item as any).lastValidatedAt || undefined,
-        lastValidatedFromPreset: (item as any).lastValidatedFromPreset || undefined,
-        profileStatus: (item as any).profileStatus || undefined,
-        confirmedGuid: (item as any).confirmedGuid || undefined,
-        confirmedGearType: (item as any).confirmedGearType || undefined,
-        discoveredFromParentCab: (item as any).discoveredFromParentCab || undefined,
-        discoveredFromField: (item as any).discoveredFromField || undefined,
-        validationMethod: (item as any).validationMethod || undefined,
-        discoveredParameters: (item as any).discoveredParameters || undefined,
-        parameterDefinitions: (item as any).parameterDefinitions || undefined,
-        sourceHistory: (item as any).sourceHistory || undefined,
-        validationQueueStatus: (item as any).validationQueueStatus || undefined,
-        ignoredAliasSuggestions: (item as any).ignoredAliasSuggestions || [],
-        discovery: {
-          isDraft: (item as any).isDraft,
-          importHistory: (item as any).importHistory || [],
-          detectedAt: (item as any).detectedAt,
-          sourcePresetFilename: (item as any).sourcePresetFilename,
-          dateApplied: (item as any).dateApplied,
-        },
-        rawSources: {
-          catalog: item,
-          mappings: dbMappings.filter(m => this.isMappingForGear(m, displayName, aliases)),
-          verified: AT5_VERIFIED_GEAR.find(v => 
-            (v.realId && normGuid(v.realId) === nGuid) || 
-            (normaliseName(v.name) === normaliseName(displayName))
-          )
+          profiles.push({
+            id,
+            displayName,
+            type,
+            guid,
+            slot: item.slot || '',
+            aliases,
+            parameters,
+            validation,
+            validationStatus: valStatus,
+            parameterSource: (item as any).parameterSource || undefined,
+            guidSource: (item as any).guidSource || undefined,
+            lastValidatedAt: (item as any).lastValidatedAt || undefined,
+            lastValidatedFromPreset: (item as any).lastValidatedFromPreset || undefined,
+            profileStatus: (item as any).profileStatus || undefined,
+            confirmedGuid: (item as any).confirmedGuid || undefined,
+            confirmedGearType: (item as any).confirmedGearType || undefined,
+            discoveredFromParentCab: (item as any).discoveredFromParentCab || undefined,
+            discoveredFromField: (item as any).discoveredFromField || undefined,
+            validationMethod: (item as any).validationMethod || undefined,
+            discoveredParameters: (item as any).discoveredParameters || undefined,
+            parameterDefinitions: (item as any).parameterDefinitions || undefined,
+            sourceHistory: (item as any).sourceHistory || undefined,
+            validationQueueStatus: (item as any).validationQueueStatus || undefined,
+            ignoredAliasSuggestions: (item as any).ignoredAliasSuggestions || [],
+            discovery: {
+              isDraft: (item as any).isDraft,
+              importHistory: (item as any).importHistory || [],
+              detectedAt: (item as any).detectedAt,
+              sourcePresetFilename: (item as any).sourcePresetFilename,
+              dateApplied: (item as any).dateApplied,
+            },
+            rawSources: {
+              catalog: item,
+              mappings: relevantMappings,
+              verified: verifiedGear
+            }
+          });
+
+          if (nGuid) {
+            seenGuids.add(nGuid);
+          }
         }
-      });
+        const catalogBuildMs = Math.round(performance.now() - catalogBuildT0);
 
-      if (nGuid) {
-        seenGuids.add(nGuid);
-      }
-    }
+        const protocolsBuildT0 = performance.now();
+        // Add unmatched verified cabs
+        for (const cab of cabs) {
+          const nGuid = ctx.normGuid(cab.guid);
+          if (nGuid && seenGuids.has(nGuid)) continue;
 
-    // Add unmatched verified cabs
-    for (const cab of cabs) {
-      const nGuid = normGuid(cab.guid);
-      if (nGuid && seenGuids.has(nGuid)) continue;
+          const id = `gear-${nGuid}`;
+          const displayName = cab.aliases?.[0] || 'Unknown Verified Cabinet';
+          const type = 'cab';
+          const aliases = cab.aliases || [];
 
-      const id = `gear-${nGuid}`;
-      const displayName = cab.aliases?.[0] || 'Unknown Verified Cabinet';
-      const type = 'cab';
-      const aliases = cab.aliases || [];
+          const relevantMappings = ctx.getRelevantMappings(cab.guid, displayName, aliases);
+          const verifiedGear = ctx.getVerifiedGear(nGuid, displayName);
 
-      const parameters = this.mergeParameters({ displayName, guid: cab.guid, group: 'cab', slot: 'CabA' }, displayName, nGuid, dbMappings);
-      const validation = this.evaluateValidation(type, cab.guid, aliases, parameters);
+          const parameters = this.mergeParameters({ displayName, guid: cab.guid, group: 'cab', slot: 'CabA' }, displayName, nGuid, relevantMappings, true, verifiedGear);
+          const validation = this.evaluateValidation(type, cab.guid, aliases, parameters);
 
-      profiles.push({
-        id,
-        displayName,
-        type,
-        guid: cab.guid,
-        slot: 'CabA',
-        aliases,
-        parameters,
-        validation,
-        rawSources: {
-          catalog: { displayName, guid: cab.guid, group: 'cab', slot: 'CabA' },
-          mappings: dbMappings.filter(m => this.isMappingForGear(m, displayName, aliases)),
-          verifiedProtocol: cab
+          profiles.push({
+            id,
+            displayName,
+            type,
+            guid: cab.guid,
+            slot: 'CabA',
+            aliases,
+            parameters,
+            validation,
+            rawSources: {
+              catalog: { displayName, guid: cab.guid, group: 'cab', slot: 'CabA' },
+              mappings: relevantMappings,
+              verifiedProtocol: cab,
+              verified: verifiedGear
+            }
+          });
+          if (nGuid) seenGuids.add(nGuid);
         }
-      });
-      if (nGuid) seenGuids.add(nGuid);
-    }
 
-    // Add unmatched verified speakers
-    for (const speaker of speakers) {
-      const nGuid = normGuid(speaker.guid);
-      if (nGuid && seenGuids.has(nGuid)) continue;
+        // Add unmatched verified speakers
+        for (const speaker of speakers) {
+          const nGuid = ctx.normGuid(speaker.guid);
+          if (nGuid && seenGuids.has(nGuid)) continue;
 
-      const id = `gear-${nGuid}`;
-      const displayName = speaker.aliases?.[0] || 'Unknown Verified Speaker';
-      const type = 'speaker';
-      const aliases = speaker.aliases || [];
+          const id = `gear-${nGuid}`;
+          const displayName = speaker.aliases?.[0] || 'Unknown Verified Speaker';
+          const type = 'speaker';
+          const aliases = speaker.aliases || [];
 
-      const parameters = this.mergeParameters({ displayName, guid: speaker.guid, group: 'speaker', slot: 'Speaker' }, displayName, nGuid, dbMappings);
-      const validation = this.evaluateValidation(type, speaker.guid, aliases, parameters);
+          const relevantMappings = ctx.getRelevantMappings(speaker.guid, displayName, aliases);
+          const verifiedGear = ctx.getVerifiedGear(nGuid, displayName);
 
-      profiles.push({
-        id,
-        displayName,
-        type,
-        guid: speaker.guid,
-        slot: 'Speaker',
-        aliases,
-        parameters,
-        validation,
-        rawSources: {
-          catalog: { displayName, guid: speaker.guid, group: 'speaker', slot: 'Speaker' },
-          mappings: dbMappings.filter(m => this.isMappingForGear(m, displayName, aliases)),
-          verifiedProtocol: speaker
+          const parameters = this.mergeParameters({ displayName, guid: speaker.guid, group: 'speaker', slot: 'Speaker' }, displayName, nGuid, relevantMappings, true, verifiedGear);
+          const validation = this.evaluateValidation(type, speaker.guid, aliases, parameters);
+
+          profiles.push({
+            id,
+            displayName,
+            type,
+            guid: speaker.guid,
+            slot: 'Speaker',
+            aliases,
+            parameters,
+            validation,
+            rawSources: {
+              catalog: { displayName, guid: speaker.guid, group: 'speaker', slot: 'Speaker' },
+              mappings: relevantMappings,
+              verifiedProtocol: speaker,
+              verified: verifiedGear
+            }
+          });
+          if (nGuid) seenGuids.add(nGuid);
         }
-      });
-      if (nGuid) seenGuids.add(nGuid);
-    }
 
-    // Add unmatched verified mics
-    for (const mic of mics) {
-      const nGuid = normGuid(mic.guid);
-      if (nGuid && seenGuids.has(nGuid)) continue;
+        // Add unmatched verified mics
+        for (const mic of mics) {
+          const nGuid = ctx.normGuid(mic.guid);
+          if (nGuid && seenGuids.has(nGuid)) continue;
 
-      const id = `gear-${nGuid}`;
-      const displayName = mic.aliases?.[0] || 'Unknown Verified Mic';
-      const type = 'mic';
-      const aliases = mic.aliases || [];
+          const id = `gear-${nGuid}`;
+          const displayName = mic.aliases?.[0] || 'Unknown Verified Mic';
+          const type = 'mic';
+          const aliases = mic.aliases || [];
 
-      const parameters = this.mergeParameters({ displayName, guid: mic.guid, group: 'mic', slot: 'Mic' }, displayName, nGuid, dbMappings);
-      const validation = this.evaluateValidation(type, mic.guid, aliases, parameters);
+          const relevantMappings = ctx.getRelevantMappings(mic.guid, displayName, aliases);
+          const verifiedGear = ctx.getVerifiedGear(nGuid, displayName);
 
-      profiles.push({
-        id,
-        displayName,
-        type,
-        guid: mic.guid,
-        slot: 'Mic',
-        aliases,
-        parameters,
-        validation,
-        rawSources: {
-          catalog: { displayName, guid: mic.guid, group: 'mic', slot: 'Mic' },
-          mappings: dbMappings.filter(m => this.isMappingForGear(m, displayName, aliases)),
-          verifiedProtocol: mic
+          const parameters = this.mergeParameters({ displayName, guid: mic.guid, group: 'mic', slot: 'Mic' }, displayName, nGuid, relevantMappings, true, verifiedGear);
+          const validation = this.evaluateValidation(type, mic.guid, aliases, parameters);
+
+          profiles.push({
+            id,
+            displayName,
+            type,
+            guid: mic.guid,
+            slot: 'Mic',
+            aliases,
+            parameters,
+            validation,
+            rawSources: {
+              catalog: { displayName, guid: mic.guid, group: 'mic', slot: 'Mic' },
+              mappings: relevantMappings,
+              verifiedProtocol: mic,
+              verified: verifiedGear
+            }
+          });
+          if (nGuid) seenGuids.add(nGuid);
         }
-      });
-      if (nGuid) seenGuids.add(nGuid);
-    }
+        const protocolsBuildMs = Math.round(performance.now() - protocolsBuildT0);
 
-      const buildDurationMs = Math.round(performance.now() - buildT0);
-      const totalDurationMs = Math.round(performance.now() - fetchT0);
+        const buildDurationMs = Math.round(performance.now() - buildT0);
+        const totalDurationMs = Math.round(performance.now() - fetchT0);
 
-      // Store completed result into memory cache before clearing in-flight tracker
-      profilesCache = { data: profiles, timestamp: Date.now() };
+        // Store completed result into memory cache before clearing in-flight tracker
+        profilesCache = { data: profiles, timestamp: Date.now() };
 
-      const isFullyCached = wasCatalogCached && wasMappingsCached && !forceRefresh;
-      console.log(JSON.stringify({
-        operation: 'getGearProfiles',
-        coreDataPrepMs: prepDurationMs,
-        profileBuildMs: buildDurationMs,
-        totalDurationMs: totalDurationMs,
-        profileCount: profiles.length,
-        parameterMappingCount: dbMappings.length,
-        source: isFullyCached ? 'cache' : 'firestore'
-      }));
+        const isFullyCached = wasCatalogCached && wasMappingsCached && !forceRefresh;
+        console.log(JSON.stringify({
+          operation: 'getGearProfiles',
+          coreDataPrepMs: prepDurationMs,
+          profileBuildMs: buildDurationMs,
+          totalDurationMs: totalDurationMs,
+          profileCount: profiles.length,
+          parameterMappingCount: dbMappings.length,
+          phases: {
+            indexBuildMs: ctx.indexBuildMs,
+            catalogBuildMs,
+            protocolsBuildMs
+          },
+          source: isFullyCached ? 'cache' : 'firestore'
+        }));
 
-      return profiles;
+        return profiles;
     } finally {
       // Clear in-flight promise so future calls/retries are not blocked
       inFlightProfilesPromise = null;
@@ -298,16 +552,20 @@ export const gearProfileService = {
     item: any,
     displayName: string,
     normalizedGuid: string,
-    dbMappings: ParameterMapping[]
+    dbMappings: ParameterMapping[],
+    isAlreadyRelevant = false,
+    verifiedGearOverride?: any
   ): GearProfileParameter[] {
     const paramsMap = new Map<string, GearProfileParameter>();
 
     // 1. Load AT5_VERIFIED_GEAR override parameters if present
-    const verifiedGear = AT5_VERIFIED_GEAR.find(v => 
-      (v.realId && normalizedGuid && v.realId.toLowerCase().replace(/-/g, '') === normalizedGuid) || 
-      (normaliseName(v.name) === normaliseName(displayName)) ||
-      (cleanGearNameForMatching(v.name) === cleanGearNameForMatching(displayName))
-    );
+    const verifiedGear = verifiedGearOverride !== undefined 
+      ? verifiedGearOverride 
+      : AT5_VERIFIED_GEAR.find(v => 
+          (v.realId && normalizedGuid && v.realId.toLowerCase().replace(/-/g, '') === normalizedGuid) || 
+          (normaliseName(v.name) === normaliseName(displayName)) ||
+          (cleanGearNameForMatching(v.name) === cleanGearNameForMatching(displayName))
+        );
 
     if (verifiedGear && verifiedGear.params) {
       for (const p of verifiedGear.params) {
@@ -384,20 +642,74 @@ export const gearProfileService = {
     }
 
     // 3. Load DB parameter_mappings list that match
-    const aliasSet = new Set([
-      normaliseName(displayName),
-      cleanGearNameForMatching(displayName),
-      ...(item.otherNames || []).map(normaliseName),
-      ...(item.otherNames || []).map(cleanGearNameForMatching),
-      ...(item.examplePresets || []).map(normaliseName),
-      ...(item.examplePresets || []).map(cleanGearNameForMatching)
-    ]);
-    const relevantDb = dbMappings.filter(m => {
-      if (aliasSet.has(normaliseName(m.gearName))) return true;
-      if (aliasSet.has(cleanGearNameForMatching(m.gearName))) return true;
-      if (m.gearGuid && normalizedGuid && m.gearGuid.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedGuid.toLowerCase().replace(/[^a-z0-9]/g, '')) return true;
-      return false;
-    });
+    let relevantDb: ParameterMapping[];
+    if (isAlreadyRelevant) {
+      relevantDb = dbMappings;
+    } else {
+      const aliasSet = new Set([
+        normaliseName(displayName),
+        cleanGearNameForMatching(displayName),
+        ...(item.otherNames || []).map(normaliseName),
+        ...(item.otherNames || []).map(cleanGearNameForMatching),
+        ...(item.examplePresets || []).map(normaliseName),
+        ...(item.examplePresets || []).map(cleanGearNameForMatching)
+      ]);
+      relevantDb = dbMappings.filter(m => {
+        if (aliasSet.has(normaliseName(m.gearName))) return true;
+        if (aliasSet.has(cleanGearNameForMatching(m.gearName))) return true;
+        if (m.gearGuid && normalizedGuid && m.gearGuid.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedGuid.toLowerCase().replace(/[^a-z0-9]/g, '')) return true;
+        return false;
+      });
+    }
+
+    // Fast parameter indexing
+    const paramKeyIndex = new Map<string, Set<string>>();
+
+    const addNameToIndex = (name: string | undefined, paramKey: string) => {
+      if (!name) return;
+      const clean = name.toLowerCase().trim();
+      if (!clean) return;
+      let set = paramKeyIndex.get(clean);
+      if (!set) {
+        set = new Set<string>();
+        paramKeyIndex.set(clean, set);
+      }
+      set.add(paramKey);
+    };
+
+    const registerParamInIndex = (paramKey: string, p: GearProfileParameter) => {
+      addNameToIndex(paramKey, paramKey);
+      addNameToIndex(p.canonicalName, paramKey);
+      addNameToIndex(p.canonicalParameterName, paramKey);
+      addNameToIndex(p.export?.name, paramKey);
+      addNameToIndex(p.at5XmlAttributeName, paramKey);
+      addNameToIndex(p.displayName, paramKey);
+      addNameToIndex(p.displayParameterName, paramKey);
+      if (Array.isArray(p.aliases)) {
+        for (let i = 0; i < p.aliases.length; i++) addNameToIndex(p.aliases[i], paramKey);
+      }
+      if (Array.isArray(p.savedAliases)) {
+        for (let i = 0; i < p.savedAliases.length; i++) addNameToIndex(p.savedAliases[i], paramKey);
+      }
+      if (Array.isArray(p.effectiveAliases)) {
+        for (let i = 0; i < p.effectiveAliases.length; i++) addNameToIndex(p.effectiveAliases[i], paramKey);
+      }
+    };
+
+    const removeParamKeyFromIndex = (paramKey: string) => {
+      for (const [name, set] of paramKeyIndex.entries()) {
+        if (set.has(paramKey)) {
+          set.delete(paramKey);
+          if (set.size === 0) {
+            paramKeyIndex.delete(name);
+          }
+        }
+      }
+    };
+
+    for (const [k, p] of paramsMap.entries()) {
+      registerParamInIndex(k, p);
+    }
 
     for (const dbM of relevantDb) {
       const targetKeys = [
@@ -410,23 +722,24 @@ export const gearProfileService = {
         ...(Array.isArray(dbM.aliases) ? dbM.aliases : [])
       ].filter(Boolean).map(s => s!.toLowerCase().trim());
 
-      const matchingKeys: string[] = [];
-      for (const [k, p] of paramsMap.entries()) {
-        const pNames = [
-          k,
-          p.canonicalName,
-          p.canonicalParameterName,
-          p.export?.name,
-          p.at5XmlAttributeName,
-          p.displayName,
-          p.displayParameterName,
-          ...(p.aliases || []),
-          ...(p.savedAliases || []),
-          ...(p.effectiveAliases || [])
-        ].filter(Boolean).map(s => s.toLowerCase().trim());
+      const matchingKeysSet = new Set<string>();
+      for (let i = 0; i < targetKeys.length; i++) {
+        const matched = paramKeyIndex.get(targetKeys[i]);
+        if (matched) {
+          for (const pk of matched) {
+            if (paramsMap.has(pk)) {
+              matchingKeysSet.add(pk);
+            }
+          }
+        }
+      }
 
-        if (targetKeys.some(tk => pNames.includes(tk))) {
-          matchingKeys.push(k);
+      const matchingKeys: string[] = [];
+      if (matchingKeysSet.size > 0) {
+        for (const k of paramsMap.keys()) {
+          if (matchingKeysSet.has(k)) {
+            matchingKeys.push(k);
+          }
         }
       }
 
@@ -435,13 +748,13 @@ export const gearProfileService = {
         existing = paramsMap.get(matchingKeys[0]);
         // Clean up redundant duplicate entries from paramsMap so only one authoritative entry remains
         for (let i = 1; i < matchingKeys.length; i++) {
-          paramsMap.delete(matchingKeys[i]);
+          const keyToDelete = matchingKeys[i];
+          paramsMap.delete(keyToDelete);
+          removeParamKeyFromIndex(keyToDelete);
         }
       }
 
       const valStatus = (dbM.conversion && dbM.conversion !== 'unknown') ? 'PASS' : 'WARN';
-
-      const dbAliases = Array.isArray(dbM.aliases) ? dbM.aliases : [];
 
       if (existing) {
         existing.displayName = dbM.displayParameterName || dbM.parameter || existing.displayName;
@@ -526,6 +839,8 @@ export const gearProfileService = {
         existing.valueMapJson = dbM.valueMapJson ?? existing.valueMapJson;
         existing.reverseValueMapJson = dbM.reverseValueMapJson ?? existing.reverseValueMapJson;
         (existing as any)._isDbHydrated = true;
+
+        registerParamInIndex(matchingKeys[0], existing);
       } else {
         const dbSavedAliases = (dbM.savedAliases && dbM.savedAliases.length > 0) ? dbM.savedAliases : (dbM.aliases || []);
         const dbRawAliases = dbM.rawMappingAliases || dbM.aliases || [];
@@ -603,6 +918,7 @@ export const gearProfileService = {
         };
         (newParam as any)._isDbHydrated = true;
         paramsMap.set(newKey, newParam);
+        registerParamInIndex(newKey, newParam);
       }
     }
 
@@ -922,12 +1238,3 @@ export const gearProfileService = {
     await Promise.all([refreshCatalog(true), refreshCoreParameterMappings(true)]);
   }
 };
-
-const normaliseName = (value: string) =>
-  value
-    ? value
-        .toLowerCase()
-        .replace(/['’]/g, "")
-        .replace(/[^a-z0-9]+/g, " ")
-        .trim()
-    : "";

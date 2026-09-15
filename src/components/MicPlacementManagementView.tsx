@@ -24,7 +24,7 @@ import {
   VIRReferenceOverrides
 } from '../services/at5MicPlacementService';
 import { at5DatabaseService } from '../services/at5DatabaseService';
-import { setDbMicPlacementMappings } from '../services/at5ParameterManifest';
+import { setDbMicPlacementMappings, ensureMicPlacementDataLoaded } from '../services/at5ParameterManifest';
 import { 
   Sliders, 
   CheckCircle2, 
@@ -132,12 +132,17 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const cabGuid = isValidCab ? (cabProfile?.guid || '') : '';
   const isReferenceCab = isValidCab ? isVIRReferenceCabinet(cabName, cabGuid) : false;
 
-  const loadMappings = async () => {
+  const loadMappings = async (forceRefresh = false) => {
     setIsLoadingMappings(true);
     try {
-      const mappings = await at5DatabaseService.getMicPlacementMappings();
+      const mappings = await ensureMicPlacementDataLoaded(forceRefresh);
       setDbMappings(mappings);
       setDbMicPlacementMappings(mappings);
+      const overrides = await at5DatabaseService.getVIRReferenceOverrides(forceRefresh);
+      if (overrides && (overrides.positions || overrides.distances || overrides.angles)) {
+        setVIRCalibrationOverrides(overrides);
+        setRefCalibrationVersion(v => v + 1);
+      }
     } catch (err: any) {
       console.error('Error fetching mic placement mappings:', err);
     } finally {
@@ -147,15 +152,6 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
   useEffect(() => {
     loadMappings();
-    // Load durable VIR Reference Calibration overrides from Firestore
-    at5DatabaseService.getVIRReferenceOverrides().then(overrides => {
-      if (overrides && (overrides.positions || overrides.distances || overrides.angles)) {
-        setVIRCalibrationOverrides(overrides);
-        setRefCalibrationVersion(v => v + 1);
-      }
-    }).catch(err => {
-      console.warn("Could not load VIR reference overrides from Firestore:", err);
-    });
   }, []);
 
   // Filter mappings for this cabinet
@@ -549,7 +545,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
           <div className="flex items-center gap-3">
             <button
-              onClick={loadMappings}
+              onClick={() => loadMappings(true)}
               disabled={isLoadingMappings}
               className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 rounded-xl transition-all"
               title="Refresh database mappings"

@@ -50,7 +50,7 @@ import { auth, signInWithGoogle } from './services/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { refreshCatalog } from './services/at5Catalog';
 import { refreshProtocols } from './services/at5VerifiedProtocols';
-import { refreshDbParameterMappings } from './services/at5ParameterManifest';
+import { refreshCoreParameterMappings, ensureMicPlacementDataLoaded } from './services/at5ParameterManifest';
 import {
   loadWorkingSession,
   saveWorkingSession,
@@ -210,7 +210,7 @@ export default function App() {
 
   const handleRefreshChain = useCallback(async () => {
     setIsDbRefreshing(true);
-    await Promise.all([refreshCatalog(), refreshProtocols(), refreshDbParameterMappings()]);
+    await Promise.all([refreshCatalog(), refreshProtocols(), refreshCoreParameterMappings(true)]);
     setDbVersion(prev => prev + 1);
     setIsDbRefreshing(false);
   }, []);
@@ -220,10 +220,10 @@ export default function App() {
       setUser(u);
     });
 
-    // Initial data refresh
+    // Initial data refresh - loads only core parameter mappings, deferring mic/VIR data
     const initDb = async () => {
       setIsDbRefreshing(true);
-      await Promise.all([refreshCatalog(), refreshProtocols(), refreshDbParameterMappings()]);
+      await Promise.all([refreshCatalog(), refreshProtocols(), refreshCoreParameterMappings()]);
       setIsDbRefreshing(false);
     };
     initDb();
@@ -340,6 +340,7 @@ export default function App() {
     setIsTranslating(true);
 
     try {
+      await ensureMicPlacementDataLoaded();
       const data = getExportData(toneResult, currentChain);
 
       const finalName = customName.endsWith(".at5p")
