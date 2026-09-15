@@ -48,11 +48,15 @@ import {
 
 interface MicPlacementManagementViewProps {
   cabProfile?: GearProfile | null;
+  cabProfiles?: GearProfile[];
+  onSelectCabProfile?: (cab: GearProfile) => void;
   onRefreshChain?: () => void;
 }
 
 export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProps> = ({
   cabProfile,
+  cabProfiles,
+  onSelectCabProfile,
   onRefreshChain
 }) => {
   const [dbMappings, setDbMappings] = useState<MicPlacementMapping[]>([]);
@@ -123,9 +127,10 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     );
   }, [refCalibrationVersion]);
 
-  const cabName = cabProfile?.displayName || VIR_REFERENCE_CABINETS[0].name;
-  const cabGuid = cabProfile?.guid || VIR_REFERENCE_CABINETS[0].guid;
-  const isReferenceCab = isVIRReferenceCabinet(cabName, cabGuid);
+  const isValidCab = Boolean(cabProfile && cabProfile.type === 'cab');
+  const cabName = isValidCab ? (cabProfile?.displayName || '') : '';
+  const cabGuid = isValidCab ? (cabProfile?.guid || '') : '';
+  const isReferenceCab = isValidCab ? isVIRReferenceCabinet(cabName, cabGuid) : false;
 
   const loadMappings = async () => {
     setIsLoadingMappings(true);
@@ -155,15 +160,27 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
   // Filter mappings for this cabinet
   const cabSpecificMappings = useMemo(() => {
+    if (!isValidCab || !cabName) return [];
     const cleanCab = cabName.toLowerCase().replace(/[^a-z0-9]/g, '');
     return dbMappings.filter(m => {
       const gearClean = (m.gear || m.cabName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
       return gearClean === cleanCab || (m.cabGuid && cabGuid && m.cabGuid.toLowerCase().replace(/[^a-z0-9]/g, '') === cabGuid.toLowerCase().replace(/[^a-z0-9]/g, ''));
     });
-  }, [dbMappings, cabName, cabGuid]);
+  }, [dbMappings, isValidCab, cabName, cabGuid]);
 
   // Live resolution result in sandbox
   const liveResolution: PlacementResolutionResult = useMemo(() => {
+    if (!isValidCab || !cabName) {
+      return {
+        resolved: false,
+        coordinates: { XAxis: 0, YAxis: 0, Distance: 0, Angle: 0, Speaker: 0 },
+        resolutionSource: 'safe_default',
+        isEstimated: false,
+        isReferenceCalibration: false,
+        warning: 'No valid Cabinet profile selected.',
+        parsedLabel: ''
+      };
+    }
     const inputLabel = useCustomInput 
       ? customTestInput 
       : `${testPosition}, ${testDistance}${testAngle !== 'On Axis' ? `, ${testAngle}` : ''}`;
@@ -176,7 +193,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
       micModelName: testMicModel,
       dbMappings
     });
-  }, [cabName, cabGuid, testSlot, testMicModel, testPosition, testDistance, testAngle, customTestInput, useCustomInput, dbMappings, refCalibrationVersion]);
+  }, [isValidCab, cabName, cabGuid, testSlot, testMicModel, testPosition, testDistance, testAngle, customTestInput, useCustomInput, dbMappings, refCalibrationVersion]);
 
   // Handle open Add Modal (clean state)
   const handleOpenAddModal = () => {
@@ -463,6 +480,51 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     if (onRefreshChain) onRefreshChain();
   };
 
+  if (!isValidCab) {
+    return (
+      <div className="space-y-6" id="mic-placement-management-view">
+        <div className="bg-[#111116] border border-white/10 rounded-3xl p-10 text-center flex flex-col items-center justify-center space-y-5 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+            <Crosshair className="w-8 h-8" />
+          </div>
+          <div className="space-y-2 max-w-lg">
+            <h3 className="text-lg font-mono font-bold text-white uppercase tracking-wider">
+              No Cabinet Profile Selected
+            </h3>
+            <p className="text-xs text-gray-400 font-mono leading-relaxed">
+              VIR Mic Placement operates only against an active Cabinet Gear Profile. Please select a Cabinet profile from the Gear Profiles view or choose one from the available cabinets below.
+            </p>
+          </div>
+
+          {cabProfiles && cabProfiles.length > 0 && onSelectCabProfile && (
+            <div className="pt-3 flex flex-col items-center gap-2">
+              <span className="text-[10px] font-mono uppercase text-gray-400 font-bold tracking-wider">
+                Select a Cabinet Profile:
+              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const found = cabProfiles.find(c => (c.id === e.target.value) || (c.guid === e.target.value));
+                    if (found) onSelectCabProfile(found);
+                  }}
+                  className="bg-[#181820] border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-xs font-mono font-bold rounded-xl px-4 py-2.5 outline-none cursor-pointer transition-all shadow-lg"
+                >
+                  <option value="" disabled>Choose a cabinet...</option>
+                  {cabProfiles.map(cab => (
+                    <option key={cab.id || cab.guid} value={cab.id || cab.guid} className="bg-[#18181f] text-white">
+                      {cab.displayName} ({cab.guid})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8" id="mic-placement-management-view">
       {/* 1. HEADER & PRECEDENCE BANNER */}
@@ -564,10 +626,34 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
       {/* 2. ACTIVE CABINET CONTEXT & REFERENCE SCOPE BADGE */}
       <div className="bg-[#141418] border border-white/5 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <span className="text-[10px] font-mono uppercase text-gray-500 font-bold tracking-wider">Active Target Cabinet:</span>
-            <span className="text-sm font-bold font-mono text-white">{cabName}</span>
-            <span className="text-[10px] font-mono text-gray-500 truncate max-w-[280px]">({cabGuid})</span>
+            {cabProfiles && cabProfiles.length > 0 && onSelectCabProfile ? (
+              <div className="flex items-center gap-2">
+                <select
+                  value={cabProfile?.id || cabProfile?.guid || ''}
+                  onChange={(e) => {
+                    const selected = cabProfiles.find(c => (c.id === e.target.value) || (c.guid === e.target.value));
+                    if (selected) {
+                      onSelectCabProfile(selected);
+                    }
+                  }}
+                  className="bg-[#1e1e24] border border-cyan-500/30 hover:border-cyan-400/60 text-cyan-300 text-xs font-mono font-bold rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-cyan-400 transition-all cursor-pointer shadow-sm"
+                >
+                  {cabProfiles.map(cab => (
+                    <option key={cab.id || cab.guid} value={cab.id || cab.guid} className="bg-[#18181f] text-white">
+                      {cab.displayName}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-[10px] font-mono text-gray-500 truncate max-w-[280px]">({cabGuid})</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold font-mono text-white">{cabName}</span>
+                <span className="text-[10px] font-mono text-gray-500 truncate max-w-[280px]">({cabGuid})</span>
+              </div>
+            )}
           </div>
           <p className="text-xs text-gray-400 font-mono">
             {isReferenceCab ? (

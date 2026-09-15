@@ -669,16 +669,36 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
   }, [profiles, searchTerm, selectedType, selectedStatus]);
 
   // Handle select a profile for viewing/editing
-  const handleSelectProfile = (p: GearProfile) => {
+  const handleSelectProfile = (p: GearProfile, preserveViewMode: boolean = false) => {
     setSelectedProfile(p);
     setEditedProfile(JSON.parse(JSON.stringify(p)));
     setProfileTab('overview');
-    setViewMode('profiles');
+    if (!preserveViewMode) {
+      setViewMode('profiles');
+    }
     setTabPresetFile(null);
     setTabPresetImportResult(null);
     setCompareError(null);
     setCompareSuccessMessage(null);
     setCustomMicPlacementFriendlyValue("");
+  };
+
+  // Cabinet selection state & helpers for VIR Mic Placement
+  const isCabSelected = Boolean(selectedProfile && selectedProfile.type === 'cab');
+  const virDisabledTooltip = !selectedProfile
+    ? "Select a Cabinet Gear Profile to configure VIR Mic Placement"
+    : selectedProfile.type !== 'cab'
+      ? `VIR Mic Placement requires a Cabinet profile (currently selected: ${selectedProfile.displayName} [${selectedProfile.type.toUpperCase()}])`
+      : undefined;
+
+  // All Cabinet profiles for VIR navigation (only type === 'cab')
+  const cabProfiles = useMemo(() => {
+    return profiles.filter(p => p.type === 'cab');
+  }, [profiles]);
+
+  // Dedicated callback for VIR Cabinet selector to update selectedProfile while preserving active VIR view
+  const handleSelectCabFromVIR = (cab: GearProfile) => {
+    handleSelectProfile(cab, true);
   };
 
   // Profile field modifications
@@ -3264,8 +3284,16 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
           </button>
 
           <button
-            onClick={() => setViewMode('mic_placement')}
-            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${viewMode === 'mic_placement' ? 'bg-cyan-500 text-black font-semibold' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
+            onClick={() => isCabSelected && setViewMode('mic_placement')}
+            disabled={!isCabSelected}
+            title={virDisabledTooltip}
+            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${
+              !isCabSelected
+                ? 'opacity-40 cursor-not-allowed bg-white/5 text-gray-600 border border-white/5'
+                : viewMode === 'mic_placement'
+                  ? 'bg-cyan-500 text-black font-semibold'
+                  : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'
+            }`}
           >
             <Crosshair className="w-3.5 h-3.5" />
             VIR Mic Placement
@@ -4751,7 +4779,9 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                   {profileTab === 'mic_placement' && (
                     <div className="pt-2">
                       <MicPlacementManagementView
-                        cabProfile={editedProfile}
+                        cabProfile={editedProfile && editedProfile.type === 'cab' ? editedProfile : null}
+                        cabProfiles={cabProfiles}
+                        onSelectCabProfile={handleSelectCabFromVIR}
                         onRefreshChain={onRefreshChain}
                       />
                     </div>
@@ -6628,6 +6658,8 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
         <div className="space-y-6">
           <MicPlacementManagementView
             cabProfile={selectedProfile && selectedProfile.type === 'cab' ? selectedProfile : null}
+            cabProfiles={cabProfiles}
+            onSelectCabProfile={handleSelectCabFromVIR}
             onRefreshChain={onRefreshChain}
           />
         </div>
