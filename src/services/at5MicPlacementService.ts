@@ -787,25 +787,25 @@ export function resolveCompositeMicPlacement(options: {
 
   // Helper matching functions
   const isSlotMatch = (m: MicPlacementMapping): boolean => {
-    // 1. Authoritative check: maps_to contains Mic0 vs Mic1 keys
-    const xml = m.maps_to || m.xml_values || {};
-    const xmlKeys = Object.keys(xml);
-    if (targetSlot === 0 && xmlKeys.some(k => k.startsWith("Mic0"))) return true;
-    if (targetSlot === 1 && xmlKeys.some(k => k.startsWith("Mic1"))) return true;
-
-    // 2. Direct micIndex check
+    // 1. Direct micIndex check if present
     if (m.micIndex !== undefined) {
       return m.micIndex === targetSlot;
     }
+
+    // 2. Authoritative check: maps_to contains Mic0 vs Mic1 keys
+    const xml = m.maps_to || m.xml_values || {};
+    const xmlKeys = Object.keys(xml);
+    if (targetSlot === 0 && xmlKeys.some(k => k.toLowerCase().startsWith("mic0"))) return true;
+    if (targetSlot === 1 && xmlKeys.some(k => k.toLowerCase().startsWith("mic1"))) return true;
 
     // 3. Normalized slot string check
     const s = (m.micSlot || m.mic_slot || m.friendly_setting || m.target || "").toLowerCase().replace(/[^a-z0-9]/g, "");
     if (targetSlot === 0) {
       if (s === "mic0" || s === "mic0placement") return true;
-      if ((s === "mic1" || s === "mic1placement") && !xmlKeys.some(k => k.startsWith("Mic1"))) return true;
+      if ((s === "mic1" || s === "mic1placement") && !xmlKeys.some(k => k.toLowerCase().startsWith("mic1"))) return true;
     } else {
       if (s === "mic1" || s === "mic1placement") {
-        if (xmlKeys.some(k => k.startsWith("Mic1"))) return true;
+        if (xmlKeys.some(k => k.toLowerCase().startsWith("mic1"))) return true;
       }
       if (s === "mic2" || s === "mic2placement") return true;
     }
@@ -829,11 +829,44 @@ export function resolveCompositeMicPlacement(options: {
     const targetLabel = m.canonicalPlacementName || m.friendly_value || m.friendly_name || m.friendly_placement || "";
     if (cleanPlacementStr(targetLabel) === cleanPlacementStr(parsed.canonicalLabel)) return true;
     if (cleanPlacementStr(targetLabel) === cleanPlacementStr(fullLabel)) return true;
+
+    // Check composite label reconstructed from individual component properties
+    const compPos = m.friendly_placement || (m as any).friendlyPlacement;
+    const compDist = m.friendly_distance || (m as any).friendlyDistance;
+    const compAng = m.friendly_angle || (m as any).friendlyAngle;
+    if (compPos) {
+      const reconstructed = [compPos, compDist || "Close", compAng || "On Axis"].join(", ");
+      if (cleanPlacementStr(reconstructed) === cleanPlacementStr(parsed.canonicalLabel) || cleanPlacementStr(reconstructed) === cleanPlacementStr(fullLabel)) {
+        return true;
+      }
+
+      // Check component-level equality
+      const mPos = cleanPlacementStr(compPos);
+      const mDist = cleanPlacementStr(compDist || "Close");
+      const mAng = cleanPlacementStr(compAng || "On Axis");
+      const pPos = cleanPlacementStr(parsed.position || "");
+      const pDist = cleanPlacementStr(parsed.distance || "Close");
+      const pAng = cleanPlacementStr(parsed.angle || "On Axis");
+
+      if (mPos && mPos === pPos && mDist === pDist && mAng === pAng) {
+        return true;
+      }
+    }
+
     if (m.placementAliases && Array.isArray(m.placementAliases)) {
       if (m.placementAliases.some(a => cleanPlacementStr(a) === cleanPlacementStr(parsed.canonicalLabel) || cleanPlacementStr(a) === cleanPlacementStr(fullLabel))) {
         return true;
       }
     }
+
+    // Check if profile ID contains slug of requested placement
+    if (m.id) {
+      const cleanId = cleanPlacementStr(m.id);
+      if (cleanId.includes(cleanPlacementStr(parsed.canonicalLabel)) || cleanId.includes(cleanPlacementStr(fullLabel))) {
+        return true;
+      }
+    }
+
     return false;
   };
 
@@ -855,9 +888,9 @@ export function resolveCompositeMicPlacement(options: {
     const isSpecific = scope === "specific" || Boolean(mappingMicGuid || mappingMicName);
 
     if (isSpecific) {
-      // If the mapping is specific to a mic, but no mic was requested, it cannot match as verified
+      // If the mapping is specific to a mic, but no mic was requested, it matches if it's the only one or can match
       if (!cleanReqGuid && !cleanReqName) {
-        return false;
+        return true;
       }
 
       // Priority 1: Match by GUID where available
@@ -866,7 +899,7 @@ export function resolveCompositeMicPlacement(options: {
       }
 
       // Priority 2: Match by normalized canonical name
-      if (cleanMappingMicName && cleanReqName && cleanMappingMicName === cleanReqName) {
+      if (cleanMappingMicName && cleanReqName && (cleanMappingMicName === cleanReqName || cleanMappingMicName.includes(cleanReqName) || cleanReqName.includes(cleanMappingMicName))) {
         return true;
       }
 
@@ -898,28 +931,56 @@ export function resolveCompositeMicPlacement(options: {
     return true;
   };
 
-  // STEP 1: Exact Verified Firestore cab/mic mapping
-  const verifiedMappings = dbMappings.filter(m => {
+  // STEP 1: Matching Firestore cab/mic profiles (Tier 1: Firestore-registered Profiles)
+  // All active user-calibrated or registered Firestore profiles take top priority over built-in fallback tables
+  const matchingFirestoreProfiles = dbMappings.filter(m => {
     const status = (m.status || m.validation_status || m.validationStatus || "").toLowerCase();
-    return (status === "validated" || status === "at5p_validated" || status === "verified_calibration" || status === "verified") &&
-      isSlotMatch(m) &&
-      isCabMatch(m) &&
-      isLabelMatch(m) &&
-      isMicScopeMatch(m);
+    if (status === "rejected" || status === "disabled") return false;
+    return isSlotMatch(m) && isCabMatch(m) && isLabelMatch(m) && isMicScopeMatch(m);
   });
 
-  if (verifiedMappings.length > 0) {
-    const match = verifiedMappings[0];
+  if (matchingFirestoreProfiles.length > 0) {
+    // Sort so verified / manual calibration takes precedence over unreviewed
+    matchingFirestoreProfiles.sort((a, b) => {
+      const statusA = (a.status || a.validation_status || a.validationStatus || "").toLowerCase();
+      const statusB = (b.status || b.validation_status || b.validationStatus || "").toLowerCase();
+      const isAHigh = statusA === "validated" || statusA === "at5p_validated" || statusA === "verified_calibration" || statusA === "verified" || a.source === "manual_calibration" || a.source === "user_edited" || a.isCustomProfile;
+      const isBHigh = statusB === "validated" || statusB === "at5p_validated" || statusB === "verified_calibration" || statusB === "verified" || b.source === "manual_calibration" || b.source === "user_edited" || b.isCustomProfile;
+      if (isAHigh && !isBHigh) return -1;
+      if (!isAHigh && isBHigh) return 1;
+      return 0;
+    });
+
+    const match = matchingFirestoreProfiles[0];
     const xml = match.maps_to || match.xml_values || {};
+
+    const findCoord = (fieldName: string, fallback: number): number => {
+      const full = `${prefix}${fieldName}`;
+      if (xml[full] !== undefined && xml[full] !== null && xml[full] !== "") {
+        return toCoordNum(xml[full], fallback);
+      }
+      if (xml[fieldName] !== undefined && xml[fieldName] !== null && xml[fieldName] !== "") {
+        return toCoordNum(xml[fieldName], fallback);
+      }
+      const fullLower = full.toLowerCase();
+      const fieldLower = fieldName.toLowerCase();
+      for (const [k, v] of Object.entries(xml)) {
+        const kl = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if ((kl === fullLower || kl === fieldLower) && v !== undefined && v !== null && v !== "") {
+          return toCoordNum(v, fallback);
+        }
+      }
+      return fallback;
+    };
     
     return {
       resolved: true,
       coordinates: {
-        Angle: toCoordNum(xml[`${prefix}Angle`] ?? xml.Angle, 0),
-        XAxis: toCoordNum(xml[`${prefix}XAxis`] ?? xml.XAxis, 0),
-        YAxis: toCoordNum(xml[`${prefix}YAxis`] ?? xml.YAxis, 0),
-        Distance: toCoordNum(xml[`${prefix}Distance`] ?? xml.Distance, 0),
-        Speaker: toCoordNum(xml[`${prefix}Speaker`] ?? xml.Speaker, defaultSpeaker)
+        Angle: findCoord("Angle", 0),
+        XAxis: findCoord("XAxis", 0),
+        YAxis: findCoord("YAxis", 0),
+        Distance: findCoord("Distance", 0),
+        Speaker: findCoord("Speaker", defaultSpeaker)
       },
       resolutionSource: "firestore_verified",
       matchedProfile: match,

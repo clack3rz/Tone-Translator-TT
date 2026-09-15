@@ -24,6 +24,7 @@ import {
   VIRReferenceOverrides
 } from '../services/at5MicPlacementService';
 import { at5DatabaseService } from '../services/at5DatabaseService';
+import { setDbMicPlacementMappings } from '../services/at5ParameterManifest';
 import { 
   Sliders, 
   CheckCircle2, 
@@ -41,7 +42,8 @@ import {
   Pencil,
   RotateCcw,
   SlidersHorizontal,
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
 
 interface MicPlacementManagementViewProps {
@@ -57,6 +59,10 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [isLoadingMappings, setIsLoadingMappings] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
   const [saveErrorMsg, setSaveErrorMsg] = useState<string | null>(null);
+
+  // Deletion state
+  const [deletingMapping, setDeletingMapping] = useState<MicPlacementMapping | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   // Live Tester / Sandbox state
   const [testSlot, setTestSlot] = useState<'Mic_0' | 'Mic_1' | 'Mic_2'>('Mic_0');
@@ -126,6 +132,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     try {
       const mappings = await at5DatabaseService.getMicPlacementMappings();
       setDbMappings(mappings);
+      setDbMicPlacementMappings(mappings);
     } catch (err: any) {
       console.error('Error fetching mic placement mappings:', err);
     } finally {
@@ -313,18 +320,79 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     }
   };
 
-  const handleDeleteMapping = async (id?: string) => {
-    if (!id) return;
-    if (!window.confirm('Delete this custom mic placement profile? This cannot be undone.')) return;
+  // Single shared deletion workflow entry point
+  const requestDeleteCustomMicPlacement = (profile: MicPlacementMapping | null) => {
+    if (!profile) return;
+    setDeletingMapping(profile);
+  };
+
+  // Authoritative deletion execution targeting original persistent Firestore document ID
+  const executeDeleteCustomMicPlacement = async () => {
+    if (!deletingMapping) return;
+
+    // Prioritize persistent identity: firestoreDocumentId -> id -> originalProfileId
+    // CRITICAL: NEVER derive the Firestore deletion target from normalized slot or editor state
+    const targetDocId = (
+      deletingMapping.firestoreDocumentId ||
+      deletingMapping.id ||
+      deletingMapping.originalProfileId
+    )?.trim();
+
+    if (!targetDocId) {
+      const errorMsg = 'Failed to delete Mic Placement Profile: Missing persistent Firestore document ID.';
+      console.error(errorMsg, deletingMapping);
+      setSaveErrorMsg(errorMsg);
+      setDeletingMapping(null);
+      return;
+    }
+
+    setIsDeleting(true);
+    setSaveErrorMsg(null);
+    setSaveSuccessMsg(null);
+
     try {
-      await at5DatabaseService.deleteMicPlacementMapping(id);
+      console.log(`[MicPlacementManagementView] Deleting profile with persistent document ID: "${targetDocId}"`);
+      await at5DatabaseService.deleteMicPlacementMapping(targetDocId);
+
+      // Refresh registered profile state across app
       await loadMappings();
       if (onRefreshChain) onRefreshChain();
-      setShowAddModal(false);
-      setEditingMapping(null);
-      setSaveSuccessMsg('Custom mic placement profile deleted successfully.');
+
+      // If Edit modal was open for this mapping, close it cleanly
+      if (
+        editingMapping &&
+        (editingMapping.id === targetDocId ||
+         editingMapping.firestoreDocumentId === targetDocId ||
+         editingMapping.originalProfileId === targetDocId)
+      ) {
+        setShowAddModal(false);
+        setEditingMapping(null);
+      }
+
+      // Close confirmation dialog
+      setDeletingMapping(null);
+
+      // Provide visible success feedback
+      setSaveSuccessMsg('Mic Placement Profile deleted successfully.');
     } catch (err: any) {
-      setSaveErrorMsg(`Failed to delete mapping: ${err.message}`);
+      console.error(`[MicPlacementManagementView] Failed to delete mic placement profile "${targetDocId}":`, err);
+      let readableError = err.message || String(err);
+      try {
+        const parsed = JSON.parse(readableError);
+        if (parsed.error) readableError = parsed.error;
+      } catch {
+        // Not JSON
+      }
+      if (
+        readableError.includes('Must be signed in') ||
+        readableError.includes('permission-denied') ||
+        readableError.includes('insufficient permissions')
+      ) {
+        readableError = 'You must be signed in with Google to delete profiles from Firestore.';
+      }
+      setSaveErrorMsg(`Failed to delete Mic Placement Profile: ${readableError}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -815,7 +883,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => handleDeleteMapping(m.id)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestDeleteCustomMicPlacement(m);
+                        }}
                         className="p-1.5 text-gray-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-all"
                         title="Delete custom profile"
                       >
@@ -1098,9 +1170,13 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <div>
-                {editingMapping && editingMapping.id && (
+                {editingMapping && (editingMapping.firestoreDocumentId || editingMapping.id || editingMapping.originalProfileId) && (
                   <button
-                    onClick={() => handleDeleteMapping(editingMapping.id)}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      requestDeleteCustomMicPlacement(editingMapping);
+                    }}
                     className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/25 text-xs font-mono font-bold uppercase rounded-xl transition-all"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -1303,6 +1379,83 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                   Save Reference Coordinates
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 7. DELETE CONFIRMATION MODAL */}
+      {deletingMapping && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+          <div className="bg-[#18181f] border border-rose-500/30 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in duration-150">
+            <div className="flex items-start gap-3.5">
+              <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-2xl text-rose-400 shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-base font-bold font-display text-white">
+                  Delete Custom Mic Placement?
+                </h4>
+                <p className="text-xs text-gray-400 font-mono">
+                  This permanently removes this calibrated placement profile.
+                </p>
+              </div>
+            </div>
+
+            {/* Profile summary card */}
+            <div className="bg-black/40 border border-white/10 rounded-2xl p-3.5 space-y-2 font-mono text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 text-[10px] uppercase font-bold">Semantic Placement:</span>
+                <span className="text-white font-bold">
+                  {deletingMapping.friendly_value || deletingMapping.friendly_name || deletingMapping.canonicalPlacementName || 'Placement'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 text-[10px] uppercase font-bold">Cabinet:</span>
+                <span className="text-gray-300">
+                  {deletingMapping.cabName || deletingMapping.gear || cabName}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 text-[10px] uppercase font-bold">Slot:</span>
+                <span className="text-cyan-400 font-bold">
+                  {(deletingMapping.friendly_setting || deletingMapping.target || 'Mic_0_Placement').replace(/_/g, ' ')}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[9px] text-gray-500">
+                <span>Target Document:</span>
+                <span className="font-mono text-gray-400 truncate max-w-[200px]" title={deletingMapping.firestoreDocumentId || deletingMapping.id || deletingMapping.originalProfileId}>
+                  {deletingMapping.firestoreDocumentId || deletingMapping.id || deletingMapping.originalProfileId}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2 font-mono">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingMapping(null)}
+                className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs uppercase rounded-xl transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={executeDeleteCustomMicPlacement}
+                className="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-rose-950/40 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting Profile...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Profile</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

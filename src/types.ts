@@ -21,6 +21,7 @@ export interface ToneSummary {
 export interface SignalChainElement {
   type: 'pedal' | 'amp' | 'cab' | 'rack';
   name: string;
+  model?: string;
   settings: Record<string, string | number>;
 }
 
@@ -104,10 +105,12 @@ export interface RackDecision {
 }
 
 export interface ToneResult {
-  tone_summary: ToneSummary;
+  preset_name?: string;
+  description?: string;
+  tone_summary?: ToneSummary;
   signal_chain: SignalChainElement[];
-  engineering_notes: EngineeringNotes;
-  confidence: number;
+  engineering_notes?: EngineeringNotes;
+  confidence?: number;
   midiPC?: number;
   
   // Legacy fields for backward compatibility during transition if needed
@@ -235,6 +238,19 @@ export interface ParameterOptionRow {
   notes?: string;
 }
 
+export interface SelectorBankCase {
+  bankLabel?: string;
+  parameters: Record<string, string>;
+}
+
+export interface SelectorDependentMapping {
+  id?: string;
+  selectorParameter: string;
+  selectorAliases?: string[];
+  cases: Record<string, SelectorBankCase>;
+  defaultCase?: string;
+}
+
 export interface RequestedParameterReview {
   id?: string; // `${gearGuid || gearName}_${requestedParameterName}`
   gearName: string;
@@ -330,6 +346,7 @@ export interface GearProfile {
   slot: string;
   aliases: string[];
   parameters: GearProfileParameter[];
+  selectorMappings?: SelectorDependentMapping[];
   validationStatus?: string;
   originalDiscoveredName?: string;
   proposedDisplayName?: string;
@@ -385,6 +402,10 @@ export interface GearProfile {
 
 export interface MicPlacementMapping {
   id?: string;
+  // Persistent identity fields (preserve original Firestore document key)
+  firestoreDocumentId?: string;
+  firestoreDocumentPath?: string;
+  originalProfileId?: string;
   gear: string; // e.g. "4x12 Brit 8000"
   friendly_setting: string; // "Mic_0_Placement" | "Mic_1_Placement" | "Mic_2_Placement"
   target?: string; // Alias for friendly_setting
@@ -396,11 +417,12 @@ export interface MicPlacementMapping {
   friendly_angle?: string;
   maps_to: Record<string, string | number>;
   xml_values?: Record<string, string | number>; // Alias for maps_to
-  status: "validated" | "estimated" | "discovered" | "needs_review";
+  status: "validated" | "estimated" | "discovered" | "needs_review" | "user_edited";
   validation_status?: string; // Alias for status
   source?: string;
   updatedAt?: any;
   updatedBy?: string;
+  isCustomProfile?: boolean;
 
   // New formalized identity fields
   cabGuid?: string;
@@ -461,6 +483,22 @@ export interface IKMPAKCandidate {
   lastActionTime?: string;
   updatedAt?: any;
   updatedBy?: string;
+}
+
+export interface WorkingSessionData {
+  schemaVersion: number;
+  revision: number;
+  savedAt: string;
+  prompt: string;
+  youtubeUrl?: string;
+  useValidationRecipes: boolean;
+  activeVariation: 'primary' | 'v1' | 'v2';
+  exportFilename?: string;
+  toneResult: ToneResult | null;
+  userPreset?: any;
+  diffs?: string[];
+  activeGearId?: string | null;
+  isChainViewOpen?: boolean;
 }
 
 

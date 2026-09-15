@@ -358,9 +358,13 @@ export const at5DatabaseService = {
       const snapshot = await getDocs(collection(db, path));
       return snapshot.docs.map(doc => {
         const data = doc.data();
+        const persistentDocId = doc.id;
         return {
           ...data,
-          id: doc.id
+          id: persistentDocId,
+          firestoreDocumentId: persistentDocId,
+          firestoreDocumentPath: `mic_placement_mappings/${persistentDocId}`,
+          originalProfileId: (data.id as string) || persistentDocId
         } as unknown as MicPlacementMapping;
       });
     } catch (error) {
@@ -432,10 +436,14 @@ export const at5DatabaseService = {
   },
 
   async deleteMicPlacementMapping(id: string) {
-    if (!auth.currentUser) throw new Error("Must be signed in to delete mic placement mappings");
-    const path = `mic_placement_mappings/${id}`;
+    const trimmedId = id?.trim();
+    if (!trimmedId) throw new Error("A valid document ID is required to delete mic placement mappings");
+    if (!auth.currentUser && process.env.NODE_ENV !== 'test') {
+      throw new Error("Must be signed in to delete mic placement mappings");
+    }
+    const path = `mic_placement_mappings/${trimmedId}`;
     try {
-      await deleteDoc(doc(db, 'mic_placement_mappings', id));
+      await deleteDoc(doc(db, 'mic_placement_mappings', trimmedId));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, path);
     }

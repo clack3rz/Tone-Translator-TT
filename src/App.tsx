@@ -34,7 +34,8 @@ import {
   LogIn,
   User,
   Database,
-  RefreshCw
+  RefreshCw,
+  RotateCcw
 } from 'lucide-react';
 import { translateTone } from './services/geminiService';
 import { ToneResult } from './types';
@@ -50,6 +51,13 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { refreshCatalog } from './services/at5Catalog';
 import { refreshProtocols } from './services/at5VerifiedProtocols';
 import { refreshDbParameterMappings } from './services/at5ParameterManifest';
+import {
+  loadWorkingSession,
+  saveWorkingSession,
+  clearWorkingSession,
+  initSessionLifecycleDiagnostics,
+  WorkingSessionData
+} from './services/sessionStorage';
 
 const STATUS_CONFIG: Record<string, { solid: string; clearBg: string; clearBorder: string; pulse: boolean }> = {
   pass: {
@@ -109,23 +117,30 @@ const STATUS_CONFIG: Record<string, { solid: string; clearBg: string; clearBorde
 };
 
 export default function App() {
-  const [prompt, setPrompt] = useState('');
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  // Synchronous recovery check on mount
+  const initialSessionRef = React.useRef<{ session: WorkingSessionData | null; restored: boolean } | null>(null);
+  if (initialSessionRef.current === null) {
+    initialSessionRef.current = loadWorkingSession();
+  }
+  const initialSession = initialSessionRef.current?.session;
+
+  const [prompt, setPrompt] = useState(initialSession?.prompt || '');
+  const [youtubeUrl, setYoutubeUrl] = useState(initialSession?.youtubeUrl || '');
   const [targetAudioFile, setTargetAudioFile] = useState<File | null>(null);
   const [recordingAudioFile, setRecordingAudioFile] = useState<File | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
-  const [toneResult, setToneResult] = useState<ToneResult | null>(null);
-  const [activeGearId, setActiveGearId] = useState<string | null>(null);
+  const [toneResult, setToneResult] = useState<ToneResult | null>(initialSession?.toneResult || null);
+  const [activeGearId, setActiveGearId] = useState<string | null>(initialSession?.activeGearId || null);
   const [error, setError] = useState<string | null>(null);
-  const [userPreset, setUserPreset] = useState<PresetData | null>(null);
-  const [diffs, setDiffs] = useState<string[]>([]);
-  const [activeVariation, setActiveVariation] = useState<'primary' | 'v1' | 'v2'>('primary');
+  const [userPreset, setUserPreset] = useState<PresetData | null>(initialSession?.userPreset || null);
+  const [diffs, setDiffs] = useState<string[]>(initialSession?.diffs || []);
+  const [activeVariation, setActiveVariation] = useState<'primary' | 'v1' | 'v2'>(initialSession?.activeVariation || 'primary');
   const [isCopied, setIsCopied] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [exportFilename, setExportFilename] = useState('');
-  const [useValidationRecipes, setUseValidationRecipes] = useState(false);
-  const [isChainViewOpen, setIsChainViewOpen] = useState(false);
+  const [exportFilename, setExportFilename] = useState(initialSession?.exportFilename || '');
+  const [useValidationRecipes, setUseValidationRecipes] = useState(initialSession?.useValidationRecipes ?? false);
+  const [isChainViewOpen, setIsChainViewOpen] = useState(initialSession?.isChainViewOpen ?? false);
   const [isAdvancedDebugOpen, setIsAdvancedDebugOpen] = useState(false);
   const [isGearToolOpen, setIsGearToolOpen] = useState(false);
   const [hasOpenedGearTool, setHasOpenedGearTool] = useState(false);
@@ -136,6 +151,56 @@ export default function App() {
   const [catalogueSearchOverride, setCatalogueSearchOverride] = useState<string | undefined>(undefined);
   const [sourceOriginalIndex, setSourceOriginalIndex] = useState<number | null>(null);
   const [signalChainNavTarget, setSignalChainNavTarget] = useState<SignalChainNavTarget | null>(null);
+  const [restoredBanner, setRestoredBanner] = useState<{ show: boolean; chainCount: number }>({
+    show: !!(initialSessionRef.current?.restored && initialSession?.toneResult?.signal_chain?.length),
+    chainCount: initialSession?.toneResult?.signal_chain?.length || 0
+  });
+
+  // Lifecycle diagnostics and restored banner auto-dismiss
+  useEffect(() => {
+    const cleanupDiagnostics = initSessionLifecycleDiagnostics();
+    let bannerTimer: any = null;
+    if (restoredBanner.show) {
+      bannerTimer = setTimeout(() => {
+        setRestoredBanner(prev => ({ ...prev, show: false }));
+      }, 4000);
+    }
+    return () => {
+      if (bannerTimer) clearTimeout(bannerTimer);
+      cleanupDiagnostics();
+    };
+  }, []);
+
+  // Debounced working session persistence
+  useEffect(() => {
+    if (toneResult || prompt.trim().length > 0 || userPreset) {
+      saveWorkingSession({
+        revision: 0,
+        prompt,
+        youtubeUrl,
+        useValidationRecipes,
+        activeVariation,
+        exportFilename,
+        toneResult,
+        userPreset,
+        diffs,
+        activeGearId,
+        isChainViewOpen
+      }, false);
+    }
+  }, [prompt, youtubeUrl, useValidationRecipes, activeVariation, exportFilename, toneResult, userPreset, diffs, activeGearId, isChainViewOpen]);
+
+  const handleClearWorkingSession = useCallback(() => {
+    clearWorkingSession();
+    setToneResult(null);
+    setPrompt('');
+    setYoutubeUrl('');
+    setUserPreset(null);
+    setDiffs([]);
+    setActiveGearId(null);
+    setExportFilename('');
+    setRestoredBanner({ show: false, chainCount: 0 });
+  }, []);
 
   useEffect(() => {
     if (isGearToolOpen) {
@@ -373,8 +438,10 @@ export default function App() {
   } = useDropzone({
     onDrop: onPresetDrop,
     accept: { 
-      '.at5p': ['.at5p'],
-      'text/plain': ['.txt']
+      'application/octet-stream': ['.at5p'],
+      'application/xml': ['.at5p', '.xml'],
+      'text/xml': ['.at5p', '.xml'],
+      'text/plain': ['.txt', '.at5p']
     },
     multiple: false,
   });
@@ -644,6 +711,15 @@ export default function App() {
             </button>
 
             <button 
+              onClick={handleClearWorkingSession}
+              className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/10 hover:border-red-500/40 text-gray-400 hover:text-red-400 transition-all text-[9px] font-bold uppercase tracking-widest"
+              title="Clear working session and start new tone"
+            >
+              <RotateCcw className="w-3 h-3" />
+              New Chain
+            </button>
+
+            <button 
               onClick={initiateExport}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gear-accent/30 text-gear-accent font-bold text-[9px] hover:bg-gear-accent hover:text-black transition-all uppercase tracking-widest shadow-lg shadow-black/20"
             >
@@ -653,6 +729,31 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Restored Session Notification */}
+      <AnimatePresence>
+        {restoredBanner.show && (
+          <motion.aside
+            aria-label="Session notification"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-16 right-8 z-50 flex items-center gap-3 px-4 py-2 bg-slate-900/95 border border-emerald-500/40 rounded-lg shadow-xl shadow-black/50 backdrop-blur-md"
+          >
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="text-[11px] font-mono text-slate-200">
+              Working session restored <span className="text-emerald-400 font-bold">({restoredBanner.chainCount} gear items)</span>
+            </div>
+            <button
+              onClick={() => setRestoredBanner(prev => ({ ...prev, show: false }))}
+              className="text-slate-400 hover:text-white ml-2 text-xs"
+              title="Dismiss notification"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       <main className="flex-1 flex flex-col min-h-0 overflow-y-auto">
         <div className="p-8">

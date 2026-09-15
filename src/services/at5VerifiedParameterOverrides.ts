@@ -2,6 +2,8 @@
 // Verified from known-good AT5 reference presets. This file should be preferred over
 // broad/fuzzy catalogue matches whenever a gear item is known here.
 
+import { ParameterOptionRow, SelectorDependentMapping } from "../types";
+
 export type AT5Category = "amp" | "stomp" | "rack" | "cab" | "studio" | string;
 
 export interface VerifiedParamDef {
@@ -25,6 +27,10 @@ export interface VerifiedParamDef {
   exportPrecision?: number;
   aliases?: string[];
   defaultValue?: number | string;
+  interfaceType?: 'knob' | 'slider' | 'switch' | 'selector' | 'enum' | 'text' | 'reference' | 'hidden_default';
+  parameterKind?: 'continuous' | 'boolean' | 'selector' | 'enum' | 'time' | 'frequency' | 'gain_db' | 'percentage' | 'xml_reference' | 'unsupported';
+  optionRows?: ParameterOptionRow[];
+  valueMap?: Record<string, string | number>;
   /** Converts AI/debug-friendly values into the AT5 XML value. */
   transform?:
     | "db_to_linear"
@@ -49,6 +55,7 @@ export interface VerifiedGearDef {
   aliases?: string[];
   preferredSection?: string;
   params: VerifiedParamDef[];
+  selectorMappings?: SelectorDependentMapping[];
   isVerified?: boolean;
 }
 
@@ -435,20 +442,75 @@ export const AT5_VERIFIED_GEAR: VerifiedGearDef[] = [
     aliases: ["darrell100", "darrell 100", "darrell-100"],
     preferredSection: "AmpA",
     isVerified: true,
+    selectorMappings: [
+      {
+        selectorParameter: "Channel_Darrell100",
+        selectorAliases: ["channel", "ch", "channel_darrell100"],
+        defaultCase: "0",
+        cases: {
+          "0": {
+            bankLabel: "Channel 1",
+            parameters: {
+              "Gain": "Gain1_Darrell100",
+              "Pre Amp": "Gain1_Darrell100",
+              "Master": "Master1_Darrell100",
+              "Volume": "Master1_Darrell100"
+            }
+          },
+          "1": {
+            bankLabel: "Channel 2",
+            parameters: {
+              "Gain": "Gain2_Darrell100",
+              "Pre Amp": "Gain2_Darrell100",
+              "Master": "Master2_Darrell100",
+              "Volume": "Master2_Darrell100"
+            }
+          }
+        }
+      }
+    ],
     params: [
       { friendlyName: "Bass", xmlName: "Bass_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["bass", "low"] },
       { friendlyName: "Middle", xmlName: "Middle_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["middle", "mid", "middle_darrell100"] },
       { friendlyName: "Treble", xmlName: "Treble_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["treble", "high"] },
       { friendlyName: "Presence", xmlName: "Presence_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["presence"] },
       { friendlyName: "Treble Pull", xmlName: "TreblePull_Darrell100", min: 0, max: 1, defaultValue: 0, aliases: ["pull", "treble pull", "treble_pull", "pull treble", "pull_treble"] },
-      { friendlyName: "Channel", xmlName: "Channel_Darrell100", min: 1, max: 2, defaultValue: 1, aliases: ["channel", "ch"] },
+      {
+        friendlyName: "Channel",
+        xmlName: "Channel_Darrell100",
+        min: 0,
+        max: 1,
+        defaultValue: 0,
+        visualMin: 0,
+        visualMax: 1,
+        interfaceType: "selector",
+        parameterKind: "selector",
+        aliases: ["channel", "ch", "channel_darrell100"],
+        optionRows: [
+          { id: "ch1", displayLabel: "Channel 1", exportValue: 0, aliases: ["0", "1", "ch1", "ch 1", "channel 1", "clean"], sortOrder: 0, isDefault: true },
+          { id: "ch2", displayLabel: "Channel 2", exportValue: 1, aliases: ["1", "2", "ch2", "ch 2", "channel 2", "lead", "crunch", "high gain"], sortOrder: 1 }
+        ],
+        valueMap: {
+          "0": 0,
+          "1": 1,
+          "2": 1,
+          "channel 1": 0,
+          "channel 2": 1,
+          "ch1": 0,
+          "ch2": 1,
+          "ch 1": 0,
+          "ch 2": 1,
+          "clean": 0,
+          "lead": 1,
+          "crunch": 1,
+          "high gain": 1
+        }
+      },
       { friendlyName: "Reverb", xmlName: "Reverb_Darrell100", min: 0, max: 10, defaultValue: 0, aliases: ["reverb"] },
-      { friendlyName: "Gain 1", xmlName: "Gain1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain1", "gain_1"] },
-      { friendlyName: "Gain 2", xmlName: "Gain2_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain2", "gain_2"] },
-      { friendlyName: "Master 1", xmlName: "Master1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master1", "master_1"] },
-      { friendlyName: "Master 2", xmlName: "Master2_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master2", "master_2"] },
-      { friendlyName: "Gain", xmlName: "Gain1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain", "drive", "preamp"] },
-      { friendlyName: "Master", xmlName: "Master1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master", "volume"] }
+      { friendlyName: "Gain 1", xmlName: "Gain1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain1", "gain_1", "gain 1"] },
+      { friendlyName: "Gain 2", xmlName: "Gain2_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["gain2", "gain_2", "gain 2"] },
+      { friendlyName: "Master 1", xmlName: "Master1_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master1", "master_1", "master 1"] },
+      { friendlyName: "Master 2", xmlName: "Master2_Darrell100", min: 0, max: 10, defaultValue: 5, aliases: ["master2", "master_2", "master 2"] }
     ],
   },
   {

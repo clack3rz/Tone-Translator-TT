@@ -1,6 +1,6 @@
 import { SignalChainElement, ToneResult } from "../types";
 import { findBestCatalogMatchAcrossGroups, findAT5Gear, getAt5Catalog } from "./at5Catalog";
-import { resolveGearParameters } from "./at5ParameterManifest";
+import { resolveGearParameters, checkGearHasSelectorMappingForParam } from "./at5ParameterManifest";
 
 const normalise = (value: string) =>
   value
@@ -404,6 +404,13 @@ const normaliseAmpSettings = (
     const matchedParam = findMatchingGearParam(key);
     if (matchedParam) {
       out[matchedParam.friendlyName] = value;
+      continue;
+    }
+
+    // 1b. Check if this gear defines a selector-dependent bank mapping for this parameter (e.g. Gain, Master, Drive, Volume)
+    const selectorSemanticParam = checkGearHasSelectorMappingForParam(gearName, "amp", key);
+    if (selectorSemanticParam) {
+      out[selectorSemanticParam] = value;
       continue;
     }
 

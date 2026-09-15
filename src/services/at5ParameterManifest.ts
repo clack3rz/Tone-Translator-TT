@@ -13,7 +13,7 @@ import {
 } from "./gearManifest";
 import { AT5_VERIFIED_GEAR, VerifiedGearDef, VerifiedParamDef } from "./at5VerifiedParameterOverrides";
 import { getAt5Catalog, cleanGearNameForMatching } from "./at5Catalog";
-import { ParameterMapping, MicPlacementMapping, ParameterOptionRow } from "../types";
+import { ParameterMapping, MicPlacementMapping, ParameterOptionRow, SelectorDependentMapping } from "../types";
 import { at5DatabaseService } from "./at5DatabaseService";
 import { initializeVIRCalibration } from "./at5MicPlacementService";
 
@@ -1587,6 +1587,342 @@ export function resolveParameterValue(
   return undefined;
 }
 
+export function getGearSelectorMappings(
+  gearNameOrId: string | undefined,
+  category?: string
+): SelectorDependentMapping[] {
+  if (!gearNameOrId) return [];
+
+  const verifiedMatch = findVerifiedGearWithScore(gearNameOrId, category);
+  if (verifiedMatch && verifiedMatch.gear && verifiedMatch.gear.selectorMappings) {
+    return verifiedMatch.gear.selectorMappings;
+  }
+
+  const catalog = getAt5Catalog();
+  const cleanName = cleanGearNameForMatching(gearNameOrId);
+  const found = catalog.find(c => 
+    cleanGearNameForMatching(c.displayName) === cleanName ||
+    (c.otherNames || []).some(o => cleanGearNameForMatching(o) === cleanName)
+  );
+  if (found && (found as any).selectorMappings) {
+    return (found as any).selectorMappings;
+  }
+
+  return [];
+}
+
+export function checkGearHasSelectorMappingForParam(
+  gearName: string | undefined,
+  category: string,
+  paramKey: string
+): string | null {
+  const mappings = getGearSelectorMappings(gearName, category);
+  if (!mappings || mappings.length === 0) return null;
+
+  const cleanKey = paramKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  for (const m of mappings) {
+    for (const bankCase of Object.values(m.cases)) {
+      for (const semanticName of Object.keys(bankCase.parameters)) {
+        const cleanSemantic = semanticName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (cleanSemantic === cleanKey) {
+          return semanticName;
+        }
+      }
+    }
+  }
+
+  const isGainAlias = ["gain", "preamp", "pre amp", "preamp gain", "drive"].includes(cleanKey);
+  const isMasterAlias = ["master", "volume", "output"].includes(cleanKey);
+
+  for (const m of mappings) {
+    for (const bankCase of Object.values(m.cases)) {
+      if (isGainAlias) {
+        const match = Object.keys(bankCase.parameters).find(k => {
+          const ck = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+          return ["gain", "preamp", "pre amp", "drive"].includes(ck);
+        });
+        if (match) return match;
+      }
+      if (isMasterAlias) {
+        const match = Object.keys(bankCase.parameters).find(k => {
+          const ck = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+          return ["master", "volume"].includes(ck);
+        });
+        if (match) return match;
+      }
+    }
+  }
+
+  return null;
+}
+
+export interface SelectorResolutionResult {
+  resolvedSettings: Record<string, unknown>;
+  activeBankLabel: string;
+  activeCaseKey: string;
+  selectorParam: string;
+  selectorExportVal: string | number;
+  activeMappings: Record<string, string>;
+  inactiveMappings: Record<string, string>;
+  isSelectorMapped: boolean;
+}
+
+export function resolveSelectorDependentParameters(
+  gearNameOrId: string | undefined,
+  category: string,
+  settings: Record<string, unknown>,
+  defs?: ResolvedParameter[]
+): SelectorResolutionResult | null {
+  const mappings = getGearSelectorMappings(gearNameOrId, category);
+  if (!mappings || mappings.length === 0) return null;
+
+  const mapping = mappings[0];
+  const resolvedSettings: Record<string, unknown> = { ...settings };
+
+  let rawSelectorVal: any = undefined;
+  const selectorCandidates = [
+    mapping.selectorParameter,
+    ...(mapping.selectorAliases || [])
+  ];
+
+  for (const cand of selectorCandidates) {
+    const cleanCand = cand.toLowerCase().replace(/[^a-z0-9]/g, "");
+    for (const [sKey, sVal] of Object.entries(settings)) {
+      if (sVal !== undefined && sVal !== null) {
+        const cleanSKey = sKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (cleanSKey === cleanCand) {
+          rawSelectorVal = sVal;
+          break;
+        }
+      }
+    }
+    if (rawSelectorVal !== undefined && rawSelectorVal !== null) break;
+  }
+
+  const pDefs = defs || getParameterDefinitions(gearNameOrId, category);
+  const selectorDef = pDefs.find(d => {
+    const cleanXml = d.xmlName.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const cleanParam = mapping.selectorParameter.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return cleanXml === cleanParam;
+  });
+
+  let activeCaseKey = mapping.defaultCase ?? Object.keys(mapping.cases)[0] ?? "0";
+  let selectorExportVal: string | number = activeCaseKey;
+
+  if (rawSelectorVal !== undefined && rawSelectorVal !== null) {
+    const rawStr = String(rawSelectorVal).trim();
+    const cleanRaw = rawStr.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    if (selectorDef && selectorDef.valueMap && selectorDef.valueMap[cleanRaw] !== undefined) {
+      const v = selectorDef.valueMap[cleanRaw];
+      selectorExportVal = v;
+      activeCaseKey = String(v);
+    } else if (selectorDef && selectorDef.optionRows && selectorDef.optionRows.length > 0) {
+      const opt = selectorDef.optionRows.find(o => {
+        if (String(o.exportValue) === rawStr) return true;
+        if (o.id.toLowerCase() === cleanRaw) return true;
+        if (o.displayLabel.toLowerCase().replace(/[^a-z0-9]/g, "") === cleanRaw) return true;
+        return (o.aliases || []).some(a => a.toLowerCase().replace(/[^a-z0-9]/g, "") === cleanRaw);
+      });
+      if (opt) {
+        selectorExportVal = opt.exportValue;
+        activeCaseKey = String(opt.exportValue);
+      }
+    } else if (mapping.cases[cleanRaw] !== undefined) {
+      activeCaseKey = cleanRaw;
+      selectorExportVal = cleanRaw;
+    } else {
+      if (cleanRaw === "0" || cleanRaw === "channel1" || cleanRaw === "ch1" || cleanRaw === "clean") {
+        activeCaseKey = "0";
+        selectorExportVal = 0;
+      } else if (cleanRaw === "1" || cleanRaw === "2" || cleanRaw === "channel2" || cleanRaw === "ch2" || cleanRaw === "lead" || cleanRaw === "crunch" || cleanRaw === "highgain") {
+        activeCaseKey = "1";
+        selectorExportVal = 1;
+      }
+    }
+  }
+
+  if (!mapping.cases[activeCaseKey]) {
+    activeCaseKey = mapping.defaultCase ?? Object.keys(mapping.cases)[0] ?? "0";
+  }
+
+  const activeCase = mapping.cases[activeCaseKey];
+  const activeBankLabel = activeCase.bankLabel || `Bank ${activeCaseKey}`;
+
+  const activeMappings: Record<string, string> = { ...activeCase.parameters };
+  const inactiveMappings: Record<string, string> = {};
+
+  for (const [cKey, cVal] of Object.entries(mapping.cases)) {
+    if (cKey !== activeCaseKey) {
+      for (const [sKey, pName] of Object.entries(cVal.parameters)) {
+        inactiveMappings[sKey] = pName;
+      }
+    }
+  }
+
+  resolvedSettings[mapping.selectorParameter] = selectorExportVal;
+
+  const findInputSettingVal = (candidates: string[]): any => {
+    for (const cand of candidates) {
+      const cleanCand = cand.toLowerCase().replace(/[^a-z0-9]/g, "");
+      for (const [k, v] of Object.entries(settings)) {
+        if (v !== undefined && v !== null) {
+          const cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (cleanK === cleanCand) return v;
+        }
+      }
+    }
+    return undefined;
+  };
+
+  for (const [semanticKey, physicalParamName] of Object.entries(activeCase.parameters)) {
+    const explicitVal = findInputSettingVal([physicalParamName, physicalParamName.replace(/_/g, " ")]);
+    if (explicitVal !== undefined && explicitVal !== null) {
+      resolvedSettings[physicalParamName] = explicitVal;
+      continue;
+    }
+
+    const aliases = semanticKey.toLowerCase() === "gain"
+      ? ["gain", "pre amp", "preamp", "drive"]
+      : semanticKey.toLowerCase() === "master"
+      ? ["master", "volume"]
+      : [semanticKey];
+
+    const semanticVal = findInputSettingVal([semanticKey, ...aliases]);
+    if (semanticVal !== undefined && semanticVal !== null) {
+      resolvedSettings[physicalParamName] = semanticVal;
+    }
+  }
+
+  for (const [inactiveCaseKey, inactiveCase] of Object.entries(mapping.cases)) {
+    if (inactiveCaseKey === activeCaseKey) continue;
+    for (const [, physicalParamName] of Object.entries(inactiveCase.parameters)) {
+      const explicitVal = findInputSettingVal([physicalParamName, physicalParamName.replace(/_/g, " ")]);
+      if (explicitVal !== undefined && explicitVal !== null) {
+        resolvedSettings[physicalParamName] = explicitVal;
+      }
+    }
+  }
+
+  return {
+    resolvedSettings,
+    activeBankLabel,
+    activeCaseKey,
+    selectorParam: mapping.selectorParameter,
+    selectorExportVal,
+    activeMappings,
+    inactiveMappings,
+    isSelectorMapped: true,
+  };
+}
+
+export interface SelectorParamTarget {
+  targetDef: ResolvedParameter;
+  activePhysicalParam: string;
+  activeBankLabel: string;
+  selectorParam: string;
+  selectorExportVal: string | number;
+}
+
+export function resolveSelectorTargetForParam(
+  gearName: string | undefined,
+  category: string,
+  paramKey: string,
+  settings: Record<string, unknown>,
+  defs?: ResolvedParameter[]
+): SelectorParamTarget | null {
+  const pDefs = defs || getParameterDefinitions(gearName, category);
+  const selectorRes = resolveSelectorDependentParameters(gearName, category, settings, pDefs);
+  if (!selectorRes) return null;
+
+  const cleanKey = paramKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  let targetPhysicalParam: string | undefined = undefined;
+
+  for (const [sKey, pName] of Object.entries(selectorRes.activeMappings)) {
+    const cleanSKey = sKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (cleanSKey === cleanKey) {
+      targetPhysicalParam = pName;
+      break;
+    }
+  }
+
+  if (!targetPhysicalParam) {
+    if (["gain", "preamp", "pre amp", "drive"].includes(cleanKey)) {
+      targetPhysicalParam = selectorRes.activeMappings["Gain"] || selectorRes.activeMappings["Pre Amp"];
+    } else if (["master", "volume", "output"].includes(cleanKey)) {
+      targetPhysicalParam = selectorRes.activeMappings["Master"] || selectorRes.activeMappings["Volume"];
+    }
+  }
+
+  if (!targetPhysicalParam) return null;
+
+  const cleanTarget = targetPhysicalParam.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const targetDef = pDefs.find(d => {
+    const cXml = d.xmlName.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const cFriendly = d.friendlyName.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return cXml === cleanTarget || cFriendly === cleanTarget;
+  });
+
+  if (!targetDef) return null;
+
+  return {
+    targetDef,
+    activePhysicalParam: targetPhysicalParam,
+    activeBankLabel: selectorRes.activeBankLabel,
+    selectorParam: selectorRes.selectorParam,
+    selectorExportVal: selectorRes.selectorExportVal,
+  };
+}
+
+export function getSelectorMappingDebugInfo(
+  gearName: string | undefined,
+  category: string,
+  settings: Record<string, unknown>,
+  defs: ResolvedParameter[],
+  parsedExported: Record<string, any>,
+  droppedParameters: string[]
+): {
+  selectorParameter: string;
+  selectorValue: string | number;
+  activeBank: string;
+  bankMappings: Record<string, string>;
+  status: "SUCCESS" | "UNRESOLVED" | "INFERRED" | "DEFAULT_USED";
+  reason: string;
+} | null {
+  const selectorRes = resolveSelectorDependentParameters(gearName, category, settings, defs);
+  if (!selectorRes) return null;
+
+  const activePhysicalParams = Object.values(selectorRes.activeMappings);
+  const unexportedActive = activePhysicalParams.filter(p => parsedExported[p] === undefined);
+  const droppedActive = Object.keys(selectorRes.activeMappings).filter(k => 
+    droppedParameters.includes(k) || droppedParameters.includes(normalise(k))
+  );
+
+  let status: "SUCCESS" | "UNRESOLVED" | "INFERRED" | "DEFAULT_USED" = "SUCCESS";
+  let reason = "";
+
+  if (unexportedActive.length > 0 || droppedActive.length > 0) {
+    status = "UNRESOLVED";
+    reason = `Selector ${selectorRes.selectorParam} resolved active bank ${selectorRes.activeBankLabel}, but some parameters failed to map: ${[...unexportedActive, ...droppedActive].join(", ")}`;
+  } else {
+    const mappingsSummary = Object.entries(selectorRes.activeMappings)
+      .map(([k, v]) => `${k} → ${v} (${parsedExported[v] ?? 'default'})`)
+      .join(", ");
+    reason = `Selector ${selectorRes.selectorParam} (${selectorRes.activeBankLabel} active, export value: ${selectorRes.selectorExportVal}) successfully mapped: ${mappingsSummary}.`;
+  }
+
+  return {
+    selectorParameter: selectorRes.selectorParam,
+    selectorValue: selectorRes.selectorExportVal,
+    activeBank: selectorRes.activeBankLabel,
+    bankMappings: selectorRes.activeMappings,
+    status,
+    reason,
+  };
+}
+
 export function normalizeSettingsToCanonical(
   gearNameOrId: string | undefined,
   category: string,
@@ -1644,39 +1980,15 @@ export function buildMappedParameterAttrs(
     Object.entries(canonicalSettings).map(([key, value]) => [normalise(key), value])
   );
 
-  // Darrell 100 channel-aware mappings (Rule 6 & 7)
-  const normGear = (gearNameOrId || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (normGear === "darrell100") {
-    let channelVal = (settings["Channel"] ?? settings["channel"] ?? settings["Channel_Darrell100"] ?? settings["channel_darrell100"]) as any;
-    let isHighGainChannel = false;
-    if (channelVal !== undefined) {
-      const chStr = String(channelVal).toLowerCase();
-      if (chStr === "2" || chStr.includes("lead") || chStr.includes("high") || chStr.includes("ch2") || chStr.includes("crunch")) {
-        isHighGainChannel = true;
+  // Reusable Selector-Dependent Parameter Resolution
+  const selectorRes = resolveSelectorDependentParameters(gearNameOrId, category, settings, defs);
+  if (selectorRes) {
+    for (const [k, v] of Object.entries(selectorRes.resolvedSettings)) {
+      if (typeof v === "string" || typeof v === "number") {
+        normalisedSettings.set(normalise(k), v);
+      } else if (v !== undefined && v !== null) {
+        normalisedSettings.set(normalise(k), String(v));
       }
-    }
-
-    const gainVal = (settings["Gain"] ?? settings["gain"] ?? settings["preamp"] ?? settings["PreAmp"] ?? settings["drive"] ?? settings["Drive"]) as any;
-    const masterVal = (settings["Master"] ?? settings["master"] ?? settings["volume"] ?? settings["Volume"]) as any;
-
-    if (isHighGainChannel) {
-      if (gainVal !== undefined && normalisedSettings.get(normalise("Gain2_Darrell100")) === undefined) {
-        normalisedSettings.set(normalise("Gain2_Darrell100"), gainVal);
-      }
-      if (masterVal !== undefined && normalisedSettings.get(normalise("Master2_Darrell100")) === undefined) {
-        normalisedSettings.set(normalise("Master2_Darrell100"), masterVal);
-      }
-    } else {
-      if (gainVal !== undefined && normalisedSettings.get(normalise("Gain1_Darrell100")) === undefined) {
-        normalisedSettings.set(normalise("Gain1_Darrell100"), gainVal);
-      }
-      if (masterVal !== undefined && normalisedSettings.get(normalise("Master1_Darrell100")) === undefined) {
-        normalisedSettings.set(normalise("Master1_Darrell100"), masterVal);
-      }
-    }
-
-    if (channelVal !== undefined) {
-      normalisedSettings.set(normalise("Channel_Darrell100"), channelVal);
     }
   }
 
