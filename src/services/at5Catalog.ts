@@ -153,7 +153,7 @@ export async function refreshCatalog(forceRefresh = false) {
     console.log(`Catalogue refreshed: ${CURRENT_CATALOG.length} items (Hybrid)`);
     return CURRENT_CATALOG;
   } catch (error) {
-    console.error("Failed to refresh catalogue from DB", error);
+    console.warn("Operating with local catalogue (Firestore sync deferred):", error instanceof Error ? error.message : error);
     return CURRENT_CATALOG;
   }
 }

@@ -29,7 +29,7 @@ export async function refreshCoreParameterMappings(forceRefresh = false): Promis
     dbParameterMappings = await at5DatabaseService.getParameterMappings(forceRefresh) || [];
     return dbParameterMappings;
   } catch (error) {
-    console.error("Failed to refresh core parameter mappings", error);
+    console.warn("Operating with local parameter mappings (Firestore sync deferred):", error instanceof Error ? error.message : error);
     return dbParameterMappings;
   }
 }
@@ -42,7 +42,7 @@ export async function refreshDbMicPlacementMappings(forceRefresh = false): Promi
     dbMicPlacementMappings = await at5DatabaseService.getMicPlacementMappings(forceRefresh) || [];
     return dbMicPlacementMappings;
   } catch (error) {
-    console.error("Failed to refresh db mic placement mappings", error);
+    console.warn("Operating with local mic placement mappings (Firestore sync deferred):", error instanceof Error ? error.message : error);
     return dbMicPlacementMappings;
   }
 }

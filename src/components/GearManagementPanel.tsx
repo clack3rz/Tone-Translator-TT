@@ -33,8 +33,26 @@ import {
   FileText,
   Compass,
   Crosshair,
-  Loader2
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown
 } from 'lucide-react';
+import {
+  GearSortColumn,
+  SortDirection,
+  GearFinderFilters,
+  filterGearProfiles,
+  sortGearProfiles,
+  paginateGearProfiles,
+  formatShortGuid,
+  getMatchingAlias,
+  isProfileRowSelected
+} from '../utils/gearFinderUtils';
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IKMPAKCandidate, MicPlacementMapping, ParameterOptionRow } from '../types';
 import { gearProfileService } from '../services/gearProfileService';
 import { parseAt5pPreset } from '../services/at5PresetImporter';
@@ -410,7 +428,31 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
   }, [sourceOriginalIndex, exportDebugData]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedProfileStatus, setSelectedProfileStatus] = useState<string>('all');
+  const [selectedValidationStatus, setSelectedValidationStatus] = useState<string>('all');
+  const [selectedExportStatus, setSelectedExportStatus] = useState<string>('all');
+  const [aliasFilter, setAliasFilter] = useState<string>('');
+
+  // Table sorting and pagination states
+  const [sortColumn, setSortColumn] = useState<GearSortColumn>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [copiedGuidId, setCopiedGuidId] = useState<string | null>(null);
+
+  // Table scroll position preservation
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const tableScrollTopRef = useRef<number>(0);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const handledInitialGuidRef = useRef<string | null>(null);
+
+  // Inline collapsible Gear Finder presentation state
+  // Initial-state rules:
+  // - If no profile is selected, begin with finder expanded.
+  // - If a valid profile is already selected or restored, begin collapsed.
+  // - If opening with initialSelectedGuid, resolved state determines expansion in useEffect.
+  const [isFinderExpanded, setIsFinderExpanded] = useState<boolean>(() => !initialSelectedGuid && !selectedProfile);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingParamEdit, setIsSavingParamEdit] = useState(false);
@@ -632,6 +674,11 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
 
   useEffect(() => {
     if (initialSelectedGuid && profiles.length > 0) {
+      // Prevent automatic reselection if this exact initialSelectedGuid has already been processed
+      if (handledInitialGuidRef.current === initialSelectedGuid) {
+        return;
+      }
+      handledInitialGuidRef.current = initialSelectedGuid;
       const normGuid = (g: string) => g ? g.toLowerCase().replace(/[^a-z0-9]/g, '').trim() : '';
       const target = normGuid(initialSelectedGuid);
       const found = profiles.find(p => 
@@ -646,37 +693,212 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
         setEditedProfile(JSON.parse(JSON.stringify(found)));
         setProfileTab('overview');
         setViewMode('profiles');
-        setSelectedType('all');
-        setSelectedStatus('all');
-        setSearchTerm('');
+        setIsFinderExpanded(false);
       } else {
         setSearchTerm(initialSelectedGuid);
         setViewMode('profiles');
+        setIsFinderExpanded(true);
       }
     }
   }, [initialSelectedGuid, profiles]);
 
-  // Filter and search
+  // Table scroll position restoration upon expand
+  useEffect(() => {
+    if (isFinderExpanded) {
+      const restoreScroll = () => {
+        if (tableContainerRef.current) {
+          tableContainerRef.current.scrollTop = tableScrollTopRef.current;
+        }
+      };
+      restoreScroll();
+      requestAnimationFrame(restoreScroll);
+    }
+  }, [isFinderExpanded]);
+
+  // Fast O(1) export status lookup map built only when exportDebugData changes
+  const exportStatusMap = useMemo(() => {
+    if (!exportDebugData) return new Map<string, string>();
+    const map = new Map<string, string>();
+    const norm = (g: string) => g ? g.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+    const allItems = [...(exportDebugData.exported_chain || []), ...(exportDebugData.skipped_gear || [])];
+    for (const item of allItems) {
+      const guidKey = norm(item.resolved_guid || '');
+      const nameKey = (item.normalized_name || '').toLowerCase().trim();
+      const status = item.final_status === 'PASS_WITH_WARNING' ? 'WARN' : (item.final_status || 'PASS');
+      if (guidKey) map.set(`guid:${guidKey}`, status);
+      if (nameKey) map.set(`name:${nameKey}`, status);
+    }
+    return map;
+  }, [exportDebugData]);
+
+  const getProfileExportStatus = useMemo(() => {
+    return (p: GearProfile): string | null => {
+      if (!exportDebugData) return null;
+      const normGuid = p.guid ? p.guid.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+      if (normGuid && exportStatusMap.has(`guid:${normGuid}`)) {
+        return exportStatusMap.get(`guid:${normGuid}`)!;
+      }
+      const normName = p.displayName.toLowerCase().trim();
+      if (exportStatusMap.has(`name:${normName}`)) {
+        return exportStatusMap.get(`name:${normName}`)!;
+      }
+      return null;
+    };
+  }, [exportDebugData, exportStatusMap]);
+
+  // Reset to page 1 whenever any search/filter criteria changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedType, selectedProfileStatus, selectedValidationStatus, selectedExportStatus, aliasFilter]);
+
+  // 1. Filtered profiles using memoization (zero Firestore reads, zero mutations)
   const filteredProfiles = useMemo(() => {
-    return profiles.filter(p => {
-      // 1. Search term check
-      const term = searchTerm.toLowerCase().trim();
-      const matchSearch = !term ||
-        p.displayName.toLowerCase().includes(term) ||
-        (p.guid && p.guid.toLowerCase().includes(term)) ||
-        p.aliases.some(a => a.toLowerCase().includes(term));
+    return filterGearProfiles(
+      profiles,
+      {
+        searchTerm,
+        type: selectedType,
+        profileStatus: selectedProfileStatus,
+        validationStatus: selectedValidationStatus,
+        exportStatus: selectedExportStatus,
+        aliasContains: aliasFilter
+      },
+      getProfileExportStatus
+    );
+  }, [profiles, searchTerm, selectedType, selectedProfileStatus, selectedValidationStatus, selectedExportStatus, aliasFilter, getProfileExportStatus]);
 
-      // 2. Type/group check
-      const matchType = selectedType === 'all' || p.type.toLowerCase() === selectedType.toLowerCase();
+  // 2. Sorted profiles using memoization (copy before sort, intentional severity for statuses)
+  const sortedProfiles = useMemo(() => {
+    return sortGearProfiles(filteredProfiles, sortColumn, sortDirection, getProfileExportStatus);
+  }, [filteredProfiles, sortColumn, sortDirection, getProfileExportStatus]);
 
-      // 3. Status check
-      const matchStatus = selectedStatus === 'all' || p.validation.status.toLowerCase() === selectedStatus.toLowerCase();
+  // 3. Paginated profiles using memoization
+  const paginationData = useMemo(() => {
+    return paginateGearProfiles(sortedProfiles, currentPage, pageSize);
+  }, [sortedProfiles, currentPage, pageSize]);
 
-      return matchSearch && matchType && matchStatus;
+  const { pagedItems: paginatedProfiles, totalPages, safePage, totalCount, startIndex, endIndex } = paginationData;
+
+  const hasActiveFilters = Boolean(
+    searchTerm.trim() ||
+    selectedType !== 'all' ||
+    selectedProfileStatus !== 'all' ||
+    selectedValidationStatus !== 'all' ||
+    selectedExportStatus !== 'all' ||
+    aliasFilter.trim() ||
+    sortColumn !== 'name' ||
+    sortDirection !== 'asc'
+  );
+
+  const activeFilterSummary = useMemo(() => {
+    const parts: string[] = [];
+    if (selectedType !== 'all') parts.push(selectedType.toUpperCase());
+    if (selectedProfileStatus !== 'all') parts.push(selectedProfileStatus);
+    if (selectedValidationStatus === 'validated') parts.push('.AT5P VALIDATED');
+    if (selectedValidationStatus === 'unvalidated') parts.push('UNVERIFIED');
+    if (selectedExportStatus !== 'all') parts.push(`EXPORT: ${selectedExportStatus}`);
+    if (aliasFilter.trim()) parts.push(`ALIAS: "${aliasFilter.trim()}"`);
+    return parts;
+  }, [selectedType, selectedProfileStatus, selectedValidationStatus, selectedExportStatus, aliasFilter]);
+
+  // 1. Clear Selection: Clears only the selected Gear Profile.
+  // Preserves search text, filters, sorting, and page size. Expands the finder and focuses search input.
+  const handleClearSelection = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    setSelectedProfile(null);
+    setEditedProfile(null);
+    setTabPresetFile(null);
+    setTabPresetImportResult(null);
+    setCompareError(null);
+    setCompareSuccessMessage(null);
+    setCustomMicPlacementFriendlyValue("");
+    setIsFinderExpanded(true);
+
+    requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
     });
-  }, [profiles, searchTerm, selectedType, selectedStatus]);
+  };
 
-  // Handle select a profile for viewing/editing
+  // 2. Clear Filters: Clears search and filter criteria only, resets pagination.
+  // Preserves selected Gear Profile and does not close the editor.
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSelectedType('all');
+    setSelectedProfileStatus('all');
+    setSelectedValidationStatus('all');
+    setSelectedExportStatus('all');
+    setAliasFilter('');
+    setCurrentPage(1);
+  };
+
+  // 3. Reset Finder: Complete finder reset.
+  // Clears selected Gear Profile, search text, all filters (including Alias),
+  // restores default sort (Name A-Z), returns to page 1, preserves page size preference,
+  // resets table scroll, expands the finder, and focuses search input.
+  const handleResetFinder = () => {
+    setSelectedProfile(null);
+    setEditedProfile(null);
+    setTabPresetFile(null);
+    setTabPresetImportResult(null);
+    setCompareError(null);
+    setCompareSuccessMessage(null);
+    setCustomMicPlacementFriendlyValue("");
+
+    setSearchTerm('');
+    setSelectedType('all');
+    setSelectedProfileStatus('all');
+    setSelectedValidationStatus('all');
+    setSelectedExportStatus('all');
+    setAliasFilter('');
+
+    setSortColumn('name');
+    setSortDirection('asc');
+    setCurrentPage(1);
+
+    tableScrollTopRef.current = 0;
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTop = 0;
+    }
+
+    setIsFinderExpanded(true);
+
+    requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+  };
+
+  // Reset Finder is available whenever a Gear Profile is selected OR any search/filter/sort/page state differs from default
+  const isFinderModified = Boolean(
+    hasActiveFilters ||
+    selectedProfile !== null ||
+    sortColumn !== 'name' ||
+    sortDirection !== 'asc' ||
+    currentPage !== 1
+  );
+
+  const handleSort = (column: GearSortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleCopyGuid = (e: React.MouseEvent, guid: string, profileId: string) => {
+    e.stopPropagation();
+    if (!guid) return;
+    navigator.clipboard.writeText(guid);
+    setCopiedGuidId(profileId);
+    setTimeout(() => {
+      setCopiedGuidId(null);
+    }, 1500);
+  };
+
+  // Handle select a profile for viewing/editing (collapses finder automatically and scrolls editor into view)
   const handleSelectProfile = (p: GearProfile, preserveViewMode: boolean = false) => {
     setSelectedProfile(p);
     setEditedProfile(JSON.parse(JSON.stringify(p)));
@@ -689,7 +911,33 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
     setCompareError(null);
     setCompareSuccessMessage(null);
     setCustomMicPlacementFriendlyValue("");
+    setIsFinderExpanded(false);
+
+    // Ensure full-width Gear Profile editor is brought into view immediately
+    requestAnimationFrame(() => {
+      if (editorContainerRef.current) {
+        editorContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   };
+
+  // Escape key collapses finder if a profile is already selected and no modals/dialogs are open
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === 'Escape' &&
+        isFinderExpanded &&
+        selectedProfile &&
+        !isEditingParameter &&
+        !reviewingDiscovery &&
+        !clearStagingConfirmOpen
+      ) {
+        setIsFinderExpanded(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFinderExpanded, selectedProfile, isEditingParameter, reviewingDiscovery, clearStagingConfirmOpen]);
 
   // Cabinet selection state & helpers for VIR Mic Placement
   const isCabSelected = Boolean(selectedProfile && selectedProfile.type === 'cab');
@@ -3232,98 +3480,108 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
   };
 
   return (
-    <div className="bg-[#0e0e11] border border-white/5 rounded-3xl p-6 md:p-8 space-y-8 text-white relative overflow-hidden">
+    <div className="bg-[#0e0e11] border border-white/5 rounded-3xl p-4 sm:p-5 md:p-6 space-y-4 text-white relative overflow-hidden">
       
       {/* 1. Header block */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 border-b border-white/5 pb-6">
-        <div>
-          <h2 className="text-3xl font-display font-black tracking-tight uppercase bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
-            Gear Management
-          </h2>
-          <p className="text-xs text-gray-400 font-mono mt-1 tracking-widest uppercase">
-            Unified catalog identities, hardware parameters, conversions & discovery
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => setViewMode('profiles')}
-            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${viewMode === 'profiles' ? 'bg-gear-accent text-black font-semibold' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            Gear Profiles
-          </button>
-          
-          <button
-            onClick={() => setViewMode('discovery')}
-            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${viewMode === 'discovery' ? 'bg-gear-accent text-black font-semibold' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
-          >
-            <Upload className="w-3.5 h-3.5" />
-            Import / Discovery
-            {(discoveredGears.length > 0 || discoveredProtocols.length > 0) && (
-              <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse ml-1" />
-            )}
-          </button>
-
-          <button
-            onClick={() => setViewMode('gaps')}
-            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${viewMode === 'gaps' ? 'bg-gear-accent text-black font-semibold' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
-          >
-            <AlertCircle className="w-3.5 h-3.5" />
-            Mapping Gaps
-            {gapsDashboard.length > 0 && (
-              <span className="bg-amber-500/20 text-amber-400 border border-amber-500/20 text-[10px] px-2 py-0.5 rounded-full ml-1 scale-90">
-                {gapsDashboard.length}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setViewMode('ikmpak')}
-            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${viewMode === 'ikmpak' ? 'bg-gear-accent text-black font-semibold' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
-          >
-            <Zap className="w-3.5 h-3.5" />
-            IKMPAK Accelerator
-            {stagedCandidates.length > 0 && (
-              <span className="bg-gear-accent/20 text-gear-accent border border-gear-accent/20 text-[10px] px-2 py-0.5 rounded-full ml-1 scale-90 animate-pulse">
-                {stagedCandidates.length}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => isCabSelected && setViewMode('mic_placement')}
-            disabled={!isCabSelected}
-            title={virDisabledTooltip}
-            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-2 ${
-              !isCabSelected
-                ? 'opacity-40 cursor-not-allowed bg-white/5 text-gray-600 border border-white/5'
-                : viewMode === 'mic_placement'
-                  ? 'bg-cyan-500 text-black font-semibold'
-                  : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'
-            }`}
-          >
-            <Crosshair className="w-3.5 h-3.5" />
-            VIR Mic Placement
-          </button>
-
-          <button
-            onClick={() => loadProfiles(true)}
-            disabled={isLoading}
-            className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white rounded-xl transition-all disabled:opacity-40"
-            title="Refresh database collections on-the-fly"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-gear-accent' : ''}`} />
-          </button>
+      <div className="space-y-3.5 border-b border-white/5 pb-4 relative z-10">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-display font-black tracking-tight uppercase bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
+              Gear Management
+            </h2>
+            <p className="text-xs text-gray-400 font-mono mt-1 tracking-widest uppercase">
+              Unified catalog identities, hardware parameters, conversions & discovery
+            </p>
+          </div>
 
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white rounded-xl transition-all"
+              className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white rounded-xl transition-all cursor-pointer shrink-0"
+              title="Close Gear Management"
+              aria-label="Close Gear Management"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           )}
+        </div>
+
+        {/* 2. Compact module navigation row */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => setViewMode('profiles')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${viewMode === 'profiles' ? 'bg-gear-accent text-black font-semibold shadow-sm' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              Gear Profiles
+            </button>
+            
+            <button
+              onClick={() => setViewMode('discovery')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${viewMode === 'discovery' ? 'bg-gear-accent text-black font-semibold shadow-sm' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Import / Discovery
+              {(discoveredGears.length > 0 || discoveredProtocols.length > 0) && (
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse ml-0.5" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setViewMode('gaps')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${viewMode === 'gaps' ? 'bg-gear-accent text-black font-semibold shadow-sm' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
+            >
+              <AlertCircle className="w-3.5 h-3.5" />
+              Mapping Gaps
+              {gapsDashboard.length > 0 && (
+                <span className="bg-amber-500/20 text-amber-400 border border-amber-500/20 text-[10px] px-1.5 py-0.2 rounded-full ml-0.5 font-mono">
+                  {gapsDashboard.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setViewMode('ikmpak')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${viewMode === 'ikmpak' ? 'bg-gear-accent text-black font-semibold shadow-sm' : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'}`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              IKMPAK Accelerator
+              {stagedCandidates.length > 0 && (
+                <span className="bg-gear-accent/20 text-gear-accent border border-gear-accent/20 text-[10px] px-1.5 py-0.2 rounded-full ml-0.5 font-mono animate-pulse">
+                  {stagedCandidates.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => isCabSelected && setViewMode('mic_placement')}
+              disabled={!isCabSelected}
+              title={virDisabledTooltip}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 ${
+                !isCabSelected
+                  ? 'opacity-40 cursor-not-allowed bg-white/5 text-gray-600 border border-white/5'
+                  : viewMode === 'mic_placement'
+                    ? 'bg-cyan-500 text-black font-semibold shadow-sm cursor-pointer'
+                    : 'bg-white/5 text-gray-400 hover:text-white border border-white/10 cursor-pointer'
+              }`}
+            >
+              <Crosshair className="w-3.5 h-3.5" />
+              VIR Mic Placement
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              onClick={() => loadProfiles(true)}
+              disabled={isLoading}
+              className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white rounded-lg transition-all disabled:opacity-40 cursor-pointer"
+              title="Refresh database collections on-the-fly"
+              aria-label="Refresh database collections"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-gear-accent' : ''}`} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3415,98 +3673,606 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
 
       {/* 2. MAIN ACTIVE VIEWPORT */}
       {viewMode === 'profiles' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="space-y-4">
           
-          {/* PROFILE SELECTION SIDEBAR */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-600" />
+          {/* FULL-WIDTH INLINE COLLAPSIBLE GEAR FINDER */}
+          <div className="bg-[#121215] border border-white/5 rounded-2xl p-3 sm:p-3.5 space-y-2.5 transition-all">
+            {/* Top row: Search field + persistent selected summary + active filter summary + result count + expand/collapse button */}
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
+              {/* Search input with search icon and clear action */}
+              <div className="relative flex-1 min-w-[200px] max-w-md">
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-500" />
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="Search gear..."
+                  placeholder="Search gear by name, GUID, or alias..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white/5 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-xs font-mono text-white placeholder-gray-600 focus:outline-none focus:border-gear-accent/30 transition-colors"
+                  onFocus={() => {
+                    if (!isFinderExpanded) setIsFinderExpanded(true);
+                  }}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (!isFinderExpanded) setIsFinderExpanded(true);
+                  }}
+                  className="w-full bg-white/5 border border-white/5 rounded-xl pl-9 pr-8 py-2 text-xs font-mono text-white placeholder-gray-500 focus:outline-none focus:border-gear-accent/40 focus:bg-white/[0.07] transition-all"
+                  aria-label="Search gear profiles"
                 />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-2.5 top-2.5 text-gray-500 hover:text-white p-0.5 rounded transition-colors cursor-pointer"
+                    title="Clear search text"
+                    aria-label="Clear search text"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Persistent selected-profile summary with Clear Selection action */}
+              {selectedProfile && (
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gear-accent/10 border border-gear-accent/25 text-xs font-mono text-gray-200 min-w-0 max-w-full overflow-hidden shrink"
+                  title={`Selected: ${selectedProfile.displayName} · ${selectedProfile.type.toUpperCase()} · ${selectedProfile.guid || 'No GUID'}`}
+                >
+                  <div className="flex items-center gap-1.5 min-w-0 truncate">
+                    <span className="text-gear-accent font-bold shrink-0">Selected:</span>
+                    <span className="font-semibold text-white truncate shrink-0 max-w-[140px] sm:max-w-[200px]">
+                      {selectedProfile.displayName}
+                    </span>
+                    <span className="text-gray-500 shrink-0">&middot;</span>
+                    <span className="uppercase text-gray-300 shrink-0 font-medium">{selectedProfile.type}</span>
+                    <span className="text-gray-500 shrink-0">&middot;</span>
+                    <span className="text-gray-400 font-mono text-[11px] truncate" title={selectedProfile.guid || 'No GUID'}>
+                      {selectedProfile.guid || 'No GUID'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleClearSelection(e)}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 hover:bg-red-500/20 text-gray-200 hover:text-red-300 border border-white/15 hover:border-red-500/30 text-[11px] font-mono transition-colors shrink-0 cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-gear-accent"
+                    title="Clear selected gear profile"
+                    aria-label="Clear selected gear profile"
+                  >
+                    <X className="w-3 h-3 text-gray-400 hover:text-red-300 shrink-0" />
+                    <span>Clear Selection</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Filter summary, result count and expand/collapse control */}
+              <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 shrink-0">
+                {/* Active filter badges & summary */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-mono font-bold text-gray-300">
+                    {filteredProfiles.length} {filteredProfiles.length === 1 ? 'profile' : 'profiles'}
+                  </span>
+
+                  {hasActiveFilters ? (
+                    <div className="flex items-center gap-1 text-[10px] font-mono text-gray-400">
+                      <span className="text-gray-600">&bull;</span>
+                      {activeFilterSummary.map((tag, idx) => (
+                        <span key={idx} className="px-1.5 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10 uppercase">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[10px] font-mono text-gray-500 hidden md:inline">
+                      &bull; All types &amp; statuses
+                    </span>
+                  )}
+
+                  {isFinderModified && (
+                    <button
+                      type="button"
+                      onClick={handleResetFinder}
+                      className="text-[10px] font-mono text-gear-accent hover:text-yellow-300 underline ml-1 transition-colors cursor-pointer"
+                      title="Reset search, filters, sorting, and selected profile"
+                      aria-label="Reset Finder"
+                    >
+                      Reset Finder
+                    </button>
+                  )}
+                </div>
+
+                {/* Expand / Collapse toggle button */}
+                <button
+                  type="button"
+                  onClick={() => setIsFinderExpanded(!isFinderExpanded)}
+                  aria-expanded={isFinderExpanded}
+                  aria-controls="gear-finder-results-panel"
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-xs font-mono font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  {isFinderExpanded ? (
+                    <>
+                      <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
+                      <span>Hide Finder</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                      <span>Refine &amp; Browse</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 border-b border-white/5 pb-3">
-              {['all', 'amp', 'stomp', 'cab', 'speaker', 'mic', 'rack'].map(t => (
-                <button
-                  key={t}
-                  onClick={() => setSelectedType(t)}
-                  className={`text-[9px] font-mono uppercase px-2.5 py-1 rounded-md border transition-all ${selectedType === t ? 'bg-white/10 text-white border-white/20' : 'text-gray-600 hover:text-gray-400 border-transparent'}`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap gap-1.5 border-b border-white/5 pb-3">
-              {['all', 'PASS', 'WARN', 'PARTIAL', 'CHECK', 'FAIL'].map(s => (
-                <button
-                  key={s}
-                  onClick={() => setSelectedStatus(s)}
-                  className={`text-[9px] font-mono px-2.5 py-1 rounded-md border transition-all ${selectedStatus === s ? 'bg-white/10 text-white border-white/20' : 'text-gray-600 hover:text-gray-400 border-transparent'}`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-
-            <div className="max-h-[500px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
-              {isLoading && profiles.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-3 text-gray-500">
-                  <Loader2 className="w-5 h-5 animate-spin text-gear-accent" />
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">Loading Gear Profiles...</span>
-                </div>
-              ) : filteredProfiles.length === 0 ? (
-                <p className="text-xs font-mono text-gray-600 text-center py-10 uppercase">
-                  No matching Gear Profiles
-                </p>
-              ) : (
-                filteredProfiles.map(p => {
-                  const isSelected = selectedProfile?.id === p.id;
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => handleSelectProfile(p)}
-                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 group ${isSelected ? 'bg-white/[0.04] border-gear-accent/30 shadow-lg' : 'bg-[#121215] border-white/5 hover:border-white/10'}`}
+            {/* Expanded section: filter controls and sortable database table */}
+            {isFinderExpanded && (
+              <div
+                id="gear-finder-results-panel"
+                className="space-y-2.5 pt-2.5 border-t border-white/5 animate-in fade-in duration-200"
+              >
+                {/* Compact Filters Row Toolbar */}
+                <div className="flex flex-wrap items-center gap-2.5 bg-white/[0.02] p-2 sm:p-2.5 rounded-xl border border-white/5">
+                  {/* 1. Type Filter */}
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="filter-type-select" className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold shrink-0">
+                      Type:
+                    </label>
+                    <select
+                      id="filter-type-select"
+                      value={selectedType}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      className="bg-white/5 border border-white/10 hover:border-white/20 text-gray-200 text-xs font-mono rounded-lg px-2 py-1 focus:outline-none focus:border-gear-accent/50 cursor-pointer"
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-white group-hover:text-gear-accent transition-colors truncate">
-                          {p.displayName}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{p.type}</span>
-                          {p.guid ? (
-                            <span className="text-[8px] font-mono text-gray-600 truncate max-w-[120px]">{p.guid}</span>
-                          ) : (
-                            <span className="text-[8.5px] font-mono text-yellow-600/70 font-semibold italic">GUID Missing</span>
-                          )}
-                        </div>
-                      </div>
+                      <option value="all" className="bg-[#121215] text-white">All Types</option>
+                      <option value="amp" className="bg-[#121215] text-white">Amp</option>
+                      <option value="stomp" className="bg-[#121215] text-white">Stomp</option>
+                      <option value="cab" className="bg-[#121215] text-white">Cab</option>
+                      <option value="speaker" className="bg-[#121215] text-white">Speaker</option>
+                      <option value="mic" className="bg-[#121215] text-white">Mic</option>
+                      <option value="rack" className="bg-[#121215] text-white">Rack</option>
+                      <option value="room" className="bg-[#121215] text-white">Room</option>
+                      <option value="tonex" className="bg-[#121215] text-white">TONEX</option>
+                    </select>
+                  </div>
 
-                      <div className={`text-[8.5px] font-mono px-2 py-0.5 rounded border ${getStatusColor(p.validation.status)}`}>
-                        {p.validation.status}
-                      </div>
+                  {/* 2. Profile Status Filter */}
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="filter-status-select" className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold shrink-0">
+                      Profile:
+                    </label>
+                    <select
+                      id="filter-status-select"
+                      value={selectedProfileStatus}
+                      onChange={(e) => setSelectedProfileStatus(e.target.value)}
+                      className="bg-white/5 border border-white/10 hover:border-white/20 text-gray-200 text-xs font-mono rounded-lg px-2 py-1 focus:outline-none focus:border-gear-accent/50 cursor-pointer"
+                    >
+                      <option value="all" className="bg-[#121215] text-white">All Statuses</option>
+                      <option value="PASS" className="bg-[#121215] text-white">PASS</option>
+                      <option value="WARN" className="bg-[#121215] text-white">WARN</option>
+                      <option value="PARTIAL_WITH_FALLBACK" className="bg-[#121215] text-white">PARTIAL_WITH_FALLBACK</option>
+                      <option value="PARTIAL" className="bg-[#121215] text-white">PARTIAL</option>
+                      <option value="CHECK" className="bg-[#121215] text-white">CHECK</option>
+                      <option value="FAIL" className="bg-[#121215] text-white">FAIL</option>
+                    </select>
+                  </div>
+
+                  {/* 3. Validation Status Filter */}
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="filter-val-select" className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold shrink-0">
+                      Validation:
+                    </label>
+                    <select
+                      id="filter-val-select"
+                      value={selectedValidationStatus}
+                      onChange={(e) => setSelectedValidationStatus(e.target.value)}
+                      className="bg-white/5 border border-white/10 hover:border-white/20 text-gray-200 text-xs font-mono rounded-lg px-2 py-1 focus:outline-none focus:border-gear-accent/50 cursor-pointer"
+                    >
+                      <option value="all" className="bg-[#121215] text-white">All Validation</option>
+                      <option value="validated" className="bg-[#121215] text-white">.AT5P Validated</option>
+                      <option value="unvalidated" className="bg-[#121215] text-white">Unverified / Standard</option>
+                    </select>
+                  </div>
+
+                  {/* 4. Export Status Filter */}
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="filter-export-select" className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold shrink-0">
+                      Export:
+                    </label>
+                    <select
+                      id="filter-export-select"
+                      value={selectedExportStatus}
+                      onChange={(e) => setSelectedExportStatus(e.target.value)}
+                      className="bg-white/5 border border-white/10 hover:border-white/20 text-gray-200 text-xs font-mono rounded-lg px-2 py-1 focus:outline-none focus:border-gear-accent/50 cursor-pointer"
+                    >
+                      <option value="all" className="bg-[#121215] text-white">All Export</option>
+                      <option value="PASS" className="bg-[#121215] text-white">Export: PASS</option>
+                      <option value="WARN" className="bg-[#121215] text-white">Export: WARN</option>
+                      <option value="NA" className="bg-[#121215] text-white">Export: N/A</option>
+                    </select>
+                  </div>
+
+                  {/* 5. Alias contains input */}
+                  <div className="flex items-center gap-1.5 min-w-[170px] flex-1 max-w-[280px]">
+                    <label htmlFor="filter-alias-input" className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold shrink-0">
+                      Alias contains:
+                    </label>
+                    <input
+                      id="filter-alias-input"
+                      type="text"
+                      placeholder="Filter by alias..."
+                      value={aliasFilter}
+                      onChange={(e) => setAliasFilter(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 hover:border-white/20 text-gray-200 text-xs font-mono rounded-lg px-2.5 py-1 focus:outline-none focus:border-gear-accent/50 placeholder-gray-600"
+                    />
+                  </div>
+
+                  {/* Clear Filters button (when filters active) */}
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={handleClearFilters}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-[10px] font-mono uppercase border border-white/10 transition-all shrink-0 cursor-pointer ml-auto"
+                      title="Clear all active search and filters"
+                      aria-label="Clear Filters"
+                    >
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+
+                {/* Database-style Results Table */}
+                <div
+                  ref={tableContainerRef}
+                  onScroll={(e) => {
+                    tableScrollTopRef.current = e.currentTarget.scrollTop;
+                  }}
+                  className="max-h-[380px] overflow-y-auto overflow-x-auto border border-white/5 rounded-xl bg-[#0d0d10] scrollbar-thin"
+                >
+                  {isLoading && profiles.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-gray-500">
+                      <Loader2 className="w-5 h-5 animate-spin text-gear-accent" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">Loading Gear Profiles...</span>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  ) : filteredProfiles.length === 0 ? (
+                    <div className="text-center py-10">
+                      <p className="text-xs font-mono text-gray-500 uppercase">
+                        No matching Gear Profiles
+                      </p>
+                      {hasActiveFilters && (
+                        <button
+                          type="button"
+                          onClick={handleClearFilters}
+                          className="mt-2 text-[10px] font-mono text-gear-accent hover:text-yellow-300 underline cursor-pointer"
+                          aria-label="Clear search and filter criteria"
+                        >
+                          Clear search and filter criteria
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <table className="w-full text-left border-collapse min-w-[980px] table-fixed" aria-label="Gear profiles database table">
+                      <colgroup>
+                        {/* 1. Name: flexible remaining space */}
+                        <col className="w-auto min-w-[180px]" />
+                        {/* 2. Type: 95px */}
+                        <col className="w-[95px]" />
+                        {/* 3. Profile: 100px */}
+                        <col className="w-[100px]" />
+                        {/* 4. Validation: 210px (fits 200–220px, displays .AT5P VALIDATED without clipping) */}
+                        <col className="w-[210px]" />
+                        {/* 5. Export: 95px */}
+                        <col className="w-[95px]" />
+                        {/* 6. GUID: 375px (fits 360–390px, displays full 36-char GUID + copy button) */}
+                        <col className="w-[375px]" />
+                      </colgroup>
+                      <thead className="sticky top-0 z-10 bg-[#16161b] border-b border-white/10 shadow-sm">
+                        <tr>
+                          {/* 1. Name */}
+                          <th scope="col" className="px-3.5 py-2.5 text-left font-mono text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            <button
+                              type="button"
+                              onClick={() => handleSort('name')}
+                              aria-sort={sortColumn === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                              className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group"
+                            >
+                              <span>Name</span>
+                              {sortColumn === 'name' ? (
+                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-gear-accent" /> : <ArrowDown className="w-3.5 h-3.5 text-gear-accent" />
+                              ) : (
+                                <ArrowUpDown className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
+                            </button>
+                          </th>
+
+                          {/* 2. Type */}
+                          <th scope="col" className="px-3 py-2.5 text-left font-mono text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            <button
+                              type="button"
+                              onClick={() => handleSort('type')}
+                              aria-sort={sortColumn === 'type' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                              className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group"
+                            >
+                              <span>Type</span>
+                              {sortColumn === 'type' ? (
+                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-gear-accent" /> : <ArrowDown className="w-3.5 h-3.5 text-gear-accent" />
+                              ) : (
+                                <ArrowUpDown className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
+                            </button>
+                          </th>
+
+                          {/* 3. Profile Status */}
+                          <th scope="col" className="px-3 py-2.5 text-left font-mono text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            <button
+                              type="button"
+                              onClick={() => handleSort('profile')}
+                              aria-sort={sortColumn === 'profile' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                              className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group"
+                              title="Sort by profile validation severity: FAIL → CHECK → PARTIAL → WARN → PASS"
+                            >
+                              <span>Profile</span>
+                              {sortColumn === 'profile' ? (
+                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-gear-accent" /> : <ArrowDown className="w-3.5 h-3.5 text-gear-accent" />
+                              ) : (
+                                <ArrowUpDown className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
+                            </button>
+                          </th>
+
+                          {/* 4. Validation Status */}
+                          <th scope="col" className="px-3 py-2.5 text-left font-mono text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            <button
+                              type="button"
+                              onClick={() => handleSort('validation')}
+                              aria-sort={sortColumn === 'validation' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                              className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group"
+                              title="Sort by AT5P validation status"
+                            >
+                              <span>Validation</span>
+                              {sortColumn === 'validation' ? (
+                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-gear-accent" /> : <ArrowDown className="w-3.5 h-3.5 text-gear-accent" />
+                              ) : (
+                                <ArrowUpDown className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
+                            </button>
+                          </th>
+
+                          {/* 5. Export Status */}
+                          <th scope="col" className="px-3 py-2.5 text-left font-mono text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            <button
+                              type="button"
+                              onClick={() => handleSort('export')}
+                              aria-sort={sortColumn === 'export' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                              className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group"
+                              title="Sort by export readiness"
+                            >
+                              <span>Export</span>
+                              {sortColumn === 'export' ? (
+                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-gear-accent" /> : <ArrowDown className="w-3.5 h-3.5 text-gear-accent" />
+                              ) : (
+                                <ArrowUpDown className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
+                            </button>
+                          </th>
+
+                          {/* 6. GUID */}
+                          <th scope="col" className="px-3 py-2.5 text-left font-mono text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            <button
+                              type="button"
+                              onClick={() => handleSort('guid')}
+                              aria-sort={sortColumn === 'guid' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                              className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group"
+                            >
+                              <span>GUID</span>
+                              {sortColumn === 'guid' ? (
+                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-gear-accent" /> : <ArrowDown className="w-3.5 h-3.5 text-gear-accent" />
+                              ) : (
+                                <ArrowUpDown className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              )}
+                            </button>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedProfiles.map(p => {
+                          const isSelected = isProfileRowSelected(p, selectedProfile);
+                          const isAt5p = p.validationStatus === 'at5p_validated' || p.validationStatus === 'verified_at5p';
+                          const exportStatus = getProfileExportStatus(p);
+                          const matchingAlias = aliasFilter.trim() ? getMatchingAlias(p.aliases, aliasFilter) : null;
+                          const isCopied = copiedGuidId === p.id;
+
+                          return (
+                            <tr
+                              key={p.id}
+                              id={`gear-finder-row-${p.id}`}
+                              role="row"
+                              aria-selected={isSelected}
+                              tabIndex={0}
+                              onClick={() => handleSelectProfile(p)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  handleSelectProfile(p);
+                                }
+                              }}
+                              className={`border-b border-white/[0.04] transition-all cursor-pointer group focus:outline-none focus-visible:ring-1 focus-visible:ring-gear-accent ${
+                                isSelected
+                                  ? 'bg-gear-accent/15 hover:bg-gear-accent/20 border-l-4 border-l-gear-accent'
+                                  : 'hover:bg-white/[0.03] border-l-4 border-l-transparent'
+                              }`}
+                            >
+                              {/* 1. Name */}
+                              <td className="px-3.5 py-2.5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  {isSelected && (
+                                    <span
+                                      className="flex items-center justify-center w-4 h-4 rounded-full bg-gear-accent/20 text-gear-accent shrink-0"
+                                      title="Currently selected profile"
+                                      aria-hidden="true"
+                                    >
+                                      <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                    </span>
+                                  )}
+                                  <div className="flex flex-col min-w-0">
+                                    <span className={`text-xs font-bold truncate transition-colors ${
+                                      isSelected ? 'text-gear-accent' : 'text-white group-hover:text-gear-accent'
+                                    }`}>
+                                      {p.displayName}
+                                    </span>
+                                    {matchingAlias && (
+                                      <span className="text-[10px] font-mono text-cyan-400/90 truncate mt-0.5">
+                                        Alias: {matchingAlias}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* 2. Type */}
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                <span className="text-[10px] font-mono uppercase tracking-wider text-gray-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                                  {p.type}
+                                </span>
+                              </td>
+
+                              {/* 3. Profile */}
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                <span className={`inline-block text-[10px] font-mono px-2 py-0.5 rounded border ${getStatusColor(p.validation?.status || 'UNKNOWN')}`}>
+                                  {p.validation?.status || 'UNKNOWN'}
+                                </span>
+                              </td>
+
+                              {/* 4. Validation */}
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                {isAt5p ? (
+                                  <span className="inline-flex items-center text-[9.5px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 font-bold uppercase tracking-wider">
+                                    .AT5P VALIDATED
+                                  </span>
+                                ) : (
+                                  <span className="text-xs font-mono text-gray-600 pl-1">—</span>
+                                )}
+                              </td>
+
+                              {/* 5. Export */}
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                {exportStatus ? (
+                                  <span className={`inline-block text-[10px] font-mono px-2 py-0.5 rounded border ${getStatusColor(exportStatus)}`}>
+                                    {exportStatus}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs font-mono text-gray-600 pl-1">—</span>
+                                )}
+                              </td>
+
+                              {/* 6. GUID */}
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                {p.guid ? (
+                                  <div className="flex items-center gap-2 min-w-0" title={p.guid}>
+                                    <span className="font-mono text-xs text-gray-300 group-hover:text-white transition-colors truncate tracking-tight selection:bg-gear-accent/30">
+                                      {p.guid}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => handleCopyGuid(e, p.guid, p.id)}
+                                      className="p-1 hover:bg-white/10 text-gray-400 hover:text-white rounded transition-all cursor-pointer shrink-0"
+                                      title="Copy full GUID to clipboard"
+                                      aria-label="Copy full GUID"
+                                    >
+                                      {isCopied ? (
+                                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                      ) : (
+                                        <Copy className="w-3.5 h-3.5" />
+                                      )}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="text-[11px] font-mono text-amber-500/80 font-semibold italic">
+                                    No GUID
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+
+                {/* Client-Side Pagination Bar */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2.5 border-t border-white/5 text-xs font-mono text-gray-400">
+                  {/* Range & Total */}
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {totalCount === 0 ? '0 of 0' : `${startIndex}–${endIndex} of ${totalCount}`} profiles
+                    </span>
+                    {totalPages > 1 && (
+                      <span className="text-gray-600">
+                        &bull; Page {safePage} of {totalPages}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex items-center gap-3">
+                    {/* Page size selector */}
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <span className="text-gray-500">Rows:</span>
+                      <button
+                        type="button"
+                        onClick={() => { setPageSize(25); setCurrentPage(1); }}
+                        className={`px-2 py-0.5 rounded transition-all cursor-pointer ${pageSize === 25 ? 'bg-white/15 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
+                      >
+                        25
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setPageSize(50); setCurrentPage(1); }}
+                        className={`px-2 py-0.5 rounded transition-all cursor-pointer ${pageSize === 50 ? 'bg-white/15 text-white font-bold' : 'text-gray-400 hover:text-white'}`}
+                      >
+                        50
+                      </button>
+                    </div>
+
+                    {/* Prev / Next buttons */}
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={safePage <= 1}
+                        className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer border border-white/10 text-xs"
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span>Prev</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={safePage >= totalPages}
+                        className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer border border-white/10 text-xs"
+                        aria-label="Next page"
+                      >
+                        <span>Next</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* MAIN PROFILE DETAILED VIEWPORT */}
-          <div className="lg:col-span-8">
+          {/* MAIN PROFILE DETAILED VIEWPORT (FULL-WIDTH) */}
+          <div ref={editorContainerRef} id="gear-profile-editor-container" className="w-full">
             {selectedProfile && editedProfile ? (
               <div className="bg-[#121215] border border-white/5 rounded-3xl p-6 space-y-6 animate-in fade-in duration-300">
                 
                 {/* Profile header */}
                 <div className="flex items-start justify-between gap-6 border-b border-white/5 pb-5">
                   <div>
+                    <div className="text-[10px] font-mono font-bold tracking-widest uppercase text-gear-accent mb-1.5 flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-gear-accent animate-pulse"></span>
+                      <span>SELECTED GEAR PROFILE</span>
+                    </div>
                     <h3 className="text-xl font-bold text-white font-display">
                       {editedProfile.displayName || "Un-named Gear"}
                     </h3>
@@ -3548,6 +4314,17 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                     </div>
                     
                     <div className="flex items-center gap-2 flex-wrap self-stretch sm:self-auto justify-center sm:justify-end">
+                      <button
+                        type="button"
+                        onClick={(e) => handleClearSelection(e)}
+                        className="px-3 py-1.5 bg-white/5 hover:bg-red-500/20 text-gray-300 hover:text-red-300 text-[10px] font-mono uppercase rounded-xl transition-all shadow-lg flex items-center gap-1.5 shrink-0 border border-white/5 hover:border-red-500/30 cursor-pointer"
+                        title="Close editor and clear selected gear profile"
+                        aria-label="Clear Selection"
+                      >
+                        <X className="w-3 h-3 text-gray-400 hover:text-red-300" />
+                        Clear Selection
+                      </button>
+
                       <button
                         onClick={handleCopyProfileJson}
                         className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-[10px] font-mono uppercase rounded-xl transition-all shadow-lg flex items-center gap-1.5 shrink-0 border border-white/5"
@@ -4804,11 +5581,11 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
 
               </div>
             ) : (
-              <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-12 text-center h-full flex flex-col items-center justify-center space-y-4">
+              <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-4">
                 <Database className="w-12 h-12 text-gray-700 animate-pulse" />
                 <div>
                   <h4 className="text-sm font-bold font-display uppercase tracking-widest text-gray-400">No Profile Selected</h4>
-                  <p className="text-xs text-gray-600 font-mono uppercase mt-1">Select a gear item from the left bar or do an AT5 import</p>
+                  <p className="text-xs text-gray-600 font-mono uppercase mt-1">Select a gear profile from the finder above or perform an AT5 import</p>
                 </div>
               </div>
             )}
@@ -5701,13 +6478,10 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                 onClick={() => {
                                   const found = profiles.find(p => p.id === ad.matchedProfileId);
                                   if (found) {
-                                    setSelectedProfile(found);
-                                    setEditedProfile({ ...found });
-                                    setProfileTab('overview');
-                                    setViewMode('profiles');
+                                    handleSelectProfile(found);
                                   }
                                 }}
-                                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-black text-[10px] font-mono font-bold uppercase rounded-xl transition-all shadow-md self-start sm:self-auto"
+                                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-black text-[10px] font-mono font-bold uppercase rounded-xl transition-all shadow-md self-start sm:self-auto cursor-pointer"
                               >
                                 View Updated Gear Profile
                               </button>
@@ -6587,11 +7361,10 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                        onClick={() => {
                                          const m = findMatchedProfile(selectedCandidate, profiles);
                                          if (m) {
-                                           setSelectedProfile(m);
-                                           setViewMode('profiles');
+                                           handleSelectProfile(m);
                                          }
                                        }}
-                                       className="w-full px-4 py-2.5 bg-sky-500/10 border border-sky-500/30 hover:bg-sky-500/20 text-sky-400 text-xs font-mono font-black uppercase rounded-xl transition-all flex items-center justify-center gap-2"
+                                       className="w-full px-4 py-2.5 bg-sky-500/10 border border-sky-500/30 hover:bg-sky-500/20 text-sky-400 text-xs font-mono font-black uppercase rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                                      >
                                        <ShieldCheck className="w-4 h-4 text-sky-400" /> View Profile / .AT5P Validated
                                      </button>
