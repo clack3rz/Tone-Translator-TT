@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   MicPlacementMapping, 
-  GearProfile 
+  GearProfile,
+  SemanticOrientation,
+  VALID_SEMANTIC_ORIENTATIONS
 } from '../types';
 import { 
   VIR_CALIBRATION_COORDINATES, 
@@ -21,7 +23,12 @@ import {
   getVIRCalibrationOverrides,
   setVIRCalibrationOverrides,
   resetVIRCalibrationOverrides,
-  VIRReferenceOverrides
+  VIRReferenceOverrides,
+  getEffectiveMappingOrientation,
+  VIR_REFERENCE_GRID_KEYS,
+  CARDINAL_ORIENTATION_CLOCK,
+  CARDINAL_ORIENTATION_LABELS,
+  formatSemanticOrientation
 } from '../services/at5MicPlacementService';
 import { at5DatabaseService } from '../services/at5DatabaseService';
 import { setDbMicPlacementMappings, ensureMicPlacementDataLoaded } from '../services/at5ParameterManifest';
@@ -72,6 +79,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [testSlot, setTestSlot] = useState<'Mic_0' | 'Mic_1' | 'Mic_2'>('Mic_0');
   const [testMicModel, setTestMicModel] = useState<string>('Dynamic 57');
   const [testPosition, setTestPosition] = useState<SemanticPosition>('Cap Edge');
+  const [testOrientation, setTestOrientation] = useState<SemanticOrientation>('W');
   const [testDistance, setTestDistance] = useState<SemanticDistance>('Close');
   const [testAngle, setTestAngle] = useState<SemanticAngle>('On Axis');
   const [customTestInput, setCustomTestInput] = useState<string>('');
@@ -83,6 +91,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   const [newSlot, setNewSlot] = useState<'Mic_0' | 'Mic_1' | 'Mic_2'>('Mic_0');
   const [newLabel, setNewLabel] = useState('');
   const [newPosition, setNewPosition] = useState<SemanticPosition>('Cap Edge');
+  const [newOrientation, setNewOrientation] = useState<SemanticOrientation>('W');
   const [newDistance, setNewDistance] = useState<SemanticDistance>('Close');
   const [newAngle, setNewAngle] = useState<SemanticAngle>('On Axis');
   const [newSpeaker, setNewSpeaker] = useState<'0' | '1' | '2' | '3'>('0');
@@ -98,11 +107,13 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   // Built-in Reference Overrides Editor state
   const [showRefEditModal, setShowRefEditModal] = useState(false);
   const [refCalibrationVersion, setRefCalibrationVersion] = useState(0);
-  const [refPositions, setRefPositions] = useState<Record<string, { X: number; Y: number }>>({
-    "Cap": { X: VIR_CALIBRATION_COORDINATES.positions["Cap"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cap"].Y },
-    "Cap Edge": { X: VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].Y },
-    "Cone": { X: VIR_CALIBRATION_COORDINATES.positions["Cone"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cone"].Y },
-    "Cone Edge": { X: VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].X, Y: VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].Y },
+  const [refPositions, setRefPositions] = useState<Record<string, { X: number; Y: number; isCalibrated?: boolean }>>(() => {
+    const coords = getVIRCalibrationCoordinates();
+    const map: Record<string, { X: number; Y: number; isCalibrated?: boolean }> = {};
+    for (const [k, v] of Object.entries(coords.positions)) {
+      map[k] = { X: v.X, Y: v.Y, isCalibrated: v.isCalibrated };
+    }
+    return map;
   });
   const [refDistances, setRefDistances] = useState<Record<string, { Distance: number }>>({
     "Close": { Distance: VIR_CALIBRATION_COORDINATES.distances["Close"].Distance },
@@ -179,7 +190,9 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     }
     const inputLabel = useCustomInput 
       ? customTestInput 
-      : `${testPosition}, ${testDistance}${testAngle !== 'On Axis' ? `, ${testAngle}` : ''}`;
+      : (testPosition === 'Cap'
+          ? `${testPosition}, ${testDistance}${testAngle !== 'On Axis' ? `, ${testAngle}` : ''}`
+          : `${testPosition}, ${testOrientation}, ${testDistance}${testAngle !== 'On Axis' ? `, ${testAngle}` : ''}`);
 
     return resolveCompositeMicPlacement({
       cabName,
@@ -189,7 +202,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
       micModelName: testMicModel,
       dbMappings
     });
-  }, [isValidCab, cabName, cabGuid, testSlot, testMicModel, testPosition, testDistance, testAngle, customTestInput, useCustomInput, dbMappings, refCalibrationVersion]);
+  }, [isValidCab, cabName, cabGuid, testSlot, testMicModel, testPosition, testOrientation, testDistance, testAngle, customTestInput, useCustomInput, dbMappings, refCalibrationVersion]);
 
   // Handle open Add Modal (clean state)
   const handleOpenAddModal = () => {
@@ -197,6 +210,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     setNewSlot('Mic_0');
     setNewLabel('');
     setNewPosition('Cap Edge');
+    setNewOrientation('W');
     setNewDistance('Close');
     setNewAngle('On Axis');
     setNewSpeaker('0');
@@ -218,11 +232,14 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
     const isSlot1 = slotKey.includes('mic1') || slotKey.includes('mic2') || m.micIndex === 1;
     const resolvedSlot: 'Mic_0' | 'Mic_1' = isSlot1 ? 'Mic_1' : 'Mic_0';
 
+    const parsedPlacement = parseSemanticPlacement(m.friendly_value || m.friendly_name || m.canonicalPlacementName || '');
+
     setNewSlot(resolvedSlot);
     setNewLabel(m.friendly_value || m.friendly_name || m.canonicalPlacementName || '');
-    setNewPosition((m.friendlyPlacement || m.friendly_placement || 'Cap Edge') as SemanticPosition);
-    setNewDistance((m.friendlyDistance || m.friendly_distance || 'Close') as SemanticDistance);
-    setNewAngle((m.friendlyAngle || m.friendly_angle || 'On Axis') as SemanticAngle);
+    setNewPosition((m.friendlyPlacement || m.friendly_placement || parsedPlacement.position || 'Cap Edge') as SemanticPosition);
+    setNewOrientation((m.friendlyOrientation || m.friendly_orientation || parsedPlacement.orientation || 'W') as SemanticOrientation);
+    setNewDistance((m.friendlyDistance || m.friendly_distance || parsedPlacement.distance || 'Close') as SemanticDistance);
+    setNewAngle((m.friendlyAngle || m.friendly_angle || parsedPlacement.angle || 'On Axis') as SemanticAngle);
     setNewNotes(m.notes || '');
     const initialStatus: 'validated' | 'needs_review' | 'estimated' = 
       (m.status === 'validated' || m.validationStatus === 'validated' || m.validationStatus === 'at5p_validated')
@@ -273,7 +290,14 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           Speaker: Number(newSpeaker) || (isSlot1 ? 1 : 0)
         };
       } else {
-        const composed = composeVIRCoordinates(newPosition, newDistance, newAngle, newSlot, Number(newSpeaker));
+        const composed = composeVIRCoordinates(
+          newPosition, 
+          newDistance, 
+          newAngle, 
+          newSlot, 
+          Number(newSpeaker),
+          newPosition === 'Cap' ? undefined : newOrientation
+        );
         coords = composed;
       }
 
@@ -295,9 +319,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
         friendly_setting: editingMapping?.friendly_setting || (isSlot1 ? 'Mic_1_Placement' : 'Mic_0_Placement'),
         friendly_value: newLabel.trim() || editingMapping?.friendly_value || 'Cap Edge, Close, On Axis',
         friendly_placement: newPosition,
+        friendly_orientation: newPosition === 'Cap' ? undefined : newOrientation,
         friendly_distance: newDistance,
         friendly_angle: newAngle,
         friendlyPlacement: newPosition,
+        friendlyOrientation: newPosition === 'Cap' ? undefined : newOrientation,
         friendlyDistance: newDistance,
         friendlyAngle: newAngle,
         canonicalPlacementName: newLabel.trim() || editingMapping?.canonicalPlacementName || 'Cap Edge, Close, On Axis',
@@ -412,12 +438,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
   // Open Edit Built-in Reference Coordinates modal
   const handleOpenRefEdit = () => {
     const coords = getVIRCalibrationCoordinates();
-    setRefPositions({
-      "Cap": { X: coords.positions["Cap"].X, Y: coords.positions["Cap"].Y },
-      "Cap Edge": { X: coords.positions["Cap Edge"].X, Y: coords.positions["Cap Edge"].Y },
-      "Cone": { X: coords.positions["Cone"].X, Y: coords.positions["Cone"].Y },
-      "Cone Edge": { X: coords.positions["Cone Edge"].X, Y: coords.positions["Cone Edge"].Y },
-    });
+    const map: Record<string, { X: number; Y: number; isCalibrated?: boolean }> = {};
+    for (const [k, v] of Object.entries(coords.positions)) {
+      map[k] = { X: v.X, Y: v.Y, isCalibrated: v.isCalibrated };
+    }
+    setRefPositions(map);
     setRefDistances({
       "Close": { Distance: coords.distances["Close"].Distance },
       "Medium": { Distance: coords.distances["Medium"].Distance },
@@ -432,13 +457,17 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
 
   // Save Built-in Reference Calibration Overrides
   const handleSaveRefOverrides = async () => {
+    const posOverrides: Record<string, { X: number; Y: number }> = {};
+    for (const [k, v] of Object.entries(refPositions)) {
+      if (v && typeof v.X === 'number' && typeof v.Y === 'number' && !isNaN(v.X) && !isNaN(v.Y)) {
+        posOverrides[k] = { X: v.X, Y: v.Y };
+      }
+    }
+    if (posOverrides["Cap Edge W"] && !posOverrides["Cap Edge"]) posOverrides["Cap Edge"] = posOverrides["Cap Edge W"];
+    if (posOverrides["Cone W"] && !posOverrides["Cone"]) posOverrides["Cone"] = posOverrides["Cone W"];
+    if (posOverrides["Cone Edge W"] && !posOverrides["Cone Edge"]) posOverrides["Cone Edge"] = posOverrides["Cone Edge W"];
     const overrides: VIRReferenceOverrides = {
-      positions: {
-        "Cap": { X: Number(refPositions["Cap"].X), Y: Number(refPositions["Cap"].Y) },
-        "Cap Edge": { X: Number(refPositions["Cap Edge"].X), Y: Number(refPositions["Cap Edge"].Y) },
-        "Cone": { X: Number(refPositions["Cone"].X), Y: Number(refPositions["Cone"].Y) },
-        "Cone Edge": { X: Number(refPositions["Cone Edge"].X), Y: Number(refPositions["Cone Edge"].Y) },
-      },
+      positions: posOverrides,
       distances: {
         "Close": { Distance: Number(refDistances["Close"].Distance) },
         "Medium": { Distance: Number(refDistances["Medium"].Distance) },
@@ -754,6 +783,28 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               </div>
 
               <div className="space-y-1.5">
+                <label className="text-[9.5px] font-mono text-gray-400 uppercase tracking-wider block font-bold">
+                  Orientation (Cardinal)
+                </label>
+                {testPosition === 'Cap' ? (
+                  <div className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-gray-500 italic">
+                    Center (No Orientation)
+                  </div>
+                ) : (
+                  <select
+                    value={testOrientation}
+                    onChange={(e) => setTestOrientation(e.target.value as SemanticOrientation)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="W">W · 09:00 (Factory Calibrated)</option>
+                    <option value="N">N · 00:00 (Calibrated)</option>
+                    <option value="E">E · 03:00 (Uncalibrated)</option>
+                    <option value="S">S · 06:00 (Uncalibrated)</option>
+                  </select>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
                 <label className="text-[9.5px] font-mono text-gray-400 uppercase tracking-wider block font-bold">Distance & Angle</label>
                 <div className="grid grid-cols-2 gap-2">
                   <select
@@ -777,11 +828,11 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               </div>
             </>
           ) : (
-            <div className="md:col-span-2 space-y-1.5">
+            <div className="md:col-span-3 space-y-1.5">
               <label className="text-[9.5px] font-mono text-gray-400 uppercase tracking-wider block font-bold">Custom Semantic String Input</label>
               <input
                 type="text"
-                placeholder='e.g. "Cap Edge, Close", "Cone, 45° Off Axis", "Cone Edge, Far"'
+                placeholder='e.g. "Cap Edge, W, Close", "Cone · E · Far", "Cap Edge, 00:00"'
                 value={customTestInput}
                 onChange={(e) => setCustomTestInput(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 placeholder:text-gray-600"
@@ -800,12 +851,15 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                   : liveResolution.resolutionSource === 'reference_calibration_vir'
                     ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
-                    : liveResolution.resolutionSource === 'estimated_profile'
-                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                      : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
+                    : liveResolution.resolutionSource === 'uncalibrated_orientation_gap'
+                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                      : liveResolution.resolutionSource === 'estimated_profile'
+                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                        : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
               }`}>
                 {liveResolution.resolutionSource === 'firestore_verified' && 'TIER 1: FIRESTORE VERIFIED'}
                 {liveResolution.resolutionSource === 'reference_calibration_vir' && 'TIER 2: VIR REFERENCE CALIBRATION (MIC 0 ONLY)'}
+                {liveResolution.resolutionSource === 'uncalibrated_orientation_gap' && 'UNCALIBRATED ORIENTATION (AWAITING AT5 CALIBRATION)'}
                 {liveResolution.resolutionSource === 'estimated_profile' && 'TIER 3: ESTIMATED PROFILE (NEEDS REVIEW)'}
                 {liveResolution.resolutionSource === 'safe_default' && 'TIER 4: SAFE DEFAULT / UNCALIBRATED GAP'}
                 {liveResolution.resolutionSource === 'cab_default' && 'CAB DEFAULT (UNSPECIFIED)'}
@@ -818,14 +872,39 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           </div>
 
           {/* Coordinate grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
-            {Object.entries(liveResolution.coordinates).map(([key, val]) => (
-              <div key={key} className="bg-black/40 border border-white/5 rounded-xl p-3 space-y-1">
-                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">{key}</span>
-                <span className="text-sm font-mono font-bold text-white block">{val}</span>
+          {(() => {
+            const effectiveLiveOrient = getEffectiveMappingOrientation(
+              liveResolution.matchedProfile || {
+                position: liveResolution.semanticPosition,
+                orientation: liveResolution.semanticOrientation,
+                friendly_value: liveResolution.parsedLabel,
+                friendly_placement: liveResolution.semanticPosition,
+                friendly_orientation: liveResolution.semanticOrientation,
+              }
+            );
+            const displayLiveOrient = effectiveLiveOrient ? formatSemanticOrientation(effectiveLiveOrient) : '—';
+
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center">
+                <div className="bg-black/40 border border-white/5 rounded-xl p-3 space-y-1">
+                  <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Orientation</span>
+                  <span className={`text-sm font-mono font-bold block ${
+                    displayLiveOrient === '—' ? 'text-gray-400' : 'text-white'
+                  }`}>
+                    {displayLiveOrient}
+                  </span>
+                </div>
+                {Object.entries(liveResolution.coordinates)
+                  .filter(([key]) => key.toLowerCase() !== 'orientation')
+                  .map(([key, val]) => (
+                    <div key={key} className="bg-black/40 border border-white/5 rounded-xl p-3 space-y-1">
+                      <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">{key}</span>
+                      <span className="text-sm font-mono font-bold text-white block">{val}</span>
+                    </div>
+                  ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           {/* Warning or notes */}
           {liveResolution.warning && (
@@ -882,14 +961,60 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
           {/* Position coordinates table */}
           <div className="bg-black/30 border border-white/5 rounded-2xl p-4 space-y-3">
             <h5 className="text-[10px] font-mono text-cyan-400 uppercase font-bold tracking-wider">Position Vectors (X, Y)</h5>
-            <div className="divide-y divide-white/5 font-mono text-xs">
-              {Object.entries(activeVIRCoordinates.positions).map(([pos, coords]) => (
-                <div key={pos} className="py-2 flex items-center justify-between">
-                  <span className="text-gray-300 font-bold">{pos}</span>
-                  <div className="flex items-center gap-4 text-gray-400">
-                    <span>X: <span className="text-white">{coords.X}</span></span>
-                    <span>Y: <span className="text-white">{coords.Y}</span></span>
-                  </div>
+            <div className="font-mono text-xs space-y-3">
+              {[
+                { group: "Center", keys: ["Cap" as const] },
+                { group: "Cap Edge", keys: ["Cap Edge W", "Cap Edge N", "Cap Edge E", "Cap Edge S"] as const },
+                { group: "Cone", keys: ["Cone W", "Cone N", "Cone E", "Cone S"] as const },
+                { group: "Cone Edge", keys: ["Cone Edge W", "Cone Edge N", "Cone Edge E", "Cone Edge S"] as const },
+              ].map((grp, gIdx) => (
+                <div key={grp.group} className={`${gIdx > 0 ? 'pt-2.5 border-t border-white/5' : ''} space-y-1`}>
+                  {grp.keys.map((posKey) => {
+                    const coords = activeVIRCoordinates.positions[posKey];
+                    const isCenter = posKey === "Cap";
+                    const isCalibrated = coords?.isCalibrated;
+                    return (
+                      <div key={posKey} className="py-1.5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-300 font-bold flex items-center gap-1.5">
+                            <span>{posKey}</span>
+                            {(() => {
+                              const match = posKey.match(/ ([NESW])$/);
+                              const orient = match ? (match[1] as SemanticOrientation) : undefined;
+                              return orient ? (
+                                <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-1 py-0.2 rounded font-normal">
+                                  {CARDINAL_ORIENTATION_CLOCK[orient]}
+                                </span>
+                              ) : null;
+                            })()}
+                          </span>
+                          {isCenter ? (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-bold">
+                              Calibrated / Center
+                            </span>
+                          ) : isCalibrated ? (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">
+                              Calibrated
+                            </span>
+                          ) : (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold">
+                              Awaiting AT5
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-gray-400">
+                          {isCalibrated ? (
+                            <>
+                              <span>X: <span className="text-white">{coords.X}</span></span>
+                              <span>Y: <span className="text-white">{coords.Y}</span></span>
+                            </>
+                          ) : (
+                            <span className="text-gray-500 italic">Uncalibrated (X: —, Y: —)</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>
@@ -978,14 +1103,30 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-1.5 bg-white/5 p-2 rounded-xl text-center font-mono">
-                    {Object.entries(xml).map(([k, v]) => (
-                      <div key={k} className="space-y-0.5">
-                        <span className="text-[8px] text-gray-500 block truncate">{k.replace(/Mic[01]/, '')}</span>
-                        <span className="text-[11px] font-bold text-white block truncate">{String(v)}</span>
+                  {(() => {
+                    const effectiveOrient = getEffectiveMappingOrientation(m);
+                    const displayOrient = effectiveOrient ? formatSemanticOrientation(effectiveOrient) : '—';
+                    return (
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 bg-white/5 p-2 rounded-xl text-center font-mono">
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] text-gray-500 block truncate">Orientation</span>
+                          <span className={`text-[11px] font-bold block truncate ${
+                            displayOrient === '—' ? 'text-gray-400' : 'text-white'
+                          }`}>
+                            {displayOrient}
+                          </span>
+                        </div>
+                        {Object.entries(xml)
+                          .filter(([k]) => k.replace(/Mic[01]/i, '').toLowerCase() !== 'orientation')
+                          .map(([k, v]) => (
+                            <div key={k} className="space-y-0.5">
+                              <span className="text-[8px] text-gray-500 block truncate">{k.replace(/Mic[01]/, '')}</span>
+                              <span className="text-[11px] font-bold text-white block truncate">{String(v)}</span>
+                            </div>
+                          ))}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()}
                 </div>
               );
             })}
@@ -1098,19 +1239,23 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-[9.5px] text-gray-400 uppercase font-bold">
-                    Semantic Placement Label / Triplet
+                    Semantic Placement Label / Tuple
                   </label>
                   <button
                     type="button"
-                    onClick={() => setNewLabel(`${newPosition}, ${newDistance}, ${newAngle}`)}
+                    onClick={() => setNewLabel(
+                      newPosition === 'Cap'
+                        ? `${newPosition}, ${newDistance}, ${newAngle}`
+                        : `${newPosition}, ${newOrientation}, ${newDistance}, ${newAngle}`
+                    )}
                     className="text-[9.5px] text-cyan-400 hover:text-cyan-300 underline font-bold uppercase"
                   >
-                    Auto-Fill from Triplet
+                    Auto-Fill from Tuple
                   </button>
                 </div>
                 <input
                   type="text"
-                  placeholder='e.g. "Cap Edge, Close", "Cone, 45° Off Axis"'
+                  placeholder='e.g. "Cap Edge, Close", "Cone, 45° Off Axis", "Cone Edge, W, Far"'
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
@@ -1142,7 +1287,7 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               </div>
 
               {!useManualCoordinates ? (
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Position</label>
                     <select
@@ -1155,6 +1300,26 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
                       <option value="Cone">Cone</option>
                       <option value="Cone Edge">Cone Edge</option>
                     </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[9.5px] text-gray-400 uppercase font-bold block">Orientation</label>
+                    {newPosition === 'Cap' ? (
+                      <div className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-500 italic">
+                        Centre (N/A)
+                      </div>
+                    ) : (
+                      <select
+                        value={newOrientation}
+                        onChange={(e) => setNewOrientation(e.target.value as SemanticOrientation)}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                      >
+                        <option value="W">W · 09:00 (Factory Calibrated)</option>
+                        <option value="N">N · 00:00</option>
+                        <option value="E">E · 03:00</option>
+                        <option value="S">S · 06:00</option>
+                      </select>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -1324,50 +1489,77 @@ export const MicPlacementManagementView: React.FC<MicPlacementManagementViewProp
               <div className="space-y-3">
                 <h5 className="text-[10px] text-cyan-400 uppercase font-bold tracking-wider">Position Vectors (X, Y)</h5>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Object.entries(refPositions).map(([pos, coords]) => (
-                    <div key={pos} className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-white font-bold text-[11px]">{pos}</span>
-                        <span className="text-[9px] text-gray-500">
-                          Default: ({VIR_CALIBRATION_COORDINATES.positions[pos as keyof typeof VIR_CALIBRATION_COORDINATES.positions]?.X.toFixed(4)}, {VIR_CALIBRATION_COORDINATES.positions[pos as keyof typeof VIR_CALIBRATION_COORDINATES.positions]?.Y.toFixed(4)})
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-0.5">X Axis</label>
-                          <input
-                            type="number"
-                            step="0.000001"
-                            value={coords.X}
-                            onChange={(e) => {
-                              const val = parseFloat(e.target.value) || 0;
-                              setRefPositions(prev => ({
-                                ...prev,
-                                [pos]: { ...prev[pos], X: val }
-                              }));
-                            }}
-                            className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white"
-                          />
+                  {VIR_REFERENCE_GRID_KEYS.map((pos) => {
+                    const coords = refPositions[pos] || { X: 0, Y: 0 };
+                    const defPos = VIR_CALIBRATION_COORDINATES.positions[pos as keyof typeof VIR_CALIBRATION_COORDINATES.positions];
+                    const hasDefault = defPos && typeof defPos.X === 'number' && !isNaN(defPos.X);
+                    const isCenter = pos === 'Cap';
+                    const isCalibrated = coords.isCalibrated ?? (hasDefault || isCenter || pos.endsWith(' W') || pos.endsWith(' N'));
+                    return (
+                      <div key={pos} className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-white font-bold text-[11px]">{pos}</span>
+                            {(() => {
+                              const match = pos.match(/ ([NESW])$/);
+                              const orient = match ? (match[1] as SemanticOrientation) : undefined;
+                              return orient ? (
+                                <span className="text-[8px] font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-1 py-0.2 rounded font-normal">
+                                  {CARDINAL_ORIENTATION_CLOCK[orient]}
+                                </span>
+                              ) : null;
+                            })()}
+                            {isCenter ? (
+                              <span className="text-[8px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-400 font-bold uppercase">Center</span>
+                            ) : isCalibrated ? (
+                              <span className="text-[8px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase">Calibrated</span>
+                            ) : (
+                              <span className="text-[8px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-bold uppercase">Uncalibrated</span>
+                            )}
+                          </div>
+                          <span className="text-[9px] text-gray-500">
+                            Default: {hasDefault ? `(${defPos.X.toFixed(4)}, ${defPos.Y.toFixed(4)})` : 'Awaiting AT5'}
+                          </span>
                         </div>
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-0.5">Y Axis</label>
-                          <input
-                            type="number"
-                            step="0.000001"
-                            value={coords.Y}
-                            onChange={(e) => {
-                              const val = parseFloat(e.target.value) || 0;
-                              setRefPositions(prev => ({
-                                ...prev,
-                                [pos]: { ...prev[pos], Y: val }
-                              }));
-                            }}
-                            className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white"
-                          />
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[9px] text-gray-400 block mb-0.5">X Axis</label>
+                            <input
+                              type="number"
+                              step="0.000001"
+                              value={coords.X !== null && coords.X !== undefined ? coords.X : ''}
+                              placeholder={isCalibrated ? '0.000000' : 'Awaiting AT5'}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                setRefPositions(prev => ({
+                                  ...prev,
+                                  [pos]: { ...prev[pos], X: val, isCalibrated: true }
+                                }));
+                              }}
+                              className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white placeholder:text-gray-600"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] text-gray-400 block mb-0.5">Y Axis</label>
+                            <input
+                              type="number"
+                              step="0.000001"
+                              value={coords.Y !== null && coords.Y !== undefined ? coords.Y : ''}
+                              placeholder={isCalibrated ? '0.000000' : 'Awaiting AT5'}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                setRefPositions(prev => ({
+                                  ...prev,
+                                  [pos]: { ...prev[pos], Y: val, isCalibrated: true }
+                                }));
+                              }}
+                              className="w-full bg-black/60 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white placeholder:text-gray-600"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

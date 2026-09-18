@@ -42,25 +42,43 @@ interface FirestoreErrorInfo {
   };
 }
 
+function isPermissionError(error: unknown): boolean {
+  if (!error) return false;
+  const msg = error instanceof Error ? error.message : String(error);
+  const code = (error as any)?.code;
+  return (
+    code === 'permission-denied' ||
+    msg.toLowerCase().includes('missing or insufficient permissions') ||
+    msg.toLowerCase().includes('permission-denied') ||
+    msg.toLowerCase().includes('permission denied')
+  );
+}
+
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
-    },
-    operationType,
-    path
-  };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  const errMsg = error instanceof Error ? error.message : String(error);
+  if (isPermissionError(error)) {
+    const errInfo: FirestoreErrorInfo = {
+      error: errMsg,
+      authInfo: {
+        userId: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+        emailVerified: auth.currentUser?.emailVerified,
+        isAnonymous: auth.currentUser?.isAnonymous,
+        tenantId: auth.currentUser?.tenantId,
+        providerInfo: auth.currentUser?.providerData?.map(provider => ({
+          providerId: provider.providerId,
+          email: provider.email,
+        })) || []
+      },
+      operationType,
+      path
+    };
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+    throw new Error(JSON.stringify(errInfo));
+  }
+
+  // Gracefully handle transient connection, offline, or backend-unavailable states
+  console.warn(`Firestore ${operationType} notice for ${path || 'unknown'}:`, errMsg);
 }
 
 /**

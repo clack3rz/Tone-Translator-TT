@@ -1,9 +1,12 @@
 // src/services/at5MicPlacementService.ts
 // Authoritative VIR (Volumetric Impulse Response) Cabinet Mic Placement & Calibration Service
 
-import { MicPlacementMapping } from "../types";
+import type { MicPlacementMapping } from "../types";
 import { detectCabSettingsFormat } from "./at5SignalChainNormalizer";
 import { at5DatabaseService } from "./at5DatabaseService";
+
+export type SemanticOrientation = "N" | "E" | "S" | "W";
+export const VALID_SEMANTIC_ORIENTATIONS: readonly SemanticOrientation[] = ["N", "E", "S", "W"];
 
 export type SemanticPosition = "Cap" | "Cap Edge" | "Cone" | "Cone Edge";
 export type SemanticDistance = "Close" | "Medium" | "Far";
@@ -17,6 +20,29 @@ export function isValidSemanticPosition(pos: any): pos is SemanticPosition {
   return typeof pos === "string" && (VALID_SEMANTIC_POSITIONS as readonly string[]).includes(pos);
 }
 
+export function isValidSemanticOrientation(val: any): val is SemanticOrientation {
+  return typeof val === "string" && (VALID_SEMANTIC_ORIENTATIONS as readonly string[]).includes(val);
+}
+
+export const CARDINAL_ORIENTATION_CLOCK: Record<SemanticOrientation, string> = {
+  N: "00:00",
+  E: "03:00",
+  S: "06:00",
+  W: "09:00"
+};
+
+export const CARDINAL_ORIENTATION_LABELS: Record<SemanticOrientation, string> = {
+  N: "N · 00:00",
+  E: "E · 03:00",
+  S: "S · 06:00",
+  W: "W · 09:00"
+};
+
+export function formatSemanticOrientation(orient?: SemanticOrientation | string): string {
+  if (!orient) return "—";
+  return (CARDINAL_ORIENTATION_LABELS as Record<string, string>)[orient] || orient;
+}
+
 export function isValidSemanticDistance(dist: any): dist is SemanticDistance {
   return typeof dist === "string" && (VALID_SEMANTIC_DISTANCES as readonly string[]).includes(dist);
 }
@@ -28,9 +54,13 @@ export function isValidSemanticAngle(ang: any): ang is SemanticAngle {
 export function formatSemanticPlacement(
   position: SemanticPosition,
   distance: SemanticDistance,
-  angle: SemanticAngle
+  angle: SemanticAngle,
+  orientation?: SemanticOrientation
 ): string {
-  return `${position}, ${distance}, ${angle}`;
+  if (position === "Cap" || !orientation) {
+    return `${position}, ${distance}, ${angle}`;
+  }
+  return `${position}, ${orientation}, ${distance}, ${angle}`;
 }
 
 export interface VIRCoordinates {
@@ -43,18 +73,22 @@ export interface VIRCoordinates {
 
 export interface ParsedSemanticPlacement {
   position?: SemanticPosition;
+  orientation?: SemanticOrientation;
   distance?: SemanticDistance;
   angle?: SemanticAngle;
   speakerIndex?: number;
   rawLabel: string;
   canonicalLabel: string;
+  hasExplicitOrientation?: boolean;
 }
 
 export interface CanonicalSemanticMicPlacement {
   position?: SemanticPosition;
+  orientation?: SemanticOrientation;
   distance?: SemanticDistance;
   angle?: SemanticAngle;
   rawPosition?: string;
+  rawOrientation?: string;
   rawDistance?: string;
   rawAngle?: string;
   rawCompound?: string;
@@ -71,12 +105,14 @@ export interface CanonicalSemanticMicPlacement {
 export interface PlacementResolutionResult {
   resolved: boolean;
   coordinates: VIRCoordinates;
-  resolutionSource: "firestore_verified" | "reference_calibration_vir" | "estimated_profile" | "safe_default" | "cab_default";
+  resolutionSource: "firestore_verified" | "reference_calibration_vir" | "estimated_profile" | "safe_default" | "cab_default" | "uncalibrated_orientation_gap";
   matchedProfile?: MicPlacementMapping | null;
   isEstimated: boolean;
   isReferenceCalibration: boolean;
+  isCalibrated?: boolean;
   warning?: string;
   semanticPosition?: string;
+  semanticOrientation?: string;
   semanticDistance?: string;
   semanticAngle?: string;
   parsedLabel: string;
@@ -84,14 +120,45 @@ export interface PlacementResolutionResult {
 
 /**
  * Authoritative VIR Reference Grid Coordinates (Numeric)
- * Verified on IK Multimedia AmpliTube 5 VIR 3D Speaker Grid against 7 controlled AT5P exports
+ * Verified on IK Multimedia AmpliTube 5 VIR 3D Speaker Grid against 7 controlled AT5P exports.
+ *
+ * Cardinal Model Architecture (Phase 2A):
+ * - 1 x Cap (center of speaker, orientationless)
+ * - 4 x Cap Edge (W factory-verified; N verified AT5 calibration; E/S awaiting verified AT5 calibration)
+ * - 4 x Cone (W factory-verified; N verified AT5 calibration; E/S awaiting verified AT5 calibration)
+ * - 4 x Cone Edge (W factory-verified; N verified AT5 calibration; E/S awaiting verified AT5 calibration)
+ * Total 13 speaker-face reference points.
  */
 export const VIR_CALIBRATION_COORDINATES = {
   positions: {
-    "Cap": { X: 0, Y: 0, label: "Cap (Center)" },
-    "Cap Edge": { X: -0.214223, Y: -0.00519017, label: "Cap Edge" },
-    "Cone": { X: -0.428446, Y: -0.0103803, label: "Cone" },
-    "Cone Edge": { X: -0.785484, Y: -0.0190306, label: "Cone Edge" }
+    // Center point (orientationless)
+    "Cap": { X: 0, Y: 0, label: "Cap (Center)", isCalibrated: true },
+
+    // Legacy / canonical baseline keys (represent West / 09:00 radial path)
+    "Cap Edge": { X: -0.214223, Y: -0.00519017, label: "Cap Edge (W - 09:00)", isCalibrated: true },
+    "Cone": { X: -0.428446, Y: -0.0103803, label: "Cone (W - 09:00)", isCalibrated: true },
+    "Cone Edge": { X: -0.785484, Y: -0.0190306, label: "Cone Edge (W - 09:00)", isCalibrated: true },
+
+    // Cardinal 13-point explicit reference points:
+    // West (verified factory calibration)
+    "Cap Edge W": { X: -0.214223, Y: -0.00519017, label: "Cap Edge (W - 09:00)", isCalibrated: true },
+    "Cone W": { X: -0.428446, Y: -0.0103803, label: "Cone (W - 09:00)", isCalibrated: true },
+    "Cone Edge W": { X: -0.785484, Y: -0.0190306, label: "Cone Edge (W - 09:00)", isCalibrated: true },
+
+    // North (00:00) - verified AT5 reference calibration (Phase 2A)
+    "Cap Edge N": { X: 0, Y: -0.214223, label: "Cap Edge (N - 00:00)", isCalibrated: true },
+    "Cone N": { X: 0, Y: -0.428446, label: "Cone (N - 00:00)", isCalibrated: true },
+    "Cone Edge N": { X: 0, Y: -0.785484, label: "Cone Edge (N - 00:00)", isCalibrated: true },
+
+    // East (03:00) - uncalibrated in Phase 1 & 2A (no fabricated coordinates)
+    "Cap Edge E": { X: null as unknown as number, Y: null as unknown as number, label: "Cap Edge (E - 03:00)", isCalibrated: false },
+    "Cone E": { X: null as unknown as number, Y: null as unknown as number, label: "Cone (E - 03:00)", isCalibrated: false },
+    "Cone Edge E": { X: null as unknown as number, Y: null as unknown as number, label: "Cone Edge (E - 03:00)", isCalibrated: false },
+
+    // South (06:00) - uncalibrated in Phase 1 & 2A (no fabricated coordinates)
+    "Cap Edge S": { X: null as unknown as number, Y: null as unknown as number, label: "Cap Edge (S - 06:00)", isCalibrated: false },
+    "Cone S": { X: null as unknown as number, Y: null as unknown as number, label: "Cone (S - 06:00)", isCalibrated: false },
+    "Cone Edge S": { X: null as unknown as number, Y: null as unknown as number, label: "Cone Edge (S - 06:00)", isCalibrated: false }
   },
   distances: {
     "Close": { Distance: 0, label: "Close" },
@@ -149,29 +216,78 @@ export async function initializeVIRCalibration(forceRefresh = false): Promise<VI
 export const refreshVIRCalibration = initializeVIRCalibration;
 
 export function getVIRCalibrationCoordinates() {
-  return {
-    positions: {
-      "Cap": {
-        X: virCalibrationOverrides.positions?.["Cap"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cap"].X,
-        Y: virCalibrationOverrides.positions?.["Cap"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cap"].Y,
-        label: "Cap (Center)"
-      },
-      "Cap Edge": {
-        X: virCalibrationOverrides.positions?.["Cap Edge"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].X,
-        Y: virCalibrationOverrides.positions?.["Cap Edge"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].Y,
-        label: "Cap Edge"
-      },
-      "Cone": {
-        X: virCalibrationOverrides.positions?.["Cone"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cone"].X,
-        Y: virCalibrationOverrides.positions?.["Cone"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cone"].Y,
-        label: "Cone"
-      },
-      "Cone Edge": {
-        X: virCalibrationOverrides.positions?.["Cone Edge"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].X,
-        Y: virCalibrationOverrides.positions?.["Cone Edge"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].Y,
-        label: "Cone Edge"
-      }
+  const mergedPositions: Record<string, { X: number; Y: number; label: string; isCalibrated: boolean }> = {
+    "Cap": {
+      X: virCalibrationOverrides.positions?.["Cap"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cap"].X,
+      Y: virCalibrationOverrides.positions?.["Cap"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cap"].Y,
+      label: "Cap (Center)",
+      isCalibrated: true
     },
+    "Cap Edge": {
+      X: virCalibrationOverrides.positions?.["Cap Edge"]?.X ?? virCalibrationOverrides.positions?.["Cap Edge W"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].X,
+      Y: virCalibrationOverrides.positions?.["Cap Edge"]?.Y ?? virCalibrationOverrides.positions?.["Cap Edge W"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cap Edge"].Y,
+      label: "Cap Edge (W - 09:00)",
+      isCalibrated: true
+    },
+    "Cone": {
+      X: virCalibrationOverrides.positions?.["Cone"]?.X ?? virCalibrationOverrides.positions?.["Cone W"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cone"].X,
+      Y: virCalibrationOverrides.positions?.["Cone"]?.Y ?? virCalibrationOverrides.positions?.["Cone W"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cone"].Y,
+      label: "Cone (W - 09:00)",
+      isCalibrated: true
+    },
+    "Cone Edge": {
+      X: virCalibrationOverrides.positions?.["Cone Edge"]?.X ?? virCalibrationOverrides.positions?.["Cone Edge W"]?.X ?? VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].X,
+      Y: virCalibrationOverrides.positions?.["Cone Edge"]?.Y ?? virCalibrationOverrides.positions?.["Cone Edge W"]?.Y ?? VIR_CALIBRATION_COORDINATES.positions["Cone Edge"].Y,
+      label: "Cone Edge (W - 09:00)",
+      isCalibrated: true
+    }
+  };
+
+  // Helper for cardinal 12 points
+  const cardinalConfigs: [SemanticPosition, SemanticOrientation, string, number | null, number | null][] = [
+    ["Cap Edge", "W", "09:00", -0.214223, -0.00519017],
+    ["Cap Edge", "N", "00:00", 0, -0.214223],
+    ["Cap Edge", "E", "03:00", null, null],
+    ["Cap Edge", "S", "06:00", null, null],
+    ["Cone", "W", "09:00", -0.428446, -0.0103803],
+    ["Cone", "N", "00:00", 0, -0.428446],
+    ["Cone", "E", "03:00", null, null],
+    ["Cone", "S", "06:00", null, null],
+    ["Cone Edge", "W", "09:00", -0.785484, -0.0190306],
+    ["Cone Edge", "N", "00:00", 0, -0.785484],
+    ["Cone Edge", "E", "03:00", null, null],
+    ["Cone Edge", "S", "06:00", null, null]
+  ];
+
+  for (const [pos, orient, clock, defX, defY] of cardinalConfigs) {
+    const key = `${pos} ${orient}`;
+    const override = virCalibrationOverrides.positions?.[key] || (orient === "W" ? virCalibrationOverrides.positions?.[pos] : undefined);
+    if (override && typeof override.X === "number" && typeof override.Y === "number" && !isNaN(override.X) && !isNaN(override.Y)) {
+      mergedPositions[key] = {
+        X: override.X,
+        Y: override.Y,
+        label: `${pos} (${orient} - ${clock})`,
+        isCalibrated: true
+      };
+    } else if (defX !== null && defY !== null) {
+      mergedPositions[key] = {
+        X: defX,
+        Y: defY,
+        label: `${pos} (${orient} - ${clock})`,
+        isCalibrated: true
+      };
+    } else {
+      mergedPositions[key] = {
+        X: 0,
+        Y: 0,
+        label: `${pos} (${orient} - ${clock})`,
+        isCalibrated: false
+      };
+    }
+  }
+
+  return {
+    positions: mergedPositions,
     distances: {
       "Close": {
         Distance: virCalibrationOverrides.distances?.["Close"]?.Distance ?? VIR_CALIBRATION_COORDINATES.distances["Close"].Distance,
@@ -203,6 +319,75 @@ export function getVIRCalibrationCoordinates() {
     }
   };
 }
+
+/**
+ * Resolves coordinates and calibration status for a discrete position + orientation reference point.
+ */
+export function getVIRReferencePositionCoordinates(
+  position: SemanticPosition,
+  orientation?: SemanticOrientation
+): { X: number; Y: number; label: string; isCalibrated: boolean } {
+  const coords = getVIRCalibrationCoordinates();
+  if (position === "Cap") {
+    const cap = coords.positions["Cap"];
+    return {
+      X: cap?.X ?? 0,
+      Y: cap?.Y ?? 0,
+      label: "Cap (Center)",
+      isCalibrated: true
+    };
+  }
+
+  const orient: SemanticOrientation = orientation || "W";
+  const keyWithOrient = `${position} ${orient}`;
+  const posEntry = coords.positions[keyWithOrient] || (orient === "W" ? coords.positions[position] : undefined);
+
+  if (posEntry && posEntry.isCalibrated) {
+    return {
+      X: posEntry.X,
+      Y: posEntry.Y,
+      label: posEntry.label,
+      isCalibrated: true
+    };
+  }
+
+  const clockMap: Record<SemanticOrientation, string> = {
+    N: "00:00",
+    E: "03:00",
+    S: "06:00",
+    W: "09:00"
+  };
+
+  return {
+    X: 0,
+    Y: 0,
+    label: `${position} (${orient} - ${clockMap[orient]})`,
+    isCalibrated: false
+  };
+}
+
+/**
+ * 13 Canonical Speaker-Face Reference Grid Keys (Phase 2A):
+ * - Center: Cap (orientationless)
+ * - Radial rings: Cap Edge, Cone, Cone Edge across W, N, E, S
+ */
+export const VIR_REFERENCE_GRID_KEYS = [
+  "Cap",
+  "Cap Edge W",
+  "Cap Edge N",
+  "Cap Edge E",
+  "Cap Edge S",
+  "Cone W",
+  "Cone N",
+  "Cone E",
+  "Cone S",
+  "Cone Edge W",
+  "Cone Edge N",
+  "Cone Edge E",
+  "Cone Edge S"
+] as const;
+
+export type VIRReferenceGridKey = typeof VIR_REFERENCE_GRID_KEYS[number];
 
 /**
  * Reference Cabinets verified for VIR Coordinate Grid calibration
@@ -282,8 +467,10 @@ export function isUnspecifiedPlacement(val: any): boolean {
 }
 
 /**
- * Parses free-form semantic placement text into discrete position, distance, and angle
- * e.g. "Cap Edge, Far, 45° Off Axis" -> { position: "Cap Edge", distance: "Far", angle: "45° Off Axis" }
+ * Parses free-form semantic placement text into discrete position, orientation, distance, and angle
+ * e.g. "Cap Edge, N, Close, On Axis" -> { position: "Cap Edge", orientation: "N", distance: "Close", angle: "On Axis" }
+ * e.g. "Cap Edge, Close, On Axis" -> { position: "Cap Edge", orientation: "W", distance: "Close", angle: "On Axis" } (backward compatible)
+ * e.g. "Cap, Close, On Axis" -> { position: "Cap", orientation: undefined, distance: "Close", angle: "On Axis" }
  */
 export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement {
   if (isUnspecifiedPlacement(rawText)) {
@@ -340,11 +527,63 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
     position = "Cone";
   }
 
-  // If no semantic position, distance, or angle was recognized, treat as unspecified
-  if (!position && !distance && !angle) {
+  // 4. Orientation parsing (N=00:00/12 o'clock, E=03:00/3 o'clock, S=06:00/6 o'clock, W=09:00/9 o'clock)
+  let parsedOrientation: SemanticOrientation | undefined = undefined;
+  let hasExplicitOrientation = false;
+
+  // Check clock and name aliases first
+  if (lower.includes("00:00") || lower.includes("12 o'clock") || lower.includes("12 oclock") || lower.includes("12:00") || lower.includes("north")) {
+    parsedOrientation = "N";
+    hasExplicitOrientation = true;
+  } else if (lower.includes("03:00") || lower.includes("3 o'clock") || lower.includes("3 oclock") || lower.includes("3:00") || lower.includes("east")) {
+    parsedOrientation = "E";
+    hasExplicitOrientation = true;
+  } else if (lower.includes("06:00") || lower.includes("6 o'clock") || lower.includes("6 oclock") || lower.includes("6:00") || lower.includes("south")) {
+    parsedOrientation = "S";
+    hasExplicitOrientation = true;
+  } else if (lower.includes("09:00") || lower.includes("9 o'clock") || lower.includes("9 oclock") || lower.includes("9:00") || lower.includes("west")) {
+    parsedOrientation = "W";
+    hasExplicitOrientation = true;
+  } else {
+    // Check single cardinal letter tokens bounded by delimiters/spaces (e.g. "Cap Edge, N, Close" or "Cone · W · Far")
+    const tokens = clean.split(/[,·/|\s]+/).map(t => t.trim().toUpperCase());
+    for (const t of tokens) {
+      if (t === "N") {
+        parsedOrientation = "N";
+        hasExplicitOrientation = true;
+        break;
+      } else if (t === "E") {
+        parsedOrientation = "E";
+        hasExplicitOrientation = true;
+        break;
+      } else if (t === "S") {
+        parsedOrientation = "S";
+        hasExplicitOrientation = true;
+        break;
+      } else if (t === "W") {
+        parsedOrientation = "W";
+        hasExplicitOrientation = true;
+        break;
+      }
+    }
+  }
+
+  // Effective orientation rule:
+  // - For Cap: Cap is the centre of the speaker and has no meaningful orientation.
+  //   Orientation must remain undefined / N/A and must NOT be artificially normalized to W.
+  // - For off-centre positions: parsed orientation is undefined if not explicitly provided,
+  //   and defaults to West / 9 o'clock during coordinate resolution for full backward compatibility.
+  let orientation: SemanticOrientation | undefined = undefined;
+  if (position !== "Cap") {
+    orientation = parsedOrientation;
+  }
+
+  // If no semantic position, distance, angle, or orientation was recognized, treat as unspecified
+  if (!position && !distance && !angle && !parsedOrientation) {
     return {
       rawLabel: clean,
-      canonicalLabel: "Not specified"
+      canonicalLabel: "Not specified",
+      hasExplicitOrientation: false
     };
   }
 
@@ -353,33 +592,110 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
   const distPart = distance || "Close";
   const angPart = angle || "On Axis";
 
+  let canonicalLabel: string;
+  if (posPart === "Cap") {
+    canonicalLabel = `${posPart} · ${distPart} · ${angPart}`;
+  } else if (hasExplicitOrientation && orientation) {
+    canonicalLabel = `${posPart} · ${orientation} · ${distPart} · ${angPart}`;
+  } else {
+    // Legacy canonical label preserves 3-part form for backward compatibility
+    canonicalLabel = `${posPart} · ${distPart} · ${angPart}`;
+  }
+
   return {
     position,
+    orientation,
     distance,
     angle,
     rawLabel: clean,
-    canonicalLabel: `${posPart} · ${distPart} · ${angPart}`
+    canonicalLabel,
+    hasExplicitOrientation
   };
 }
 
 /**
- * Checks if a string represents an explicit, complete semantic placement triplet
- * containing all three required dimensions: Position, Distance, and Angle,
+ * Resolves the effective cardinal display orientation for a placement mapping or record.
+ * 
+ * Rules:
+ * - Cap is the speaker center and orientationless -> returns undefined (displayed as "—" or "N/A").
+ * - If an explicit orientation is stored (or in the label) -> returns that orientation ("N" | "E" | "S" | "W").
+ * - Legacy off-centre placements with no explicit orientation -> returns "W" (factory West / 9 o'clock).
+ */
+export function getEffectiveMappingOrientation(
+  m: Partial<MicPlacementMapping> | {
+    friendly_placement?: string;
+    friendlyPlacement?: string;
+    friendly_orientation?: string;
+    friendlyOrientation?: string;
+    orientation?: string;
+    friendly_value?: string;
+    friendly_name?: string;
+    canonicalPlacementName?: string;
+    position?: string;
+  }
+): SemanticOrientation | undefined {
+  const targetLabel = m.canonicalPlacementName || m.friendly_value || m.friendly_name || m.friendly_placement || "";
+  const parsedTarget = targetLabel ? parseSemanticPlacement(targetLabel) : { position: undefined, orientation: undefined };
+
+  const compPos = m.friendly_placement ||
+    (m as any).friendlyPlacement ||
+    (m as any).position ||
+    parsedTarget.position;
+
+  if (compPos === "Cap") {
+    return undefined;
+  }
+
+  const explicitOrient = m.friendly_orientation ||
+    (m as any).friendlyOrientation ||
+    (m as any).orientation ||
+    (parsedTarget.position !== "Cap" ? parsedTarget.orientation : undefined);
+
+  if (explicitOrient && (VALID_SEMANTIC_ORIENTATIONS as readonly string[]).includes(explicitOrient as any)) {
+    return explicitOrient as SemanticOrientation;
+  }
+
+  // Off-centre positions without explicit orientation default to West (W / 9 o'clock)
+  if (compPos) {
+    return "W";
+  }
+
+  return undefined;
+}
+
+/**
+ * Checks if a string represents an explicit, complete semantic placement tuple
+ * containing all required dimensions:
+ * - 3 parts: [Position, Distance, Angle] (legacy or Cap)
+ * - 4 parts: [Position, Orientation, Distance, Angle] (orientation-aware off-centre)
  * strictly matching the authoritative semantic vocabulary.
  */
 export function isCompleteSemanticPlacement(val: any): boolean {
   if (!val || typeof val !== "string") return false;
   const s = val.trim();
   const parts = s.split(/[,·]/).map(p => p.trim()).filter(Boolean);
-  if (parts.length !== 3) {
-    return false;
+
+  if (parts.length === 3) {
+    const [pos, dist, ang] = parts;
+    return (
+      isValidSemanticPosition(pos) &&
+      isValidSemanticDistance(dist) &&
+      isValidSemanticAngle(ang)
+    );
   }
-  const [pos, dist, ang] = parts;
-  return (
-    isValidSemanticPosition(pos) &&
-    isValidSemanticDistance(dist) &&
-    isValidSemanticAngle(ang)
-  );
+
+  if (parts.length === 4) {
+    const [pos, orient, dist, ang] = parts;
+    return (
+      isValidSemanticPosition(pos) &&
+      pos !== "Cap" && // Cap cannot have an orientation
+      isValidSemanticOrientation(orient) &&
+      isValidSemanticDistance(dist) &&
+      isValidSemanticAngle(ang)
+    );
+  }
+
+  return false;
 }
 
 /**
@@ -460,29 +776,42 @@ export function isVIRReferenceMic(micName?: string, micGuid?: string): boolean {
 }
 
 /**
- * Generates exact numeric VIR coordinates for composite semantic placement parameters
+ * Generates exact numeric VIR coordinates for composite semantic placement parameters.
+ * Understands orientation (N, E, S, W):
+ * - Cap: center (orientationless, calibrated)
+ * - Cap Edge / Cone / Cone Edge + W: factory calibrated West coordinates
+ * - Cap Edge / Cone / Cone Edge + N/E/S: uncalibrated unless an explicit override is present
  */
 export function composeVIRCoordinates(
   position: SemanticPosition = "Cap Edge",
   distance: SemanticDistance = "Close",
   angle: SemanticAngle = "On Axis",
   micSlot: "Mic_0" | "Mic_1" | "Mic_2" = "Mic_0",
-  speakerOverride?: number
-): VIRCoordinates {
+  speakerOverride?: number,
+  orientation?: SemanticOrientation
+): VIRCoordinates & { isCalibrated: boolean; uncalibratedReason?: string } {
+  const effectiveOrientation = position === "Cap" ? undefined : (orientation || "W");
+  const posCoords = getVIRReferencePositionCoordinates(position, effectiveOrientation);
   const coords = getVIRCalibrationCoordinates();
-  const posCoords = coords.positions[position] || coords.positions["Cap Edge"];
   const distCoords = coords.distances[distance] || coords.distances["Close"];
   const angleCoords = coords.angles[angle] || coords.angles["On Axis"];
   
   const defaultSpeaker = (micSlot === "Mic_1" || micSlot === "Mic_2") ? 1 : 0;
   const speakerVal = speakerOverride !== undefined ? Number(speakerOverride) : defaultSpeaker;
 
+  let uncalibratedReason: string | undefined = undefined;
+  if (!posCoords.isCalibrated) {
+    uncalibratedReason = `Reference calibration for ${position} (${effectiveOrientation}) is uncalibrated. Awaiting verified AT5 calibration capture.`;
+  }
+
   return {
     Angle: angleCoords.Angle,
     XAxis: posCoords.X,
     YAxis: posCoords.Y,
     Distance: distCoords.Distance,
-    Speaker: speakerVal
+    Speaker: speakerVal,
+    isCalibrated: posCoords.isCalibrated,
+    uncalibratedReason
   };
 }
 
@@ -530,6 +859,7 @@ export function extractCanonicalMicPlacement(
 
   let rawCompound: string | undefined;
   let rawPos: string | undefined;
+  let rawOrient: string | undefined;
   let rawDist: string | undefined;
   let rawAng: string | undefined;
 
@@ -547,6 +877,10 @@ export function extractCanonicalMicPlacement(
       rawPos = findVal([
         "mic_1_position", "mic 1 position", "mic1_position", "mic1 position",
         "position_1", "position 1", "position1", "position", "pos"
+      ]);
+      rawOrient = findVal([
+        "mic_1_orientation", "mic 1 orientation", "mic1_orientation", "mic1 orientation",
+        "orientation_1", "orientation 1", "orientation1", "orientation", "orient"
       ]);
       rawDist = findVal([
         "mic_1_distance", "mic 1 distance", "mic1_distance", "mic1 distance",
@@ -570,6 +904,10 @@ export function extractCanonicalMicPlacement(
         "mic_0_position", "mic 0 position", "mic0_position", "mic0 position",
         "position_0", "position 0", "position0", "position", "pos"
       ]);
+      rawOrient = findVal([
+        "mic_0_orientation", "mic 0 orientation", "mic0_orientation", "mic0 orientation",
+        "orientation_0", "orientation 0", "orientation0", "orientation", "orient"
+      ]);
       rawDist = findVal([
         "mic_0_distance", "mic 0 distance", "mic0_distance", "mic0 distance",
         "distance_0", "distance 0", "distance0", "distance", "dist"
@@ -588,6 +926,7 @@ export function extractCanonicalMicPlacement(
       // Safe policy: single ambiguous mic 1 was already assigned to primary slot 0; slot 1 has no placement
       rawCompound = undefined;
       rawPos = undefined;
+      rawOrient = undefined;
       rawDist = undefined;
       rawAng = undefined;
     } else if (isLegacy) {
@@ -599,6 +938,10 @@ export function extractCanonicalMicPlacement(
       rawPos = findVal([
         "mic_2_position", "mic 2 position", "mic2_position", "mic2 position",
         "position_2", "position 2", "position2"
+      ]);
+      rawOrient = findVal([
+        "mic_2_orientation", "mic 2 orientation", "mic2_orientation", "mic2 orientation",
+        "orientation_2", "orientation 2", "orientation2"
       ]);
       rawDist = findVal([
         "mic_2_distance", "mic 2 distance", "mic2_distance", "mic2 distance",
@@ -621,6 +964,10 @@ export function extractCanonicalMicPlacement(
         "mic_1_position", "mic 1 position", "mic1_position", "mic1 position",
         "position_1", "position 1", "position1"
       ]);
+      rawOrient = findVal([
+        "mic_1_orientation", "mic 1 orientation", "mic1_orientation", "mic1 orientation",
+        "orientation_1", "orientation 1", "orientation1"
+      ]);
       rawDist = findVal([
         "mic_1_distance", "mic 1 distance", "mic1_distance", "mic1 distance",
         "distance_1", "distance 1", "distance1"
@@ -637,18 +984,23 @@ export function extractCanonicalMicPlacement(
 
   // Parse compound if present
   let posFromCompound: SemanticPosition | undefined;
+  let orientFromCompound: SemanticOrientation | undefined;
   let distFromCompound: SemanticDistance | undefined;
   let angFromCompound: SemanticAngle | undefined;
+  let parsedCompoundExplicitOrientation = false;
 
   if (rawCompound) {
     const parsedCompound = parseSemanticPlacement(rawCompound);
     posFromCompound = parsedCompound.position;
+    orientFromCompound = parsedCompound.orientation;
     distFromCompound = parsedCompound.distance;
     angFromCompound = parsedCompound.angle;
+    parsedCompoundExplicitOrientation = Boolean(parsedCompound.hasExplicitOrientation);
   }
 
   // Discrete fields override/supplement compound
   const parsedPos = (rawPos ? (parseSemanticPlacement(rawPos).position || parseSemanticPlacement(rawPos + " on axis").position) : undefined) || posFromCompound;
+  const parsedOrient = (rawOrient ? (parseSemanticPlacement(`Cap Edge, ${rawOrient}, Close, On Axis`).orientation) : undefined) || orientFromCompound;
   const parsedDist = (rawDist ? parseSemanticPlacement("Cone, " + rawDist).distance : undefined) || distFromCompound;
   const parsedAng = (rawAng ? parseSemanticPlacement("Cone, Close, " + rawAng).angle : undefined) || angFromCompound;
 
@@ -669,6 +1021,8 @@ export function extractCanonicalMicPlacement(
   }
 
   const finalPos: SemanticPosition | undefined = parsedPos;
+  // Cap is orientationless. Off-centre positions default to W.
+  const finalOrient: SemanticOrientation | undefined = finalPos === "Cap" ? undefined : (parsedOrient || "W");
   const finalDist: SemanticDistance | undefined = parsedDist;
   const finalAng: SemanticAngle | undefined = parsedAng;
 
@@ -676,14 +1030,26 @@ export function extractCanonicalMicPlacement(
   const distPart = finalDist || "Close";
   const angPart = finalAng || "On Axis";
 
-  const canonicalLabel = `${posPart} · ${distPart} · ${angPart}`;
-  const sourceRawPlacement = rawCompound || rawPos || (rawDist ? `Distance: ${rawDist}` : undefined) || (rawAng ? `Angle: ${rawAng}` : undefined);
+  // If explicit orientation was parsed (and not Cap), show it in canonical label
+  const hasExplicitOrient = Boolean(rawOrient || parsedCompoundExplicitOrientation);
+  let canonicalLabel: string;
+  if (posPart === "Cap") {
+    canonicalLabel = `${posPart} · ${distPart} · ${angPart}`;
+  } else if (hasExplicitOrient && finalOrient) {
+    canonicalLabel = `${posPart} · ${finalOrient} · ${distPart} · ${angPart}`;
+  } else {
+    canonicalLabel = `${posPart} · ${distPart} · ${angPart}`;
+  }
+
+  const sourceRawPlacement = rawCompound || rawPos || (rawOrient ? `Orientation: ${rawOrient}` : undefined) || (rawDist ? `Distance: ${rawDist}` : undefined) || (rawAng ? `Angle: ${rawAng}` : undefined);
 
   return {
     position: finalPos,
+    orientation: finalOrient,
     distance: finalDist,
     angle: finalAng,
     rawPosition: rawPos,
+    rawOrientation: rawOrient,
     rawDistance: rawDist,
     rawAngle: rawAng,
     rawCompound: rawCompound,
@@ -779,6 +1145,7 @@ export function resolveCompositeMicPlacement(options: {
   const fullLabel = canonical.canonicalLabel;
   const parsed = {
     position: canonical.position,
+    orientation: canonical.orientation,
     distance: canonical.distance,
     angle: canonical.angle,
     canonicalLabel: canonical.canonicalLabel,
@@ -832,17 +1199,14 @@ export function resolveCompositeMicPlacement(options: {
     if (cleanPlacementStr(targetLabel) === cleanPlacementStr(parsed.canonicalLabel)) return true;
     if (cleanPlacementStr(targetLabel) === cleanPlacementStr(fullLabel)) return true;
 
-    // Check composite label reconstructed from individual component properties
-    const compPos = m.friendly_placement || (m as any).friendlyPlacement;
-    const compDist = m.friendly_distance || (m as any).friendlyDistance;
-    const compAng = m.friendly_angle || (m as any).friendlyAngle;
-    if (compPos) {
-      const reconstructed = [compPos, compDist || "Close", compAng || "On Axis"].join(", ");
-      if (cleanPlacementStr(reconstructed) === cleanPlacementStr(parsed.canonicalLabel) || cleanPlacementStr(reconstructed) === cleanPlacementStr(fullLabel)) {
-        return true;
-      }
+    // Component-level matching with cardinal orientation support
+    const parsedTarget = parseSemanticPlacement(targetLabel);
+    const compPos = m.friendly_placement || (m as any).friendlyPlacement || parsedTarget.position;
+    const compOrient = (m.friendly_orientation || (m as any).friendlyOrientation || m.orientation || (parsedTarget.position !== "Cap" ? parsedTarget.orientation : undefined)) as SemanticOrientation | undefined;
+    const compDist = m.friendly_distance || (m as any).friendlyDistance || parsedTarget.distance;
+    const compAng = m.friendly_angle || (m as any).friendlyAngle || parsedTarget.angle;
 
-      // Check component-level equality
+    if (compPos) {
       const mPos = cleanPlacementStr(compPos);
       const mDist = cleanPlacementStr(compDist || "Close");
       const mAng = cleanPlacementStr(compAng || "On Axis");
@@ -850,7 +1214,24 @@ export function resolveCompositeMicPlacement(options: {
       const pDist = cleanPlacementStr(parsed.distance || "Close");
       const pAng = cleanPlacementStr(parsed.angle || "On Axis");
 
-      if (mPos && mPos === pPos && mDist === pDist && mAng === pAng) {
+      // Cap is orientationless; for off-centre positions, absence of orientation implies W (West)
+      const effectivePOrient = parsed.position === "Cap" ? undefined : (parsed.orientation || "W");
+      const effectiveMOrient = getEffectiveMappingOrientation(m);
+
+      if (mPos && mPos === pPos && mDist === pDist && mAng === pAng && effectiveMOrient === effectivePOrient) {
+        return true;
+      }
+
+      // Check reconstructed strings with or without orientation
+      const reconstructedWithOrient = compPos === "Cap"
+        ? [compPos, compDist || "Close", compAng || "On Axis"].join(", ")
+        : [compPos, effectiveMOrient, compDist || "Close", compAng || "On Axis"].join(", ");
+      const reconstructedLegacy = [compPos, compDist || "Close", compAng || "On Axis"].join(", ");
+
+      if (cleanPlacementStr(reconstructedWithOrient) === cleanPlacementStr(parsed.canonicalLabel) ||
+          cleanPlacementStr(reconstructedWithOrient) === cleanPlacementStr(fullLabel) ||
+          cleanPlacementStr(reconstructedLegacy) === cleanPlacementStr(parsed.canonicalLabel) ||
+          cleanPlacementStr(reconstructedLegacy) === cleanPlacementStr(fullLabel)) {
         return true;
       }
     }
@@ -988,7 +1369,9 @@ export function resolveCompositeMicPlacement(options: {
       matchedProfile: match,
       isEstimated: false,
       isReferenceCalibration: false,
+      isCalibrated: true,
       semanticPosition: parsed.position,
+      semanticOrientation: parsed.orientation,
       semanticDistance: parsed.distance,
       semanticAngle: parsed.angle,
       parsedLabel: parsed.canonicalLabel
@@ -1005,8 +1388,30 @@ export function resolveCompositeMicPlacement(options: {
       parsed.position,
       parsed.distance || "Close",
       parsed.angle || "On Axis",
-      slotKey
+      slotKey,
+      undefined,
+      parsed.orientation
     );
+
+    // If cardinal orientation has no verified AT5 calibration yet (N/E/S without override),
+    // strictly report as uncalibrated calibration gap rather than fabricating coordinates.
+    if (!composed.isCalibrated) {
+      return {
+        resolved: false,
+        coordinates: safeDefaultCoords,
+        resolutionSource: "uncalibrated_orientation_gap",
+        matchedProfile: null,
+        isEstimated: false,
+        isReferenceCalibration: false,
+        isCalibrated: false,
+        warning: `Calibration gap: ${parsed.position} (${parsed.orientation || "unspecified"}) is awaiting verified AT5 calibration. Exporting safe standard coordinates.`,
+        semanticPosition: parsed.position,
+        semanticOrientation: parsed.orientation,
+        semanticDistance: parsed.distance || "Close",
+        semanticAngle: parsed.angle || "On Axis",
+        parsedLabel: parsed.canonicalLabel
+      };
+    }
 
     return {
       resolved: true,
@@ -1015,7 +1420,9 @@ export function resolveCompositeMicPlacement(options: {
       matchedProfile: null,
       isEstimated: false,
       isReferenceCalibration: true,
+      isCalibrated: true,
       semanticPosition: parsed.position,
+      semanticOrientation: parsed.orientation,
       semanticDistance: parsed.distance || "Close",
       semanticAngle: parsed.angle || "On Axis",
       parsedLabel: parsed.canonicalLabel
@@ -1049,8 +1456,10 @@ export function resolveCompositeMicPlacement(options: {
       matchedProfile: match,
       isEstimated: true,
       isReferenceCalibration: false,
+      isCalibrated: false,
       warning: `Resolved from unverified/estimated profile for ${cabName}.`,
       semanticPosition: parsed.position,
+      semanticOrientation: parsed.orientation,
       semanticDistance: parsed.distance,
       semanticAngle: parsed.angle,
       parsedLabel: parsed.canonicalLabel
@@ -1076,8 +1485,10 @@ export function resolveCompositeMicPlacement(options: {
     matchedProfile: null,
     isEstimated: false,
     isReferenceCalibration: false,
+    isCalibrated: false,
     warning: warningMsg,
     semanticPosition: parsed.position,
+    semanticOrientation: parsed.orientation,
     semanticDistance: parsed.distance,
     semanticAngle: parsed.angle,
     parsedLabel: parsed.canonicalLabel

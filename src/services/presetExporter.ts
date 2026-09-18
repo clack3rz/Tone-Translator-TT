@@ -1162,7 +1162,7 @@ export function resolveMicPlacementProfile(
   return null;
 }
 
-const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
+export const resolveCabMicPlacementAttrs = (cab?: SignalChainElement) => {
   const defaultValues: Record<string, string | number> = {
     Mic0Angle: "0",
     Mic0XAxis: "0",

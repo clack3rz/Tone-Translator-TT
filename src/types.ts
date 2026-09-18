@@ -400,6 +400,9 @@ export interface GearProfile {
   }[];
 }
 
+export type SemanticOrientation = "N" | "E" | "S" | "W";
+export const VALID_SEMANTIC_ORIENTATIONS: readonly SemanticOrientation[] = ["N", "E", "S", "W"];
+
 export interface MicPlacementMapping {
   id?: string;
   // Persistent identity fields (preserve original Firestore document key)
@@ -413,6 +416,7 @@ export interface MicPlacementMapping {
   friendly_value: string; // e.g. "Cap Edge"
   friendly_name?: string; // Alias for friendly_value
   friendly_placement?: string;
+  friendly_orientation?: SemanticOrientation;
   friendly_distance?: string;
   friendly_angle?: string;
   maps_to: Record<string, string | number>;
@@ -433,8 +437,10 @@ export interface MicPlacementMapping {
   canonicalPlacementName?: string;
   placementAliases?: string[];
   friendlyPlacement?: string;
+  friendlyOrientation?: SemanticOrientation;
   friendlyDistance?: string;
   friendlyAngle?: string;
+  orientation?: SemanticOrientation;
   micModelName?: string;
   micModelGuid?: string;
   micModelScope?: "any" | "specific";

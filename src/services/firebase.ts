@@ -22,17 +22,27 @@ export const signInWithGoogle = async () => {
 };
 
 // Validate connection to Firestore as mandated by documentation
-async function testConnection() {
+async function testConnection(retry = 0) {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
     console.log("Firebase connection verified");
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
+  } catch (error: any) {
+    const isOffline = error instanceof Error && (
+      error.message.includes('the client is offline') || 
+      (error as any).code === 'unavailable' ||
+      error.message.includes('unavailable')
+    );
+    if (isOffline) {
       console.warn("Firestore client is offline; operating in local mode until reconnected.");
+      if (retry < 2) {
+        setTimeout(() => {
+          testConnection(retry + 1).catch(() => {});
+        }, 2500);
+      }
     } else {
       console.warn("Firebase connection notice:", error instanceof Error ? error.message : error);
     }
   }
 }
 
-testConnection();
+testConnection().catch(() => {});
