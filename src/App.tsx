@@ -310,7 +310,7 @@ export default function App() {
     if (rawStatus === "CHECK") {
       return { type: 'check', label: 'CHECK', reason };
     }
-    if (rawStatus === "PARTIAL") {
+    if (rawStatus === "PARTIAL" || rawStatus === "PARTIAL_WITH_FALLBACK") {
       return { type: 'partial', label: 'PARTIAL', reason };
     }
     if (rawStatus === "PASS_WITH_WARNING" || rawStatus === "WARN" || hasParamWarnings) {

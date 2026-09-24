@@ -49,12 +49,17 @@ ENGINEERING PHILOSOPHY (Killer Rig Systematic Tone):
    - For every selected microphone, you MUST explicitly provide its complete semantic placement:
      * When 'Mic_0' is selected, you MUST provide 'Mic_0_Placement'.
      * When 'Mic_1' is selected, you MUST provide 'Mic_1_Placement'.
-   - The value of 'Mic_0_Placement' and 'Mic_1_Placement' MUST be the complete semantic triplet in format: "Position, Distance, Angle"
-     Permitted Position: "Cap" | "Cap Edge" | "Cone" | "Cone Edge"
-     Permitted Distance: "Close" | "Medium" | "Far"
-     Permitted Angle: "On Axis" | "45° Off Axis"
-     Examples: "Cap Edge, Close, On Axis", "Cone, Close, 45° Off Axis", "Cone, Close, On Axis", "Cap Edge, Close, 45° Off Axis"
-   - You are STRICTLY FORBIDDEN from emitting partial placement strings (such as only "Cap Edge" or "Close"). You MUST emit the complete 3-dimension triplet.
+   - The value of 'Mic_0_Placement' and 'Mic_1_Placement' supports the 4-dimensional semantic model:
+     For off-centre positions ("Cap Edge", "Cone", "Cone Edge"): "Position, Orientation, Distance, Angle"
+       Permitted Position: "Cap Edge" | "Cone" | "Cone Edge"
+       Permitted Orientation: "N" | "E" | "S" | "W" (strictly cardinal directions, representing 00:00, 03:00, 06:00, 09:00 on the speaker face)
+       Permitted Distance: "Close" | "Medium" | "Far"
+       Permitted Angle: "On Axis" | "45° Off Axis"
+       Examples: "Cap Edge, N, Close, On Axis", "Cone, W, Close, 45° Off Axis", "Cone, N, Close, On Axis", "Cone Edge, W, Close, On Axis"
+     For center position ("Cap"): "Cap, Distance, Angle"
+       Cap is orientationless (center of the speaker dust cap) and NEVER includes an orientation:
+       Examples: "Cap, Close, On Axis", "Cap, Far, On Axis"
+   - You are STRICTLY FORBIDDEN from emitting partial placement strings (such as only "Cap Edge" or "Close"). You MUST emit the complete semantic placement string.
    - You are STRICTLY FORBIDDEN from emitting raw X/Y/Z/Angle numeric coordinates.
    - Placement decisions must be derived systematically from the microphone's assigned role and tonal function, cabinet and speaker characteristics, and spectral requirements (NOT hardcoded by genre or artist name alone).
 
@@ -233,9 +238,9 @@ OUTPUT SCHEMA:
       "settings": {
         "Speaker": "string (for cab)",
         "Mic_0": "string (for cab)",
-        "Mic_0_Placement": "Position, Distance, Angle (e.g. Cap Edge, Close, On Axis)",
+        "Mic_0_Placement": "Position, Distance, Angle or Position, Orientation, Distance, Angle (e.g. Cap Edge, N, Close, On Axis or Cap, Close, On Axis)",
         "Mic_1": "string (for cab)",
-        "Mic_1_Placement": "Position, Distance, Angle (e.g. Cone, Close, 45° Off Axis)",
+        "Mic_1_Placement": "Position, Distance, Angle or Position, Orientation, Distance, Angle (e.g. Cone, W, Close, 45° Off Axis)",
         "Room": "string (for cab)"
       }
     }
@@ -350,9 +355,9 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           settings: {
             "Speaker": "Brit Green",
             "Mic_0": "Dynamic 57",
-            "Mic_0_Placement": "Cap Edge, Close, On Axis",
+            "Mic_0_Placement": "Cap Edge, W, Close, On Axis",
             "Mic_1": "Ribbon 121",
-            "Mic_1_Placement": "Cone, Close, On Axis",
+            "Mic_1_Placement": "Cone, W, Close, On Axis",
             "Room": "Small Studio"
           }
         }
@@ -425,9 +430,9 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           settings: {
             "Speaker": "Brit 75",
             "Mic_0": "Dynamic 57",
-            "Mic_0_Placement": "Cap Edge, Close, On Axis",
+            "Mic_0_Placement": "Cap Edge, W, Close, On Axis",
             "Mic_1": "Ribbon 121",
-            "Mic_1_Placement": "Cone, Close, 45° Off Axis",
+            "Mic_1_Placement": "Cone, W, Close, 45° Off Axis",
             "Room": "Small Studio"
           }
         },
@@ -515,9 +520,9 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           settings: {
             "Speaker": "Brit 75",
             "Mic_0": "Dynamic 57",
-            "Mic_0_Placement": "Cap Edge, Close, On Axis",
+            "Mic_0_Placement": "Cap Edge, W, Close, On Axis",
             "Mic_1": "Ribbon 121",
-            "Mic_1_Placement": "Cone, Close, 45° Off Axis",
+            "Mic_1_Placement": "Cone, W, Close, 45° Off Axis",
             "Room": "Large Studio"
           }
         },

@@ -527,7 +527,7 @@ export function parseSemanticPlacement(rawText: string): ParsedSemanticPlacement
     position = "Cone";
   }
 
-  // 4. Orientation parsing (N=00:00/12 o'clock, E=03:00/3 o'clock, S=06:00/6 o'clock, W=09:00/9 o'clock)
+  // 4. Orientation parsing (N=00:00, E=03:00, S=06:00, W=09:00)
   let parsedOrientation: SemanticOrientation | undefined = undefined;
   let hasExplicitOrientation = false;
 
@@ -1378,11 +1378,13 @@ export function resolveCompositeMicPlacement(options: {
     };
   }
 
-  // STEP 2: Exact Built-in Reference Calibration for tested cab/mic
+  // STEP 2: Authoritative Physical VIR Reference Calibration for verified reference cabinets
+  // The physical VIR 3D coordinate grid is an intrinsic geometric property of the speaker cone/cabinet.
+  // Any valid AT5 microphone transducer mounted in front of that cabinet inherits the verified spatial coordinates.
   const isRefCab = isVIRReferenceCabinet(cabName, cabGuid);
   const isRefMic = isVIRReferenceMic(micModelName, micModelGuid);
 
-  if ((targetSlot === 0 || targetSlot === 1) && isRefCab && isRefMic && parsed.position) {
+  if ((targetSlot === 0 || targetSlot === 1) && isRefCab && parsed.position) {
     const slotKey = targetSlot === 0 ? "Mic_0" : "Mic_1";
     const composed = composeVIRCoordinates(
       parsed.position,
@@ -1393,7 +1395,7 @@ export function resolveCompositeMicPlacement(options: {
       parsed.orientation
     );
 
-    // If cardinal orientation has no verified AT5 calibration yet (N/E/S without override),
+    // If cardinal orientation has no verified AT5 calibration yet (e.g. E/S without override),
     // strictly report as uncalibrated calibration gap rather than fabricating coordinates.
     if (!composed.isCalibrated) {
       return {
@@ -1468,14 +1470,12 @@ export function resolveCompositeMicPlacement(options: {
 
   // STEP 4: Safe Default / Calibration Gap if Unresolved
   let warningMsg: string;
-  if (targetSlot === 1) {
-    warningMsg = `Mic 1 (Slot 1) radial calibration is uncalibrated/unverified against AT5P exports. Defaulting to safe coordinates with Speaker 1 provenance.`;
-  } else if (!isRefCab) {
+  if (!isRefCab) {
     warningMsg = `No verified mic placement profile found for "${fullLabel}" on cabinet "${cabName}". Exporting safe standard coordinates (Center/Close).`;
-  } else if (!isRefMic) {
-    warningMsg = `Microphone "${micModelName || 'unspecified'}" has not been calibrated against AT5P reference exports for "${cabName}". Exporting safe standard coordinates.`;
-  } else {
+  } else if (!parsed.position) {
     warningMsg = `Semantic mic placement "${fullLabel}" could not be parsed into recognized VIR dimensions.`;
+  } else {
+    warningMsg = `Position "${parsed.position}" on slot ${targetSlot} is uncalibrated against AT5P reference exports for "${cabName}". Exporting safe standard coordinates.`;
   }
 
   return {

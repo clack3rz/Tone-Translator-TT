@@ -616,12 +616,14 @@ export const normaliseCabSettings = (
 
   let slot0Mic: string | number | undefined;
   let slot0Placement: string | number | undefined;
+  let slot0Orientation: string | number | undefined;
   let slot0Distance: string | number | undefined;
   let slot0Angle: string | number | undefined;
   let slot0Level: string | number | undefined;
 
   let slot1Mic: string | number | undefined;
   let slot1Placement: string | number | undefined;
+  let slot1Orientation: string | number | undefined;
   let slot1Distance: string | number | undefined;
   let slot1Angle: string | number | undefined;
   let slot1Level: string | number | undefined;
@@ -648,6 +650,8 @@ export const normaliseCabSettings = (
       slot0Level = value;
     } else if (k === "mic 0 placement" || k === "mic0 placement" || k === "mic 0 position" || k === "mic_0_placement" || k === "mic_0_position") {
       slot0Placement = value;
+    } else if (k === "mic 0 orientation" || k === "mic0 orientation" || k === "mic_0_orientation") {
+      slot0Orientation = value;
     } else if (k === "mic 0 distance" || k === "mic0 distance" || k === "mic_0_distance") {
       slot0Distance = value;
     } else if (k === "mic 0 angle" || k === "mic0 angle" || k === "mic_0_angle" || k === "mic 0 axis" || k === "mic0 axis" || k === "mic_0_axis" || k === "mic 0 off axis" || k === "mic_0_off_axis") {
@@ -670,6 +674,12 @@ export const normaliseCabSettings = (
       } else {
         slot1Placement = value;
       }
+    } else if (k === "mic 1 orientation" || k === "mic1 orientation" || k === "mic_1_orientation") {
+      if (isLegacy) {
+        slot0Orientation = value;
+      } else {
+        slot1Orientation = value;
+      }
     } else if (k === "mic 1 distance" || k === "mic1 distance" || k === "mic_1_distance") {
       if (isLegacy) {
         slot0Distance = value;
@@ -688,6 +698,8 @@ export const normaliseCabSettings = (
       slot1Level = value;
     } else if (k === "mic 2 placement" || k === "mic2 placement" || k === "mic 2 position" || k === "mic_2_placement" || k === "mic_2_position") {
       slot1Placement = value;
+    } else if (k === "mic 2 orientation" || k === "mic2 orientation" || k === "mic_2_orientation") {
+      slot1Orientation = value;
     } else if (k === "mic 2 distance" || k === "mic2 distance" || k === "mic_2_distance") {
       slot1Distance = value;
     } else if (k === "mic 2 angle" || k === "mic2 angle" || k === "mic_2_angle" || k === "mic 2 axis" || k === "mic2 axis" || k === "mic_2_axis" || k === "mic 2 off axis" || k === "mic_2_off_axis") {
@@ -719,17 +731,21 @@ export const normaliseCabSettings = (
   delete out["Mic_2_Distance"];
   delete out["Mic_1_Angle"];
   delete out["Mic_2_Angle"];
+  delete out["Mic_1_Orientation"];
+  delete out["Mic_2_Orientation"];
   delete out["Mic_1_Level"];
   delete out["Mic_2_Level"];
 
   if (slot0Mic !== undefined) out["Mic_0"] = slot0Mic;
   if (slot0Placement !== undefined) out["Mic_0_Placement"] = slot0Placement;
+  if (slot0Orientation !== undefined) out["Mic_0_Orientation"] = slot0Orientation;
   if (slot0Distance !== undefined) out["Mic_0_Distance"] = slot0Distance;
   if (slot0Angle !== undefined) out["Mic_0_Angle"] = slot0Angle;
   if (slot0Level !== undefined) out["Mic_0_Level"] = slot0Level;
 
   if (slot1Mic !== undefined) out["Mic_1"] = slot1Mic;
   if (slot1Placement !== undefined) out["Mic_1_Placement"] = slot1Placement;
+  if (slot1Orientation !== undefined) out["Mic_1_Orientation"] = slot1Orientation;
   if (slot1Distance !== undefined) out["Mic_1_Distance"] = slot1Distance;
   if (slot1Angle !== undefined) out["Mic_1_Angle"] = slot1Angle;
   if (slot1Level !== undefined) out["Mic_1_Level"] = slot1Level;

@@ -91,9 +91,10 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     });
 
     assert.equal(decision.position, "Cap Edge");
+    assert.equal(decision.orientation, "W");
     assert.equal(decision.distance, "Close");
     assert.equal(decision.angle, "On Axis");
-    assert.equal(decision.placementString, "Cap Edge, Close, On Axis");
+    assert.equal(decision.placementString, "Cap Edge, W, Close, On Axis");
     assert.match(decision.reason, /preserves transient definition/i);
   });
 
@@ -105,7 +106,7 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
       speakerName: "Brit 75",
       promptContext: "high gain thrash metal rhythm kill 'em all"
     });
-    assert.equal(m1.placementString, "Cap Edge, Close, On Axis");
+    assert.equal(m1.placementString, "Cap Edge, W, Close, On Axis");
 
     // Mic 2: Ribbon 121 for warmth/fizz-control
     const m2 = reasonSemanticMicPlacement({
@@ -117,15 +118,17 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
         model: m1.micModel,
         role: m1.role,
         position: m1.position,
+        orientation: m1.orientation,
         distance: m1.distance,
         angle: m1.angle
       }
     });
 
     assert.equal(m2.position, "Cone");
+    assert.equal(m2.orientation, "W");
     assert.equal(m2.distance, "Close");
     assert.equal(m2.angle, "45° Off Axis");
-    assert.equal(m2.placementString, "Cone, Close, 45° Off Axis");
+    assert.equal(m2.placementString, "Cone, W, Close, 45° Off Axis");
     assert.match(m2.reason, /tames high-frequency distortion fizz/i);
   });
 
@@ -144,9 +147,10 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     });
 
     assert.equal(m2.position, "Cone");
+    assert.equal(m2.orientation, "W");
     assert.equal(m2.distance, "Close");
     assert.equal(m2.angle, "On Axis");
-    assert.equal(m2.placementString, "Cone, Close, On Axis");
+    assert.equal(m2.placementString, "Cone, W, Close, On Axis");
     assert.match(m2.reason, /woody lower midrange/i);
   });
 
@@ -177,8 +181,10 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     const completed = ensureSignalChainSemanticPlacements(rawChain, undefined, "thrash metal");
     const cabSettings = completed.signal_chain[0].settings;
 
-    assert.equal(cabSettings["Mic_1_Placement"], "Cap Edge, Close, On Axis");
-    assert.equal(cabSettings["Mic_2_Placement"], "Cone, Close, 45° Off Axis");
+    assert.equal(cabSettings["Mic_1_Placement"], "Cap Edge, W, Close, On Axis");
+    assert.equal(cabSettings["Mic_2_Placement"], "Cone, W, Close, 45° Off Axis");
+    assert.equal(cabSettings["Mic_1_Orientation"], "W");
+    assert.equal(cabSettings["Mic_2_Orientation"], "W");
     assert.ok(completed.engineering_notes.microphone_debug);
     assert.match(completed.engineering_notes.microphone_debug!, /Mic 1: Dynamic 57/);
     assert.match(completed.engineering_notes.microphone_debug!, /Mic 2: Ribbon 121/);
@@ -210,7 +216,8 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     const completed = ensureSignalChainSemanticPlacements(rawChain, undefined, "rock");
     const cabSettings = completed.signal_chain[0].settings;
 
-    assert.equal(cabSettings["Mic_1_Placement"], "Cap Edge, Close, On Axis");
+    assert.equal(cabSettings["Mic_1_Placement"], "Cap Edge, W, Close, On Axis");
+    assert.equal(cabSettings["Mic_1_Orientation"], "W");
   });
 
   it("preserves explicitly specified valid semantic placement triplets", () => {
@@ -248,9 +255,9 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     const cab = chain.signal_chain.find(c => c.type === "cab");
     assert.ok(cab, "Cabinet element must be present");
 
-    // Signal chain settings must explicitly have complete triplets
-    assert.equal(cab.settings["Mic_0_Placement"], "Cap Edge, Close, On Axis");
-    assert.equal(cab.settings["Mic_1_Placement"], "Cone, Close, 45° Off Axis");
+    // Signal chain settings must explicitly have complete 4-part placements
+    assert.equal(cab.settings["Mic_0_Placement"], "Cap Edge, W, Close, On Axis");
+    assert.equal(cab.settings["Mic_1_Placement"], "Cone, W, Close, 45° Off Axis");
 
     // Engineering notes must include microphone debug breakdown
     assert.ok(chain.engineering_notes.microphone_debug, "Microphone debug notes must be present");
@@ -263,18 +270,18 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     assert.ok(cabItem, "Cab item must be found in exported chain");
 
     // Check original_settings and normalized_settings have explicit placement values
-    assert.equal(cabItem.original_settings["Mic_0_Placement"], "Cap Edge, Close, On Axis");
-    assert.equal(cabItem.original_settings["Mic_1_Placement"], "Cone, Close, 45° Off Axis");
-    assert.equal(cabItem.normalized_settings["Mic_0_Placement"], "Cap Edge, Close, On Axis");
-    assert.equal(cabItem.normalized_settings["Mic_1_Placement"], "Cone, Close, 45° Off Axis");
+    assert.equal(cabItem.original_settings["Mic_0_Placement"], "Cap Edge, W, Close, On Axis");
+    assert.equal(cabItem.original_settings["Mic_1_Placement"], "Cone, W, Close, 45° Off Axis");
+    assert.equal(cabItem.normalized_settings["Mic_0_Placement"], "Cap Edge, W, Close, On Axis");
+    assert.equal(cabItem.normalized_settings["Mic_1_Placement"], "Cone, W, Close, 45° Off Axis");
 
     // Lineage provenance flags must report placement_was_supplied_by_chain: true
     const mic0Canon = extractCanonicalMicPlacement(cab.settings, 0);
     const mic1Canon = extractCanonicalMicPlacement(cab.settings, 1);
     assert.equal(mic0Canon.placement_was_supplied_by_chain, true);
     assert.equal(mic1Canon.placement_was_supplied_by_chain, true);
-    assert.equal(mic0Canon.raw_supplied_placement, "Cap Edge, Close, On Axis");
-    assert.equal(mic1Canon.raw_supplied_placement, "Cone, Close, 45° Off Axis");
+    assert.equal(mic0Canon.raw_supplied_placement, "Cap Edge, W, Close, On Axis");
+    assert.equal(mic1Canon.raw_supplied_placement, "Cone, W, Close, 45° Off Axis");
 
     // Coordinate resolution source vs semantic provenance distinction
     const mic0Param = cabItem.parameter_details?.find(p => p.parameter === "Mic 0 Placement");
@@ -284,9 +291,9 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     assert.equal(mic0Param.semantic_provenance, "signal_chain_generated");
     assert.equal(mic1Param.semantic_provenance, "signal_chain_generated");
     assert.equal(mic0Param.coordinate_resolution_source, "reference_calibration_vir");
-    assert.equal(mic1Param.coordinate_resolution_source, "safe_fallback");
+    assert.equal(mic1Param.coordinate_resolution_source, "reference_calibration_vir");
 
-    // Ribbon 121 coordinate fallback must NOT alter or weaken its semantic reasoning in microphone_debug
+    // Ribbon 121 now resolves via reference_calibration_vir on verified reference cabinet
     assert.match(chain.engineering_notes.microphone_debug!, /Cone/i);
     assert.match(chain.engineering_notes.microphone_debug!, /45° Off Axis/i);
     assert.match(chain.engineering_notes.microphone_debug!, /fizz/i);

@@ -4855,18 +4855,20 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                 
                                 <div className="border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5">
                                   {activeInstance.parameter_details.map((detail: any, idx: number) => {
-                                    const isMicPlacement = detail.parameter === "Mic 1 Placement" || detail.parameter === "Mic 2 Placement";
+                                    const isMicPlacement = detail.parameter === "Mic 0 Placement" || detail.parameter === "Mic 1 Placement" || detail.parameter === "Mic 2 Placement" || detail.parameter?.toLowerCase().includes("placement");
                                     if (isMicPlacement) {
-                                      const isMic1 = detail.parameter === "Mic 1 Placement";
-                                      const isFallback = detail.mapping_status === "FALLBACK_USED" || detail.mapping_status === "PARTIAL_WITH_FALLBACK" || !detail.resolved_profile_found;
+                                      const isMic0 = detail.parameter === "Mic 0 Placement";
+                                      const isMic1 = detail.parameter === "Mic 1 Placement" && !isMic0;
+                                      const isFallback = detail.mapping_status === "FALLBACK_USED" || detail.mapping_status === "PARTIAL_WITH_FALLBACK" || detail.mapping_status === "FALLBACK_COMPOSITE" || detail.verification_status === "FALLBACK_USED" || !detail.resolved_profile_found;
                                       
                                       // Friendly source label
                                       let sourceLabel = "Cabinet Default Coordinates";
-                                      if (detail.placement_source === "calibrated_profile") sourceLabel = "Calibrated Profile";
-                                      else if (detail.placement_source === "at5p_discovery_profile") sourceLabel = "Imported AT5 Preset Profile";
-                                      else if (detail.placement_source === "fallback_default") sourceLabel = "Fallback Default Coordinates";
-                                      else if (detail.placement_source === "imported_existing_value") sourceLabel = "Imported AT5 Value";
-                                      else if (detail.placement_source === "cab_default") sourceLabel = "Cabinet Default Coordinates";
+                                      if (detail.placement_source === "reference_calibration_vir" || detail.coordinate_resolution_source === "reference_calibration_vir") sourceLabel = "VIR Reference Calibration";
+                                      else if (detail.placement_source === "calibrated_profile" || detail.coordinate_resolution_source === "calibrated_profile") sourceLabel = "Calibrated Profile";
+                                      else if (detail.placement_source === "at5p_discovery_profile" || detail.coordinate_resolution_source === "at5p_discovery_profile") sourceLabel = "Imported AT5 Preset Profile";
+                                      else if (detail.placement_source === "fallback_default" || detail.coordinate_resolution_source === "fallback_default") sourceLabel = "Fallback Default Coordinates";
+                                      else if (detail.placement_source === "imported_existing_value" || detail.coordinate_resolution_source === "imported_existing_value") sourceLabel = "Imported AT5 Value";
+                                      else if (detail.placement_source === "cab_default" || detail.coordinate_resolution_source === "cab_default") sourceLabel = "Cabinet Default Coordinates";
 
                                       // Styled status badge
                                       let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-800";

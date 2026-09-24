@@ -42,7 +42,7 @@ type ExportDebugItem = {
   mismatched_parameters?: string[];
   disparity_parameters?: string[];
   dropped_parameters?: string[];
-  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "WARN" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
@@ -151,6 +151,13 @@ type ExportDebugData = {
   skipped_gear: ExportDebugItem[];
   exported_xml_summary: string;
   rack_decision?: any;
+  parameter_mapping_status?: "SUCCESS" | "MISMATCH" | "UNVERIFIED" | "FAILED" | "PARTIAL" | "PARTIAL_WITH_FALLBACK";
+  final_xml_verification?: {
+    status: "PASS" | "FAIL";
+    total_elements_verified: number;
+    discrepancies: string[];
+    actual_xml_preview: string;
+  };
 };
 
 export type SignalChainNavTarget = 
@@ -259,6 +266,86 @@ const getGearIcon = (type: string, name: string) => {
   return Box;
 };
 
+
+export interface MicPlacementRowStatus {
+  statusBadgeText: "VERIFIED" | "FALLBACK" | "NOT SPECIFIED" | "DISCREPANCY";
+  statusBadgeClass: string;
+  rowBorderBg: string;
+  statusTooltip: string;
+  secondaryNote: string;
+}
+
+export function getMicPlacementRowStatus(param: any): MicPlacementRowStatus {
+  const isNotSpecified =
+    param.mapping_status === "NOT_SPECIFIED" ||
+    param.verification_status === "NOT_SPECIFIED" ||
+    param.display_value === "Not specified" ||
+    !param.display_value;
+
+  const isFallback = !isNotSpecified && (
+    param.fallback_used === true ||
+    param.mapping_status === "FALLBACK_USED" ||
+    param.mapping_status === "FALLBACK_COMPOSITE" ||
+    param.verification_status === "FALLBACK_USED" ||
+    param.coordinate_resolution_source === "safe_fallback" ||
+    param.coordinate_resolution_source === "fallback_default"
+  );
+
+  const isDiscrepancy = !isNotSpecified && !isFallback && (
+    param.mapping_status === "FAIL" ||
+    param.verification_status === "DISCREPANCY"
+  );
+
+  const coordResSource = param.coordinate_resolution_source || param.placement_source;
+  const isVirRef = coordResSource === "reference_calibration_vir" || param.placement_profile_source === "reference_calibration_vir";
+
+  if (isNotSpecified) {
+    return {
+      statusBadgeText: "NOT SPECIFIED",
+      statusBadgeClass: "bg-slate-900/60 text-slate-400 border-slate-700/50",
+      rowBorderBg: "border-white/5 bg-slate-900/50",
+      statusTooltip: "No placement specified in signal chain; cab default used.",
+      secondaryNote: ""
+    };
+  }
+
+  if (isDiscrepancy) {
+    const msg = param.conversion_note || param.reason || "Discrepancy in numeric coordinates between requested intent and exported preset XML.";
+    return {
+      statusBadgeText: "DISCREPANCY",
+      statusBadgeClass: "bg-rose-950/60 text-rose-400 border-rose-500/40",
+      rowBorderBg: "border-rose-500/30 bg-rose-950/15",
+      statusTooltip: msg,
+      secondaryNote: msg
+    };
+  }
+
+  if (isFallback) {
+    const msg = param.fallback_reason || param.conversion_note || "Requested semantic placement could not be physically resolved. Safe fallback coordinates exported.";
+    return {
+      statusBadgeText: "FALLBACK",
+      statusBadgeClass: "bg-amber-950/60 text-amber-400 border-amber-500/40",
+      rowBorderBg: "border-amber-500/30 bg-amber-950/15",
+      statusTooltip: msg,
+      secondaryNote: msg
+    };
+  }
+
+  let tip = param.conversion_note || "Placement resolved and matched successfully.";
+  if (isVirRef) {
+    tip = "Resolved using reference_calibration_vir.";
+  } else if (coordResSource === "calibrated_profile" || coordResSource === "firestore_verified") {
+    tip = `Resolved using verified mapping (${param.placement_profile_id || "calibrated_profile"}).`;
+  }
+
+  return {
+    statusBadgeText: "VERIFIED",
+    statusBadgeClass: "bg-emerald-950/60 text-emerald-400 border-emerald-500/30",
+    rowBorderBg: "border-cyan-500/20 bg-slate-900/50",
+    statusTooltip: tip,
+    secondaryNote: ""
+  };
+}
 
 const readablePanelStyle: React.CSSProperties = {
   color: "#f1f5f9",
@@ -757,19 +844,44 @@ const SelectedGearDetailPanel = ({
                     if (isMicPlacement) {
                       const slotLabel = isMic0 ? "Mic 0 Placement (AT5 Mic0)" : "Mic 1 Placement (AT5 Mic1)";
                       const expVal = param.exported_internal_value || "Angle: 0, XAxis: 0, YAxis: 0, Distance: 0, Speaker: 0";
+                      const {
+                        statusBadgeText,
+                        statusBadgeClass,
+                        rowBorderBg,
+                        statusTooltip,
+                        secondaryNote
+                      } = getMicPlacementRowStatus(param);
+
                       return (
-                        <div key={pIdx} className="grid grid-cols-1 md:grid-cols-[1.2fr_auto_1.4fr] gap-2 items-center bg-slate-900/50 p-2.5 rounded-lg border border-cyan-500/20 text-xs font-mono">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] text-cyan-400 font-bold uppercase bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/20">Display</span>
-                            <span className="text-slate-300 font-semibold">{slotLabel} =</span>
-                            <strong className="text-white font-bold">{param.display_value || "Not specified"}</strong>
+                        <div key={pIdx} className={`grid grid-cols-1 md:grid-cols-[minmax(0,48%)_auto_minmax(0,1fr)] gap-2 items-center p-2.5 rounded-lg border text-xs font-mono transition-colors ${rowBorderBg}`}>
+                          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                            <span className="text-[10px] text-cyan-400 font-bold uppercase bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/20 shrink-0">Display</span>
+                            <span className="text-slate-300 font-semibold shrink-0">{slotLabel}</span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border shrink-0 cursor-help ${statusBadgeClass}`}
+                              title={statusTooltip}
+                            >
+                              [{statusBadgeText}]
+                            </span>
+                            <span className="text-slate-400 font-semibold shrink-0">=</span>
+                            <strong className="text-white font-bold break-words">{param.display_value || "Not specified"}</strong>
                           </div>
-                          <span className="text-slate-600 font-mono hidden md:inline">→</span>
-                          <div className="flex items-center gap-1.5 flex-wrap md:justify-end">
-                            <span className="text-[10px] text-amber-400 font-bold uppercase bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-500/20">Export</span>
-                            <span className="text-slate-300 font-semibold">Composite AT5 =</span>
-                            <strong className="text-yellow-300 font-bold font-mono text-[11px] truncate max-w-xs" title={expVal}>"{expVal}"</strong>
+                          <div className="text-slate-600 font-mono text-center hidden md:flex items-center justify-center shrink-0 w-5 select-none text-sm">
+                            →
                           </div>
+                          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                            <span className="text-[10px] text-amber-400 font-bold uppercase bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-500/20 shrink-0">Export</span>
+                            <span className="text-slate-300 font-semibold shrink-0">Composite AT5 =</span>
+                            <strong className="text-yellow-300 font-bold font-mono text-xs break-words whitespace-normal leading-relaxed" title={expVal}>
+                              "{expVal}"
+                            </strong>
+                          </div>
+                          {secondaryNote && (
+                            <div className="col-span-full text-[10px] text-amber-300/85 font-mono flex items-center gap-1.5 pl-1 pt-1 border-t border-amber-500/15">
+                              <span className="text-amber-400 shrink-0 font-bold">↳</span>
+                              <span className="break-words">{secondaryNote}</span>
+                            </div>
+                          )}
                         </div>
                       );
                     }
@@ -780,22 +892,24 @@ const SelectedGearDetailPanel = ({
                     const expVal = param.actual_xml_value ?? param.serialized_export_value ?? param.exported_internal_value;
 
                     return (
-                      <div key={pIdx} className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-2 items-center bg-slate-900/50 p-2 rounded-lg border border-white/5 text-xs font-mono">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] text-cyan-400 font-bold uppercase bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/20">Display</span>
-                          <span className="text-slate-300 font-semibold">{dispName} =</span>
-                          <strong className="text-white font-bold">{dispVal}</strong>
+                      <div key={pIdx} className="grid grid-cols-1 md:grid-cols-[minmax(0,45%)_auto_minmax(0,1fr)] gap-2 items-center bg-slate-900/50 p-2 rounded-lg border border-white/5 text-xs font-mono">
+                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                          <span className="text-[10px] text-cyan-400 font-bold uppercase bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/20 shrink-0">Display</span>
+                          <span className="text-slate-300 font-semibold shrink-0">{dispName} =</span>
+                          <strong className="text-white font-bold break-words">{dispVal}</strong>
                           {param.display_precision !== undefined && (
-                            <span className="text-[9px] text-cyan-400/70 font-mono">(prec: {param.display_precision})</span>
+                            <span className="text-[9px] text-cyan-400/70 font-mono shrink-0">(prec: {param.display_precision})</span>
                           )}
                         </div>
-                        <span className="text-slate-600 font-mono hidden md:inline">→</span>
-                        <div className="flex items-center gap-1.5 flex-wrap md:justify-end">
-                          <span className="text-[10px] text-amber-400 font-bold uppercase bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-500/20">Export</span>
-                          <span className="text-slate-300 font-semibold">{expName} =</span>
-                          <strong className="text-yellow-300 font-bold font-mono">"{expVal}"</strong>
+                        <div className="text-slate-600 font-mono text-center hidden md:flex items-center justify-center shrink-0 w-5 select-none text-sm">
+                          →
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                          <span className="text-[10px] text-amber-400 font-bold uppercase bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-500/20 shrink-0">Export</span>
+                          <span className="text-slate-300 font-semibold shrink-0">{expName} =</span>
+                          <strong className="text-yellow-300 font-bold font-mono text-xs break-words whitespace-normal">"{expVal}"</strong>
                           {param.export_precision !== undefined && (
-                            <span className="text-[9px] text-amber-400/70 font-mono">(prec: {param.export_precision})</span>
+                            <span className="text-[9px] text-amber-400/70 font-mono shrink-0">(prec: {param.export_precision})</span>
                           )}
                         </div>
                       </div>
@@ -848,8 +962,8 @@ const SelectedGearDetailPanel = ({
                   const isMicPlacement = isMic0 || isMic1 || param.parameter.toLowerCase().includes("placement");
 
                   if (isMicPlacement) {
-                    const isFallback = param.mapping_status === "FALLBACK_USED" || param.mapping_status === "PARTIAL_WITH_FALLBACK" || !param.resolved_profile_found;
-                    const isNotSpecified = param.mapping_status === "NOT_SPECIFIED" || param.display_value === "Not specified";
+                    const isNotSpecified = param.mapping_status === "NOT_SPECIFIED" || param.verification_status === "NOT_SPECIFIED" || param.display_value === "Not specified";
+                    const isFallback = !isNotSpecified && (param.fallback_used === true || param.mapping_status === "FALLBACK_USED" || param.mapping_status === "FALLBACK_COMPOSITE" || param.verification_status === "FALLBACK_USED" || param.coordinate_resolution_source === "safe_fallback" || param.coordinate_resolution_source === "fallback_default" || !param.resolved_profile_found);
                     const coordResSource = param.coordinate_resolution_source || param.placement_source;
                     const isVirRef = coordResSource === "reference_calibration_vir" || param.placement_profile_source === "reference_calibration_vir";
                     
@@ -863,18 +977,18 @@ const SelectedGearDetailPanel = ({
 
                     let badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-700/50";
                     let badgeText = "NOT SPECIFIED";
-                    if (isVirRef) {
-                      badgeStyle = "bg-cyan-950/40 text-cyan-400 border border-cyan-500/30";
-                      badgeText = "VIR REFERENCE CALIBRATION";
-                    } else if (param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE") {
-                      badgeStyle = "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20";
-                      badgeText = "VERIFIED MAPPING";
-                    } else if (param.mapping_status === "FALLBACK_USED" || param.mapping_status === "FALLBACK_COMPOSITE") {
-                      badgeStyle = "bg-amber-950/40 text-amber-400 border border-amber-500/20";
-                      badgeText = "FALLBACK USED";
-                    } else if (isNotSpecified) {
+                    if (isNotSpecified) {
                       badgeStyle = "bg-slate-900/60 text-slate-400 border border-slate-700/50";
                       badgeText = "NOT SPECIFIED";
+                    } else if (isVirRef) {
+                      badgeStyle = "bg-cyan-950/40 text-cyan-400 border border-cyan-500/30";
+                      badgeText = "VIR REFERENCE CALIBRATION";
+                    } else if (param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE" || param.verification_status === "VERIFIED") {
+                      badgeStyle = "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20";
+                      badgeText = "VERIFIED MAPPING";
+                    } else if (isFallback) {
+                      badgeStyle = "bg-amber-950/40 text-amber-400 border border-amber-500/20";
+                      badgeText = "FALLBACK USED";
                     }
 
                     const paramTitle = isMic0 ? "Mic 0 Placement" : "Mic 1 Placement";
@@ -1335,27 +1449,152 @@ export const AT5SignalChainView: React.FC<Props> = ({
 
     all.forEach(item => {
       const status = item.final_status || "PASS";
-      if (status === "PASS") {
-        passCount++;
-      } else if (status === "PASS_WITH_WARNING") {
-        warningCount++;
-      } else if (status === "PARTIAL") {
-        partialCount++;
-      } else if (status === "CHECK") {
-        checkCount++;
-      } else if (status === "SKIPPED") {
-        skippedCount++;
-      } else if (status === "FAIL") {
+      const paramStatus = item.parameter_mapping_status;
+
+      if (status === "FAIL" || paramStatus === "FAILED" || paramStatus === "MISMATCH" || (item.mismatched_parameters && item.mismatched_parameters.length > 0)) {
         failCount++;
-      } else if (status === "CRITICAL") {
+      } else if (status === "CRITICAL" || status === "BLOCKED_EXPORT") {
         criticalCount++;
       } else if (status === "SUBSTITUTED_FALLBACK") {
         substitutionCount++;
+      } else if (status === "SKIPPED") {
+        skippedCount++;
+      } else if (status === "PARTIAL_WITH_FALLBACK" || status === "PARTIAL" || paramStatus === "PARTIAL_WITH_FALLBACK" || paramStatus === "PARTIAL") {
+        partialCount++;
+      } else if (status === "CHECK" || paramStatus === "UNVERIFIED") {
+        checkCount++;
+      } else if (
+        status === "PASS_WITH_WARNING" || 
+        status === "WARN" || 
+        (item.disparity_parameters && item.disparity_parameters.length > 0) ||
+        (item.dropped_parameters && item.dropped_parameters.length > 0) ||
+        item.parameter_details?.some(p => p.fallback_used || p.mapping_status === "FALLBACK_USED" || p.mapping_status === "FALLBACK_COMPOSITE" || Boolean(p.conversion_warning))
+      ) {
+        warningCount++;
+      } else {
+        passCount++;
       }
     });
 
     return { totalCount, passCount, warningCount, partialCount, checkCount, skippedCount, failCount, criticalCount, substitutionCount };
   }, [debugData]);
+
+  const overallExportStatus = useMemo(() => {
+    const activeExportedGear = (debugData.exported_chain || []).filter(item => item.exported !== false);
+
+    // Fatal / Error conditions
+    const hasFatal = activeExportedGear.some(item => {
+      if (item.final_status === "FAIL" || item.final_status === "CRITICAL" || item.final_status === "BLOCKED_EXPORT") {
+        return true;
+      }
+      if (item.parameter_mapping_status === "FAILED" || item.parameter_mapping_status === "MISMATCH") {
+        return true;
+      }
+      if (item.mismatched_parameters && item.mismatched_parameters.length > 0) {
+        return true;
+      }
+      if (item.parameter_details?.some(p => p.mapping_status === "FAIL" || p.mapping_status === "MISMATCH" || p.mapping_status === "FAIL_MAPPING_CONFIGURATION" || p.verification_status === "DISCREPANCY")) {
+        return true;
+      }
+      return false;
+    }) || debugData.final_xml_verification?.status === "FAIL" || stats.failCount > 0 || stats.criticalCount > 0;
+
+    if (hasFatal) {
+      return {
+        type: "error" as const,
+        label: "⚠️ Critical Issues Detected",
+        styleClass: "text-red-400 font-bold uppercase tracking-wide"
+      };
+    }
+
+    // Exportable With Warnings conditions (PARTIAL_WITH_FALLBACK, Safe Fallback, or non-fatal warnings/partial)
+    const hasWarningsOrFallback = activeExportedGear.some(item => {
+      // 1. Structured gear statuses
+      if (
+        item.final_status === "PARTIAL_WITH_FALLBACK" ||
+        item.final_status === "PARTIAL" ||
+        item.final_status === "PASS_WITH_WARNING" ||
+        item.final_status === "WARN" ||
+        item.final_status === "CHECK" ||
+        item.final_status === "SUBSTITUTED_FALLBACK"
+      ) {
+        return true;
+      }
+
+      // 2. Structured parameter mapping status
+      if (
+        item.parameter_mapping_status === "PARTIAL_WITH_FALLBACK" ||
+        item.parameter_mapping_status === "PARTIAL" ||
+        item.parameter_mapping_status === "UNVERIFIED"
+      ) {
+        return true;
+      }
+
+      // 3. Fallback or substitution flags
+      if (item.fallback_applied || item.fallback_guid_used || item.substitution_used) {
+        return true;
+      }
+
+      // 4. Disparity, dropped parameters, or dropped intent
+      if (
+        (item.disparity_parameters && item.disparity_parameters.length > 0) ||
+        (item.dropped_parameters && item.dropped_parameters.length > 0) ||
+        (item.dropped_intent && item.dropped_intent.length > 0)
+      ) {
+        return true;
+      }
+
+      // 5. Parameter level details: Safe Fallback, PARTIAL_WITH_FALLBACK, etc.
+      if (item.parameter_details?.some(p => 
+        p.fallback_used === true ||
+        p.mapping_status === "FALLBACK_USED" ||
+        p.mapping_status === "FALLBACK_COMPOSITE" ||
+        p.mapping_status === "PARTIAL_WITH_FALLBACK" ||
+        p.semantic_provenance === "safe_fallback" ||
+        p.mapping_status === "DISPARITY" ||
+        p.mapping_status === "WARNING" ||
+        p.mapping_status === "SUCCESS_NEAREST_BAND" ||
+        p.mapping_status === "UNVERIFIED" ||
+        p.mapping_status === "PARTIAL" ||
+        Boolean(p.conversion_warning) ||
+        (p.resolved_profile_found === false && (p.placement_was_supplied_by_chain || p.display_value !== "Not specified"))
+      )) {
+        return true;
+      }
+
+      return false;
+    }) || 
+    stats.warningCount > 0 || 
+    stats.partialCount > 0 || 
+    stats.checkCount > 0 || 
+    stats.substitutionCount > 0 ||
+    debugData.parameter_mapping_status === "PARTIAL_WITH_FALLBACK" ||
+    debugData.parameter_mapping_status === "PARTIAL" ||
+    debugData.parameter_mapping_status === "UNVERIFIED";
+
+    if (hasWarningsOrFallback) {
+      return {
+        type: "warning" as const,
+        label: "⚠ Exportable With Warnings",
+        styleClass: "text-amber-400 font-bold uppercase tracking-wide"
+      };
+    }
+
+    // Perfect Translation Match: only when all active exported gear/parameters are fully resolved and verified
+    if (activeExportedGear.length > 0) {
+      return {
+        type: "perfect" as const,
+        label: "✓ Perfect Translation Match",
+        styleClass: "text-emerald-400 font-bold uppercase tracking-wide"
+      };
+    }
+
+    return {
+      type: "empty" as const,
+      label: "No Exported Gear",
+      styleClass: "text-slate-400 font-bold uppercase tracking-wide"
+    };
+  }, [debugData, stats]);
 
   const [copied, setCopied] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | "summary">("summary");
@@ -1833,13 +2072,7 @@ export const AT5SignalChainView: React.FC<Props> = ({
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Overall Export Summary</p>
               <div className="text-sm font-semibold">
-                {stats.criticalCount > 0 || stats.failCount > 0 ? (
-                  <span className="text-red-400 font-bold uppercase tracking-wide">⚠️ Critical Issues Detected</span>
-                ) : stats.warningCount > 0 || stats.partialCount > 0 ? (
-                  <span className="text-amber-400 font-bold uppercase tracking-wide">⚠ Completed With Warnings</span>
-                ) : (
-                  <span className="text-emerald-400 font-bold uppercase tracking-wide">✓ Perfect Translation Match</span>
-                )}
+                <span className={overallExportStatus.styleClass}>{overallExportStatus.label}</span>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed font-mono uppercase tracking-widest bg-slate-950/40 px-2.5 py-1 rounded border border-white/5 inline-block">
                 {debugData.exported_xml_summary}

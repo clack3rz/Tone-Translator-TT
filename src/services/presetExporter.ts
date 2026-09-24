@@ -1366,7 +1366,7 @@ export interface ExportDebugItem {
   mismatched_parameters?: string[];
   disparity_parameters?: string[];
   dropped_parameters?: string[];
-  final_status?: "PASS" | "PASS_WITH_WARNING" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
+  final_status?: "PASS" | "PASS_WITH_WARNING" | "WARN" | "PARTIAL" | "PARTIAL_WITH_FALLBACK" | "CHECK" | "SKIPPED" | "FAIL" | "CRITICAL" | "SUBSTITUTED_FALLBACK" | "BLOCKED_EXPORT";
   parameter_details?: {
     parameter: string;
     normalized_parameter?: string;
@@ -2323,6 +2323,16 @@ const makeDebugItem = (
   const nearestBandsList: string[] = [];
   let hasFallbackWarning = false;
   const fallbackWarningsList: string[] = [];
+  let mic0FallbackInfo: {
+    label: string;
+    warning: string;
+    isOrientationGap: boolean;
+  } | null = null;
+  let mic1FallbackInfo: {
+    label: string;
+    warning: string;
+    isOrientationGap: boolean;
+  } | null = null;
 
   const parsedExported: Record<string, number | string> = {};
   const rawExportedStrings: Record<string, string> = {};
@@ -2866,8 +2876,16 @@ const makeDebugItem = (
         resolved_at5_fields: xmlValues0
       });
     } else {
-      const warningMsg = resM0?.warning || `No AT5 mic placement profile found for ${displayLabel0} on this cab. Using fallback placement.`;
+      const isOrientationGap0 = resM0?.resolutionSource === "uncalibrated_orientation_gap";
+      const warningMsg = isOrientationGap0
+        ? `${displayLabel0} is awaiting verified AT5 calibration. Exporting safe standard coordinates.`
+        : (resM0?.warning || `No AT5 mic placement profile found for ${displayLabel0} on this cab. Using fallback placement.`);
       hasFallbackWarning = true;
+      mic0FallbackInfo = {
+        label: displayLabel0,
+        warning: warningMsg,
+        isOrientationGap: isOrientationGap0
+      };
       fallbackWarningsList.push(warningMsg);
 
       detailsList.push({
@@ -3054,8 +3072,16 @@ const makeDebugItem = (
         resolved_at5_fields: xmlValues1
       });
     } else {
-      const warningMsg = resM1?.warning || `No AT5 mic placement profile found for ${displayLabel1} on this cab. Using fallback placement.`;
+      const isOrientationGap1 = resM1?.resolutionSource === "uncalibrated_orientation_gap";
+      const warningMsg = isOrientationGap1
+        ? `${displayLabel1} is awaiting verified AT5 calibration. Exporting safe standard coordinates.`
+        : (resM1?.warning || `No AT5 mic placement profile found for ${displayLabel1} on this cab. Using fallback placement.`);
       hasFallbackWarning = true;
+      mic1FallbackInfo = {
+        label: displayLabel1,
+        warning: warningMsg,
+        isOrientationGap: isOrientationGap1
+      };
       fallbackWarningsList.push(warningMsg);
 
       detailsList.push({
@@ -3208,7 +3234,25 @@ const makeDebugItem = (
     } else if (hasFallbackWarning) {
       parameter_mapping_status = "PARTIAL_WITH_FALLBACK";
       final_status = "PARTIAL_WITH_FALLBACK";
-      finalReason = `PARTIAL_WITH_FALLBACK: ${fallbackWarningsList.join("; ")}`;
+      if (mic0FallbackInfo && mic1FallbackInfo) {
+        if (mic0FallbackInfo.isOrientationGap && mic1FallbackInfo.isOrientationGap) {
+          finalReason = `PARTIAL_WITH_FALLBACK: Mic 0 & Mic 1 placement fallbacks — Mic 0 (${mic0FallbackInfo.label}) and Mic 1 (${mic1FallbackInfo.label}) are awaiting verified AT5 calibration. Exporting safe standard coordinates.`;
+        } else {
+          const r0 = mic0FallbackInfo.isOrientationGap
+            ? `${mic0FallbackInfo.label} is awaiting verified AT5 calibration`
+            : mic0FallbackInfo.warning.replace(/\.?\s*(Exporting safe standard coordinates|Using fallback placement)\.?$/i, "");
+          const r1 = mic1FallbackInfo.isOrientationGap
+            ? `${mic1FallbackInfo.label} is awaiting verified AT5 calibration`
+            : mic1FallbackInfo.warning.replace(/\.?\s*(Exporting safe standard coordinates|Using fallback placement)\.?$/i, "");
+          finalReason = `PARTIAL_WITH_FALLBACK: Mic 0 & Mic 1 placement fallbacks — Mic 0: ${r0}; Mic 1: ${r1}. Exporting safe standard coordinates.`;
+        }
+      } else if (mic0FallbackInfo) {
+        finalReason = `PARTIAL_WITH_FALLBACK: Mic 0 placement fallback — ${mic0FallbackInfo.warning}`;
+      } else if (mic1FallbackInfo) {
+        finalReason = `PARTIAL_WITH_FALLBACK: Mic 1 placement fallback — ${mic1FallbackInfo.warning}`;
+      } else {
+        finalReason = `PARTIAL_WITH_FALLBACK: ${fallbackWarningsList.join("; ")}`;
+      }
     } else if (parameter_mapping_status === "UNVERIFIED") {
       final_status = "CHECK";
     } else if (parameter_mapping_status === "PARTIAL") {
