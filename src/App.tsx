@@ -58,6 +58,13 @@ import {
   initSessionLifecycleDiagnostics,
   WorkingSessionData
 } from './services/sessionStorage';
+import { SoundEngineerDevPanel } from './components/SoundEngineerDevPanel';
+import {
+  dispatchShadowRun,
+  ShadowDispatchInputs,
+  ShadowFaultMode,
+  ShadowRunState,
+} from './sound-engineer';
 
 const STATUS_CONFIG: Record<string, { solid: string; clearBg: string; clearBorder: string; pulse: boolean }> = {
   pass: {
@@ -155,6 +162,19 @@ export default function App() {
     show: !!(initialSessionRef.current?.restored && initialSession?.toneResult?.signal_chain?.length),
     chainCount: initialSession?.toneResult?.signal_chain?.length || 0
   });
+
+  // Sound Engineer Phase 1A.4: Ephemeral Shadow State (Strictly not persisted)
+  const [shadowModeEnabled, setShadowModeEnabled] = useState(false);
+  const [shadowFaultMode, setShadowFaultMode] = useState<ShadowFaultMode>('normal');
+  const [shadowState, setShadowState] = useState<ShadowRunState | null>(null);
+  const activeShadowRunIdRef = React.useRef<string | null>(null);
+  const shadowCancelRef = React.useRef<((reason?: string) => void) | null>(null);
+
+  const handleCancelShadow = useCallback(() => {
+    if (shadowCancelRef.current) {
+      shadowCancelRef.current('Shadow run cancelled by user from dev panel');
+    }
+  }, []);
 
   // Lifecycle diagnostics and restored banner auto-dismiss
   useEffect(() => {
@@ -457,6 +477,34 @@ export default function App() {
     setError(null);
     setSourceOriginalIndex(null);
     setSignalChainNavTarget({ type: 'summary', token: Date.now() });
+
+    // Sound Engineer Phase 1A.4: Optional parallel Shadow observation run (completely non-blocking)
+    if (shadowModeEnabled) {
+      try {
+        const shadowInputs: ShadowDispatchInputs = {
+          userText: prompt || "Synchronizing tone architecture based on providing reference.",
+          youtubeUrl: youtubeUrl || undefined,
+          targetAudioFile: targetAudioFile ? { name: targetAudioFile.name, type: targetAudioFile.type, size: targetAudioFile.size } : null,
+          recordingAudioFile: recordingAudioFile ? { name: recordingAudioFile.name, type: recordingAudioFile.type, size: recordingAudioFile.size } : null,
+          userPreset: userPreset ? { name: userPreset.metadata?.presetName || exportFilename || "imported_preset.at5p", rawContent: JSON.stringify(userPreset) } : null,
+          useValidationRecipes: Boolean(useValidationRecipes),
+          faultMode: shadowFaultMode,
+        };
+
+        const dispatchResult = dispatchShadowRun(shadowInputs, (newState) => {
+          // Guard: Late completion of an older Shadow run cannot overwrite displayed state of a newer run
+          if (activeShadowRunIdRef.current === newState.runId) {
+            setShadowState(newState);
+          }
+        });
+
+        activeShadowRunIdRef.current = dispatchResult.runMetadata.runId;
+        shadowCancelRef.current = dispatchResult.cancel;
+        setShadowState(dispatchResult.controller.getState());
+      } catch (shadowErr) {
+        console.error("Shadow dispatch error (non-fatal for Current):", shadowErr);
+      }
+    }
 
     const controller = new AbortController();
     setAbortController(controller);
@@ -797,6 +845,18 @@ export default function App() {
               </div>
             )
           )}
+
+          {/* Sound Engineer Development & QA Panel */}
+          <div className="max-w-6xl mx-auto">
+            <SoundEngineerDevPanel
+              shadowModeEnabled={shadowModeEnabled}
+              onToggleShadowMode={setShadowModeEnabled}
+              faultMode={shadowFaultMode}
+              onChangeFaultMode={setShadowFaultMode}
+              shadowState={shadowState}
+              onCancelShadow={handleCancelShadow}
+            />
+          </div>
         </div>
       </main>
 
