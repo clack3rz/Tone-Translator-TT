@@ -4957,7 +4957,7 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                             )}
                                           </div>
                                           <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
-                                            detail.mapping_status === "SUCCESS" || detail.mapping_status === "SUCCESS_NEAREST_BAND" || detail.mapping_status === "RESOLVED_FROM_PROFILE" || detail.mapping_status === "RESOLVED_COMPOSITE"
+                                            detail.mapping_status === "SUCCESS" || detail.mapping_status === "SUCCESS_NEAREST_BAND" || detail.mapping_status === "RESOLVED_FROM_PROFILE" || detail.mapping_status === "RESOLVED_COMPOSITE" || detail.mapping_status === "CONSUMED_BY_COMPOSITE"
                                               ? "bg-emerald-500/10 text-emerald-400"
                                               : detail.mapping_status === "FALLBACK_USED" || detail.mapping_status === "FALLBACK_COMPOSITE" || detail.mapping_status === "PARTIAL_WITH_FALLBACK" || detail.mapping_status === "DROPPED"
                                               ? "bg-amber-500/10 text-amber-400 border border-amber-500/10"

@@ -1097,7 +1097,7 @@ const SelectedGearDetailPanel = ({
                           
                           <span
                             className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                              param.mapping_status === "SUCCESS" || param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE"
+                              param.mapping_status === "SUCCESS" || param.mapping_status === "RESOLVED_FROM_PROFILE" || param.mapping_status === "RESOLVED_COMPOSITE" || param.mapping_status === "CONSUMED_BY_COMPOSITE"
                                 ? "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20"
                                 : param.mapping_status === "SUCCESS_NEAREST_BAND" || param.mapping_status === "DISPARITY" || param.mapping_status === "WARNING" || param.mapping_status === "FALLBACK_USED" || param.mapping_status === "FALLBACK_COMPOSITE" || param.mapping_status === "PARTIAL_WITH_FALLBACK"
                                 ? "bg-amber-950/40 text-amber-400 border border-amber-500/20"

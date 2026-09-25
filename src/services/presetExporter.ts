@@ -27,7 +27,10 @@ import { at5DatabaseService } from "./at5DatabaseService";
 import {
   resolveCompositeMicPlacement,
   extractCanonicalMicPlacement,
-  CanonicalSemanticMicPlacement
+  CanonicalSemanticMicPlacement,
+  isValidSemanticOrientation,
+  parseSemanticPlacement,
+  SemanticOrientation
 } from "./at5MicPlacementService";
 
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "./at5VerifiedProtocols";
@@ -1038,6 +1041,153 @@ export function isPlacementProfileValid(m: MicPlacementMapping): boolean {
   return true;
 }
 
+/**
+ * Identifies whether a cabinet setting key represents semantic orientation for Slot 0 or Slot 1.
+ */
+export function parseOrientationKeySlot(key: string, isLegacy: boolean): 0 | 1 | "generic" | null {
+  const norm = key.toLowerCase().replace(/[\s_-]+/g, "");
+  // Mic 0 keys
+  if (
+    norm === "mic0orientation" ||
+    norm === "orientation0" ||
+    norm === "orient0" ||
+    (isLegacy && (norm === "mic1orientation" || norm === "orientation1" || norm === "orient1"))
+  ) {
+    return 0;
+  }
+  // Mic 1 keys
+  if (
+    (!isLegacy && (norm === "mic1orientation" || norm === "orientation1" || norm === "orient1")) ||
+    norm === "mic2orientation" ||
+    norm === "orientation2" ||
+    norm === "orient2"
+  ) {
+    return 1;
+  }
+  if (norm === "orientation" || norm === "orient" || norm === "micorientation") {
+    return "generic";
+  }
+  return null;
+}
+
+/**
+ * Validates that an orientation semantic field was positively and successfully consumed
+ * by its parent composite mic placement and confirmed across all physical XML coordinate attributes.
+ */
+export function checkOrientationConsumedBySlot(
+  val: any,
+  slotIndex: 0 | 1,
+  activePl: CanonicalSemanticMicPlacement,
+  resM: any,
+  xmlValues: Record<string, string | number> | null,
+  allMatch: boolean
+): {
+  isConsumed: boolean;
+  parsedOrientation?: SemanticOrientation;
+  consumedBy: string;
+  reason?: string;
+} {
+  const slotName = slotIndex === 0 ? "Mic 0 Placement" : "Mic 1 Placement";
+  
+  if (isUnspecifiedPlacementValue(val)) {
+    return { isConsumed: false, consumedBy: slotName, reason: "Unspecified value" };
+  }
+
+  // 1. Did the composite successfully parse a semantic placement?
+  if (activePl.isUnspecified || !activePl.position) {
+    return {
+      isConsumed: false,
+      consumedBy: slotName,
+      reason: `No active semantic placement found on ${slotName} to consume orientation.`
+    };
+  }
+
+  // 2. Did the placement consume this orientation?
+  if (activePl.position === "Cap") {
+    // Cap is strictly orientationless center point
+    const s = String(val).trim().toLowerCase();
+    const isCapCenterWord = s === "center" || s === "centre" || s === "—" || s === "-" || s === "n/a" || s === "none";
+    if (!isCapCenterWord) {
+      // Cardinal orientation (N, E, S, W) or unknown value provided for Cap
+      return {
+        isConsumed: false,
+        consumedBy: slotName,
+        reason: `Cap is strictly orientationless (center point); cardinal orientation "${val}" is unsupported for Cap.`
+      };
+    }
+  } else {
+    // Off-centre position requires a valid cardinal orientation
+    let parsedOrient: SemanticOrientation | undefined = undefined;
+    const cleanVal = String(val).trim().toUpperCase();
+    if (isValidSemanticOrientation(cleanVal)) {
+      parsedOrient = cleanVal;
+    } else {
+      const parsedComp = parseSemanticPlacement(`Cap Edge, ${val}, Close, On Axis`);
+      if (parsedComp.hasExplicitOrientation && parsedComp.orientation && isValidSemanticOrientation(parsedComp.orientation)) {
+        parsedOrient = parsedComp.orientation;
+      }
+    }
+
+    if (!parsedOrient) {
+      return {
+        isConsumed: false,
+        consumedBy: slotName,
+        reason: `Invalid or unsupported orientation value "${val}". Must be one of: N, E, S, W.`
+      };
+    }
+
+    if (activePl.orientation !== parsedOrient) {
+      return {
+        isConsumed: false,
+        consumedBy: slotName,
+        reason: `Orientation "${val}" (${parsedOrient}) does not match active placement orientation (${activePl.orientation}).`
+      };
+    }
+  }
+
+  // 3. Did the composite placement resolve?
+  if (!resM || !resM.resolved) {
+    return {
+      isConsumed: false,
+      consumedBy: slotName,
+      reason: `Composite ${slotName} failed to resolve.`
+    };
+  }
+
+  // 4. Did it avoid inappropriate fallback / uncalibrated gap?
+  if (resM.fallbackUsed || resM.resolutionSource === "safe_fallback" || resM.resolutionSource === "uncalibrated_orientation_gap") {
+    return {
+      isConsumed: false,
+      consumedBy: slotName,
+      reason: `Composite ${slotName} used fallback or hit uncalibrated orientation gap (${resM.resolutionSource}).`
+    };
+  }
+
+  // 5. Were expected AT5 coordinate attributes produced?
+  if (!xmlValues) {
+    return {
+      isConsumed: false,
+      consumedBy: slotName,
+      reason: `Composite ${slotName} has no resolved AT5 XML coordinate values.`
+    };
+  }
+
+  // 6. Were coordinate attributes verified against final exported XML?
+  if (!allMatch) {
+    return {
+      isConsumed: false,
+      consumedBy: slotName,
+      reason: `Exported XML coordinates for ${slotName} did not match resolved profile coordinates.`
+    };
+  }
+
+  return {
+    isConsumed: true,
+    parsedOrientation: activePl.orientation,
+    consumedBy: slotName
+  };
+}
+
 export function resolveMicPlacementProfile(
   cabName: string,
   cabGuid: string,
@@ -1431,6 +1581,7 @@ export interface ExportDebugItem {
     verification_skipped?: boolean;
     verification_skip_reason?: string;
     requires_mapping_review?: boolean;
+    consumed_by?: string;
   }[];
   not_exported_detail?: string[];
   tone_adjustment_intent?: Record<string, string>;
@@ -2737,6 +2888,7 @@ const makeDebugItem = (
     const mic0Guid = getMicId(mic0Req);
 
     let resM0: any = null;
+    let allMatch0 = false;
     if (was_supplied_0) {
       resM0 = resolveCompositeMicPlacement({
         cabName: gear.name,
@@ -2833,6 +2985,7 @@ const makeDebugItem = (
       }
 
       const status = "RESOLVED_FROM_PROFILE";
+      allMatch0 = allMatch;
       const verification_status = allMatch ? "VERIFIED" : "DISCREPANCY";
       const conversionNote = allMatch 
         ? `Mic 0 placement resolved and matched successfully against all AT5 XML coordinate parameters.`
@@ -2933,6 +3086,7 @@ const makeDebugItem = (
     const mic1Guid = getMicId(mic1Req);
 
     let resM1: any = null;
+    let allMatch1 = false;
     if (was_supplied_1) {
       resM1 = resolveCompositeMicPlacement({
         cabName: gear.name,
@@ -3029,6 +3183,7 @@ const makeDebugItem = (
       }
 
       const status = "RESOLVED_FROM_PROFILE";
+      allMatch1 = allMatch;
       const verification_status = allMatch ? "VERIFIED" : "DISCREPANCY";
       const conversionNote = allMatch 
         ? `Mic 1 placement resolved and matched successfully against all AT5 XML coordinate parameters.`
@@ -3163,6 +3318,49 @@ const makeDebugItem = (
       const k = key.toLowerCase();
       if (micKeysToSkip.has(k) || micKeysToSkip.has(k.replace(/_/g, " ")) || micKeysToSkip.has(k.replace(/\s+/g, "_"))) {
         continue;
+      }
+
+      // Check whether this setting is an orientation field consumed by a composite mic placement
+      const orientSlot = parseOrientationKeySlot(key, isLegacy);
+      if (orientSlot !== null) {
+        if (isUnspecifiedPlacementValue(val)) {
+          continue;
+        }
+
+        const targetSlot = orientSlot === "generic" ? 0 : orientSlot;
+        const activePl = targetSlot === 0 ? activePl0 : activePl1;
+        const resM = targetSlot === 0 ? resM0 : resM1;
+        const xmlValues = targetSlot === 0 ? xmlValues0 : xmlValues1;
+        const allMatch = targetSlot === 0 ? allMatch0 : allMatch1;
+
+        const check = checkOrientationConsumedBySlot(val, targetSlot, activePl, resM, xmlValues, allMatch);
+        if (check.isConsumed) {
+          detailsList.push({
+            parameter: key,
+            display_value: String(val),
+            input_value: String(val),
+            expected_export_value: `Consumed by ${check.consumedBy} composite coordinates (${xmlValues ? Object.entries(xmlValues).map(([attr, v]) => `${attr}=${v}`).join(", ") : "verified in XML"})`,
+            exported_internal_value: `Consumed by ${check.consumedBy} (${activePl.canonicalLabel})`,
+            mapping_status: "CONSUMED_BY_COMPOSITE",
+            conversion_note: `Semantic orientation "${val}" was successfully consumed by ${check.consumedBy} and verified across all resolved AT5 XML coordinate attributes.`,
+            consumed_by: check.consumedBy
+          });
+          continue;
+        } else {
+          // If orientation was not positively consumed and verified by the composite, surface as an unexported/unverified setting
+          not_exported_detail.push(`${key}: '${val}'`);
+          detailsList.push({
+            parameter: key,
+            display_value: String(val),
+            input_value: String(val),
+            expected_export_value: `Valid semantic orientation consumed by ${check.consumedBy}`,
+            exported_internal_value: "Unconsumed / Unverified in XML",
+            mapping_status: "UNVERIFIED",
+            conversion_note: check.reason || `Semantic orientation "${val}" could not be verified as consumed by ${check.consumedBy}.`,
+            consumed_by: check.consumedBy
+          });
+          continue;
+        }
       }
 
       if (k === "room_level" || k === "room level") {
@@ -4047,6 +4245,22 @@ export const getExportDebugData = (
                 detail.mapping_status = "RESOLVED_COMPOSITE";
                 detail.reason = `All 5 resolved AT5 ${prefix} coordinate attributes verified in exported preset XML.`;
               }
+            }
+            return;
+          }
+
+          if (detail.mapping_status === "CONSUMED_BY_COMPOSITE") {
+            const parentPlacementParam = detail.consumed_by || (detail.parameter.includes("0") ? "Mic 0 Placement" : "Mic 1 Placement");
+            const parentDetail = debugItem.parameter_details?.find((d: any) => d.parameter === parentPlacementParam);
+            const parentPassed = parentDetail && (parentDetail.mapping_status === "RESOLVED_COMPOSITE" || parentDetail.verification_status === "VERIFIED");
+            
+            if (parentPassed) {
+              detail.verification_skipped = true;
+              detail.verification_skip_reason = `Consumed as semantic input into ${parentPlacementParam}; all resolved physical coordinate attributes confirmed in exported XML.`;
+            } else {
+              detail.mapping_status = "FAIL";
+              detail.reason = `Parent composite ${parentPlacementParam} failed final XML verification.`;
+              final_xml_mismatched_parameters.push(`${detail.parameter} (Parent composite ${parentPlacementParam} failed XML verification)`);
             }
             return;
           }
