@@ -16,6 +16,8 @@ import {
   Ban,
   ChevronDown,
   ChevronUp,
+  Layers,
+  RotateCcw,
 } from "lucide-react";
 
 export interface SoundEngineerDevPanelProps {
@@ -31,6 +33,10 @@ export interface SoundEngineerDevPanelProps {
   shadowState: ShadowRunState | null;
   /** Callback to cancel active Shadow run */
   onCancelShadow: () => void;
+  /** Optional callback to open the Run Trace inspector */
+  onOpenTraceInspector?: () => void;
+  /** Optional callback to reset terminal Shadow observation state back to READY */
+  onResetShadow?: () => void;
 }
 
 export const SoundEngineerDevPanel: React.FC<SoundEngineerDevPanelProps> = ({
@@ -40,6 +46,8 @@ export const SoundEngineerDevPanel: React.FC<SoundEngineerDevPanelProps> = ({
   onChangeFaultMode,
   shadowState,
   onCancelShadow,
+  onOpenTraceInspector,
+  onResetShadow,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -99,7 +107,7 @@ export const SoundEngineerDevPanel: React.FC<SoundEngineerDevPanelProps> = ({
             Sound Engineer Development
           </span>
           <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-400 border border-purple-800/50">
-            Phase 1A.4 QA
+            Phase 1B.4 QA
           </span>
         </div>
 
@@ -242,8 +250,19 @@ export const SoundEngineerDevPanel: React.FC<SoundEngineerDevPanelProps> = ({
                 )}
 
                 {/* Action Controls */}
-                {shadowState.status === "running" && (
-                  <div className="pt-2 flex justify-end">
+                <div className="pt-2 flex items-center justify-end gap-2 flex-wrap">
+                  {onOpenTraceInspector && (
+                    <button
+                      type="button"
+                      data-testid="dev-panel-view-trace-button"
+                      onClick={onOpenTraceInspector}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-purple-950/80 hover:bg-purple-900 text-purple-200 border border-purple-800 text-xs transition-colors font-medium shadow-sm hover:border-purple-700"
+                    >
+                      <Layers className="w-3.5 h-3.5 text-purple-400" />
+                      Inspect Run Trace
+                    </button>
+                  )}
+                  {shadowState.status === "running" && (
                     <button
                       type="button"
                       onClick={onCancelShadow}
@@ -252,8 +271,22 @@ export const SoundEngineerDevPanel: React.FC<SoundEngineerDevPanelProps> = ({
                       <Ban className="w-3.5 h-3.5 text-rose-400" />
                       Cancel Shadow Run
                     </button>
-                  </div>
-                )}
+                  )}
+                  {onResetShadow &&
+                    (shadowState.status === "completed" ||
+                      shadowState.status === "failed" ||
+                      shadowState.status === "cancelled") && (
+                      <button
+                        type="button"
+                        data-testid="dev-panel-reset-button"
+                        onClick={onResetShadow}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 text-xs transition-colors"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
+                        Reset Shadow
+                      </button>
+                    )}
+                </div>
               </div>
             ) : (
               <p className="text-zinc-500 italic text-[11px]">

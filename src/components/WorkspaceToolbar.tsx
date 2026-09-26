@@ -16,6 +16,7 @@ import {
   RotateCcw,
   Download,
   Info,
+  Layers,
 } from "lucide-react";
 import {
   ShadowRunState,
@@ -38,6 +39,8 @@ export interface WorkspaceToolbarProps {
   onCancelShadow: () => void;
   /** Callback to reset terminal Shadow observation state back to READY */
   onResetShadow: () => void;
+  /** Optional callback to open the Run Trace inspector */
+  onOpenTraceInspector?: () => void;
 
   // --- Current Workspace Action Props ---
   /** Whether a valid tone result exists */
@@ -96,6 +99,7 @@ export const WorkspaceToolbar: React.FC<WorkspaceToolbarProps> = ({
   shadowState,
   onCancelShadow,
   onResetShadow,
+  onOpenTraceInspector,
   hasToneResult,
   hasActiveContent,
   isDbRefreshing,
@@ -267,6 +271,21 @@ export const WorkspaceToolbar: React.FC<WorkspaceToolbarProps> = ({
               <span>Reset</span>
             </button>
           )}
+
+          {/* Quick Trace Inspector button visible when Shadow run state is present */}
+          {shadowState && onOpenTraceInspector && (
+            <button
+              type="button"
+              data-testid="shadow-quick-trace-button"
+              onClick={onOpenTraceInspector}
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase font-bold tracking-tight bg-purple-950/70 text-purple-300 border border-purple-800/80 hover:bg-purple-900 hover:text-purple-100 transition-all shadow-sm"
+              title="Inspect Shadow Run Trace"
+              aria-label="Inspect Shadow Run Trace"
+            >
+              <Layers className="w-2.5 h-2.5 text-purple-400" />
+              <span>Trace</span>
+            </button>
+          )}
         </div>
 
         {/* Fault Mode Selector (Disabled when Shadow is OFF) */}
@@ -303,7 +322,7 @@ export const WorkspaceToolbar: React.FC<WorkspaceToolbarProps> = ({
           data-testid="shadow-phase-indicator"
           className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 bg-white/[0.02] border border-white/5 px-2 py-0.5 rounded select-none"
         >
-          PHASE 1A.4 QA
+          PHASE 1B.4 QA
         </div>
       </div>
 
@@ -473,6 +492,26 @@ export const WorkspaceToolbar: React.FC<WorkspaceToolbarProps> = ({
                 >
                   <Ban className="w-3 h-3" />
                   Cancel Shadow Run
+                </button>
+              </div>
+            )}
+
+            {/* Inspect Run Trace button */}
+            {shadowState && onOpenTraceInspector && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  data-testid="shadow-view-trace-button"
+                  onClick={() => {
+                    setIsDetailsOpen(false);
+                    onOpenTraceInspector();
+                  }}
+                  className="w-full py-1.5 rounded bg-purple-950/80 hover:bg-purple-900 text-purple-200 font-mono text-[10px] uppercase font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 border border-purple-800 shadow-sm hover:border-purple-700"
+                  title="Inspect Checkpoint Trace"
+                  aria-label="Inspect Checkpoint Trace"
+                >
+                  <Layers className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Inspect Checkpoint Trace</span>
                 </button>
               </div>
             )}

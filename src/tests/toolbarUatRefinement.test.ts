@@ -503,10 +503,10 @@ describe("Sound Engineer Phase 1A.4a — UAT UI Refinement", () => {
         startedAt: new Date().toISOString(),
         completedAt: new Date().toISOString(),
         error: {
+          name: "ShadowExecutionError",
           code: "UAT_FAULT_INJECTION_FAIL",
           message: "Simulated failure",
-          isRecoverable: false,
-          occurredAt: new Date().toISOString(),
+          timestamp: new Date().toISOString(),
         },
       };
 

@@ -59,11 +59,13 @@ import {
   WorkingSessionData
 } from './services/sessionStorage';
 import { WorkspaceToolbar } from './components/WorkspaceToolbar';
+import { RunTraceInspector } from './components/RunTraceInspector';
 import {
   dispatchShadowRun,
   ShadowDispatchInputs,
   ShadowFaultMode,
   ShadowRunState,
+  createSyntheticTraceForScenario,
 } from './sound-engineer';
 
 const STATUS_CONFIG: Record<string, { solid: string; clearBg: string; clearBorder: string; pulse: boolean }> = {
@@ -167,8 +169,23 @@ export default function App() {
   const [shadowModeEnabled, setShadowModeEnabled] = useState(false);
   const [shadowFaultMode, setShadowFaultMode] = useState<ShadowFaultMode>('normal');
   const [shadowState, setShadowState] = useState<ShadowRunState | null>(null);
+  const [isTraceInspectorOpen, setIsTraceInspectorOpen] = useState(false);
   const activeShadowRunIdRef = React.useRef<string | null>(null);
   const shadowCancelRef = React.useRef<((reason?: string) => void) | null>(null);
+
+  // Sound Engineer Phase 1B.4: Truthful Synthetic QA Trace representation for active Shadow run
+  const shadowTrace = React.useMemo(() => {
+    if (!shadowState || !shadowState.runId) return null;
+    return createSyntheticTraceForScenario({
+      runId: shadowState.runId,
+      faultMode: shadowFaultMode,
+      status: shadowState.status,
+      startedAt: shadowState.startedAt,
+      completedAt: shadowState.completedAt,
+      error: shadowState.error,
+      cancellationReason: shadowState.cancellationReason,
+    });
+  }, [shadowState, shadowFaultMode]);
 
   const handleCancelShadow = useCallback(() => {
     if (shadowCancelRef.current) {
@@ -182,6 +199,7 @@ export default function App() {
     setShadowState(null);
     activeShadowRunIdRef.current = null;
     shadowCancelRef.current = null;
+    setIsTraceInspectorOpen(false);
   }, [shadowState]);
 
   // Lifecycle diagnostics and restored banner auto-dismiss
@@ -742,6 +760,7 @@ export default function App() {
         shadowState={shadowState}
         onCancelShadow={handleCancelShadow}
         onResetShadow={handleResetShadow}
+        onOpenTraceInspector={() => setIsTraceInspectorOpen(true)}
         hasToneResult={Boolean(toneResult && toneResult.signal_chain && toneResult.signal_chain.length > 0)}
         hasActiveContent={Boolean(toneResult || prompt.trim().length > 0 || userPreset)}
         isDbRefreshing={isDbRefreshing}
@@ -923,7 +942,12 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Removed Debug Panel (now integrated into main) */}
+      {/* Sound Engineer Phase 1B.4: Dedicated Run Trace Inspector Modal */}
+      <RunTraceInspector
+        isOpen={isTraceInspectorOpen}
+        onClose={() => setIsTraceInspectorOpen(false)}
+        trace={shadowTrace}
+      />
     </div>
   );
 }
