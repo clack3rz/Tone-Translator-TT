@@ -1,0 +1,2376 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.3a — PROFESSIONAL SOUND ENGINEER STANDARDS & TARGET MATURITY (v1)
+Date: 2026-09-26
+Mode: PROFESSIONAL COMPETENCY DESIGN & SPECIFICATION (PLATFORM-INDEPENDENT)
+Report Target: /TT_Professional_Sound_Engineer_Standards_v1.txt
+================================================================================
+
+--------------------------------------------------------------------------------
+SECTION 1 — EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 PURPOSE & MANDATE
+Tone Translator (TT) is developing a platform-independent AI Sound Engineer
+architecture dedicated to analyzing, recreating, designing, comparing, and
+refining recorded electric guitar tones. Following the infrastructure established
+in Phase 1A (isolation, dual-stream execution), Phase 1B (checkpoint contracts,
+layer contracts, run tracing, and observability), and Phase 1C.2 (the provenance
+and knowledge audit of Current TT), Phase 1C.3 defines the professional standard
+and target maturity against which all future sound engineering capabilities must
+be measured.
+
+This specification—Phase 1C.3a—independently defines the professional standard of
+competence before any comparison with Current TT is made. Under the Critical
+Independence Rule, this standard is not calibrated against what Current TT
+currently supports, how its prompts are written, which static recipes it uses,
+or the technical limitations of AmpliTube 5. It establishes what a world-class,
+highly discerning professional sound engineer must know, interpret, diagnose,
+decide, and verify when working with recorded electric guitar signals.
+
+1.2 METHODOLOGY & THE FIVE-DIMENSIONAL ASSESSMENT MODEL
+Professional competence cannot be reduced to a flat checklist of facts or a list
+of gear models. To evaluate genuine capability, this standard defines competence
+across five distinct, interdependent dimensions for every engineering domain:
+  1. Knowledge: Understanding underlying physical, acoustic, electrical, and
+     psychoacoustic mechanisms, causal principles, and whole-system interactions.
+  2. Evidence Interpretation: The ability to separate objective acoustic measurements
+     and observations from inferences, assumptions, and contextual background.
+  3. Diagnosis: The discipline of tracing perceived acoustic symptoms back through
+     competing causal hypotheses before selecting an intervention.
+  4. Decision-Making: The capacity to select defensible interventions while
+     explicitly balancing objectives, physical constraints, trade-offs, and
+     downstream dependencies.
+  5. Outcome Reasoning: The ability to predict specific acoustic consequences,
+     define measurable verification criteria, evaluate results, and iteratively
+     revise hypotheses when interventions yield unexpected outcomes.
+
+1.3 PLATFORM-INDEPENDENT SCOPE
+A true Sound Engineer reasons about sound, electricity, vibration, and perception.
+The Sound Engineer is solely responsible for determining WHAT acoustic and
+electrical transformations must occur and WHY they are necessary. It is never
+responsible for HOW a specific modeling platform (e.g., AmpliTube, Helix, Quad
+Cortex, Kemper, analog hardware) serializes or executes that intent.
+
+1.4 DOMAIN VS. CROSS-DOMAIN COMPETENCE
+Electric guitar tone is non-linear, dynamic, and electro-acoustically coupled.
+A change at the guitar volume pot changes the frequency spectrum entering the
+first gain stage, which alters the dynamic intermodulation distortion produced
+by the vacuum tubes, which shifts the harmonic content exciting the loudspeaker's
+mechanical resonance modes, which changes the acoustic wave arriving off-axis at
+the microphone diaphragm. Therefore, mastery of isolated domains is insufficient;
+professional competence requires systemic cross-domain reasoning across the
+entire signal chain.
+
+
+--------------------------------------------------------------------------------
+SECTION 2 — SOUND ENGINEER MISSION & RESPONSIBILITY BOUNDARY
+--------------------------------------------------------------------------------
+
+2.1 THE SOUND ENGINEER MISSION
+The AI Sound Engineer must be capable of:
+"Analysing available evidence, forming defensible hypotheses about how a guitar
+sound was produced and why it behaves as it does, designing a platform-independent
+signal-processing strategy to reproduce or intentionally modify that sound, and
+explaining its decisions, uncertainty, constraints, and trade-offs using
+professional audio-engineering principles."
+
+2.2 ARCHITECTURAL RESPONSIBILITY BOUNDARIES
+The architecture strictly enforces separation of concerns across five stages:
+
+  [1. AI SOUND ENGINEER]
+      Responsibility: WHAT + WHY
+      - Analyzes acoustic evidence, references, and musical context.
+      - Diagnoses root causes of sonic characteristics or defects.
+      - Decides signal topology, gain staging, nonlinear behavior, spectral
+        interventions, dynamic control, loudspeaker voicing, capture geometry,
+        and spatial placement.
+      - Emits a platform-independent Semantic Tone Design accompanied by an
+        Engineering Decision Record.
+      - Evaluates trade-offs, states confidence, and identifies missing evidence.
+
+  [2. SEMANTIC TONE DESIGN (CONTRACT)]
+      Responsibility: CANONICAL SPECIFICATION
+      - The formal, platform-independent representation of the engineer's intent.
+      - Expresses amplifier behavior (preamp topology, tone stack type, sag,
+        damping, feedback), acoustic capture (transducer type, polar pattern,
+        distance, angle, cone position), and processing blocks in physical and
+        perceptual units (dB, Hz, ms, ratio, degrees, centimeters).
+
+  [3. DETERMINISTIC VALIDATION]
+      Responsibility: INTEGRITY & SAFETY
+      - Verifies that the Semantic Tone Design is physically and logically legal.
+      - Checks mathematical bounds, schema conformance, parameter sanity, and
+        signal flow consistency.
+      - Contains zero creative or aesthetic judgment; purely objective verification.
+
+  [4. PLATFORM TRANSLATOR]
+      Responsibility: HOW (PLATFORM MAPPING)
+      - Consumes the validated Semantic Tone Design and translates it into the
+        gear roster, routing architecture, and parameter topologies of a specific
+        target platform (e.g., AmpliTube 5, Kemper, Neural DSP).
+      - Handles gear substitution, slot constraints, module order limitations,
+        and parameter scaling.
+
+  [5. EXPORTER / SERIALIZER]
+      Responsibility: ENCODING & WRITE
+      - Converts the platform-specific plan into native machine files (.at5p,
+        XML, SysEx, JSON presets).
+      - Manages platform GUIDs, checksums, binary headers, and file system writes.
+
+
+--------------------------------------------------------------------------------
+SECTION 3 — MATURITY MODEL
+--------------------------------------------------------------------------------
+
+The maturity of the Sound Engineer across each domain is evaluated on a six-level
+scale (L0 to L5). This model emphasizes diagnostic and reasoning depth rather
+than encyclopedic memory.
+
+L0 — ABSENT
+  - No meaningful knowledge or capability. Concepts are unrecognized, and
+    behavior in this domain is completely random, unrepresented, or missing.
+
+L1 — VOCABULARY
+  - Recognizes domain terminology, gear names, and basic concepts, but cannot
+    reliably apply them to engineering problems. Relies on superficial keyword
+    associations without understanding underlying mechanics.
+
+L2 — CONCEPTUAL
+  - Understands relevant physical, electrical, or acoustic principles. Can explain
+    why a phenomenon occurs theoretically (e.g., explains proximity effect or
+    pre-gain filtering), but lacks the practical reasoning to diagnose complex
+    cases or design appropriate interventions independently.
+
+L3 — APPLIED
+  - Applies principles correctly to standard, well-defined engineering problems.
+    Can design functional solutions and select reasonable interventions when
+    evidence is unambiguous and symptoms point directly to a known cause.
+
+L4 — DIAGNOSTIC
+  - Handles ambiguous, multi-factor, or contradictory engineering challenges.
+    Can separate symptoms from root causes, generate and rank competing causal
+    hypotheses from incomplete evidence, compare multiple intervention pathways,
+    and explicitly account for immediate engineering trade-offs.
+
+L5 — PROFESSIONAL
+  - Demonstrates master-level professional judgment under realistic uncertainty.
+    Integrates the domain seamlessly with all other engineering disciplines across
+    the whole signal chain. Reasons from incomplete, noisy, or conflicting evidence;
+    evaluates multiple defensible solutions; accounts for physical constraints
+    and subtle trade-offs; predicts downstream non-linear interactions; avoids
+    false precision; clearly states epistemic uncertainty; and systematically
+    revises hypotheses when outcome evaluation contradicts predictions.
+  - NOTE: L5 does NOT denote omniscience or encyclopedic memorization of every
+    commercial product ever manufactured. It denotes the rigorous, disciplined,
+    first-principles causal reasoning of an elite recording engineer.
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — TARGET COMPETENCY PROFILE
+--------------------------------------------------------------------------------
+
+Target maturity levels are established based on Tone Translator's specific mission:
+analyzing, recreating, designing, comparing, and refining recorded electric guitar tones.
+
+--------------------------------------------------------------------------------
+Domain                                     Class       Target   Justification
+--------------------------------------------------------------------------------
+1. Source & Performance                    Core        L5       Guitar, pickup, and touch dictate the entire downstream nonlinear response.
+2. Signal Level, Gain Staging & Headroom   Core        L5       Gain architecture dictates dynamic feel, noise floor, and distortion character.
+3. Nonlinear Processing & Distortion       Core        L5       The core aesthetic identity of electric guitar tone; requires deep harmonic reasoning.
+4. Frequency & Spectral Engineering        Core        L5       Spectral placement (pre vs. post distortion vs. capture) is the primary tone-shaping tool.
+5. Dynamics, Envelope & Transients         Core        L5       Pick attack, compression, and decay define groove, punch, and playing feel.
+6. Noise Engineering                       Supporting  L4       Essential for high-gain realism; requires root-cause diagnosis over blind gating.
+7. Signal Topology & Processing Order      Core        L5       Determines non-linear interactions; requires intent-driven structural routing.
+8. Amplifier Behaviour                     Core        L5       The central electro-acoustic engine; must be specified by physical behavior, not badges.
+9. Loudspeaker & Cabinet Engineering       Core        L5       Provides 60-70% of the audible EQ curve and complex electromechanical resonances.
+10. Microphone & Capture Engineering       Core        L5       Microphone selection, 3D placement, and room capture define the final recorded acoustic reality.
+11. Phase, Polarity & Multi-Source         Core        L5       Phase interaction in multi-mic and parallel paths governs spectral hollows and comb filtering.
+12. Time-Based, Modulation & Spatial       Supporting  L4       Crucial for production context and dimension; secondary to core dry amp/cab tone.
+13. Psychoacoustics & Perception           Supporting  L4       Required to avoid loudness bias, compensate for masking, and evaluate perceptual weight.
+14. Musical & Production Context           Supporting  L4       Contextualizes engineering intent without devolving into rigid genre cliches.
+15. Reference Analysis & Tone Matching     Core        L5       The foundational analytical capability of Tone Translator; translates audio deltas into causes.
+16. Diagnosis & Root-Cause Reasoning       Core        L5       Prevents symptom-masking; ensures interventions target the actual physical origin.
+17. Intervention Selection & Minimalism    Core        L5       Enforces engineering discipline: maximum sonic result with minimum necessary processing.
+18. Trade-Off & Constraint Reasoning       Core        L5       Every processing action has an acoustic cost; professional judgment balances competing goals.
+19. Uncertainty & Evidence Discipline      Core        L5       Prevents hallucinations and false precision; ensures honest, evidence-calibrated decisions.
+20. Alternative Solution Reasoning        Core        L5       Engineering problems have multiple valid paths; requires comparative evaluation.
+21. Iterative Engineering & Outcome Eval   Core        L5       Real-world tone refinement requires closed-loop observation, comparison, and revision.
+22. Professional Engineering Behaviour     Core        L5       Overarching behavioral standard: first-principles reasoning over dogmatic recipes.
+--------------------------------------------------------------------------------
+
+Summary Distribution:
+  - Core Competencies (Target L5): 18 domains
+  - Supporting Competencies (Target L4): 4 domains (Noise, Time/Spatial, Psychoacoustics, Musical Context)
+
+
+--------------------------------------------------------------------------------
+SECTION 5 — DOMAIN PROFESSIONAL STANDARDS
+--------------------------------------------------------------------------------
+
+================================================================================
+DOMAIN 1: SOURCE & PERFORMANCE
+================================================================================
+MISSION RELEVANCE:
+The electric guitar signal begins at the instrument. Pickup inductance, resonant
+peak, output level, pick material, attack angle, string age, and palm-muting
+technique define the frequency-dependent dynamic voltage feeding the first gain
+stage. An engineer who cannot decouple source mechanics from amplifier behavior
+will misdiagnose downstream issues.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+In guitar tone matching, over 50% of tone discrepancies (e.g., lack of bite,
+excessive flub, sluggish transients) originate at the instrument or player's
+hands. Treating these purely with amplifier EQ ruins dynamic feel.
+
+KNOWLEDGE STANDARD:
+Understands electromagnetic pickup physics (single-coil vs. PAF humbucker vs.
+active high-output; coil inductance, resistance, inter-winding capacitance,
+resonant frequency peak); magnetic aperture effects (neck vs. bridge placement);
+potentiometer and cable capacitive loading (500k vs. 250k pots, cable capacitance
+shifting the resonant peak downward); scale length and string tension effects on
+inharmonicity and transient snap; pick gauge/material/angle impact on high-frequency
+transient chirp; palm muting mechanics (acoustic damping of fundamental vs.
+forcing higher harmonic dominance); and input voltage swing (0.1V RMS to 2.5V peak).
+
+EVIDENCE INTERPRETATION STANDARD:
+Accurately categorizes observed audio cues: distinguishes between high-gain
+compression and light playing dynamics; differentiates between pickup resonant
+peak emphasis (2.5 kHz - 4.5 kHz) and amplifier presence boost; detects palm-muting
+decay characteristics vs. artificial noise gating; and recognizes when input
+level is overdriving an input stage prematurely.
+
+DIAGNOSTIC STANDARD:
+When presented with a dark, tubby tone, evaluates whether the source is a neck
+pickup, rolled-off guitar tone pot, heavy cable loading, or soft thumb picking
+before blaming the amplifier's tone stack or microphone placement.
+
+DECISION-MAKING STANDARD:
+Designs input-stage conditioning (input impedance matching, input pad/trim, or
+pre-filtering) specifically to compensate for source discrepancies without
+altering the amplifier's core gain structure.
+
+OUTCOME-REASONING STANDARD:
+Predicts how changing pickup type or playing style alters the saturation point of
+cascaded tube stages; verifies that an input-level adjustment restores touch
+sensitivity without thinning out single notes.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Gain Staging (Domain 2): Input voltage dictates first-stage clipping threshold.
+  - Nonlinear Processing (Domain 3): Frequency balance of pickup drives intermodulation.
+  - Frequency & Spectral (Domain 4): Pickup resonant peak interacts with preamp EQ.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Assuming all tone differences are caused by amplifier or cabinet settings.
+  - Attempting to turn a single-coil into an active humbucker solely using graphic EQ.
+  - Ignoring player articulation and assuming palm mutes require a noise gate.
+
+BOUNDARIES:
+  - In Scope: Diagnosing source characteristics, specifying input trim, impedance,
+    and pickup compensation requirements.
+  - Out of Scope (Deterministic): Enforcing numeric voltage range limits (-1.0 to +1.0).
+  - Out of Scope (Platform): Selecting specific proprietary guitar-modeling blocks.
+
+MATURITY PROGRESSION:
+  - L2: Explains that humbuckers have more midrange and output than single-coils.
+  - L3: Recommends rolling off bass when a high-output humbucker creates mud.
+  - L4: Distinguishes between pickup-induced low-end muddiness and cabinet proximity
+        effect by analyzing transient attack and harmonic decay.
+  - L5: Formulates a unified hypothesis integrating player pick angle, pickup
+        resonant peak, and input cable capacitance to explain why palm mutes
+        flub out while open chords remain brittle, selecting minimal input-stage
+        filtering to correct both simultaneously.
+
+
+================================================================================
+DOMAIN 2: SIGNAL LEVEL, GAIN STAGING & HEADROOM
+================================================================================
+MISSION RELEVANCE:
+Guitar amplification is a cascade of non-linear stages. The operating level at each
+junction dictates dynamic response, harmonic generation, signal-to-noise ratio,
+and touch sensitivity.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Tone quality in high-gain and edge-of-breakup rigs is determined by where gain
+occurs and how headroom is managed across stages, not by total gross gain.
+
+KNOWLEDGE STANDARD:
+Understands nominal operating levels (-10 dBV vs. +4 dBu vs. instrument level);
+dynamic headroom; stage-to-stage transfer curves; grid conduction and blocking
+distortion; noise floor accumulation across serial gain blocks; clean boost vs.
+clipping boost mechanics; master volume vs. channel volume gain staging; and the
+psychoacoustic trap of loudness bias (louder sounds perceived as having more bass
+and treble).
+
+EVIDENCE INTERPRETATION STANDARD:
+Separates true harmonic saturation from perceived loudness; identifies stage
+compression by measuring crest factor (peak-to-RMS ratio); detects inter-stage
+clipping vs. power-stage saturation; and identifies when high noise floor is
+caused by poor gain distribution rather than excessive gain.
+
+DIAGNOSTIC STANDARD:
+Traces muddy or buzzy compression back to its specific originating stage (e.g.,
+overdriven FX loop input vs. overdriven phase inverter vs. pinned preamp tube).
+
+DECISION-MAKING STANDARD:
+Distributes gain across the signal chain incrementally; balances pedal boost,
+preamp gain, loop levels, and power amp drive to achieve the target distortion
+envelope while preserving maximum dynamic articulation and minimal idle noise.
+
+OUTCOME-REASONING STANDARD:
+Predicts the exact headroom reduction and noise penalty of boosting an upstream
+stage; provides level compensation across processing blocks so that A/B comparisons
+are strictly loudness-matched.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Source & Performance (Domain 1): Input sensitivity must match guitar output.
+  - Nonlinear Processing (Domain 3): Gain level directly dictates clipping depth.
+  - Noise Engineering (Domain 6): Excessive early gain amplifies front-end hiss.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Cranking a single gain knob to 10 while leaving other stages choked at 1.
+  - Using digital boost to achieve distortion without accounting for inter-stage headroom.
+  - Failing to level-match before evaluating whether a tone modification was an improvement.
+
+BOUNDARIES:
+  - In Scope: Specifying inter-stage gain structure, drive distribution, and level balancing.
+  - Out of Scope (Deterministic): Digital audio buffer clipping prevention and float limits.
+  - Out of Scope (Platform): Platform-specific dB scaling quirks and knob taper curves.
+
+MATURITY PROGRESSION:
+  - L2: Knows that gain adds distortion and volume, and too much causes noise.
+  - L3: Sets pedal output high and amp gain moderate to tighten a metal rhythm tone.
+  - L4: Analyzes crest factor across a 4-stage chain to pinpoint that blocking
+        distortion in the second tube stage is causing transient smear.
+  - L5: Calculates and balances stage-by-stage headroom across an overdrive pedal,
+        tube preamp, effects loop, and power amp, demonstrating that a 3 dB reduction
+        in preamp drive combined with a 4 dB increase in power amp master delivers
+        identical sustain with vastly superior pick articulation and 6 dB lower noise.
+
+
+================================================================================
+DOMAIN 3: NONLINEAR PROCESSING & DISTORTION
+================================================================================
+MISSION RELEVANCE:
+Distortion is not merely a quantitative parameter (more/less); it is a complex
+qualitative spectrum of harmonic generation, dynamic compression, and intermodulation.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+The core character of electric guitar tone—from blues crunch to modern djent—is
+defined by the harmonic structure, symmetry, and envelope of its distortion.
+
+KNOWLEDGE STANDARD:
+Understands hard diode clipping vs. soft tube saturation vs. asymmetrical FET
+clipping vs. crossover distortion; even-order (2nd, 4th) vs. odd-order (3rd, 5th)
+harmonic spectra; dynamic bias shift and duty-cycle modulation under heavy signal
+drive; intermodulation distortion (IMD) resulting from multi-note chord voicings;
+frequency-dependent saturation (saturating low frequencies vs. saturating highs);
+and the subjective textures of distortion (granular, fuzzy, smooth, articulate,
+saturated, tight, loose, raw, polished).
+
+EVIDENCE INTERPRETATION STANDARD:
+Identifies the primary distortion character from recorded audio: analyzes harmonic
+density, identifies whether clipping is symmetrical (odd harmonics, square wave,
+hollow buzz) or asymmetrical (even harmonics, warm, octaver-like undertones);
+measures dynamic collapse during chords; and detects unpleasant IMD hash.
+
+DIAGNOSTIC STANDARD:
+When a chord sounds harsh and dissonant, determines whether the cause is excessive
+odd-order clipping in a solid-state boost, severe IMD in a high-gain preamp, or
+speaker cone cry.
+
+DECISION-MAKING STANDARD:
+Selects and configures nonlinear architectures to meet aesthetic goals: chooses
+soft-clipping asymmetrical stages for open, dynamic blues lead; specifies cascading
+symmetrical stages preceded by low-end roll-off for fast, articulate thrash rhythm.
+
+OUTCOME-REASONING STANDARD:
+Predicts how an increase in drive will compress transients and expand sustain;
+anticipates how chord voicings will translate through the designed nonlinear stages.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Frequency & Spectral (Domain 4): Upstream spectrum dictates which harmonics generate.
+  - Dynamics & Transients (Domain 5): Nonlinear saturation inherently acts as a fast limiter.
+  - Amplifier Behaviour (Domain 8): Preamp tubes, phase inverters, and power tubes
+    contribute distinct non-linear behaviors.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Treating distortion as a single 0-100 scalar slider.
+  - Believing all clipping must come from the amplifier's preamp circuit.
+  - Attempting to cure fizzy distortion by cutting treble downstream instead of
+    addressing harsh non-linear clipping upstream.
+
+BOUNDARIES:
+  - In Scope: Specifying clipping curves, harmonic balance, stage cascading, and
+    non-linear compression behavior.
+  - Out of Scope (Deterministic): Math functions for wave-shaping algorithms (tanh, arctan).
+  - Out of Scope (Platform): Specific model names of overdrive pedals or amp channels.
+
+MATURITY PROGRESSION:
+  - L2: Explains that tube distortion sounds warmer because of even harmonics.
+  - L3: Selects an overdrive pedal with a mid-hump to create smooth lead distortion.
+  - L4: Diagnoses that harshness in a rhythm track is caused by symmetrical hard
+        clipping generating excessive 7th and 9th harmonics, recommending an
+        asymmetrical clipping stage with softer knee.
+  - L5: Designs a multi-stage non-linear cascade combining a mild Germanium diode
+        soft-clipper, a high-headroom tube preamp, and a pushed power section,
+        explaining how dynamic bias shift maintains chord articulation during full
+        barre chords while providing rich, singing 2nd-harmonic sustain on single notes.
+
+
+================================================================================
+DOMAIN 4: FREQUENCY & SPECTRAL ENGINEERING
+================================================================================
+MISSION RELEVANCE:
+EQ is the most powerful tool in audio engineering, but its efficacy depends
+entirely on WHERE it is applied relative to non-linear stages.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+A 3 dB boost at 800 Hz before an amplifier produces an entirely different acoustic
+result than the same boost after the amplifier or at the microphone. A professional
+must know the causal location for every spectral intervention.
+
+KNOWLEDGE STANDARD:
+Understands filter topologies (high-pass, low-pass, resonant, shelf, parametric
+bell, graphic); Q-factor and bandwidth; phase shift across minimum-phase filters;
+pre-distortion spectral shaping (filtering before clipping alters harmonic generation);
+tone stack architectures (Fender/Marshall/Vox passive FMV vs. active James/Baxandall);
+post-distortion EQ (spectral balancing of generated harmonics); loudspeaker transfer
+curves; capture filtering; and masking theory in multi-instrument mixes.
+
+EVIDENCE INTERPRETATION STANDARD:
+Accurately reads spectral balance from audio evidence: distinguishes between
+fundamental energy (80 Hz - 250 Hz), body/wood (250 Hz - 500 Hz), nasal/boxiness
+(600 Hz - 1 kHz), forward bite/vocal cut (1.5 kHz - 3.5 kHz), harshness/fizz
+(4 kHz - 7 kHz), and air/fret sizzle (8 kHz - 12 kHz); identifies whether a
+spectral deficit is caused by source, filtering, or phase cancellation.
+
+DIAGNOSTIC STANDARD:
+When a guitar tone is described as "muddy," determines whether the mud is caused by:
+  (a) excessive sub-200 Hz energy driving the preamp into flabby distortion,
+  (b) a boxy 400 Hz accumulation in the cabinet enclosure,
+  (c) microphone proximity effect, or
+  (d) downstream mix masking from the bass guitar.
+
+DECISION-MAKING STANDARD:
+Selects the exact causal location for spectral intervention:
+  - Shapes pre-distortion spectrum to control distortion texture and tightness.
+  - Adjusts amplifier tone stack for primary musical character.
+  - Uses post-distortion/rack EQ for surgical resonance removal and mix pocketing.
+  - Uses microphone selection/placement for organic acoustic high/low balance.
+
+OUTCOME-REASONING STANDARD:
+Predicts that cutting low frequencies pre-distortion will clean up note articulation
+without leaving the final tone thin (since post-distortion low-end can be restored);
+verifies that an EQ curve does not introduce unmusical phase smearing.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Nonlinear Processing (Domain 3): Spectrum entering distortion dictates harmonic output.
+  - Loudspeaker & Cabinet (Domain 9): Mechanical speaker rolloff is a massive natural filter.
+  - Microphone & Capture (Domain 10): Mic angle and distance act as primary acoustic filters.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Placing an EQ at the end of the chain to fix an upstream distortion problem.
+  - Boosting high frequencies on a fizzy amp to get "clarity."
+  - Applying extreme, narrow-band surgical EQ notches when physical microphone
+    repositioning would achieve a smoother result.
+
+BOUNDARIES:
+  - In Scope: Deciding spectral curves, filter types, and exact causal placement in the chain.
+  - Out of Scope (Deterministic): Digital biquad filter coefficient calculations.
+  - Out of Scope (Platform): Restricting EQ designs to arbitrary 2-band or 10-band platform limits.
+
+MATURITY PROGRESSION:
+  - L2: Knows that boosting mids helps a guitar cut through a mix.
+  - L3: Cuts bass before distortion to tighten the low end for metal rhythm.
+  - L4: Separates a 4 kHz fizz problem into two distinct causes: excessive diode
+        clipping harmonics (cured pre-gain) and an on-axis condenser resonance
+        (cured by moving the mic 15 degrees off-axis).
+  - L5: Engineers a complete four-point spectral strategy: a pre-distortion 18 dB/oct
+        high-pass filter at 120 Hz to eliminate intermodulation flub; a 750 Hz mid-emphasis
+        to drive core crunch; a post-distortion graphic scoop at 400 Hz to remove
+        cabinet boxiness; and an off-axis dynamic microphone placement to naturally
+        steep-roll frequencies above 6 kHz without electronic filtering.
+
+
+================================================================================
+DOMAIN 5: DYNAMICS, ENVELOPE & TRANSIENTS
+================================================================================
+MISSION RELEVANCE:
+Electric guitar articulation relies on the temporal envelope: the initial pick
+transient (0-20 ms), the settling bloom, sustain, and decay.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Playing feel, punch, and rhythm pocket depend on how transients are preserved
+or modified. Mismanaged dynamics turn aggressive playing into a flat, lifeless buzz.
+
+KNOWLEDGE STANDARD:
+Understands transient response; compressor attack, release, threshold, ratio, and
+knee mechanics; peak limiting vs. RMS compression; optical vs. VCA vs. FET vs.
+variable-mu compression characteristics; amplifier power supply sag (rectifier tube
+voltage drop under load creating dynamic envelope bloom and compression); dynamic
+range preservation; and transient-to-body ratios.
+
+EVIDENCE INTERPRETATION STANDARD:
+Evaluates transient shape from audio: detects whether pick attack is sharp, rounded,
+squashed, or smeared; identifies whether sustain is natural acoustic resonance or
+heavy non-linear limiting; measures dynamic range to determine if playing feel
+remains intact.
+
+DIAGNOSTIC STANDARD:
+Diagnoses whether a lack of punch is caused by an over-compressed front-end pedal,
+excessive preamp gain, a heavily sagging power supply, or a slow speaker transient
+response.
+
+DECISION-MAKING STANDARD:
+Selects dynamic interventions based on musical role: uses fast, transparent limiting
+for percussive funk strumming; configures a slow-attack compressor to accentuate pick
+transients before medium-gain crunch; relies on natural power amp sag for organic
+touch-sensitive blues bloom.
+
+OUTCOME-REASONING STANDARD:
+Predicts how dynamic processing will affect the signal-to-noise ratio and sustained
+decay; verifies that compression does not exaggerate finger squeaks or pick chirp.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Source & Performance (Domain 1): Pick attack and player touch drive initial transients.
+  - Nonlinear Processing (Domain 3): Saturation is inherently dynamic compression.
+  - Amplifier Behaviour (Domain 8): Power amp sag provides dynamic envelope shaping.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Using a compressor as a default "make it sound professional" insert.
+  - Cranking preamp gain to get sustain, completely obliterating pick articulation.
+  - Setting compressor attack too fast, choking the initial life out of notes.
+
+BOUNDARIES:
+  - In Scope: Specifying dynamic goals, envelope timing (attack/release), and compressor roles.
+  - Out of Scope (Deterministic): Sidechain buffer mechanics and peak-detection DSP.
+  - Out of Scope (Platform): Commercial pedal names (e.g., Dyna Comp, Ross).
+
+MATURITY PROGRESSION:
+  - L2: Knows that compressors make quiet sounds louder and loud sounds quieter.
+  - L3: Places a compressor pedal before a clean amp to increase sustain.
+  - L4: Distinguishes between tube rectifier sag (dynamic envelope bloom) and optical
+        pedal compression, selecting power amp sag to preserve touch-responsiveness.
+  - L5: Engineers a dynamic response where a subtle VCA compressor with a 30 ms attack
+        lets pick attack slice through cleanly before clamping down 2 dB, perfectly
+        timing the release to 120 ms to match the song's quarter-note tempo and
+        create a rhythmic breathing sustain.
+
+
+================================================================================
+DOMAIN 6: NOISE ENGINEERING
+================================================================================
+MISSION RELEVANCE:
+High-gain electric guitar rigs are inherently high-noise environments. Professional
+sound engineering manages noise at its source rather than destroying tone with
+heavy, crude gating.
+TARGET MATURITY: L4 (Supporting)
+WHY THIS TARGET:
+While critical for high-gain production, noise control is a supporting discipline
+to core tone design. L4 provides complete diagnostic capability to trace noise
+origins, optimize signal-to-noise ratios, and tune gates without compromising sustain.
+
+KNOWLEDGE STANDARD:
+Understands 50/60 Hz mains hum and ground loops; RF interference and single-coil
+buzz; Johnson-Nyquist thermal resistance noise (hiss) amplified through cascading
+gain stages; power supply ripple; noise gate mechanics (open/close thresholds,
+attack, hold, release, attenuation depth, frequency-conscious sidechain filtering);
+and the acoustic difference between idle noise and in-performance signal-to-noise ratio.
+
+EVIDENCE INTERPRETATION STANDARD:
+Identifies noise types from audio recordings: distinguishes between single-coil 60 Hz
+hum, electromagnetic buzzy hash, thermal preamp hiss, digital clock bleed, and
+pickup microphonics; identifies gate chattering, premature note cutoff, and unnatural
+decay clamping.
+
+DIAGNOSTIC STANDARD:
+Investigates the root cause of noise before applying suppression: determines whether
+noise is entering at the guitar, an unshielded overdrive pedal, high preamp gain,
+or a noisy effects loop buffer.
+
+DECISION-MAKING STANDARD:
+Selects noise mitigation strategies hierarchically:
+  1. Minimize noise generation via proper gain staging.
+  2. Filter sub-audible low rumble and ultrasonic hash.
+  3. Apply frequency-selective sidechain gating.
+  4. Use transparent downward expansion rather than hard gating when natural note
+     decay must be preserved.
+
+OUTCOME-REASONING STANDARD:
+Sets gate threshold and release times to match musical tempo and playing style;
+verifies that quiet sustained notes and palm-muted staccato rhythms are both handled
+cleanly without audible pumping or cutoff.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Source & Performance (Domain 1): Single-coil vs. humbucker pickup shielding.
+  - Gain Staging (Domain 2): Front-end noise is multiplied exponentially by downstream gain.
+  - Dynamics & Transients (Domain 5): Gate envelopes directly impact note decay.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Clamping a hard noise gate across every high-gain preset by default.
+  - Setting gate threshold so high that natural note decay chops off with an audible fizz.
+  - Treating 60 Hz ground hum by cranking a noise gate instead of fixing ground isolation.
+
+BOUNDARIES:
+  - In Scope: Diagnosing noise origins, specifying gate parameters, and choosing
+    expansion vs. gating.
+  - Out of Scope (Deterministic): Audio silence detection and gate DSP buffers.
+  - Out of Scope (Platform): Platform gate pedal simulations.
+
+MATURITY PROGRESSION:
+  - L2: Knows that high-gain amps hiss and need a noise gate.
+  - L3: Sets a noise gate threshold to silence the amp when the guitarist stops playing.
+  - L4: Analyzes audio to discover that 120 Hz power supply ripple is intermodulating
+        with an overdrive pedal, inserting a steep pre-distortion notch at 120 Hz
+        which eliminates the hash and allows the noise gate threshold to be lowered
+        by 10 dB, restoring natural decay.
+
+
+================================================================================
+DOMAIN 7: SIGNAL TOPOLOGY & PROCESSING ORDER
+================================================================================
+MISSION RELEVANCE:
+The order and routing of processing elements in an audio path dictate their
+interrelationships. Non-linear blocks make processing order irreversible.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Professional guitar tone design relies on sophisticated topological architectures
+(pre-amp vs. post-amp, series vs. parallel, wet/dry/wet, dual-cab blending). An
+engineer restricted to a fixed pedal-board order cannot solve modern production problems.
+
+KNOWLEDGE STANDARD:
+Understands non-commutative processing (A followed by B != B followed by A when
+non-linear stages are involved); pre-gain stompbox routing; amplifier effects loop
+insertion (post-preamp, pre-power amp); post-power amp and post-cabinet studio rack
+routing; parallel processing topologies (clean blend, parallel distortion, frequency-split
+processing); wet/dry and wet/dry/wet routing; stereo imaging and dual-amplifier
+phase-coherent architectures.
+
+EVIDENCE INTERPRETATION STANDARD:
+Deduces the signal topology of a recorded reference: identifies whether delay repeats
+are clean and distinct (post-distortion effects loop) or dirty and compressed (pre-amp
+delay); recognizes parallel clean-blend bass/guitar rigs; and identifies stereo
+panning vs. mono-collapsed processing.
+
+DIAGNOSTIC STANDARD:
+When a time-based effect (delay/reverb/chorus) sounds muddy, washed out, or
+distorted, diagnoses whether the problem is improper serial placement before a
+high-gain stage rather than the effect's internal parameters.
+
+DECISION-MAKING STANDARD:
+Designs custom routing architectures driven by engineering intent:
+  - Places filters/wah/boost pre-distortion for harmonic shaping.
+  - Places modulation/delay in the post-distortion loop or post-cab rack to preserve
+    clarity and spatial depth.
+  - Routes dual cabinets in phase-aligned parallel paths to combine contrasting
+    acoustic voicings.
+
+OUTCOME-REASONING STANDARD:
+Predicts how altering the position of an EQ or compressor relative to the amplifier
+will completely change the dynamic feel and distortion texture; validates that
+parallel routing paths sum without comb filtering.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Nonlinear Processing (Domain 3): Nonlinear stages make order matter fundamentally.
+  - Frequency & Spectral (Domain 4): Pre-EQ vs. post-EQ behavior.
+  - Phase, Polarity & Multi-Source (Domain 11): Parallel paths require rigorous phase management.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Memorizing a single "correct pedal order" and applying it dogmatically to every tone.
+  - Placing delay and reverb before a high-gain preamp unless an explicit lo-fi/shoegaze
+    effect is intended.
+  - Running parallel paths without verifying phase alignment at the summing junction.
+
+BOUNDARIES:
+  - In Scope: Architectural routing design, serial vs. parallel decisions, and stage placement.
+  - Out of Scope (Deterministic): Graph execution ordering and buffer routing memory.
+  - Out of Scope (Platform): Specific hardware slot limitations of individual modelers.
+
+MATURITY PROGRESSION:
+  - L2: Knows that delay usually goes after distortion.
+  - L3: Places overdrive before the amp and delay in the effects loop.
+  - L4: Identifies that an indistinct, cluttered lead tone is caused by running a
+        chorus pedal into high-gain preamp distortion, moving the chorus to a
+        parallel post-cab studio rack path to restore core punch while adding width.
+  - L5: Architects a dual-path hybrid topology: an input split routing low frequencies
+        (<250 Hz) through a high-headroom clean path with heavy VCA compression for
+        percussive bass weight, and high frequencies (>250 Hz) through an OverScream
+        and high-gain British tube stage, summing them coherently before a shared 4x12
+        cabinet to achieve a crushing modern rhythm tone with zero mud and zero transient loss.
+
+
+================================================================================
+DOMAIN 8: AMPLIFIER BEHAVIOUR
+================================================================================
+MISSION RELEVANCE:
+The amplifier is the central electro-acoustic engine of electric guitar tone.
+Specifying an amplifier professionally requires defining its physical and acoustic
+behavior rather than relying on commercial brand names or cosmetic skins.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+A true Sound Engineer can design the required amplifier behavior (preamp gain
+topology, tone stack placement, power amp negative feedback, sag, damping) from
+first principles, regardless of whether a specific historical amplifier model is available.
+
+KNOWLEDGE STANDARD:
+Understands tube preamp stages (12AX7/ECC83 triode gain stages, cathode bypass
+capacitors, load lines, inter-stage attenuation); tone stack designs (passive FMV
+with mid-dip, active James/Baxandall, tweed single-knob, Vox cut control) and their
+location in the circuit (early vs. late preamp); phase inverter topologies (long-tailed
+pair vs. cathodyne) and their overdrive characteristics; power amp classes (Class A
+cathode-biased vs. Class AB fixed-biased); power tube characteristics (6L6 clean
+headroom and extended lows/highs; EL34 aggressive upper-mid punch; EL84 chime and
+early compression; 6V6 vintage rounded breakup); negative feedback loops and their
+effect on damping factor and transient tightness; and Presence and Resonance
+controls (variable feedback filtering).
+
+EVIDENCE INTERPRETATION STANDARD:
+Identifies amplifier behavioral characteristics from audio recordings: determines
+the operating class and tube family by listening to breakup texture and dynamic
+stiffness; differentiates between preamp fizz and power tube crunch; and analyzes
+low-end damping to determine negative feedback depth.
+
+DIAGNOSTIC STANDARD:
+When an amplifier feels "stiff" or "spongy," diagnoses the circuit origin (e.g.,
+solid-state diode rectifier with heavy negative feedback vs. tube rectifier with
+zero negative feedback).
+
+DECISION-MAKING STANDARD:
+Specifies complete amplifier behavior in platform-independent terms: defines preamp
+gain structure, tone stack frequency response, presence feedback curve, master-volume
+saturation threshold, and power supply sag depth to achieve the target dynamic feel.
+
+OUTCOME-REASONING STANDARD:
+Predicts how cranking the master volume will shift the primary distortion from
+preamp sizzle to power-stage body and output transformer saturation; verifies that
+tone stack adjustments do not cause unintended gain reduction.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Gain Staging (Domain 2): Channel volume vs. master volume balance.
+  - Loudspeaker & Cabinet (Domain 9): Power amp damping factor directly controls
+    speaker cone resonance.
+  - Nonlinear Processing (Domain 3): Preamp vs. power amp distortion textures.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Believing that an amplifier's tone is defined solely by its front-panel brand badge.
+  - Assuming all tube amplifiers behave identically if their EQ knobs are at noon.
+  - Trying to achieve power tube saturation by turning up preamp gain.
+
+BOUNDARIES:
+  - In Scope: Specifying circuit behavior, tube emulation dynamics, tone stack
+    curves, and power section parameters.
+  - Out of Scope (Deterministic): SPICE circuit simulation algorithms.
+  - Out of Scope (Platform): Proprietary amp block names (e.g., "Brit 8000", "Plexi 50W").
+
+MATURITY PROGRESSION:
+  - L2: Knows that Marshall amps have more mids than Fender amps and 6L6 tubes are cleaner than EL34s.
+  - L3: Chooses a British master-volume EL34 head with high preamp gain for an 80s rock tone.
+  - L4: Diagnoses that a lead tone lacks sustain because the power section has too
+        much negative feedback and high damping, recommending an open-loop Class A
+        architecture with cathode-biased EL84s to introduce singing compression.
+  - L5: Engineers a complete platform-independent amplifier specification: a high-gain
+        4-stage triode preamp with an early cathode-follower driven FMV tone stack,
+        a long-tailed pair phase inverter pushed into mild asymmetrical clipping,
+        and an EL34 fixed-bias Class AB power section with variable negative feedback
+        tuned to low damping, allowing the speaker's natural 110 Hz resonance to bloom
+        dynamically while keeping upper-mid transients aggressive.
+
+
+================================================================================
+DOMAIN 9: LOUDSPEAKER & CABINET ENGINEERING
+================================================================================
+MISSION RELEVANCE:
+The guitar loudspeaker and cabinet enclosure function as an acoustic transducer
+and filter, responsible for up to 70% of the audible tone curve.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+No amount of amplifier tweaking can compensate for an inappropriate loudspeaker or
+cabinet. A professional engineer must specify cabinet acoustics from physical
+principles independently of commercial cabinet names.
+
+KNOWLEDGE STANDARD:
+Understands loudspeaker electromechanics (voice coil inductance, magnet weight,
+cone paper formulation, surround damping, dust cap material and size); speaker
+resonance frequency (Fs), sensitivity (dB/W/m), and power handling; cone breakup
+modes (mechanical distortion at high frequencies generating harmonic coloration);
+enclosure acoustic loading (closed-back infinite baffle vs. open-back dipole vs.
+ported bass-reflex); enclosure volume and internal standing waves; cabinet baffle
+resonance and wood material (birch ply vs. pine vs. MDF); directional dispersion
+and beaming (high-frequency beaming along the central acoustic axis).
+
+EVIDENCE INTERPRETATION STANDARD:
+Identifies speaker and cabinet characteristics from recorded sound: recognizes
+the characteristic 2.5 kHz - 3 kHz upper-mid spike of a Celestion Vintage 30, the
+woody, compressed midrange of a Greenback, or the flat, high-headroom response of
+an EVM-12L; differentiates between the tight, directional punch of a closed-back
+4x12 and the airy, omnidirectional bloom of an open-back 1x12.
+
+DIAGNOSTIC STANDARD:
+Diagnoses whether low-end boominess is an acoustic cabinet resonance (typically
+90-120 Hz) or electronic amplifier resonance; determines whether fizzy highs are
+due to amplifier distortion or harsh speaker cone breakup.
+
+DECISION-MAKING STANDARD:
+Specifies the acoustic reproduction system based on musical objectives:
+  - Selects closed-back 4x12 with high-power drivers for tight, focused modern metal.
+  - Selects open-back 2x12 with low-efficiency, early-breakup drivers for dynamic,
+    spacious vintage blues/rock.
+  - Pairs contrasting drivers (e.g., V30 and G12H-75) in the same cabinet to combine
+    mid-cut with extended low-end punch.
+
+OUTCOME-REASONING STANDARD:
+Predicts how cabinet construction changes the acoustic pressure wave arriving at
+the microphone; verifies that speaker breakup adds musical warmth rather than
+uncontrolled intermodulation hash.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Amplifier Behaviour (Domain 8): Amplifier damping factor interacts with speaker Fs.
+  - Microphone & Capture (Domain 10): Speaker cone geometry dictates microphone placement.
+  - Frequency & Spectral (Domain 4): Cabinet acts as the primary steep low-pass filter
+    above 5 kHz.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Treating cabinet selection as an afterthought compared to amplifier selection.
+  - Assuming a 4x12 is always "better" or "heavier" than a 2x12 or 1x12.
+  - Forcing an amplifier's EQ to extreme values to fix a fundamental mismatch in
+    speaker voicing.
+
+BOUNDARIES:
+  - In Scope: Specifying enclosure type, baffle construction, driver electromechanical
+    voicing, breakup thresholds, and multi-driver combinations.
+  - Out of Scope (Deterministic): Finite Element Analysis (FEA) acoustic wave modeling.
+  - Out of Scope (Platform): Specific commercial cabinet IR preset numbers.
+
+MATURITY PROGRESSION:
+  - L2: Knows that closed-back cabs have more bass and Greenbacks sound vintage.
+  - L3: Pairs a high-gain head with a 4x12 closed-back cabinet loaded with Vintage 30s for metal.
+  - L4: Identifies that a boxy resonance at 450 Hz is caused by an undersized 1x12
+        enclosure, recommending an oversized birch-ply cabinet with higher internal
+        volume to shift the resonant peak below the guitar's fundamental passband.
+  - L5: Engineers an acoustic cabinet specification pairing an open-back pine cabinet
+        with an alnico-magnet driver for an edge-of-breakup roots rock tone, explaining
+        how the rear dipole radiation fills the room with spacious low-mids while the
+        early voice-coil compression smooths out pick transients without requiring
+        electronic compression.
+
+
+================================================================================
+DOMAIN 10: MICROPHONE & CAPTURE ENGINEERING
+================================================================================
+MISSION RELEVANCE:
+In recorded music, the listener never hears the amplifier directly; they hear the
+microphone's capture of the loudspeaker. The choice, position, angle, and distance
+of the microphone are the recording engineer's ultimate EQ and acoustic filter.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Microphone placement is the single most critical bridge between raw guitar gear and
+a finished record. A professional must reason in 3D physical and acoustic space.
+
+KNOWLEDGE STANDARD:
+Understands microphone transducer physics (moving-coil dynamic, ribbon, small/large
+diaphragm condenser); polar patterns (cardioid, figure-8, omnidirectional) and
+their off-axis frequency attenuation; proximity effect (low-frequency boost as
+distance decreases in directional mics); loudspeaker acoustic radiation geometry
+(center dust-cap is bright, fast, and aggressive; cone edge is warm, dark, and
+sluggish); microphone angle (on-axis captures direct transient highs; off-axis
+averages wave arrivals, smoothing out harshness and fizz); distance (close capture
+0.5-2 cm minimizes room reflections; distant capture 10-30 cm integrates the entire
+cone and introduces early reflections); multi-mic phase alignment; and ambient room
+capture (boundary mics, Blumlein/spaced pairs).
+
+EVIDENCE INTERPRETATION STANDARD:
+Accurately reconstructs the capture environment from audio evidence: identifies
+the microphone family by transient speed and frequency extension (dynamic mid-punch
+vs. ribbon smooth top and deep lows vs. condenser ultra-fast transient detail);
+estimates microphone distance from proximity effect weight; deduces mic angle
+from the presence or absence of 5 kHz - 7 kHz harshness.
+
+DIAGNOSTIC STANDARD:
+When a recorded tone sounds "fizzy and detached," diagnoses whether the mic is
+pointed directly at the center dust cap, or placed too far back in an untreated room.
+
+DECISION-MAKING STANDARD:
+Designs a 3D capture strategy from acoustic requirements:
+  - Specifies primary mic position (Cap Edge for balanced attack; Cone for body).
+  - Specifies distance to control proximity low-end weight.
+  - Specifies angle (e.g., 45 degrees off-axis) to tame aggressive non-linear clipping
+    fizz without introducing electronic phase artifacts.
+  - Pairs complementary microphones (e.g., Dynamic 57 for bite + Ribbon 121 for
+    low-mid warmth) with strict phase alignment.
+
+OUTCOME-REASONING STANDARD:
+Predicts the exact acoustic curve shift resulting from a 1 cm move along the cone
+radius; verifies that multi-mic combinations sum cleanly without hollow phase cancellation.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Loudspeaker & Cabinet (Domain 9): Speaker dispersion dictates microphone capture zones.
+  - Phase, Polarity & Multi-Source (Domain 11): Multi-mic arrays require millisecond
+    delay alignment.
+  - Frequency & Spectral (Domain 4): Microphone placement acts as a natural, phase-pure acoustic filter.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Slapping a default dynamic mic dead-center on the cone and trying to fix the
+    resulting ice-pick highs with post-EQ.
+  - Ignoring distance and forgetting that moving a mic 2 cm back cuts 4 dB of sub-bass.
+  - Using multiple microphones without verifying phase coherence.
+
+BOUNDARIES:
+  - In Scope: Specifying transducer types, polar patterns, 3D placement (X/Y/Distance/Angle),
+    and multi-mic complementary roles.
+  - Out of Scope (Deterministic): Trigonometric coordinate conversion and 3D rendering.
+  - Out of Scope (Platform): IK Multimedia VIR grid coordinates or proprietary IR file formats.
+
+MATURITY PROGRESSION:
+  - L2: Knows that moving a mic toward the edge makes it darker and ribbons sound warmer.
+  - L3: Places a dynamic mic on the cap edge at 1 inch distance for a rock rhythm tone.
+  - L4: Diagnoses excessive 6 kHz fizz on a high-gain metal track as on-axis dust-cap
+        beaming, angling the mic 45 degrees off-axis at the cap edge to smooth the
+        highs while moving it 1 cm closer to compensate for lost proximity low-end.
+  - L5: Engineers a complete dual-transducer capture array: a moving-coil dynamic
+        positioned at the speaker cap edge, 1.5 cm distance, on-axis to capture fast
+        transient bite and upper-mid cut; paired with a figure-8 ribbon microphone
+        positioned at the outer cone edge, 3 cm distance, angled 30 degrees off-axis
+        to capture rich body and smooth low-end; time-aligning the two capsules to
+        within 0.05 milliseconds to eliminate comb filtering and create an immense,
+        three-dimensional rhythm tone.
+
+
+================================================================================
+DOMAIN 11: PHASE, POLARITY & MULTI-SOURCE INTERACTION
+================================================================================
+MISSION RELEVANCE:
+When multiple sound sources, microphones, or parallel processing paths are combined,
+phase interaction determines whether the combined tone is thick and powerful or
+hollow and thin.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Phase cancellation cannot be cured by EQ. An engineer who does not understand phase
+will mistake comb filtering for an EQ problem, compounding the defect.
+
+KNOWLEDGE STANDARD:
+Understands absolute polarity (in-phase vs. 180-degree inverted); frequency-dependent
+phase shift; propagation delay (sound travels ~343 m/s; 1 ms delay = ~34 cm distance);
+comb filtering (constructive and destructive interference creating a series of
+notches at f = (2n+1) / (2 * delta_t)); phase cancellation in dual-microphone setups;
+comb filtering from floor/wall boundary reflections; phase coherence across parallel
+processing paths; and all-pass filters.
+
+EVIDENCE INTERPRETATION STANDARD:
+Identifies phase anomalies from audio recordings: detects the classic "hollow,"
+"nasal," or "distant" sound of comb filtering; recognizes when low frequencies
+disappear upon summing two signals; identifies when stereo width collapses in mono
+due to out-of-phase components.
+
+DIAGNOSTIC STANDARD:
+When a dual-mic blend sounds thin and lacks punch, tests for phase cancellation
+and propagation delay before adjusting EQ; checks whether flipping polarity or
+time-aligning capsules by 0.2 ms restores full low-end body.
+
+DECISION-MAKING STANDARD:
+Calculates and enforces phase coherence:
+  - Inverts polarity when microphones face opposite directions (e.g., front and back
+    of open-back cab).
+  - Time-aligns multi-mic capsules either physically (placing diaphragms in the same
+    plane) or electronically (delay compensation).
+  - Deliberately uses controlled phase offsets only when a specific comb-filtered
+    hollow texture is artistically desired (e.g., Boston-style notched leads).
+
+OUTCOME-REASONING STANDARD:
+Predicts the exact frequency notches that will result from a given physical mic
+offset; validates mono-compatibility of all stereo and parallel guitar paths.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Microphone & Capture (Domain 10): Multi-mic placement is the primary source of phase issues.
+  - Signal Topology (Domain 7): Parallel paths must sum coherently.
+  - Frequency & Spectral (Domain 4): Comb filtering creates severe, unfixable spectral notches.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Attempting to boost low frequencies with an EQ when two microphones are canceling
+    each other out out-of-phase.
+  - Assuming two microphones sound "fuller" without verifying phase alignment.
+  - Forgetting that an open-back cabinet radiates rear sound in opposite polarity to the front.
+
+BOUNDARIES:
+  - In Scope: Diagnosing phase defects, calculating time-alignment requirements,
+    and specifying polarity.
+  - Out of Scope (Deterministic): Automatic cross-correlation delay calculation DSP.
+  - Out of Scope (Platform): Platform-specific phase switch buttons and delay buffers.
+
+MATURITY PROGRESSION:
+  - L2: Knows that out-of-phase microphones sound thin and cancel out bass.
+  - L3: Flips the phase switch on the secondary mic to see if the bass gets louder.
+  - L4: Calculates that a 2.5 cm physical offset between a dynamic and ribbon mic
+        is creating a devastating phase notch at 3.4 kHz, recommending a 0.07 ms delay
+        compensation to bring them into perfect coherence.
+  - L5: Diagnoses a complex acoustic cancellation issue where a floor reflection is
+        interfering with a close cabinet mic at 800 Hz, repositioning the cabinet
+        off the reflective boundary and aligning an off-axis secondary mic to
+        constructively reinforce the 800 Hz region, achieving perfect mono-compatibility
+        and a massive low-mid punch.
+
+
+================================================================================
+DOMAIN 12: TIME-BASED, MODULATION & SPATIAL PROCESSING
+================================================================================
+MISSION RELEVANCE:
+Time-based effects (delay, reverb) and modulation (chorus, flanger, phaser) place
+the guitar within an acoustic environment, create stereo width, and define the
+tonal aesthetic of specific production eras.
+TARGET MATURITY: L4 (Supporting)
+WHY THIS TARGET:
+While critical for space, depth, and vintage/modern aesthetics, time and modulation
+effects are supporting elements to the core dry guitar tone. L4 provides complete
+diagnostic and design capability without requiring full acoustic room simulation.
+
+KNOWLEDGE STANDARD:
+Understands delay mechanics (digital pristine, analog bucket-brigade device [BBD]
+high-frequency loss and clock noise, tape saturation and wow/flutter); delay timing
+(subdivision, tempo sync, dotted-eighth, slapback 80-140 ms, spatial pre-delay);
+reverb acoustics (early reflections vs. late diffuse decay, predelay, damping,
+diffusion, room size, room impulse response vs. spring reverb tank vs. plate);
+modulation physics (LFO waveform, rate, depth, delay modulation, regeneration/feedback);
+chorus vs. flanger (flanger uses short delays <10 ms with feedback creating comb
+filtering; chorus uses delays 15-35 ms with pitch modulation); phaser (cascaded
+all-pass filters creating swept notches); and stereo widening techniques (Haas effect,
+pitch detuning, ping-pong).
+
+EVIDENCE INTERPRETATION STANDARD:
+Identifies time-based effects in recorded audio: determines whether ambience is a
+natural studio room, a spring tank, an analog plate, or digital hall; distinguishes
+between tape delay warmth and digital precision; identifies modulation type, rate,
+and depth; separates dry guitar core from wet reverberant tail.
+
+DIAGNOSTIC STANDARD:
+When a guitar track sounds "washed out," "cluttered," or "distant," diagnoses
+whether the issue is excessive reverb wet mix, lack of predelay, or delay repeats
+masking the dry guitar's transients.
+
+DECISION-MAKING STANDARD:
+Integrates spatial processing to serve the musical arrangement:
+  - Uses short slapback or studio room ambience to give dry guitars dimension without
+    cluttering a dense rock mix.
+  - Filters low and high frequencies on delay repeats (Abbey Road reverb/delay trick:
+    HPF at 500 Hz, LPF at 8 kHz) to prevent low-end mud and high-end sizzle.
+  - Configures modulation parameters to enhance width without causing pitch instability.
+
+OUTCOME-REASONING STANDARD:
+Predicts how reverb decay time affects mix density; verifies that stereo widening
+effects remain mono-compatible without phase cancellation.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Signal Topology (Domain 7): Placement of delays/reverbs post-gain to preserve clarity.
+  - Musical & Production Context (Domain 14): Reverb/delay choices must match historical era.
+  - Psychoacoustics & Perception (Domain 13): Predelay and early reflections dictate perceived depth.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Drowning a poorly matched guitar tone in heavy reverb to hide defects.
+  - Running long, un-synced delays that clash with the rhythm section's groove.
+  - Failing to filter the low end of a reverb, creating an uncontrollable low-mid boom in the mix.
+
+BOUNDARIES:
+  - In Scope: Designing spatial depth, selecting delay/reverb architectures, tuning
+    timing, and configuring modulation.
+  - Out of Scope (Deterministic): Reverb DSP algorithm generation and convolution math.
+  - Out of Scope (Platform): Specific commercial pedal emulation presets.
+
+MATURITY PROGRESSION:
+  - L2: Knows that chorus makes things sound 80s and delay adds repeats.
+  - L3: Sets a quarter-note delay with low feedback in the effects loop for lead solos.
+  - L4: Diagnoses that a lead guitar disappears in a heavy mix because the reverb has
+        zero predelay and a long 3.5s decay; introduces 45 ms of predelay, cuts the
+        decay to 1.8s, and high-passes the wet return at 600 Hz, allowing pick
+        transients to remain upfront while the tail creates massive spatial depth.
+
+
+================================================================================
+DOMAIN 13: PSYCHOACOUSTICS & PERCEPTION
+================================================================================
+MISSION RELEVANCE:
+Human hearing is non-linear. An engineer who does not understand perceptual
+mechanisms will fall victim to loudness bias, misjudge midrange presence, and make
+ineffective processing decisions.
+TARGET MATURITY: L4 (Supporting)
+WHY THIS TARGET:
+Psychoacoustics provides the perceptual lens through which all engineering evidence
+must be evaluated. L4 ensures the engineer avoids perceptual traps, compensates for
+ear fatigue, and understands how listeners perceive loudness, width, and depth.
+
+KNOWLEDGE STANDARD:
+Understands equal-loudness contours (Fletcher-Munson curves: hearing sensitivity
+peaks between 2 kHz - 5 kHz; bass and treble perception drops at low SPL);
+loudness bias (louder signals are perceived as having better bass, clearer highs,
+and superior punch); frequency masking (louder sounds in a critical band mask
+quieter sounds within that band); temporal masking (forward and backward masking
+of transients); phantom center imaging and binaural localization (inter-aural time
+differences [ITD] and inter-aural level differences [ILD]); and the precedence
+(Haas) effect.
+
+EVIDENCE INTERPRETATION STANDARD:
+Compensates for perceptual biases when evaluating audio: ensures all A/B comparisons
+are strictly RMS/LUFS level-matched to eliminate loudness deception; identifies
+when a guitar sounds "thin" merely because it is auditioned at low volume; and
+recognizes when masking from bass or cymbals is making a guitar seem dark.
+
+DIAGNOSTIC STANDARD:
+When a user complains that a tone "sounds dull in the mix but harsh when soloed,"
+diagnoses the psychoacoustic cause: masking in the midrange from other instruments
+forcing an over-compensation in the 4 kHz - 6 kHz region.
+
+DECISION-MAKING STANDARD:
+Applies perceptual principles to sound design:
+  - Carves out complementary spectral pockets rather than boosting guitar frequencies.
+  - Uses the Haas effect (10-25 ms delay) carefully for width while checking mono
+    collapse.
+  - Focuses EQ adjustments on the critical midrange (800 Hz - 3 kHz) where the ear
+    is most sensitive to intelligibility.
+
+OUTCOME-REASONING STANDARD:
+Predicts how a tone will translate across different listening environments (headphones
+vs. nearfield monitors vs. mobile speakers); verifies that perceived punch is
+achieved through transient contrast rather than raw loudness.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Gain Staging (Domain 2): Loudness matching is mandatory for objective comparison.
+  - Frequency & Spectral (Domain 4): Critical bands and frequency masking dictate EQ needs.
+  - Reference Analysis (Domain 15): Isolating perceptual guitar weight from the full mix.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Evaluating EQ or amp changes at different volume levels and concluding the louder one is "better."
+  - Mixing in solo and expecting the tone to sit perfectly within the full arrangement.
+  - Over-boosting 10 kHz "air" on electric guitars, fatiguing the listener's ears.
+
+BOUNDARIES:
+  - In Scope: Applying perceptual principles to evaluation, level matching, and
+    spatial/spectral design.
+  - Out of Scope (Deterministic): ITU-R BS.1770 LUFS calculation algorithms.
+  - Out of Scope (Platform): Operating system audio output volume settings.
+
+MATURITY PROGRESSION:
+  - L2: Knows that louder sounds seem better and human ears hear mids best.
+  - L3: Matches volume before comparing two different amp presets.
+  - L4: Recognizes that a client's request for "more bite" is an illusion caused by
+        cymbals masking the 3 kHz region; rather than boosting 3 kHz on the guitar
+        (which causes harshness), introduces a dynamic notch at 3 kHz on the cymbals,
+        revealing the guitar's natural bite without altering its tone.
+
+
+================================================================================
+DOMAIN 14: MUSICAL & PRODUCTION CONTEXT
+================================================================================
+MISSION RELEVANCE:
+Guitar tone does not exist in a vacuum. It serves an arrangement, a genre, an era,
+and a production aesthetic.
+TARGET MATURITY: L4 (Supporting)
+WHY THIS TARGET:
+An engineer must understand stylistic conventions and historical recording practices
+to interpret user intent accurately. L4 provides deep historical and arrangement
+reasoning while strictly avoiding dogmatic, recipe-driven thinking.
+
+KNOWLEDGE STANDARD:
+Understands historical recording practices across eras (1960s British invasion
+analog tube desks and ribbon mics; 1970s multi-track tape, high-volume Marshall
+stacks, dynamic mics; 1980s rack processors, solid-state clipping, digital delays,
+SSL consoles; 1990s raw grunge, Rectifiers, analog revival; 2000s modern metal,
+digital modelers, surgical multi-tracking); arrangement density (power trios vs.
+dense multi-layered arrangements); guitar roles (rhythm foundation, lead cut,
+ambient texture); tracking techniques (single-track, double-track hard-panned,
+quad-tracking); and genre aesthetics (blues, classic rock, thrash, djent, shoegaze).
+
+EVIDENCE INTERPRETATION STANDARD:
+Uses style and era as contextual evidence, not as a rigid recipe: analyzes reference
+tracks to deduce tracking density (detecting the microscopic timing differences of
+double-tracking vs. artificial stereo chorusing); infers the overall production aesthetic
+(dry, bone-naked 70s rock vs. polished, wet 80s production).
+
+DIAGNOSTIC STANDARD:
+When a recreation sounds "wrong," evaluates whether the discrepancy is due to
+arrangement differences (e.g., trying to achieve a wall-of-sound rhythm tone with a
+single centered guitar track when the reference is quad-tracked).
+
+DECISION-MAKING STANDARD:
+Adapts tone design to fit the musical role and arrangement:
+  - Trims low end and narrows spatial width on rhythm guitars in dense mixes to leave
+    space for bass and kick drum.
+  - Designs a full-range, warm, dynamic tone for a solo guitar or power trio.
+  - Uses era-appropriate signal processing choices to maintain stylistic authenticity.
+
+OUTCOME-REASONING STANDARD:
+Predicts how double-tracking will change the perceived low-end weight and stereo
+spread; ensures that the designed tone fulfills its exact function in the mix.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Signal Topology (Domain 7): Tracking and spatial layout define signal routing.
+  - Dynamics & Envelope (Domain 5): Staccato modern metal vs. loose vintage blues dynamics.
+  - Intervention Selection (Domain 17): Knowing when historical simplicity outperforms modern complexity.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Treating genre as a rigid gear recipe (e.g., "All 80s metal must use a JCM800 and a TS9").
+  - Designing a massive, soloed guitar tone that completely overwhelms the bass and drums.
+  - Confusing double-tracked rhythm guitars with a stereo chorus effect.
+
+BOUNDARIES:
+  - In Scope: Interpreting musical role, arrangement density, and historical production practices.
+  - Out of Scope (Deterministic): DAW track layout and multi-track stem management.
+  - Out of Scope (Platform): Downloading artist-name branded presets.
+
+MATURITY PROGRESSION:
+  - L2: Knows that 70s rock used Marshalls and 80s metal used lots of gain and chorus.
+  - L3: Suggests a dry, mid-heavy tone with no reverb for a 1970s classic rock rhythm track.
+  - L4: Analyzes an early 1990s grunge reference and deduces that the massive, raw
+        rhythm tone was achieved not by high amplifier gain, but by layering an
+        overdriven tube amp with a gritty solid-state fuzz pedal, doubled and panned
+        hard left and right with dry, bone-close dynamic mic capture.
+
+
+================================================================================
+DOMAIN 15: REFERENCE ANALYSIS & TONE MATCHING
+================================================================================
+MISSION RELEVANCE:
+Tone matching is the central operational task of Tone Translator. Comparing a target
+reference with a user's tone requires deep analytical deconstruction across multiple
+acoustic dimensions.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Tone matching cannot be solved by superficial EQ curve matching. A true Sound
+Engineer must isolate individual causal factors (gain, dynamics, mic placement,
+speaker voicing) from complex audio evidence.
+
+KNOWLEDGE STANDARD:
+Understands comparative acoustic analysis across eight distinct dimensions:
+  1. Spectral Balance (frequency distribution, resonances, tilt).
+  2. Gain Architecture & Saturation (clipping depth, harmonic symmetry, texture).
+  3. Dynamic Envelope (transient snap, compression depth, sustain bloom).
+  4. Non-linear Compression & Sag (touch responsiveness, dynamic collapse).
+  5. Loudspeaker & Cabinet Voicing (low-end damping, mid focus, cone breakup).
+  6. Acoustic Capture Geometry (mic type, proximity weight, off-axis angle, room ratio).
+  7. Noise & Artifact Profile (hiss, hum, gate artifacts).
+  8. Spatial & Temporal Field (stereo width, delay reflections, reverb decay).
+Understands the fundamental rule of tone matching: AN OBSERVED DIFFERENCE DOES NOT
+AUTOMATICALLY ESTABLISH ITS CAUSE.
+
+EVIDENCE INTERPRETATION STANDARD:
+Deconstructs complex reference audio into constituent physical components:
+separates guitar tone from bass guitar, drums, and mix mastering; isolates direct
+transients from reverberant tails; distinguishes between an EQ difference and a
+saturation difference; recognizes when a reference contains multi-tracked guitars.
+
+DIAGNOSTIC STANDARD:
+When a target tone has more high-end energy than the current tone, rigorously
+diagnoses whether the difference is:
+  (a) higher amplifier treble/presence settings,
+  (b) more aggressive harmonic saturation generating new upper frequencies,
+  (c) an on-axis condenser mic vs. an off-axis dynamic mic, or
+  (d) brighter guitar pickups.
+
+DECISION-MAKING STANDARD:
+Constructs a ranked, prioritized intervention plan based on root causes:
+  - Targets the largest acoustic discrepancies first (typically cabinet/mic and gain staging).
+  - Never uses a downstream tool to fix an upstream discrepancy.
+  - Level-matches reference and current audio to ensure valid comparisons.
+
+OUTCOME-REASONING STANDARD:
+Predicts how each planned intervention will narrow the multi-dimensional distance
+to the target; measures objective deltas (crest factor, spectral centroid, harmonic
+distortion) to verify convergence toward the reference.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Integrates ALL domains (1 through 14).
+  - Diagnosis & Root-Cause (Domain 16): Feeds directly into causal diagnosis.
+  - Iterative Engineering (Domain 21): Provides the comparison metric for each iteration.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Running an automated "match EQ" plugin across the master and calling it a matched tone.
+  - Mistaking the bass guitar's low end for the guitar's cabinet resonance.
+  - Concluding that two tones match simply because their static frequency response
+    curves look similar on a spectrum analyzer.
+
+BOUNDARIES:
+  - In Scope: Multi-dimensional comparative analysis, causal delta deduction,
+    and priority planning.
+  - Out of Scope (Deterministic): Fast Fourier Transform (FFT) DSP algorithms and
+    audio decoders.
+  - Out of Scope (Platform): Platform-specific preset import/export tools.
+
+MATURITY PROGRESSION:
+  - L2: Can hear that the reference has more distortion and more treble than the user tone.
+  - L3: Increases gain and treble on the amp model to get closer to the reference.
+  - L4: Determines that the reference tone's brightness is not top-end EQ, but 3rd-harmonic
+        saturation produced by a pushed phase inverter, choosing to push the master
+        volume rather than boosting amplifier treble.
+  - L5: Deconstructs a dense commercial mix reference, identifying that the perceived
+        heavy rhythm tone consists of two quad-tracked guitars with surprisingly low
+        gain (edge-of-crunch), aggressive 120 Hz pre-filtering, a closed-back 4x12
+        with V30 drivers captured by an off-axis dynamic mic at 2 cm, and an acute
+        mid-cut at 500 Hz leaving space for the bass guitar; successfully designs a
+        single-track profile that captures the identical harmonic feel, transient bite,
+        and mix pocket.
+
+
+================================================================================
+DOMAIN 16: DIAGNOSIS & ROOT-CAUSE REASONING
+================================================================================
+MISSION RELEVANCE:
+In audio engineering, symptoms are often separated from causes by multiple stages.
+A professional engineer must diagnose causes rather than merely suppressing symptoms.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Treating symptoms (e.g., cutting treble with an EQ when a diode clipper is generating
+harsh harmonics) introduces phase distortion and leaves the underlying defect intact.
+L5 diagnostic rigor is mandatory.
+
+KNOWLEDGE STANDARD:
+Understands the structured diagnostic method:
+  Observation -> Candidate Causes -> Supporting Evidence -> Conflicting Evidence
+  -> Ranked Causal Hypotheses -> Targeted Intervention -> Validation.
+Understands multi-factor causation (multiple interacting mechanisms producing a
+single acoustic symptom); symptom masking (one severe defect hiding another); and
+downstream vs. upstream causality.
+
+EVIDENCE INTERPRETATION STANDARD:
+Actively searches for conflicting evidence that disproves an initial assumption;
+distinguishes between correlated symptoms and causal drivers; refuses to jump to
+a conclusion based on a single acoustic cue.
+
+DIAGNOSTIC STANDARD:
+Executes rigorous causal analysis:
+  - Symptom: "Harsh, unmusical high-frequency fizz."
+  - Candidate Cause 1: Bright guitar pickups. (Conflicting evidence: clean tone is warm).
+  - Candidate Cause 2: Power amp crossover distortion. (Conflicting evidence: amp is Class A).
+  - Candidate Cause 3: On-axis microphone placement capturing dust-cap resonance.
+    (Supporting evidence: fizz is concentrated at 5.5 kHz with narrow beaming).
+  - Validated Hypothesis: Cause 3.
+
+DECISION-MAKING STANDARD:
+Selects interventions that directly address the validated root cause at its
+origin, avoiding secondary compensatory processing downstream.
+
+OUTCOME-REASONING STANDARD:
+Validates the diagnostic hypothesis by observing whether the targeted intervention
+cured the symptom without creating unintended side effects; immediately re-evaluates
+the hypothesis if the intervention fails.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Frequency & Spectral (Domain 4): Causal location of spectral defects.
+  - Nonlinear Processing (Domain 3): Distinguishing harmonic distortion from linear EQ.
+  - Microphone & Capture (Domain 10): Physical acoustic capture vs. electronic defects.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Treating the symptom where it is heard rather than where it is generated.
+  - Assuming the first possible cause that comes to mind is the true cause.
+  - Applying multiple simultaneous changes so that the true cause can never be isolated.
+
+BOUNDARIES:
+  - In Scope: Causal hypothesis formation, evidence weighting, root-cause isolation,
+    and diagnostic reasoning.
+  - Out of Scope (Deterministic): Automated rule-engine execution trees.
+  - Out of Scope (Platform): Specific platform debugging console tools.
+
+MATURITY PROGRESSION:
+  - L2: Knows that bad sound can come from bad settings anywhere in the chain.
+  - L3: When a tone sounds muddy, turns down the bass knob on the amp.
+  - L4: When a tone sounds muddy, checks whether the mud is in the input signal,
+        preamp distortion, cabinet resonance, or mic proximity before changing settings.
+  - L5: Faced with a complex complaint that "the tone falls apart during heavy chords,"
+        systematically evaluates pickup intermodulation, power supply sag, phase
+        inverter blocking distortion, and cabinet acoustic loading; isolates the
+        root cause to blocking distortion in the second gain stage caused by excessive
+        sub-100 Hz signal; cures it permanently by inserting a 6 dB/oct high-pass
+        filter at 130 Hz before the first tube, restoring crystal-clear chord
+        separation without sacrificing final low-end fullness.
+
+
+================================================================================
+DOMAIN 17: INTERVENTION SELECTION & MINIMALISM
+================================================================================
+MISSION RELEVANCE:
+Every additional processing block introduces phase shift, latency, noise, and
+potential artifacts. Professional engineering is defined by achieving the target
+sound with the minimum necessary intervention.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Amateur tone design is characterized by chains bloated with redundant EQs, compressors,
+and boosters. A professional engineer knows how to make existing core stages do the
+work, eliminating gratuitous complexity.
+
+KNOWLEDGE STANDARD:
+Understands the Principle of Minimal Intervention; the law of diminishing returns
+in audio processing; accumulated phase distortion through cascading filters;
+processor efficiency (adjusting an existing amplifier tone stack vs. adding a 10-band
+graphic EQ); the acoustic purity of physical solutions (adjusting microphone placement)
+over electronic patches; and when "doing nothing" is the most professional choice.
+
+EVIDENCE INTERPRETATION STANDARD:
+Evaluates whether a perceived acoustic discrepancy actually requires intervention,
+or whether it falls within acceptable musical tolerances and human hearing variation;
+recognizes when an existing stage already has the capability to solve the issue.
+
+DIAGNOSTIC STANDARD:
+Analyzes proposed signal chains for redundant, competing, or self-canceling
+processors (e.g., an EQ boosting 2 kHz followed immediately by an EQ cutting 2 kHz;
+a compressor fighting an upstream expander).
+
+DECISION-MAKING STANDARD:
+Applies a strict intervention hierarchy:
+  1. Optimize the primary electro-acoustic source (amplifier, cabinet, microphone).
+  2. Adjust existing onboard controls (tone stack, presence, gain knobs).
+  3. Re-position or change the physical capture device (microphone).
+  4. Only if stages 1-3 cannot physically achieve the goal, insert a dedicated outboard
+     processor (pre-filter, rack EQ, transparent limiter).
+  5. Never insert a processor without an explicit, documented causal objective.
+
+OUTCOME-REASONING STANDARD:
+Verifies that removing a processor does not degrade the core tone; validates that
+the final design achieves maximum sonic authority with the leanest possible architecture.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Signal Topology (Domain 7): Prevents chain bloat and unnecessary serial stages.
+  - Frequency & Spectral (Domain 4): Eliminates redundant cascading EQ blocks.
+  - Trade-Off & Constraint (Domain 18): Balances intervention simplicity against perfection.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Inserting an EQ pedal, a rack EQ, and a cab EQ all in the same signal path.
+  - Adding a new processor to solve every perceived imperfection.
+  - Assuming that a complex, 12-block signal chain is inherently more "professional"
+    than a 3-block chain.
+
+BOUNDARIES:
+  - In Scope: Selecting minimal intervention pathways, eliminating redundant blocks,
+    and enforcing processing discipline.
+  - Out of Scope (Deterministic): Automated removal of duplicate blocks in serializer code.
+  - Out of Scope (Platform): Platform maximum block limits (e.g., AT5's 4-stomp limit).
+
+MATURITY PROGRESSION:
+  - L2: Knows that too many pedals can add noise and degrade tone.
+  - L3: Removes a chorus and second delay pedal that aren't being used in a rock preset.
+  - L4: Refuses to add a post-cab parametric EQ to remove a 4 kHz spike, achieving
+        the identical result by turning the physical microphone 15 degrees off-axis,
+        preserving phase purity and eliminating a processor.
+  - L5: Takes a bloated 10-block preset (noise gate, tube screamer, 10-band EQ, amp,
+        chorus, delay, reverb, parametric EQ, limiter, exciter) and consolidates it
+        into an ultra-pure, authoritative 3-block signal design (vintage-voiced boost,
+        cranked master-volume tube amp, dual phase-aligned mic capture), achieving
+        vastly superior punch, 12 dB lower noise, and flawless touch dynamics.
+
+
+================================================================================
+DOMAIN 18: TRADE-OFF & CONSTRAINT REASONING
+================================================================================
+MISSION RELEVANCE:
+In audio engineering, there are no solutions—only trade-offs. Increasing gain adds
+sustain but destroys transients and increases noise; cutting bass tightens punch
+but loses warmth; angling a mic smooths fizz but softens attack.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+An engineer who does not explicitly account for trade-offs will produce unbalanced,
+fragile tones. Professional competence requires conscious, deliberate balancing
+of competing acoustic priorities.
+
+KNOWLEDGE STANDARD:
+Understands fundamental audio engineering trade-offs:
+  - Saturation vs. Transient Definition (more compression/harmonics vs. less pick punch).
+  - Low-Frequency Tightness vs. Low-End Weight/Body (HPF tightening vs. thinness).
+  - High-Frequency Clarity vs. Harshness/Fizz (air and bite vs. ear fatigue).
+  - Noise Gating vs. Natural Note Decay (clean silence vs. chopped tails).
+  - Acoustic Ambience vs. In-Your-Face Intelligibility (spacious depth vs. mix wash).
+  - Dynamic Range vs. Consistent Density (touch expression vs. wall-of-sound power).
+Understands physical constraints (headroom limits, speaker power handling, phase
+coherence bounds, acoustic room boundaries).
+
+EVIDENCE INTERPRETATION STANDARD:
+Identifies the hidden acoustic cost of any proposed setting: evaluates what was
+sacrificed when an improvement was made; detects when an aggressive intervention
+has compromised a secondary musical attribute.
+
+DIAGNOSTIC STANDARD:
+When a tone is improved in one dimension but degraded in another (e.g., "The rhythm
+is tighter now, but single-note solos sound thin and weak"), diagnoses the exact
+trade-off mechanism responsible.
+
+DECISION-MAKING STANDARD:
+Makes explicit, documented trade-off decisions:
+  - Determines which sonic attribute is paramount for the specific musical role.
+  - Calibrates settings to the optimal balance point where maximum benefit is
+    obtained with minimum acceptable sacrifice.
+  - Clearly articulates to the user what was traded away and why.
+
+OUTCOME-REASONING STANDARD:
+Validates both sides of the trade-off ledger after an intervention: verifies that
+the primary goal was achieved AND that the secondary cost remained within acceptable
+bounds.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Gain Staging (Domain 2): Headroom vs. noise vs. distortion depth.
+  - Dynamics & Envelope (Domain 5): Transient punch vs. sustain.
+  - Microphone & Capture (Domain 10): Direct bite vs. smooth off-axis body.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Believing that an intervention has "zero downside."
+  - Chasing an extreme attribute (maximum gain, razor-sharp brightness) without
+    evaluating what was destroyed in the process.
+  - Ignoring client constraints (e.g., requiring a pristine clean tone and a crushing
+    lead tone from a single-channel amp without channel switching).
+
+BOUNDARIES:
+  - In Scope: Formulating trade-off matrices, balancing competing goals, and
+    making informed compromises.
+  - Out of Scope (Deterministic): Automated constraint satisfaction math solvers.
+  - Out of Scope (Platform): Platform CPU usage limits.
+
+MATURITY PROGRESSION:
+  - L2: Knows that adding gain also adds hiss.
+  - L3: Decides to accept a little bit of noise in order to get enough sustain for a solo.
+  - L4: Evaluates pre-distortion bass roll-off: explicitly weighs the trade-off
+        between tight palm-mute articulation and low-end rumble, tuning the high-pass
+        filter to 110 Hz to maintain punch while eliminating sub-bass flub.
+  - L5: Manages a multi-dimensional trade-off matrix for a complex progressive metal
+        rhythm tone: balances extreme high-gain saturation against transient attack,
+        sacrificing 1.5 dB of gross sustain to preserve pick definition, compensating
+        with a 45-degree off-axis microphone placement that softens the resulting
+        diode harshness, and clearly documenting why this compromise delivers a
+        superior mix-ready result over an unconstrained high-gain preset.
+
+
+================================================================================
+DOMAIN 19: UNCERTAINTY & EVIDENCE DISCIPLINE
+================================================================================
+MISSION RELEVANCE:
+Real-world audio evidence is incomplete, noisy, and ambiguous. A professional
+engineer must operate with strict epistemic discipline—knowing what is known,
+what is inferred, and when evidence is simply insufficient.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+Hallucinating certainty from ambiguous data produces disastrous engineering decisions.
+An AI Sound Engineer must avoid false precision and communicate confidence with
+absolute honesty.
+
+KNOWLEDGE STANDARD:
+Understands epistemic categorization of engineering information:
+  - Measured Evidence (objective data: verified RMS, spectrum, crest factor).
+  - Observed Evidence (audible phenomena confirmed by listening).
+  - Inferred Evidence (deductions based on acoustic principles: e.g., inferring
+    an open-back cab from rear reflection cues).
+  - Assumed Evidence (working premises that lack direct proof).
+  - Supplied Context (user text, declared genre, artist bio).
+  - Unknown Information (parameters that cannot be determined from available data).
+Understands the danger of false precision (e.g., claiming a mic is at 1.414 cm distance
+or confidence is 98.7% based on low-resolution MP3 audio); understands when evidence
+is insufficient to select a unique solution.
+
+EVIDENCE INTERPRETATION STANDARD:
+Rigidly segregates evidence categories in analysis records: never presents an
+inference as an observed fact; flags assumptions explicitly; identifies when audio
+quality (low bitrate, background noise, heavy mastering) obscures guitar details.
+
+DIAGNOSTIC STANDARD:
+Recognizes when multiple contradictory hypotheses are equally supported by available
+evidence; refuses to invent certainty; states clearly: "Available evidence supports
+both an overdriven Tweed combo and an overdriven EL84 head; cannot differentiate
+without isolated stem."
+
+DECISION-MAKING STANDARD:
+Calibrates decisions to the confidence level of the evidence:
+  - When evidence is robust, proceeds with targeted, high-precision interventions.
+  - When evidence is incomplete, selects robust, generalized solutions that perform
+    well across multiple plausible scenarios.
+  - Asks clarifying questions or requests missing evidence (e.g., asking for an
+    isolated guitar stem or guitar pickup details) when critical branches diverge.
+
+OUTCOME-REASONING STANDARD:
+Continuously tests assumptions against new evidence; lowers confidence ratings
+when outcomes deviate from expectations.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Reference Analysis (Domain 15): Differentiating guitar tone from mix context.
+  - Diagnosis & Root-Cause (Domain 16): Separating supported hypotheses from speculation.
+  - Alternative Solutions (Domain 20): High uncertainty requires exploring alternatives.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Emitting an arbitrary "95% confidence" score when operating on a vague text prompt.
+  - Guessing exact historical gear models from a 30-second YouTube audio clip with certainty.
+  - Concealing uncertainty behind technical-sounding jargon.
+
+BOUNDARIES:
+  - In Scope: Categorizing evidence, calculating epistemically calibrated confidence,
+    and declaring insufficient evidence.
+  - Out of Scope (Deterministic): Bayesian probability math libraries.
+  - Out of Scope (Platform): Platform telemetry error codes.
+
+MATURITY PROGRESSION:
+  - L2: Knows that it's hard to hear the guitar clearly when drums and bass are loud.
+  - L3: Admits that they cannot tell what kind of amp was used on a low-quality recording.
+  - L4: In analyzing a reference track, explicitly categorizes: "Observed: strong
+        3 kHz peak and fast compression; Inferred: closed-back 4x12 and dynamic mic;
+        Unknown: whether pickup is active or passive; Confidence: 65%."
+  - L5: Given an ambiguous, heavily mastered reference, declares that evidence is
+        insufficient to distinguish between an overdriven fuzz pedal into a clean amp
+        versus a cranked vintage tube amp; rather than guessing, designs a primary
+        solution with documented high uncertainty, formulates an alternative branch,
+        and provides the user with an exact diagnostic test (checking touch sensitivity
+        when guitar volume is rolled back) to definitively isolate the truth.
+
+
+================================================================================
+DOMAIN 20: ALTERNATIVE SOLUTION REASONING
+================================================================================
+MISSION RELEVANCE:
+In creative audio engineering, there is rarely only one "right" way to achieve a
+sonic goal. A professional must be capable of generating and evaluating multiple
+distinct, defensible solutions.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+An engineer locked into a single path cannot adapt when constraints (such as
+available gear, CPU limits, or player preference) block that path. L5 competence
+requires multi-solution agility.
+
+KNOWLEDGE STANDARD:
+Understands acoustic equivalence and alternative intervention pathways:
+  - Upstream vs. Downstream Equivalence (achieving brightness via pickup tone pot
+    vs. overdrive pedal tone vs. amp presence vs. mic placement vs. post-EQ).
+  - Electromechanical vs. Electronic Equivalence (achieving low-end tightness via
+    a closed-back cabinet vs. an upstream high-pass filter).
+  - Single-Chain vs. Parallel-Chain alternatives.
+Understands comparative evaluation criteria: tone authenticity, dynamic feel,
+simplicity, noise floor, and robustness across different playing styles.
+
+EVIDENCE INTERPRETATION STANDARD:
+Recognizes when a problem permits multiple valid architectural approaches; identifies
+the distinct pros and cons of each pathway based on evidence and user constraints.
+
+DIAGNOSTIC STANDARD:
+Evaluates competing solution paths for a single diagnosed root cause:
+  - Path A (The Traditionalist): Preamp overdrive + closed-back 4x12 + dynamic mic.
+  - Path B (The Modernist): Clean high-headroom amp + multi-stage distortion pedal
+    + studio IR capture + post-EQ notch.
+  - Compares both on transient punch, noise, and ease of control.
+
+DECISION-MAKING STANDARD:
+Develops and presents viable, professionally defensible alternatives:
+  - Recommends a primary solution based on optimal balance of objectives.
+  - Provides a fully articulated alternative solution when user preferences, gear
+    limitations, or playing contexts warrant it.
+  - Explains the specific acoustic trade-offs between the alternatives.
+
+OUTCOME-REASONING STANDARD:
+Can switch to an alternative solution cleanly if the primary solution fails outcome
+evaluation; compares real-world results of alternative paths.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Trade-Off & Constraint (Domain 18): Alternatives embody different trade-off balances.
+  - Signal Topology (Domain 7): Alternatives often use different routing structures.
+  - Intervention Selection (Domain 17): Compares minimalist vs. comprehensive pathways.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - Believing that there is only one "holy grail" signal chain for any given tone.
+  - Offering "fake alternatives" that are merely cosmetic variations of the same chain.
+  - Abandoning engineering principles when offering an alternative.
+
+BOUNDARIES:
+  - In Scope: Formulating multiple distinct engineering strategies and comparing
+    their physical and acoustic consequences.
+  - Out of Scope (Deterministic): Managing UI variation dropdown menus and state.
+  - Out of Scope (Platform): Platform-specific preset duplication tools.
+
+MATURITY PROGRESSION:
+  - L2: Knows that you can get distortion from either a pedal or an amp.
+  - L3: Offers a choice between using an overdrive pedal or turning up the amp's gain.
+  - L4: Formulates two distinct solutions to tighten a loose low end: Solution 1
+        (Pre-gain high-pass filtering via a clean boost) to preserve amp character;
+        Solution 2 (Switching from an open-back to a closed-back cabinet) to solve
+        it acoustically; explains the trade-offs clearly.
+  - L5: Designs two fully realized, master-grade signal strategies for a complex
+        recording session: Strategy A (A pure vintage analog path using a jumped
+        Plexi, power attenuator, and dual-mic capture on a 4x12) delivering maximum
+        touch-sensitive dynamics at the cost of higher noise; and Strategy B (A modern
+        precision path using a high-gain master-volume head, transparent pre-clamp,
+        and single-point ribbon capture with post-rack correction) delivering surgical
+        mix consistency and zero noise; provides rigorous comparative justification
+        enabling the producer to choose based on the arrangement's needs.
+
+
+================================================================================
+DOMAIN 21: ITERATIVE ENGINEERING & OUTCOME EVALUATION
+================================================================================
+MISSION RELEVANCE:
+Real-world audio engineering is an empirical, iterative discipline. An engineer
+rarely achieves perfection on the first pass; success depends on the ability to
+evaluate outcomes objectively, test against expectations, and refine the design.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+An open-loop system that emits a preset and walks away is not an engineer. Tone
+Translator's ultimate value lies in its ability to refine, adjust, and converge
+on a target tone through closed-loop evaluation.
+
+KNOWLEDGE STANDARD:
+Understands the empirical engineering cycle:
+  Analyse -> Hypothesise -> Intervene -> Observe Result -> Compare to Target
+  -> Evaluate Deltas -> Refine Hypothesis or Intervention.
+Understands objective evaluation metrics (spectral difference curves, dynamic crest
+factor changes, total harmonic distortion [THD], noise floor shifts); understands
+the danger of "confirmation bias" (assuming an intervention worked without listening
+critically); understands when an unexpected result indicates a flawed initial hypothesis.
+
+EVIDENCE INTERPRETATION STANDARD:
+Compares the modified audio output against the original baseline and the reference
+target: detects whether the intervention moved the tone closer to or further from
+the goal; identifies unintended side effects (e.g., the low end got tighter, but
+the top end became brittle).
+
+DIAGNOSTIC STANDARD:
+When an intervention fails to produce the expected outcome, DOES NOT SIMPLY INCREASE
+THE SETTING. Reconsiders the underlying hypothesis:
+  - "I boosted treble 4 dB to add bite, but the tone only got harsher, not clearer.
+    Therefore, the lack of bite is NOT a high-frequency EQ deficit; it is an
+    absence of pick transient attack in the compressor."
+
+DECISION-MAKING STANDARD:
+Iterates with surgical discipline:
+  - Changes only one variable at a time when diagnosing failures.
+  - Reverts unsuccessful interventions rather than piling new corrections on top.
+  - Converges systematically on the target tone across multiple iterative cycles.
+
+OUTCOME-REASONING STANDARD:
+Defines explicit verification criteria BEFORE applying an intervention; verifies
+that every change achieves its intended acoustic metric without collateral damage.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Reference Analysis (Domain 15): Provides the objective delta measurements.
+  - Diagnosis & Root-Cause (Domain 16): Revises causal hypotheses when interventions fail.
+  - Professional Behaviour (Domain 22): Enforces empirical discipline over dogmatism.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - "If it didn't work, turn the knob further in the same direction."
+  - Making five changes simultaneously and not knowing which one helped or hurt.
+  - Declaring success without listening critically to the resulting audio.
+
+BOUNDARIES:
+  - In Scope: Designing closed-loop refinement plans, evaluating objective acoustic
+    deltas, and revising hypotheses.
+  - Out of Scope (Deterministic): Automated test runner execution loops.
+  - Out of Scope (Platform): Preset export and re-import mechanics.
+
+MATURITY PROGRESSION:
+  - L2: Knows that you have to listen to the change after you turn a knob.
+  - L3: Listens to an EQ change, decides it's still not bright enough, and turns it up more.
+  - L4: Evaluates an intervention after cutting 250 Hz to remove mud; observes that
+        the mud decreased but the guitar lost its body; adjusts the filter Q to be
+        narrower to preserve 180 Hz punch while removing the 250 Hz build-up.
+  - L5: Executes a full closed-loop refinement cycle: establishes a baseline delta
+        against a target lead tone; hypothesizes that lack of sustain is due to low
+        power amp drive; increases master volume by 3 dB; observes that sustain improved
+        by only 5% while lower-mid mud increased by 20%; immediately rejects the
+        hypothesis, rolls back the master volume, formulates a new hypothesis targeting
+        optical compressor release timing, shortens the release to 80 ms, and achieves
+        a 40% increase in smooth sustain with zero low-end degradation.
+
+
+================================================================================
+DOMAIN 22: PROFESSIONAL ENGINEERING BEHAVIOUR
+================================================================================
+MISSION RELEVANCE:
+Professional competence is defined not just by what an engineer knows, but by how
+the engineer thinks, investigates, and communicates.
+TARGET MATURITY: L5 (Core)
+WHY THIS TARGET:
+This overarching domain governs the professional conduct, cognitive discipline,
+and first-principles integrity of the entire Sound Engineer architecture.
+
+KNOWLEDGE STANDARD:
+Understands the professional ethos of audio engineering:
+  - Grounded in physical, electrical, acoustic, and perceptual first principles.
+  - Separation of observation from interpretation and speculation.
+  - Rejection of audio mythology, brand idolatry, and magical thinking.
+  - Causal transparency: every decision must have an articulable, physics-grounded "why."
+  - Constant awareness of whole-chain interactions.
+  - Respect for the artist's musical intent over rigid technical perfectionism.
+
+EVIDENCE INTERPRETATION STANDARD:
+Never fabricates certainty; maintains rigorous skepticism; refuses to treat artist
+trivia or marketing hype as engineering facts; distinguishes between a sound that
+violates technical conventions but works musically, versus a sound that is genuinely
+defective.
+
+DIAGNOSTIC STANDARD:
+Approaches every tone problem with intellectual humility: asks "What am I missing?"
+rather than assuming the solution is obvious; investigates unexpected anomalies
+rather than dismissing them.
+
+DECISION-MAKING STANDARD:
+Conducts engineering design with absolute integrity:
+  - Explains all decisions using clear, professional acoustic principles.
+  - Avoids jargon intended to obfuscate or impress.
+  - Tailors solutions to the user's specific context rather than forcing a generic
+    template.
+  - Willing to employ unconventional, non-standard solutions when physical evidence
+    supports them.
+
+OUTCOME-REASONING STANDARD:
+Holds oneself accountable to the final sonic outcome; accepts that if the tone
+sounds wrong, the engineering model is incomplete; continuously refines mental
+and systemic models.
+
+REQUIRED CROSS-DOMAIN CONNECTIONS:
+  - Encompasses and directs ALL other 21 domains.
+
+PROFESSIONAL ANTI-PATTERNS:
+  - "Cargo-cult" engineering: copying settings from famous records without understanding
+    the acoustics of the room, guitar, or mix.
+  - Using buzzwords ("warmth", "mojo", "analog grease") to disguise a lack of causal understanding.
+  - Dogmatically insisting that a tone is "correct" because it matches a textbook recipe,
+    even when it sounds terrible.
+
+BOUNDARIES:
+  - In Scope: Overarching cognitive discipline, first-principles reasoning, and
+    professional communication.
+  - Out of Scope (Deterministic): Code linter rules and formatting checks.
+  - Out of Scope (Platform): Platform terms of service.
+
+MATURITY PROGRESSION:
+  - L2: Uses professional terms like "impedance" and "comb filtering" in conversation.
+  - L3: Follows standard recording textbook advice accurately for typical guitar setups.
+  - L4: Explains the causal reasoning behind every setting change to a client, avoiding
+        mythology and focusing on acoustic realities.
+  - L5: Exemplifies master-level engineering behavior: when asked to recreate an
+        unconventional, legendary tone that violates standard rules (e.g., plugging a
+        guitar directly into a mixing console channel pushed into raw clipping),
+        rejects standard amplifier recipes, analyzes the raw electrical distortion
+        and non-linear console transformer saturation from first principles, designs
+        a brilliant platform-independent emulation, clearly explains the physics and
+        trade-offs, and delivers an uncanny, authoritative recreation with absolute
+        causal transparency.
+
+
+--------------------------------------------------------------------------------
+SECTION 6 — CROSS-DOMAIN PROFESSIONAL REASONING STANDARD
+--------------------------------------------------------------------------------
+
+The 22 competency domains cannot operate as isolated silos. Electric guitar tone
+is an electro-acoustic continuum. Below are nine representative guitar tone problems
+illustrating the type of CROSS-DOMAIN causal reasoning required of a professional
+Sound Engineer.
+
+--------------------------------------------------------------------------------
+PROBLEM 1: "Palm mutes are flubby, boomy, and lack tightness."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Turn down the bass knob on the amplifier, or insert a noise gate.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  The engineer investigates the complete causal chain from pick to ear:
+  1. Source (Domain 1): Is the player muting directly over the bridge saddles, or
+     too far forward? Is the guitar tuned down (e.g., Drop C), causing floppy string
+     vibration and excessive fundamental energy?
+  2. Gain Staging & Headroom (Domain 2): Is excessive low-frequency voltage overdriving
+     the input stage of the first tube, causing grid blocking distortion?
+  3. Frequency & Spectral (Domain 4): Where is the low end entering? If bass is cut
+     pre-distortion, the distortion will be tight and articulate; if cut post-distortion,
+     the distortion remains flabby, only quieter.
+  4. Amplifier Behaviour (Domain 8): Is the amplifier's power section under-damped
+     (low negative feedback) causing the speaker to ring out of control at its
+     resonant frequency?
+  5. Loudspeaker & Cabinet (Domain 9): Is an open-back cabinet allowing out-of-control
+     cone excursion, or is a closed-back 4x12 resonant peak accumulating at 110 Hz?
+  6. Microphone & Capture (Domain 10): Is a directional microphone placed 0.5 cm
+     from the grille, creating a massive 8 dB proximity effect bass boost below 150 Hz?
+  SYNTHESIS:
+  The engineer formulates a multi-stage solution: applies an 18 dB/oct high-pass
+  filter at 110 Hz PRE-distortion to prevent tube blocking, increases amplifier
+  negative feedback slightly to tighten cone damping, and pulls the microphone back
+  from 0.5 cm to 2.5 cm to naturally eliminate proximity flub.
+
+--------------------------------------------------------------------------------
+PROBLEM 2: "Distortion is harsh, buzzy, and fizzy in the top end."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Turn down the treble and presence knobs, or slap a low-pass filter at 5 kHz.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Nonlinear Processing (Domain 3): Is the harshness coming from symmetrical hard
+     diode clipping generating high odd-order harmonics (7th, 9th, 11th)?
+  2. Gain Staging (Domain 2): Is a solid-state pedal or digital buffer clipping
+     unintentionally due to poor inter-stage headroom?
+  3. Frequency & Spectral (Domain 4): Is there excessive 3 kHz - 5 kHz energy feeding
+     the clipping stage, exaggerating harsh harmonic generation?
+  4. Loudspeaker & Cabinet (Domain 9): Is the speaker cone suffering from uncontrolled
+     breakup modes, or is it a high-headroom neutral speaker (like an EVM) that
+     fails to roll off frequencies above 5 kHz?
+  5. Microphone & Capture (Domain 10): Is the microphone pointed dead-center at the
+     speaker dust-cap, capturing the direct on-axis acoustic beam where high-frequency
+     fizz concentrates?
+  SYNTHESIS:
+  Cutting treble post-amp removes air and leaves the tone dull, while the buzz
+  remains. The engineer shifts the microphone 15 degrees off-axis toward the cap edge
+  (Domain 10), allowing the speaker's natural acoustic dispersion to filter out the
+  fizz smoothly without phase smearing, while switching an upstream hard-clipper to
+  a softer asymmetrical stage (Domain 3).
+
+--------------------------------------------------------------------------------
+PROBLEM 3: "Tone lacks pick attack and note definition."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Boost treble at 3 kHz, or turn up the gain for more sustain.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Source & Performance (Domain 1): Is the pick too thin (<0.7 mm) or flexing?
+     Is the player using the round edge of the pick instead of the sharp tip?
+  2. Dynamics & Envelope (Domain 5): Has an upstream compressor pedal squashed the
+     initial 15 ms transient? Is its attack set to 5 ms instead of 30 ms?
+  3. Nonlinear Processing (Domain 3): Is preamp gain set so high that the amplifier
+     is in hard saturation, dynamically compressing the pick attack down to the
+     level of the sustain?
+  4. Loudspeaker & Cabinet (Domain 9): Is a sluggish, heavy speaker cone smoothing
+     out the attack?
+  SYNTHESIS:
+  Boosting 3 kHz on an over-saturated amp only adds harsh white noise. The engineer
+  lowers the preamp gain by 20% to restore 6 dB of dynamic crest factor (Domain 2 & 3),
+  and lengthens compressor attack to 35 ms (Domain 5), allowing the natural pick
+  snap to slice through before saturation clamps down.
+
+--------------------------------------------------------------------------------
+PROBLEM 4: "Guitar sounds huge in solo, but completely disappears in the mix."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Make the guitar louder in the mix.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Frequency & Spectral (Domain 4): A soloed guitar tone often has scooped mids
+     and massive low/high end ("the bedroom tone"). In a mix, the bass guitar masks
+     its low end, cymbals mask its high end, and with no midrange, it vanishes.
+  2. Psychoacoustics & Perception (Domain 13): Frequency masking in the 400 Hz - 2 kHz
+     region. The human ear relies on midrange for vocal and instrument localization.
+  3. Loudspeaker & Cabinet (Domain 9): Is the cabinet heavily scooped (e.g., G12T-75
+     drivers) rather than midrange-forward (e.g., Vintage 30 or Greenback)?
+  4. Musical & Production Context (Domain 14): In a dense arrangement with keys and
+     bass, the guitar's functional role is narrow-band percussive rhythm.
+  SYNTHESIS:
+  The engineer strips the scooped "bedroom" EQ, boosts 800 Hz to 1.6 kHz by 3 dB
+  on the amplifier tone stack, rolls off sub-120 Hz lows to clear space for the bass,
+  and cuts the reverb wet mix in half. The soloed tone sounds mid-heavy, but when the
+  mix drops in, the guitar sits with razor-sharp authority.
+
+--------------------------------------------------------------------------------
+PROBLEM 5: "Dual-microphone setup sounds hollow, nasal, and weak."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Boost midrange and bass with an EQ.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Phase, Polarity & Multi-Source (Domain 11): Comb filtering. If Mic 1 and Mic 2
+     are at different distances from the speaker cone, the time arrival difference
+     delta_t creates destructive interference notches across the spectrum.
+  2. Microphone & Capture (Domain 10): Are the capsules physically aligned in the
+     same plane? Is one mic picking up an out-of-phase rear reflection from an
+     open-back cabinet?
+  3. Frequency & Spectral (Domain 4): Nasal hollow character is the acoustic textbook
+     signature of a comb-filter notch in the 500 Hz - 1 kHz region.
+  SYNTHESIS:
+  The engineer mutes Mic 2 and verifies that Mic 1 sounds full and punchy. When Mic 2
+  is unmuted, bass vanishes. The engineer inverts polarity on Mic 2; if bass returns
+  partially, the engineer then adjusts the delay alignment in 0.05 ms increments
+  until the signals sum with full, phase-coherent low-mid power.
+
+--------------------------------------------------------------------------------
+PROBLEM 6: "The reference tone sounds wider, deeper, and more three-dimensional."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Add a stereo chorus pedal, or put a big stereo reverb at the end.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Musical & Production Context (Domain 14): Is the reference double-tracked?
+     True double-tracking (two distinct performances panned hard left and right)
+     creates natural micro-timing and micro-pitch pitch differences that cannot be
+     replicated by a mono guitar with a stereo effect.
+  2. Time-Based, Modulation & Spatial (Domain 12): Does the reference use early
+     reflections from a live room (predelay 20 ms, room decay 0.8s) rather than
+     a synthetic reverb tail?
+  3. Loudspeaker & Cabinet (Domain 9): Does the reference combine two contrasting
+     speaker voicings panned in stereo?
+  SYNTHESIS:
+  Adding a chorus pedal to a mono track creates a 1980s cheesy modulation and causes
+  mono phase cancellation. The engineer identifies that the reference is double-tracked;
+  designs two complementary tone profiles (one slightly darker and mid-focused, one
+  brighter and tighter) designed to be tracked separately and panned left and right,
+  embedding room reflections with 25 ms predelay for spatial depth.
+
+--------------------------------------------------------------------------------
+PROBLEM 7: "High-gain modern metal rhythm is excessively noisy with loud idle hiss."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Slap a hard noise gate on the front and crank the threshold.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Gain Staging & Headroom (Domain 2): Where is the gain originating? Is an overdrive
+     pedal's level knob set to 10 with its tone knob cranked, dumping high-frequency
+     thermal hiss into a high-gain tube preamp channel that already has its gain at 9?
+  2. Source & Performance (Domain 1): Is the guitar unshielded, or picking up CRT/computer
+     monitor electromagnetic interference?
+  3. Noise Engineering (Domain 6): Is the gate placed at the input, or in the effects
+     loop? An input gate can only silence guitar pickup hum; it cannot silence preamp
+     tube hiss. An effects loop gate can silence preamp hiss, but can truncate delay tails.
+  SYNTHESIS:
+  The engineer re-balances gain staging: lowers the overdrive pedal's level from 10
+  to 6.5, reduces preamp gain from 8.5 to 6.0 (restoring 6 dB of signal-to-noise ratio),
+  implements an intelligent dual-stage gate (a sensitive input gate to clamp pickup
+  hum before amplification, coupled with a fast loop gate to silence preamp hiss),
+  setting the release to 110 ms to preserve natural staccato palm muting.
+
+--------------------------------------------------------------------------------
+PROBLEM 8: "Tone is stiff, sterile, and lacks dynamic touch responsiveness."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Add a tube screamer or boost to get more sustain.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Amplifier Behaviour (Domain 8): Is the amplifier solid-state, or a modern high-power
+     Class AB fixed-bias design with massive filtering and heavy negative feedback?
+     These designs have very high damping and zero power-supply sag, feeling "stiff"
+     under the pick.
+  2. Dynamics & Envelope (Domain 5): Tube amplifiers with vacuum tube rectifiers
+     (e.g., 5U4G, GZ34) experience high internal resistance under heavy current draw,
+     dropping plate voltage and creating dynamic "sag" (bloom and soft compression).
+  3. Source & Performance (Domain 1): Are the guitar pickups active (EMG style)
+     with built-in preamps that compress pick dynamics before the cable?
+  SYNTHESIS:
+  Adding a boost pedal makes the tone even stiffer and more compressed. The engineer
+  replaces the stiff power section emulation with a cathode-biased, low-feedback
+  power stage with tube rectifier sag, allowing the amplifier to breathe and compress
+  naturally in response to picking strength.
+
+--------------------------------------------------------------------------------
+PROBLEM 9: "Spectrum matches the reference on an RTA, but it still sounds wrong."
+--------------------------------------------------------------------------------
+AMATEUR REACTION:
+  - Apply an even finer 30-band match EQ to eliminate the remaining 1 dB differences.
+CROSS-DOMAIN PROFESSIONAL REASONING:
+  1. Nonlinear Processing (Domain 3): Real-Time Analyzers (RTAs) show time-averaged
+     frequency magnitude; they tell you NOTHING about harmonic distortion texture.
+     A clean tone boosted 12 dB at 3 kHz looks identical on an RTA to a saturated
+     tone generating 3rd harmonics at 3 kHz, but they sound radically different.
+  2. Dynamics & Envelope (Domain 5): An RTA averages energy over time; it cannot
+     distinguish between a sharp 10 ms transient and a flat, squashed sustain brick.
+  3. Loudspeaker & Cabinet (Domain 9): Mechanical cone breakup produces chaotic,
+     dynamic harmonic distortion that cannot be captured by a static linear EQ curve.
+  SYNTHESIS:
+  The engineer abandons static RTA curve matching. Analyzes the dynamic crest factor
+  (revealing the reference has 4 dB more transient attack) and total harmonic
+  distortion (revealing the reference is significantly more saturated in the low-mids).
+  Redesigns the gain architecture and dynamic envelope to match the physical
+  mechanisms, achieving a true acoustic match that RTA curves were blind to.
+
+
+--------------------------------------------------------------------------------
+SECTION 7 — EVIDENCE & UNCERTAINTY STANDARD
+--------------------------------------------------------------------------------
+
+7.1 THE SIX EVIDENCE DISCIPLINES
+A professional AI Sound Engineer must rigorously categorize every piece of
+information it processes:
+
+  1. MEASURED EVIDENCE:
+     - Quantifiable, objective data extracted directly from audio signals.
+     - Examples: RMS energy, peak-to-RMS crest factor, integrated LUFS, spectral
+       tilt (dB/octave), harmonic distortion ratio (THD), noise floor in dBFS.
+     - Epistemic Status: High objective confidence. Must be reported with units.
+
+  2. OBSERVED EVIDENCE:
+     - Phenomenological characteristics clearly audible upon critical listening,
+     - Examples: Symmetrical vs. asymmetrical clipping texture, audible slapback
+       echo, prominent cabinet room ambience, fret rattle.
+     - Epistemic Status: High perceptual confidence, but qualitative.
+
+  3. INFERRED EVIDENCE:
+     - Deductions derived from measured/observed evidence using acoustic first
+       principles.
+     - Examples: Inferring a closed-back cabinet from steep sub-100 Hz low-end
+       rolloff; inferring an off-axis mic from rolled-off 6 kHz highs with preserved
+       transients.
+     - Epistemic Status: Moderate confidence. Must explicitly document the causal
+       chain connecting the observation to the inference.
+
+  4. ASSUMED EVIDENCE:
+     - Working hypotheses adopted when direct evidence is unavailable.
+     - Examples: Assuming standard guitar tuning (E standard) when no sub-bass
+       cues exist; assuming a bridge pickup was used for a thrash rhythm track.
+     - Epistemic Status: Low confidence. Must be flagged as assumptions, and the
+       system must be prepared to discard them if contradictions arise.
+
+  5. SUPPLIED CONTEXT:
+     - Background metadata provided by the user, artist descriptions, or song titles.
+     - Examples: "1983 Metallica recording", "I want an AC/DC crunch", "drop D tuning".
+     - Epistemic Status: Contextual hint ONLY. Never treated as physical acoustic
+       proof. Must be verified against the audio evidence.
+
+  6. UNKNOWN INFORMATION:
+     - Critical parameters that cannot be measured, observed, or reliably inferred
+       from available data.
+     - Examples: Guitar pickup inductance when listening to a heavily mastered mix;
+       precise amplifier circuit modifications.
+     - Epistemic Status: Zero confidence. Must be explicitly declared as UNKNOWN.
+
+7.2 FALSE PRECISION & CONFIDENCE CALIBRATION
+  - Prohibition of False Precision: The Sound Engineer must never emit hyper-specific
+    numeric values that cannot be justified by evidence (e.g., specifying mic
+    distance as "2.37 cm" or confidence as "94.8%").
+  - Calibrated Confidence Scale:
+      * 90-100%: Direct, high-resolution isolated stem with unambiguous physical markers.
+      * 70-89%: Clear audio reference, minor mix masking, solid inference chain.
+      * 50-69%: Complex multi-instrument mix, moderate ambiguity, multiple candidate causes.
+      * Below 50%: Heavy masking, poor audio quality, high uncertainty.
+
+7.3 THE "INSUFFICIENT EVIDENCE" DECLARATION
+A professional engineer must know when to say:
+  "INSUFFICIENT EVIDENCE TO DETERMINE A UNIQUE SOLUTION."
+
+Mandatory triggers for declaring insufficient evidence:
+  - Audio reference has an SNR below 12 dB or severe MP3 compression artifacts
+    masking high frequencies.
+  - The guitar signal is buried in a dense mix where drum transients and bass energy
+    mask 80% of the guitar's dynamic envelope.
+  - Multiple contradictory causal hypotheses have equal acoustic plausibility.
+  - The user prompt contains contradictory requests (e.g., "Glassy clean Fender
+    tone with heavy scooped Dual Rectifier distortion").
+
+Action upon declaring insufficient evidence:
+  1. State clearly what is known and what cannot be determined.
+  2. Formulate the primary competing hypotheses.
+  3. Propose a robust, versatile baseline solution.
+  4. Formulate specific diagnostic questions or tests for the user to resolve
+     the ambiguity.
+
+
+--------------------------------------------------------------------------------
+SECTION 8 — PROFESSIONAL DECISION STANDARD
+--------------------------------------------------------------------------------
+
+Every architectural choice made by the Sound Engineer must be recorded as a formal,
+defensible Engineering Decision. A valid Engineering Decision Record must contain
+the following eleven elements:
+
+--------------------------------------------------------------------------------
+ANATOMY OF A DEFENSIBLE ENGINEERING DECISION
+--------------------------------------------------------------------------------
+1. OBJECTIVE:
+   - What specific acoustic or musical goal does this decision aim to achieve?
+   - Example: "Tighten low-end palm-mute articulation and eliminate 120 Hz flub."
+
+2. RELEVANT EVIDENCE:
+   - What specific measured, observed, or contextual evidence prompted this action?
+   - Example: "Measured crest factor drops to 4 dB during palm mutes; observed
+     intermodulation hash below 150 Hz; audio reveals heavy low-frequency drive."
+
+3. CAUSAL HYPOTHESIS:
+   - What underlying physical mechanism is responsible for the problem/need?
+   - Example: "Excessive sub-150 Hz signal voltage from the neck pickup is driving
+     the first triode gain stage into blocking distortion."
+
+4. PROPOSED INTERVENTION:
+   - What exact processing or structural change is being made?
+   - Example: "Insert a pre-gain 18 dB/octave high-pass filter tuned to 115 Hz."
+
+5. CAUSAL RATIONALE:
+   - Why will this intervention solve the problem based on audio first principles?
+   - Example: "Attenuating low-frequency energy before the non-linear clipping stage
+     prevents grid blocking and reduces 2nd-order intermodulation distortion,
+     preserving transient snap."
+
+6. EXPECTED EFFECT:
+   - What will the resulting sound be?
+   - Example: "Palm mutes will exhibit immediate percussive punch, with note
+     separation restored during fast riffing."
+
+7. PHYSICAL & LOGICAL CONSTRAINTS:
+   - What bounds must this intervention respect?
+   - Example: "Filter must not exceed 130 Hz, or the fundamental frequency of
+     the low D string (73.4 Hz harmonic) will lose its perceived body."
+
+8. TRADE-OFFS & COSTS:
+   - What is being sacrificed or risked?
+   - Example: "Acoustic low-end weight is slightly reduced on open single notes;
+     must be compensated post-distortion in the cabinet or rack."
+
+9. UPSTREAM / DOWNSTREAM DEPENDENCIES:
+   - What other stages are affected by this change?
+   - Example: "Downstream amplifier preamp gain can now be increased by 1 dB
+     without causing muddiness."
+
+10. CONFIDENCE & UNCERTAINTY:
+    - How certain is this decision based on evidence?
+    - Example: "Confidence: 85%. Uncertainty: Player's pick gauge is unknown."
+
+11. VERIFICATION CRITERIA:
+    - How will we objectively prove this intervention succeeded?
+    - Example: "Crest factor during palm mutes should increase from 4 dB to at
+      least 7 dB; RTA should show clean harmonic decay between 100-200 Hz."
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+SECTION 9 — PROFESSIONAL FAILURE MODES / ANTI-PATTERNS
+--------------------------------------------------------------------------------
+
+A professional AI Sound Engineer must be explicitly guarded against the following
+systemic failure modes:
+
+1. THE RECIPE TRAP (CARGO CULTING):
+   - Treating genre labels or artist names as fixed gear presets.
+   - Example: Automatically inserting a Tube Screamer and JCM800 whenever the user
+     mentions "80s rock," regardless of the user's specific audio or guitar.
+
+2. SYMPTOM SUPPRESSION:
+   - Treating acoustic defects where they are heard rather than where they originate.
+   - Example: Notching out 4 kHz fizz with a post-cab digital EQ instead of fixing
+     the harsh diode clipping or on-axis mic placement that generated it.
+
+3. LOUDNESS DECEPTION:
+   - Evaluating setting changes without strict RMS/LUFS level matching, mistaking
+     increased volume for superior tone quality.
+
+4. SPECTRAL MYOPIA:
+   - Assuming that if two tones have identical static frequency response curves
+     on a spectrum analyzer, they are identical, completely ignoring dynamic
+     compression, transient attack, and harmonic distortion textures.
+
+5. PROCESSOR BLOAT:
+   - Inserting redundant, cascading processors to solve problems that could be
+     solved by adjusting existing amplifier or microphone controls.
+
+6. FALSE CERTAINTY & HALLUCINATED PRECISION:
+   - Emitting 99% confidence scores or specifying mic distances to the millimeter
+     based on low-resolution, heavily masked audio evidence.
+
+7. THE "MORE IS BETTER" TRAP:
+   - When an intervention fails or only partially succeeds, blindly increasing the
+     setting (e.g., boosting more treble, adding more gain) instead of questioning
+     the underlying hypothesis.
+
+8. MONO COLLAPSE IGNORANCE:
+   - Designing wide, impressive stereo effects using out-of-phase delays or stereo
+     widening without checking that the guitar does not completely disappear when
+     summed to mono.
+
+9. UNCHECKED ASSUMPTIONS:
+   - Treating contextual hints or inferences as verified facts and refusing to
+     revise them when contradictory evidence emerges.
+
+10. PLATFORM ENTANGLEMENT:
+    - Allowing the constraints, quirks, or naming conventions of a specific guitar
+      modeling software (like AmpliTube 5) to dictate general sound engineering logic.
+
+
+--------------------------------------------------------------------------------
+SECTION 10 — COMPETENCY INTERDEPENDENCY MAP
+--------------------------------------------------------------------------------
+
+Electric guitar sound engineering is a non-linear network of interacting physical
+domains. The diagram below illustrates the critical bidirectional dependencies
+that the Sound Engineer must navigate:
+
+                      [1. SOURCE & PERFORMANCE]
+                                  |
+                                  v (Signal voltage & dynamic impedance)
+                      [2. GAIN STAGING & HEADROOM]
+                                  |
+                    +-------------+-------------+
+                    |                           |
+                    v (Drive level)             v (Pre-filtering)
+        [3. NONLINEAR PROCESSING] <---> [4. FREQUENCY & SPECTRAL]
+                    |                           |
+                    +-------------+-------------+
+                                  |
+                                  v (Dynamic envelope shaping)
+                    [5. DYNAMICS, ENVELOPE & TRANSIENTS]
+                                  |
+                                  v (Noise floor accumulation)
+                    [6. NOISE & INTERFERENCE ENGINEERING]
+                                  |
+                    +-------------+-------------+
+                    |                           |
+                    v (Circuit architecture)    v (Routing & order)
+        [8. AMPLIFIER BEHAVIOUR] <----> [7. SIGNAL TOPOLOGY]
+                    |                           |
+                    v (Damping & power)         |
+        [9. LOUDSPEAKER & CABINET]              |
+                    |                           |
+                    v (Acoustic radiation)      |
+        [10. MICROPHONE & CAPTURE] <------------+ (Loop & rack routing)
+                    |
+                    v (Acoustic summation)
+        [11. PHASE & POLARITY] <------> [12. TIME & SPATIAL]
+                    |                           |
+                    +-------------+-------------+
+                                  |
+                                  v (Perceptual evaluation)
+                    [13. PSYCHOACOUSTICS & PERCEPTION]
+                                  ^
+                                  | (Arrangement role)
+                    [14. MUSICAL & PRODUCTION CONTEXT]
+
+--------------------------------------------------------------------------------
+RECURSIVE ANALYTICAL LOOPS:
+  - Loop A (Reference Analysis & Diagnosis):
+    [15. Reference Analysis] -> [16. Diagnosis] -> [18. Trade-Offs] -> [17. Minimalism]
+  - Loop B (Refinement & Evaluation):
+    [20. Alternatives] -> [21. Iterative Evaluation] -> [22. Professional Behaviour]
+    -> feeds back into [16. Diagnosis] when predictions fail.
+
+
+--------------------------------------------------------------------------------
+SECTION 11 — TARGET PROFESSIONAL PROFILE SUMMARY
+--------------------------------------------------------------------------------
+
+The AI Sound Engineer that Tone Translator is evolving to become is:
+
+  1. A FIRST-PRINCIPLES ACOUSTIC & ELECTRICAL REASONER:
+     - It does not operate by memorizing presets or superficial rules of thumb.
+     - It understands the physics of vibrating strings, electromagnetic pickups,
+       vacuum tube load lines, dynamic clipping symmetry, loudspeaker cone breakup,
+       and microphone polar response.
+
+  2. CAUSALLY DISCIPLINED & DIAGNOSTICALLY RIGOROUS:
+     - It never treats symptoms where they are heard; it tracks them to where they
+       are generated.
+     - It formulates explicit, testable hypotheses and actively seeks out
+       conflicting evidence.
+
+  3. PLATFORM-INDEPENDENT & SEMANTICALLY PURE:
+     - It thinks, plans, and decides in terms of physical realities (dB of headroom,
+       Hz of cut, degrees of off-axis tilt, milliseconds of attack, tube sag curves),
+       leaving the task of platform parameter encoding strictly to downstream
+       translation layers.
+
+  4. MINIMALIST & ARTISTICALLY AWARE:
+     - It achieves maximum acoustic authority with the fewest necessary processing blocks.
+     - It respects the musical arrangement, the player's touch, and the historical
+       production aesthetic.
+
+  5. EPISTEMICALLY HONEST & SELF-CORRECTING:
+     - It distinguishes what is measured from what is guessed.
+     - It states uncertainty clearly and refuses false precision.
+     - When an intervention fails, it reconsiders its underlying hypothesis rather
+       than blindly forcing the controls.
+
+
+--------------------------------------------------------------------------------
+SECTION 12 — PHASE 1C.3a COMPLETION STATEMENT
+--------------------------------------------------------------------------------
+
+Phase 1C.3a (Professional Sound Engineer Standards & Target Maturity) has been
+successfully executed and completed in strict accordance with the project directives:
+
+EXPLICIT CONFIRMATIONS:
+  - The Professional Sound Engineer Standard was established INDEPENDENTLY of
+    Current TT's existing codebase, prompts, and limitations.
+  - All 22 competency domains have been comprehensively defined across all five
+    assessment dimensions (Knowledge, Evidence Interpretation, Diagnosis,
+    Decision-Making, and Outcome Reasoning).
+  - Target maturity levels (L0-L5) have been assigned to all 22 domains with
+    rigorous justifications based on TT's core mission (18 Core at L5, 4 Supporting at L4).
+  - Cross-domain systemic reasoning standards have been defined and demonstrated
+    across nine complex, real-world guitar tone problems.
+  - Domain-specific anti-patterns, failure modes, and responsibility boundaries
+    have been established.
+  - Current TT was NOT evaluated against this standard in this phase (deliberately
+    reserved for Phase 1C.3b).
+  - Phase 1C.3b has NOT been started.
+  - ZERO production source files were modified.
+  - ZERO prompts or system instructions were altered.
+  - ZERO tests, builds, or Gemini API competency testing were executed.
+  - The complete, platform-independent standard has been compiled and saved as:
+    /TT_Professional_Sound_Engineer_Standards_v1.txt
+
+================================================================================
+END OF REPORT
+================================================================================

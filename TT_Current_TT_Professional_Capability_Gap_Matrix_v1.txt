@@ -1,0 +1,1750 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.3b — CURRENT TT PROFESSIONAL CAPABILITY ASSESSMENT & GAP MATRIX (v1)
+Date: 2026-09-26
+Mode: READ-ONLY PROFESSIONAL CAPABILITY ASSESSMENT
+Benchmark: /TT_Professional_Sound_Engineer_Standards_v1.txt (Phase 1C.3a)
+Baseline: /TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt (Phase 1C.2)
+Report Target: /TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt
+================================================================================
+
+--------------------------------------------------------------------------------
+SECTION 1 — EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 OBJECTIVE & MANDATE
+Phase 1C.3b evaluates the current capabilities of Tone Translator (TT) against the
+frozen, platform-independent Professional Sound Engineer Standards established in
+Phase 1C.3a (/TT_Professional_Sound_Engineer_Standards_v1.txt).
+
+Using the signed-off repository audit from Phase 1C.2
+(/TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt) as the factual baseline,
+this assessment measures what Current TT demonstrably knows, interprets,
+diagnoses, decides, and evaluates across all 22 professional engineering domains.
+It establishes the exact distance separating Current TT from the target
+professional standard without lowering the benchmark or confusing deterministic
+preset production with autonomous audio-engineering intelligence.
+
+1.2 MACRO ASSESSMENT FINDINGS
+The assessment confirms a stark, structural asymmetry between Current TT's
+encoded knowledge/heuristics and its capacity for autonomous engineering reasoning:
+
+  1. High Conceptual & Heuristic Encoding in Specific Modules:
+     Current TT possesses mature, high-quality engineering rules in isolated
+     subsystems. Most notably, its Semantic Microphone Placement Reasoning
+     engine (/src/services/at5MicPlacementReasoning.ts) embodies exceptional
+     transducer physics (proximity effect, off-axis rolloff, complementary dual-mic
+     phase blending), scoring L4 in Knowledge and L3 in Decision-Making.
+     Similarly, pre-distortion low-end tightening and functional EQ deduplication
+     embody valid sound-engineering principles (L3/L4 Knowledge).
+
+  2. Near-Total Absence of Diagnostic & Evidence-Driven Reasoning:
+     Across almost all domains, Evidence Interpretation, Diagnosis, and Outcome
+     Reasoning collapse to L0 (Absent) or L1 (Vocabulary). Current TT does not
+     extract acoustic features from audio, does not formulate competing causal
+     hypotheses, and does not evaluate why a sonic defect occurs before
+     intervening.
+
+  3. Deterministic Overrides Masquerading as AI Judgement:
+     Critical tone decisions are not made by AI reasoning from evidence. Instead,
+     deterministic TypeScript post-processors scan user text strings for keywords
+     (e.g., "thrash", "metal", "Marshall") and force specific gear overrides
+     (injecting OverScream, clamping noise gates to -45 dB / 120 ms, overwriting
+     engineering notes). The system produces an engineering-like result through
+     brute-force code rather than cognitive evaluation.
+
+  4. Complete Disconnect of User Audio Inputs & Feature Schemas:
+     While the UI accepts a "Your Recording" audio file, the runtime silently
+     discards it before calling Gemini. Furthermore, all nine audio feature
+     extraction fields on `ToneProfile` (spectral_centroid, dynamic_range_estimate,
+     etc.) are explicitly wiped to `undefined`. Closed-loop tone comparison and
+     iterative refinement are completely non-existent (L0).
+
+  5. Pervasive Platform Contamination:
+     Engineering concepts are deeply entangled with AmpliTube 5 implementation
+     details. Gear rosters, parameter limits (e.g., forcing 2-band Parametric EQ
+     restrictions), knob names, and XML attributes dictate what the system
+     treats as "engineering knowledge."
+
+1.3 SUMMARY DISPOSITION
+Current TT operates as a sophisticated, rule-governed automated preset generator
+paired with a multimodal LLM taxonomist. It is NOT yet an autonomous Sound Engineer.
+However, it contains substantial high-value assets—specifically its acoustic
+microphone reasoning rules, cabinet/speaker selection heuristics, and functional
+EQ role taxonomy—that should be extracted and re-homed into the future
+platform-independent architecture.
+
+
+--------------------------------------------------------------------------------
+SECTION 2 — ASSESSMENT METHODOLOGY
+--------------------------------------------------------------------------------
+
+2.1 INDEPENDENT BENCHMARK DISCIPLINE
+Under the Critical Independence Rule, this assessment holds Current TT strictly
+accountable to the platform-independent standards authored in Phase 1C.3a.
+The benchmark was frozen prior to this assessment. No target maturity has been
+lowered to accommodate Current TT's shortcomings, nor has any domain been elevated
+merely because Current TT happens to execute a deterministic script successfully.
+
+2.2 MULTI-DIMENSIONAL DECOUPLING
+To avoid misleading aggregate scores, each domain is assessed independently
+across the five professional dimensions:
+  1. Knowledge: Understanding physical, electrical, acoustic, and psychoacoustic mechanisms.
+  2. Evidence Interpretation: Distinguishing measured/observed facts from inferences and assumptions.
+  3. Diagnosis: Generating and ranking competing causal hypotheses from symptoms.
+  4. Decision-Making: Balancing objectives, constraints, dependencies, and trade-offs.
+  5. Outcome Reasoning: Predicting consequences, defining verification criteria, and revising hypotheses.
+
+2.3 MANDATORY "WHY NOT NEXT LEVEL" GATE
+To guarantee rigorous grading, every assigned score includes:
+  - Documented evidence establishing why the level was awarded.
+  - An explicit, mandatory explanation of why the next higher maturity level
+    was denied based on missing capabilities.
+
+
+--------------------------------------------------------------------------------
+SECTION 3 — EVIDENCE & SCORING RULES
+--------------------------------------------------------------------------------
+
+3.1 EVIDENCE PROVENANCE TAXONOMY
+Every capability finding is tagged with its verified origin:
+  - EXPLICIT_KNOWLEDGE: Principles deliberately encoded in prompts, schemas, or docs.
+  - DETERMINISTIC_BEHAVIOUR: Hardcoded TypeScript logic making execution decisions.
+  - STATIC_RECIPE: Fixed profiles or keyword-intercept signal chains.
+  - MODEL_DELEGATED: Tasks requested from Gemini without application-level verification.
+  - RUNTIME_DEMONSTRATED: Verified execution paths operating in the live app.
+  - REPRESENTED_NOT_EXERCISED: Schemas or contracts that exist but are unpopulated.
+  - PLATFORM_SPECIFIC: Knowledge coupled to AmpliTube 5.
+  - ABSENT: Completely missing from repository evidence.
+  - UNKNOWN: Indeterminate from static code inspection alone.
+
+3.2 STRICT PROHIBITIONS APPLIED DURING SCORING
+  - Do NOT confuse correct output with professional decision-making.
+  - Do NOT confuse prompt instructions with demonstrated LLM competence.
+  - Do NOT confuse deterministic keyword replacement with acoustic diagnosis.
+  - Do NOT treat Phase 1B contracts (EvidenceRecord, EngineeringDecisionRecord)
+    as live runtime reasoning (they remain unexercised in Current TT).
+  - Do NOT calculate an average maturity score across dimensions or domains.
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — 22 DOMAIN ASSESSMENTS
+--------------------------------------------------------------------------------
+
+================================================================================
+DOMAIN 1: SOURCE & PERFORMANCE
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT possesses surface-level vocabulary regarding playing styles (palm muting,
+pick attack) and pickup names, but contains zero modeling or diagnostic reasoning
+concerning guitar construction, pickup inductance, volume pot loading, or player touch.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 67, 109 mentions "neck pickup", "palm muting").
+  - DETERMINISTIC_BEHAVIOUR: /src/services/geminiService.ts (adjustThrashPedalSelection lines 831-906 triggers on text "palm mute").
+  - ABSENT: Guitar pickup modeling, input impedance, scale length, or playing dynamics.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L1 (Vocabulary)
+    Evidence: Recognizes terms like "humbucker", "single-coil", "neck pickup", and "palm muting" in prompts and regex matchers.
+    Why Not Next Level (L2): Does not understand the electrical or physical mechanisms (pickup inductance, resonant peak shifting, cable capacitance, or string damping physics).
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: Does not process or analyze guitar input signals; audio feature extraction fields are undefined.
+    Why Not Next Level (L1): Cannot detect or extract source performance characteristics from recorded audio.
+  Diagnosis:
+    Current Level: L0 (Absent)
+    Evidence: Tone problems (e.g., muddiness) are never attributed to source guitar properties; the system jumps directly to amp/pedal solutions.
+    Why Not Next Level (L1): Generates zero hypotheses regarding whether pickup type or touch caused an observed symptom.
+  Decision-Making:
+    Current Level: L1 (Vocabulary)
+    Evidence: Keyword "palm mute" in user prompt triggers deterministic insertion of OverScream and noise gate.
+    Why Not Next Level (L2): The decision is a crude text-to-gear regex rule, not an acoustic decision tailored to source needs.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No prediction or verification of how playing dynamics interact with the chain.
+    Why Not Next Level (L1): Cannot evaluate whether an intervention preserved pick touch sensitivity.
+
+CURRENT STRENGTHS:
+  - Prompt acknowledges that palm muting requires tight low-end management.
+KNOWLEDGE GAPS:
+  - Pickup impedance, resonant peaks, potentiometer resistive loading, cable capacitance, scale length, pick attack angle.
+REASONING GAPS:
+  - Cannot diagnose whether muddiness or lack of bite originates at the guitar or downstream in the amp.
+ARCHITECTURAL MISPLACEMENT:
+  - Text-based regex triggers for "palm mute" are hardcoded in downstream post-processing logic.
+PLATFORM CONTAMINATION:
+  - None (domain is largely unrepresented).
+PROFESSIONAL GAP:
+  - Lacks all acoustic and electrical source modeling; treats all inputs as generic normalized line signals.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Must build source instrument and performance diagnostic reasoning from first principles in the new Sound Engineer.
+
+
+================================================================================
+DOMAIN 2: SIGNAL LEVEL, GAIN STAGING & HEADROOM
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT contains qualitative rules of thumb in its prompt regarding gain distribution
+("distribute gain incrementally; never max a single stage") and enforces a classic clean
+boost setting via deterministic override. However, it lacks quantitative dB headroom
+tracking, stage-to-stage level calculation, and loudness-bias compensation.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 35-36).
+  - DETERMINISTIC_BEHAVIOUR: /src/services/geminiService.ts (lines 834-845 forces Level 9.0 Drive 1.0).
+  - PLATFORM_SPECIFIC: Knob values formatted to AT5 0-10 scale.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L3 (Applied)
+    Evidence: Understands the heuristic of using a high-level, low-drive clean boost to push an amplifier input without excessive clipping buzz.
+    Why Not Next Level (L4): Lacks quantitative understanding of inter-stage headroom, dB transfer curves, clipping thresholds, and grid-conduction blocking distortion.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: Does not measure stage gain, RMS levels, or crest factors from audio.
+    Why Not Next Level (L1): Cannot read or calculate signal levels across the chain.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Prompt contains rule: "Muddy? Reduce bass PRE-distortion."
+    Why Not Next Level (L2): Cannot isolate which specific stage in a multi-stage chain is running out of headroom or causing harsh clipping.
+  Decision-Making:
+    Current Level: L2 (Conceptual)
+    Evidence: Prompts Gemini to distribute gain; deterministically sets OverScream Level 9 / Drive 1 for thrash.
+    Why Not Next Level (L3): Cannot dynamically calculate stage levels; relies on a fixed, hardcoded recipe for boost gain staging.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No level-matching or loudness compensation between dry/wet or clean/boosted states.
+    Why Not Next Level (L1): Does not predict or verify the exact gain delta or noise penalty introduced by a stage.
+
+CURRENT STRENGTHS:
+  - Explicit recognition that gain must be staged across pedals and amps rather than pinned on one knob.
+KNOWLEDGE GAPS:
+  - Quantitative stage-by-stage headroom (dBFS/dBu), crest factor calculation, inter-stage buffer clipping.
+REASONING GAPS:
+  - Inability to diagnose which specific gain block is causing unwanted distortion.
+ARCHITECTURAL MISPLACEMENT:
+  - Clean boost parameter values (Level 9, Drive 1) are hardcoded in post-processing TypeScript rather than reasoned.
+PLATFORM CONTAMINATION:
+  - Gain parameters are tightly coupled to AT5 0.0-10.0 scale conventions.
+PROFESSIONAL GAP:
+  - Operates on qualitative heuristics and fixed numbers rather than dynamic, measured gain architecture.
+MIGRATION DISPOSITION:
+  - EXTRACT & DEVELOP
+RATIONALE:
+  - Extract the valid gain-staging heuristics from prompts; develop quantitative headroom reasoning for the Sound Engineer.
+
+
+================================================================================
+DOMAIN 3: NONLINEAR PROCESSING & DISTORTION
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT exhibits strong heuristic knowledge of distortion families (tube saturation,
+overdrive, fuzz, crunch) and recognizes the interaction between input spectrum and
+distortion tightness. However, it lacks dynamic modeling of harmonic spectra (even vs.
+odd orders), dynamic bias shifting, or intermodulation distortion analysis.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 66-79), /src/services/toneProfileBuilder.ts (lines 32, 173).
+  - DETERMINISTIC_BEHAVIOUR: /src/services/geminiService.ts (adjustThrashPedalSelection switches between raw thrash Drive 4.5 and tight thrash Drive 1.0).
+  - STATIC_RECIPE: Hardcoded distortion settings in validation recipes (Pantera Darrell 100 Gain 7.5; Metallica Brit 8000 Preamp 7.0).
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L3 (Applied)
+    Evidence: Clearly distinguishes preamp saturation from power crunch, diode clipping, and vintage fuzz; understands that cutting low frequencies before clipping prevents flub.
+    Why Not Next Level (L4): Does not understand mathematical harmonic spectra (2nd/3rd/5th order distribution), dynamic bias shift, or intermodulation distortion mechanics during chord voicings.
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: ToneProfile categorizes prompt text into `distortion_type` (clean, crunch, overdrive, saturated, fuzz).
+    Why Not Next Level (L2): Cannot analyze an audio signal's harmonic content or measure THD/IMD.
+  Diagnosis:
+    Current Level: L2 (Conceptual)
+    Evidence: Identifies that flubby bass during chords is caused by heavy low frequencies entering early clipping stages.
+    Why Not Next Level (L3): Relies on prompt keywords rather than diagnosing distortion character from audio evidence.
+  Decision-Making:
+    Current Level: L3 (Applied)
+    Evidence: Selects appropriate distortion topologies (e.g., TS-style mid-boost into high-gain amp for tight metal; cranked master volume for vintage rock crunch).
+    Why Not Next Level (L4): Cannot design custom non-linear transfer curves or evaluate complex trade-offs between articulation and saturation; defaults to hardcoded pedal swaps.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No prediction of harmonic distortion changes or verification of note separation during complex chords.
+    Why Not Next Level (L1): Does not evaluate whether generated distortion achieved the desired texture.
+
+CURRENT STRENGTHS:
+  - Accurate qualitative categorization of distortion types and clear understanding of the pre-gain tightening principle.
+KNOWLEDGE GAPS:
+  - Harmonic order generation (even vs. odd), intermodulation hash, dynamic envelope collapse under saturation.
+REASONING GAPS:
+  - Substitution of deterministic pedal swaps for genuine reasoning about distortion curves.
+ARCHITECTURAL MISPLACEMENT:
+  - Switching between "raw" (Drive 4.5) and "tight" (Drive 1.0) distortion is hardcoded in `adjustThrashPedalSelection`.
+PLATFORM CONTAMINATION:
+  - Relies on AT5 pedal models ("OverScream", "PROdrive", "The Rat") to define distortion behavior.
+PROFESSIONAL GAP:
+  - Cannot evaluate distortion quality from audio; executes rule-based distortion assignments.
+MIGRATION DISPOSITION:
+  - EXTRACT, REHOME & EDUCATE
+RATIONALE:
+  - Extract the core pre-gain tightening principles into the Sound Engineer knowledge base; rehome pedal-specific choices to Platform Translation; educate the Sound Engineer in harmonic analysis.
+
+
+================================================================================
+DOMAIN 4: FREQUENCY & SPECTRAL ENGINEERING
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT possesses excellent structural knowledge regarding the causal location of EQ
+(pre-distortion shaping vs. post-distortion balancing vs. capture filtering) and enforces
+clean functional slot separation via deterministic deduplication. It is held back by the
+lack of audio spectral measurement and strict platform-imposed filter limitations.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 31-44).
+  - DETERMINISTIC_BEHAVIOUR: /src/services/at5SignalChainNormalizer.ts (filterDuplicateEqsWithRemoved lines 1046-1250).
+  - PLATFORM_SPECIFIC: MASTER_PROMPT lines 85-89 restricts Parametric EQ strictly to 2 bands due to AT5 hardware limits.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L4 (Diagnostic)
+    Evidence: Deeply understands that pre-distortion EQ shapes distortion texture while post-distortion EQ shapes tonal balance; categorizes EQs by functional role (stomp, loop, rack, final).
+    Why Not Next Level (L5): Does not integrate phase shift of minimum-phase EQ curves, Q-bandwidth interactions with speaker resonance, or comb-filtering masking.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: All 9 audio feature fields on `ToneProfile` (including spectral_centroid and low_end_tightness) are wiped to `undefined`.
+    Why Not Next Level (L1): Cannot read or measure frequency spectra from input audio files.
+  Diagnosis:
+    Current Level: L2 (Conceptual)
+    Evidence: Explicit troubleshooting heuristics in prompt ("Muddy? Reduce bass PRE-distortion. Harsh? Reduce treble POST-distortion").
+    Why Not Next Level (L3): Cannot diagnose a live spectral imbalance from audio evidence; rules exist only as static prompt text.
+  Decision-Making:
+    Current Level: L3 (Applied)
+    Evidence: Places graphic/parametric EQs in appropriate functional slots and strips redundant duplicate EQs during normalization.
+    Why Not Next Level (L4): Decisions are constrained by AT5's 2-band rack parametric limitation, artificially restricting filter design.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No verification of the resulting frequency curve; no closed-loop spectral comparison.
+    Why Not Next Level (L1): Cannot evaluate whether an EQ adjustment resolved the spectral problem.
+
+CURRENT STRENGTHS:
+  - Clear architectural separation between pre-distortion and post-distortion spectral intervention.
+  - Robust deterministic EQ deduplication protecting functional roles.
+KNOWLEDGE GAPS:
+  - Acoustic Q-interaction, minimum-phase filter phase smearing, real-time spectral centroid calculation.
+REASONING GAPS:
+  - Zero audio spectral measurement; unable to verify frequency balance.
+ARCHITECTURAL MISPLACEMENT:
+  - EQ deduplication is located in export normalization rather than in the Sound Engineer decision layer.
+PLATFORM CONTAMINATION:
+  - The Sound Engineer prompt explicitly enforces AmpliTube's 2-band Parametric EQ hardware limitation.
+PROFESSIONAL GAP:
+  - High conceptual understanding of EQ placement crippled by total absence of audio analysis.
+MIGRATION DISPOSITION:
+  - EXTRACT, REHOME & DEVELOP
+RATIONALE:
+  - Extract the pre/post EQ placement rules and deduplication taxonomy; rehome platform 2-band limits to AT5 Translation; develop DSP spectral analysis.
+
+
+================================================================================
+DOMAIN 5: DYNAMICS, ENVELOPE & TRANSIENTS
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT treats dynamics almost entirely through the lens of noise gate clamping and
+basic compressor pedal placement. It lacks understanding of transient-to-body ratios,
+power supply sag bloom, optical vs. VCA envelope behavior, and playing touch dynamics.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT line 113 notes compressor goes early).
+  - DETERMINISTIC_BEHAVIOUR: /src/services/geminiService.ts (adjustThrashPedalSelection forces gate release to 120 ms).
+  - STATIC_RECIPE: ToneProfileBuilder sets `dynamics: 'compressed'` for lead presets.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Understands that compressors control dynamics and belong before gain stages, and that palm muting requires fast envelope gating.
+    Why Not Next Level (L3): Lacks knowledge of attack/release time constants, compressor topologies (VCA/FET/Opto), power amp sag dynamics, and crest factor preservation.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: `dynamic_range_estimate` and `transient_attack_estimate` on ToneProfile are explicitly set to `undefined`.
+    Why Not Next Level (L1): Cannot detect or measure transient attack sharpness or compression depth from audio.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Recognizes terms like "punchy attack" or "squashed" in prompt text.
+    Why Not Next Level (L2): Cannot diagnose whether a lack of punch is caused by front-end compression, preamp squish, or slow speaker response.
+  Decision-Making:
+    Current Level: L1 (Vocabulary)
+    Evidence: Inserts a generic compressor pedal when prompt mentions "clean funk" or "compressed lead".
+    Why Not Next Level (L2): Does not configure attack/release times or ratios intelligently; relies on platform defaults.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No prediction of dynamic envelope behavior or transient impact.
+    Why Not Next Level (L1): Does not evaluate whether playing feel or punch was preserved.
+
+CURRENT STRENGTHS:
+  - Recognizes that high-gain rhythm requires fast gate recovery.
+KNOWLEDGE GAPS:
+  - Attack/release timing theory, crest factor analysis, amplifier rectifier sag, optical vs FET knee mechanics.
+REASONING GAPS:
+  - Inability to shape transient envelopes deliberately.
+ARCHITECTURAL MISPLACEMENT:
+  - Hardcoded gate release time (120 ms) forced in TypeScript post-processor.
+PLATFORM CONTAMINATION:
+  - Generic compressor blocks mapped directly to AT5 pedal models without parameter reasoning.
+PROFESSIONAL GAP:
+  - Complete absence of transient envelope analysis and dynamic modeling.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Must develop comprehensive envelope and transient reasoning for the Sound Engineer.
+
+
+================================================================================
+DOMAIN 6: NOISE ENGINEERING
+================================================================================
+TARGET: L4 (Supporting)
+CURRENT CAPABILITY SUMMARY:
+Current TT addresses noise purely through reactive parameter clamping. When thrash or
+high-gain keywords are detected, code deterministically injects or forces noise gate
+parameters (-45 dB Threshold, 120 ms Release, -60 dB Depth). It does not analyze SNR,
+hum vs. hiss, or stage-by-stage noise accumulation.
+
+EVIDENCE PROVENANCE:
+  - DETERMINISTIC_BEHAVIOUR: /src/services/geminiService.ts (adjustThrashPedalSelection lines 634-756).
+  - STATIC_RECIPE: Fixed gate settings in Metallica and Pantera validation recipes.
+  - PLATFORM_SPECIFIC: Unit string conversions ("-45 dB", "120 ms") formatted for AT5 XML parser.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Understands that high-gain rigs generate unwanted idle noise and require noise gating to keep rhythm chugs tight.
+    Why Not Next Level (L3): Does not understand noise origins (60 Hz ground hum, thermal resistor hiss, single-coil RF interference) or downward expansion mechanics.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: `noise_fizz_estimate` on ToneProfile is explicitly set to `undefined`.
+    Why Not Next Level (L1): Cannot measure noise floor in dBFS or distinguish idle noise from playing noise.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Infers noise simply from the word "thrash" or "high-gain" in prompt text.
+    Why Not Next Level (L2): Cannot diagnose whether noise is entering from the guitar pickups, an overdrive pedal, or high preamp gain.
+  Decision-Making:
+    Current Level: L2 (Conceptual)
+    Evidence: Deterministically applies a noise gate with standard tight-metal settings (-45 dB / 120 ms).
+    Why Not Next Level (L3): Cannot dynamically adjust threshold to match the incoming signal's noise floor; applies a one-size-fits-all clamp.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: Does not verify whether quiet note decays are prematurely cut off or if gate chattering occurs.
+    Why Not Next Level (L1): No prediction or check of sustain decay naturalness.
+
+CURRENT STRENGTHS:
+  - Reliable deterministic suppression of idle hiss in high-gain presets.
+KNOWLEDGE GAPS:
+  - Distinguishing 60 Hz hum from thermal hiss, downward expansion vs. hard gating, sidechain filtering.
+REASONING GAPS:
+  - No measurement of noise floor; treats all high-gain signals as having identical noise characteristics.
+ARCHITECTURAL MISPLACEMENT:
+  - Noise gate parameters are hardcoded in `geminiService.ts` post-processing.
+PLATFORM CONTAMINATION:
+  - Clamping formatting specifically accommodates AT5's noise gate module.
+PROFESSIONAL GAP:
+  - Relies on crude static gating rather than root-cause noise diagnosis and dynamic threshold tuning.
+MIGRATION DISPOSITION:
+  - EXTRACT & DEVELOP
+RATIONALE:
+  - Extract the timing heuristics for staccato rhythm; develop noise-floor diagnosis in the Sound Engineer.
+
+
+================================================================================
+DOMAIN 7: SIGNAL TOPOLOGY & PROCESSING ORDER
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT enforces an industry-standard serial signal chain topology (Guitar -> Tuner
+-> Wah -> Compressor -> Drive -> Amp -> FX Loop -> Cab -> Rack) and normalizes gear
+into appropriate pre- and post-amp stages. However, it is restricted entirely to serial
+single-path routing and cannot design parallel or wet/dry architectures.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 112-119).
+  - DETERMINISTIC_BEHAVIOUR: /src/services/at5SignalChainNormalizer.ts (lines 943-999).
+  - RUNTIME_DEMONSTRATED: Normalizer correctly sorts elements into pre-amp, loop, and rack slots.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L3 (Applied)
+    Evidence: Understands the strict non-commutative nature of guitar processing (e.g., Wah and Overdrive before Amp; Delay and Reverb in FX loop/rack).
+    Why Not Next Level (L4): Lacks knowledge of parallel processing topologies, frequency-split routing, wet/dry/wet architectures, and phase-aligned summing junctions.
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: Reads user preset structures and parses XML slot assignments.
+    Why Not Next Level (L2): Cannot deduce the signal topology of an audio recording (e.g., detecting whether a delay was run into a dirty amp vs. in an effects loop).
+  Diagnosis:
+    Current Level: L2 (Conceptual)
+    Evidence: Identifies that placing delay/reverb before high-gain distortion causes muddy, washed-out artifacts.
+    Why Not Next Level (L3): Cannot diagnose complex topological phase issues or parallel routing conflicts.
+  Decision-Making:
+    Current Level: L3 (Applied)
+    Evidence: Correctly organizes generated signal chains into proper serial stages and moves misplaced effects to the loop or rack.
+    Why Not Next Level (L4): Incapable of designing parallel or multi-amp topologies; strictly enforces a single linear path.
+  Outcome Reasoning:
+    Current Level: L1 (Vocabulary)
+    Evidence: Notes in prompt explain that loop effects preserve clarity.
+    Why Not Next Level (L2): Does not predict or verify the phase, dynamic, or stereo imaging consequences of topological routing changes.
+
+CURRENT STRENGTHS:
+  - Robust, error-free enforcement of canonical serial guitar signal flow.
+KNOWLEDGE GAPS:
+  - Parallel routing, wet/dry architectures, frequency-split multiband processing, stereo image design.
+REASONING GAPS:
+  - Inability to deduce topology from audio evidence; restricted to a rigid serial template.
+ARCHITECTURAL MISPLACEMENT:
+  - Topological slot reorganization is performed during export normalization rather than during tone design.
+PLATFORM CONTAMINATION:
+  - Topology stages map directly to AT5's physical layout (Stomp -> Amp -> Cab -> Rack).
+PROFESSIONAL GAP:
+  - Complete lock-in to single-path serial routing; cannot engineer modern parallel or dual-rig designs.
+MIGRATION DISPOSITION:
+  - KEEP, REHOME & DEVELOP
+RATIONALE:
+  - Keep the canonical serial ordering rules; rehome topological enforcement to Semantic Tone Design; develop parallel routing capabilities.
+
+
+================================================================================
+DOMAIN 8: AMPLIFIER BEHAVIOUR
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT possesses extensive descriptive knowledge of 30+ specific commercial amplifier
+models in AmpliTube 5 (knob names, channels, typical settings). However, it defines
+amplifiers almost entirely through commercial product identities rather than
+platform-independent electrical/acoustic behaviors (tone stack type, sag, negative feedback, damping).
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/at5AmplifierKnowledge.ts (catalog of 30+ amps).
+  - PLATFORM_SPECIFIC: Amplifiers defined by exact AT5 names ("Brit 8000", "British Lead S100", "Metal Lead V").
+  - MODEL_DELEGATED: Gemini selects amps by matching prompt text to directory tags.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L3 (Applied)
+    Evidence: Possesses comprehensive catalog knowledge of which amp models suit classic rock, thrash, or modern metal, including their knob layouts and baseline settings.
+    Why Not Next Level (L4): Lacks platform-independent circuit knowledge (triode gain stages, cathode follower tone stacks, long-tailed pair phase inverters, negative feedback loops, and power supply sag).
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: Parses amplifier names from user text prompts or preset XML.
+    Why Not Next Level (L2): Cannot identify amplifier behavioral characteristics (operating class, power tube type, damping factor) from recorded audio.
+  Diagnosis:
+    Current Level: L2 (Conceptual)
+    Evidence: Recognizes that vintage non-master volume amps behave differently from modern high-gain master volume amps.
+    Why Not Next Level (L3): Cannot diagnose amplifier behavioral defects (e.g., diagnosing excessive power-stage compression vs. stiff solid-state clipping) from evidence.
+  Decision-Making:
+    Current Level: L3 (Applied)
+    Evidence: Reliably selects an appropriate commercial amp model from the AT5 catalog based on style and era.
+    Why Not Next Level (L4): Cannot specify amplifier requirements in abstract behavioral terms; must choose a pre-existing commercial badge.
+  Outcome Reasoning:
+    Current Level: L1 (Vocabulary)
+    Evidence: Generates narrative justification in `amplifier_debug` explaining why the amp was chosen.
+    Why Not Next Level (L2): Does not predict specific physical consequences (e.g., changes in sag, damping, or tone stack interaction) when parameters are adjusted.
+
+CURRENT STRENGTHS:
+  - Comprehensive, accurate cataloging of AT5 amplifier models and valid typical settings.
+KNOWLEDGE GAPS:
+  - Platform-independent amplifier physics: negative feedback, damping factor, phase inverter breakup, power supply sag, tone stack circuit topologies.
+REASONING GAPS:
+  - Substitutes commercial model selection for first-principles behavioral specification.
+ARCHITECTURAL MISPLACEMENT:
+  - Amplifier knowledge is entirely co-located with AT5 hardware mappings.
+PLATFORM CONTAMINATION:
+  - Deepest platform coupling in the app: the AI is forced to think in AT5 model names.
+PROFESSIONAL GAP:
+  - Cannot specify or reason about amplifier behavior independently of named commercial products.
+MIGRATION DISPOSITION:
+  - PLATFORM-ONLY & DEVELOP
+RATIONALE:
+  - Relegate AT5 amplifier definitions to the AT5 Platform Translator; develop a platform-independent Semantic Amplifier specification in the Sound Engineer.
+
+
+================================================================================
+DOMAIN 9: LOUDSPEAKER & CABINET ENGINEERING
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT contains high-quality explicit knowledge regarding cabinet enclosure
+construction (open-back vs. closed-back vs. ported) and speaker driver voicings
+(Greenback, V30, G12T-75, EVM-12L). However, selection is largely rule-based or forced
+by static recipes, and lacks mechanical/acoustic modeling.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/at5CabinetKnowledge.ts (lines 1-74).
+  - STATIC_RECIPE: Validation recipes hardcode "4x12 Brit 8000" with "Brit Green".
+  - PLATFORM_SPECIFIC: Cabinets and speakers mapped 1:1 to AT5 model rosters.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L3 (Applied)
+    Evidence: Explicitly documents the acoustic properties of enclosure types (closed-back = directional tight bass; open-back = wide dispersion airy highs) and speaker drivers (V30 mid-spike, Greenback compression).
+    Why Not Next Level (L4): Lacks electromechanical modeling of cone resonance (Fs), voice coil inductance, power compression, baffle resonance, and multi-speaker acoustic summation.
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: ToneProfile categorizes cabinet size (1x12, 2x12, 4x12) from text.
+    Why Not Next Level (L2): Cannot detect speaker breakup or cabinet resonance frequencies from audio recordings.
+  Diagnosis:
+    Current Level: L2 (Conceptual)
+    Evidence: Recognizes that flabby low end can be caused by an inappropriate open-back cabinet for high-gain styles.
+    Why Not Next Level (L3): Cannot diagnose whether an acoustic low-end resonance is cabinet-induced or room-induced from audio evidence.
+  Decision-Making:
+    Current Level: L3 (Applied)
+    Evidence: Systematically pairs high-gain heads with closed-back 4x12 cabinets and vintage amps with open-back enclosures.
+    Why Not Next Level (L4): Cannot design mixed-driver configurations or specify custom cabinet damping; constrained to standard catalog pairings.
+  Outcome Reasoning:
+    Current Level: L1 (Vocabulary)
+    Evidence: Documents cabinet rationale in `engineering_notes`.
+    Why Not Next Level (L2): Does not predict acoustic dispersion or verify that the cabinet curve achieved the targeted frequency shaping.
+
+CURRENT STRENGTHS:
+  - Highly articulate acoustic descriptions of cabinet construction and speaker driver characteristics.
+KNOWLEDGE GAPS:
+  - Electromechanical speaker modeling, cone breakup physics, internal standing waves, baffle vibration.
+REASONING GAPS:
+  - Incapable of diagnosing cabinet acoustic issues from audio; relies on genre rules.
+ARCHITECTURAL MISPLACEMENT:
+  - Cabinet knowledge is tightly bundled with AT5 catalog strings.
+PLATFORM CONTAMINATION:
+  - Cabinets and speakers are referenced strictly by AT5 internal names.
+PROFESSIONAL GAP:
+  - Strong qualitative understanding locked inside static catalog associations.
+MIGRATION DISPOSITION:
+  - EXTRACT, REHOME & DEVELOP
+RATIONALE:
+  - Extract the acoustic enclosure and driver knowledge into the Sound Engineer knowledge base; rehome model bindings to Platform Translation; develop acoustic resonance analysis.
+
+
+================================================================================
+DOMAIN 10: MICROPHONE & CAPTURE ENGINEERING
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+This is Current TT's most sophisticated and mature sound-engineering module. The 10-step
+Semantic Microphone Placement Reasoning Engine (/src/services/at5MicPlacementReasoning.ts)
+models proximity effect, off-axis high-frequency rolloff, center-cap brightness, and
+transducer roles (57=attack, 121=warmth/fizz control, 87=detail/room).
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE & DETERMINISTIC_BEHAVIOUR: /src/services/at5MicPlacementReasoning.ts (669 lines of acoustic reasoning code).
+  - RUNTIME_DEMONSTRATED: `ensureSignalChainSemanticPlacements` dynamically reasons and assigns 4D placement strings.
+  - PLATFORM_DERIVED: Translated to AT5 VIR coordinates in `at5MicPlacementService.ts`.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L4 (Diagnostic)
+    Evidence: Deep modeling of microphone transducer physics (dynamic vs. ribbon vs. condenser), distance-based proximity effect, angle-based off-axis treble attenuation, and speaker cone geometry (bright cap vs. warm cone).
+    Why Not Next Level (L5): Does not account for room boundary reflections, acoustic diffraction around the cabinet baffle, or polar pattern phase leakage.
+  Evidence Interpretation:
+    Current Level: L2 (Conceptual)
+    Evidence: Reads toneProfile brightness and gain to infer acoustic capture requirements.
+    Why Not Next Level (L3): Does not measure the acoustic capture curve from audio; relies on metadata inferences.
+  Diagnosis:
+    Current Level: L3 (Applied)
+    Evidence: Automatically diagnoses that high-gain fizz requires an off-axis angle and that dark vintage tones require on-axis cap placement.
+    Why Not Next Level (L4): Diagnosis is rule-based and triggered by metadata rather than critical listening to an audio file.
+  Decision-Making:
+    Current Level: L4 (Diagnostic)
+    Evidence: Multi-variable decision engine balances position, distance, angle, and multi-mic compensation to construct a complete 4D placement strategy with documented acoustic rationale.
+    Why Not Next Level (L5): Cannot evaluate unconventional capture strategies (e.g., rear cabinet mic, boundary room mics) or adapt to non-standard transducers.
+  Outcome Reasoning:
+    Current Level: L2 (Conceptual)
+    Evidence: Synthesizes detailed acoustic rationale strings explaining the exact expected sonic outcome (e.g., "softens direct highs and helps control harshness without sacrificing body").
+    Why Not Next Level (L3): Does not verify whether the exported VIR coordinates achieved the predicted acoustic result.
+
+CURRENT STRENGTHS:
+  - Outstanding acoustic reasoning engine that operates on platform-independent semantic concepts (Cap Edge, Close, 45° Off Axis) before platform translation.
+  - Clear, defensible transducer role definitions and complementary dual-mic pairing.
+KNOWLEDGE GAPS:
+  - Room boundary acoustics, 3D acoustic diffraction, polar pattern frequency lobing.
+REASONING GAPS:
+  - Operates on metadata rather than audio evidence.
+ARCHITECTURAL MISPLACEMENT:
+  - Properly isolated in a semantic reasoning service, but invoked as a post-generation patch.
+PLATFORM CONTAMINATION:
+  - Cleanly decoupled! Translates to AT5 VIR coordinates in a separate downstream service.
+PROFESSIONAL GAP:
+  - High diagnostic capability that needs to be fed with real audio evidence rather than prompt metadata.
+MIGRATION DISPOSITION:
+  - KEEP, EXTRACT & REHOME
+RATIONALE:
+  - Prime candidate for preservation. Keep the 10-step reasoning engine, extract its acoustic rules into the Sound Engineer, and rehome it as a core Semantic Capture capability.
+
+
+================================================================================
+DOMAIN 11: PHASE, POLARITY & MULTI-SOURCE INTERACTION
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT understands complementary dual-microphone frequency blending (e.g., pairing
+a bright Dynamic 57 with a dark Ribbon 121), but completely lacks phase alignment,
+propagation delay calculation, comb filtering analysis, and polarity inversion logic.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/at5MicPlacementReasoning.ts (lines 227-265).
+  - ABSENT: Polarity switches, delay alignment (samples/ms), phase correlation metrics.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Understands that two microphones combine to create a blended frequency response and that Mic 2 should complement Mic 1.
+    Why Not Next Level (L3): Does not understand phase cancellation, comb filtering notches caused by propagation delay differences, or acoustic polarity inversion.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: No phase correlation or time-alignment measurement exists.
+    Why Not Next Level (L1): Cannot read or detect phase cancellation from audio.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Identifies whether one or two mics are present in a cabinet.
+    Why Not Next Level (L2): Cannot diagnose whether a hollow or nasal sound is caused by phase comb filtering between dual mics.
+  Decision-Making:
+    Current Level: L2 (Conceptual)
+    Evidence: Automatically adjusts Mic 2's position relative to Mic 1 to achieve spectral balance.
+    Why Not Next Level (L3): Never inverts polarity or applies delay compensation to time-align capsules.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No verification of mono summing or phase coherence.
+    Why Not Next Level (L1): Does not evaluate whether combining the mics created destructive interference.
+
+CURRENT STRENGTHS:
+  - Complementary frequency balancing heuristic between dual microphones.
+KNOWLEDGE GAPS:
+  - Wave propagation delay (speed of sound in air), phase angle vs. frequency, comb filter notch calculation, capsule time-alignment.
+REASONING GAPS:
+  - Inability to diagnose or correct phase cancellation.
+ARCHITECTURAL MISPLACEMENT:
+  - None.
+PLATFORM CONTAMINATION:
+  - Relies on AT5's internal VIR engine to handle underlying phase without explicit user/engineer control.
+PROFESSIONAL GAP:
+  - Blind to phase interaction; treats multi-source capture as pure scalar frequency addition.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Must develop phase correlation, time-alignment, and comb-filtering reasoning for the Sound Engineer.
+
+
+================================================================================
+DOMAIN 12: TIME-BASED, MODULATION & SPATIAL PROCESSING
+================================================================================
+TARGET: L4 (Supporting)
+CURRENT CAPABILITY SUMMARY:
+Current TT treats time-based and spatial processing through basic routing conventions
+(delay before reverb; modulation in the FX loop) and static room selections (Small Studio,
+Large Studio). It possesses zero stereo imaging, predelay, diffusion, or spatial depth reasoning.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 34, 44, 114, 118).
+  - STATIC_RECIPE: Validation recipes specify fixed room types.
+  - PLATFORM_SPECIFIC: Room selection maps to AT5 cabinet room impulse options.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Understands that modulation and delay belong after distortion to maintain clarity, and that room selection provides acoustic space.
+    Why Not Next Level (L3): Lacks knowledge of predelay, reverb decay time calculation, stereo Haas effect, chorus delay-time modulation physics, and spatial depth layering.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: `reverb_room_estimate` and `width_estimate` on ToneProfile are explicitly set to `undefined`.
+    Why Not Next Level (L1): Cannot detect or measure reverb time, predelay, or stereo width from audio.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Recognizes terms like "ambient", "slapback", or "dry" in prompt text.
+    Why Not Next Level (L2): Cannot diagnose whether a mix is muddy due to excessive wet reverb vs. low-mid build-up.
+  Decision-Making:
+    Current Level: L2 (Conceptual)
+    Evidence: Routes delay and reverb to post-amp or loop slots and selects a studio room size.
+    Why Not Next Level (L3): Cannot calculate tempo-synced delay times or tune reverb diffusion to match an arrangement.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No prediction or verification of spatial placement or mono compatibility.
+    Why Not Next Level (L1): Does not evaluate whether an effect cluttered the mix.
+
+CURRENT STRENGTHS:
+  - Correct placement of time-based effects after non-linear stages to preserve clarity.
+KNOWLEDGE GAPS:
+  - Predelay timing, stereo Haas effect, reverb diffusion, phase coherence in stereo, modulation depth/rate physics.
+REASONING GAPS:
+  - Cannot analyze spatial properties of audio recordings.
+ARCHITECTURAL MISPLACEMENT:
+  - None.
+PLATFORM CONTAMINATION:
+  - Room acoustics are defined strictly by AT5's proprietary room impulse names.
+PROFESSIONAL GAP:
+  - Relies on preset room labels and generic pedal inserts with zero spatial acoustic reasoning.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Develop platform-independent spatial and time-based reasoning in the Sound Engineer.
+
+
+================================================================================
+DOMAIN 13: PSYCHOACOUSTICS & PERCEPTION
+================================================================================
+TARGET: L4 (Supporting)
+CURRENT CAPABILITY SUMMARY:
+Current TT contains brief prompt text acknowledging that the guitar is a midrange
+instrument and noting Fletcher-Munson-like advice regarding midrange projection. It has
+zero implementation of loudness compensation, equal-loudness contours, or masking calculation.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 37-39, 43).
+  - ABSENT: Loudness matching, equal-loudness curves, critical band masking models.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Knows conceptually that midrange frequencies (700 Hz - 1.5 kHz) dominate human hearing perception and help a guitar cut through a mix.
+    Why Not Next Level (L3): Lacks mathematical understanding of Fletcher-Munson / ISO 226 equal-loudness contours, auditory masking thresholds (bark scale), and temporal masking.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: Does not perform psychoacoustic weighting or loudness measurement (LUFS/phon).
+    Why Not Next Level (L1): Cannot read or evaluate perceived loudness from audio.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Prompt notes: "Lost in mix? Boost midrange."
+    Why Not Next Level (L2): Cannot diagnose whether a guitar is masked by the bass fundamental or vocal presence frequencies.
+  Decision-Making:
+    Current Level: L1 (Vocabulary)
+    Evidence: Tells Gemini to keep midrange present for rock tones.
+    Why Not Next Level (L2): Does not apply loudness compensation when adding gain or modifying EQ.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No protection against loudness bias (perceiving louder presets as better).
+    Why Not Next Level (L1): Does not verify perceived balance across different listening levels.
+
+CURRENT STRENGTHS:
+  - Correct qualitative emphasis on guitar midrange dominance.
+KNOWLEDGE GAPS:
+  - Equal-loudness contours (ISO 226), auditory masking, critical bands, LUFS loudness compensation.
+REASONING GAPS:
+  - Total absence of perceptual weighting and loudness-bias protection.
+ARCHITECTURAL MISPLACEMENT:
+  - None.
+PLATFORM CONTAMINATION:
+  - None.
+PROFESSIONAL GAP:
+  - Vulnerable to loudness bias; cannot model how human perception shifts with monitoring level.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Develop psychoacoustic weighting and mandatory loudness-matched comparison in the Sound Engineer.
+
+
+================================================================================
+DOMAIN 14: MUSICAL & PRODUCTION CONTEXT
+================================================================================
+TARGET: L4 (Supporting)
+CURRENT CAPABILITY SUMMARY:
+Current TT possesses extensive historical and stylistic knowledge regarding classic rock,
+thrash, metal, and blues eras, accurately associating artists and genres with typical
+gear configurations. However, it frequently converts contextual evidence into rigid,
+unyielding static recipes.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/toneProfileBuilder.ts (lines 153-348), /src/services/geminiService.ts (lines 324-562).
+  - STATIC_RECIPE: Keyword intercepts force exact signal chains for AC/DC, Metallica, and Pantera.
+  - MODEL_DELEGATED: Gemini maps obscure band names to historical recording styles.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L4 (Diagnostic)
+    Evidence: Deep historical understanding of production aesthetics across eras (1970s dry analog classic rock vs. 1980s scooped thrash vs. 1990s raw grunge); knows historical recording practices.
+    Why Not Next Level (L5): Tends to treat historical gear combinations as absolute truths rather than contextual possibilities; struggles with modern hybrid productions.
+  Evidence Interpretation:
+    Current Level: L2 (Conceptual)
+    Evidence: Accurately classifies style, era, role, and production style from text prompts.
+    Why Not Next Level (L3): Cannot deduce production context (e.g., tape saturation, double-tracking, room bleed) from audio recordings alone.
+  Diagnosis:
+    Current Level: L3 (Applied)
+    Evidence: Correctly determines that modern high-gain amps, rack EQs, and stereo choruses are stylistically inappropriate for a 1970s classic rock request.
+    Why Not Next Level (L4): Diagnosis collapses into rigid keyword intercepts for prominent bands.
+  Decision-Making:
+    Current Level: L3 (Applied)
+    Evidence: Restricts gear selection to era-appropriate blocks and enforces minimal processing for vintage styles.
+    Why Not Next Level (L4): Frequently bypasses creative decision-making by returning hardcoded static presets (e.g., Malcolm Young validation recipe).
+  Outcome Reasoning:
+    Current Level: L1 (Vocabulary)
+    Evidence: Explains stylistic alignment in `tone_summary.style`.
+    Why Not Next Level (L2): Does not evaluate whether the generated tone fits a specific mix arrangement.
+
+CURRENT STRENGTHS:
+  - Rich, highly accurate historical rock/metal production knowledge and era-appropriate aesthetic guardrails.
+KNOWLEDGE GAPS:
+  - Modern hybrid production workflows, multitrack arrangement interactions, multi-genre fusion.
+REASONING GAPS:
+  - Converts rich contextual knowledge into dogmatic, immutable static recipes.
+ARCHITECTURAL MISPLACEMENT:
+  - Validation recipes intercept and short-circuit the entire generation pipeline in `geminiService.ts`.
+PLATFORM CONTAMINATION:
+  - Historical context is expressed strictly through AT5 gear names.
+PROFESSIONAL GAP:
+  - Uses musical context as a rigid lookup table rather than as an evidence source to inform flexible engineering decisions.
+MIGRATION DISPOSITION:
+  - EXTRACT, REHOME & EDUCATE
+RATIONALE:
+  - Extract the excellent historical production knowledge; remove the rigid static recipe intercepts; educate the Sound Engineer to use context as evidence, not dogma.
+
+
+================================================================================
+DOMAIN 15: REFERENCE ANALYSIS & TONE MATCHING
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT accepts reference audio via a multimodal prompt to Gemini, instructing the model
+to prioritize audio analysis. However, TT contains zero application-level DSP audio feature
+extraction code, sets all extracted audio feature fields to `undefined`, and completely
+drops the user's recording. Closed-loop reference matching is entirely absent.
+
+EVIDENCE PROVENANCE:
+  - MODEL_DELEGATED: /src/services/geminiService.ts (targetAudio base64 sent to Gemini).
+  - REPRESENTED_NOT_EXERCISED: /src/types.ts (ToneProfile audio feature fields wiped to undefined).
+  - ABSENT: Audio feature extraction, reference-vs-current comparison, delta calculation.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L1 (Vocabulary)
+    Evidence: Data structures define spectral centroid, tightness, dynamic range, and transient attack fields.
+    Why Not Next Level (L2): Application contains zero DSP algorithms, mathematical formulas, or acoustic principles for extracting these features from raw audio.
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: Sends raw audio bytes to Gemini's multimodal endpoint.
+    Why Not Next Level (L2): Static repository evidence cannot verify what acoustic features Gemini extracts; the app itself interprets zero audio evidence.
+  Diagnosis:
+    Current Level: L0 (Absent)
+    Evidence: Does not compare reference audio against current audio; user recording is discarded in `translateTone`.
+    Why Not Next Level (L1): Generates zero hypotheses regarding why a current tone differs from a reference tone.
+  Decision-Making:
+    Current Level: L1 (Vocabulary)
+    Evidence: Instructs Gemini: "If target audio is provided, prioritize spectral analysis."
+    Why Not Next Level (L2): Decisions are not driven by measured audio deltas; relies entirely on unconstrained LLM text generation.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No comparison or verification loop exists.
+    Why Not Next Level (L1): Cannot evaluate whether a generated tone matches the reference audio.
+
+CURRENT STRENGTHS:
+  - Data schema includes placeholder fields for comprehensive audio feature descriptors.
+KNOWLEDGE GAPS:
+  - Audio DSP feature extraction (spectral tilt, centroid, crest factor, harmonic distortion, envelope tracking).
+REASONING GAPS:
+  - Complete absence of delta analysis between reference and current audio.
+ARCHITECTURAL MISPLACEMENT:
+  - Audio feature extraction was designed into `types.ts` but never implemented, leaving fields wiped to `undefined`.
+PLATFORM CONTAMINATION:
+  - None.
+PROFESSIONAL GAP:
+  - The core premise of Tone Translator—matching user tone to reference audio—is completely unimplemented at the code level; fully delegated to black-box LLM perception.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Critical core competency for Tone Translator. Must develop native DSP audio feature extraction and delta analysis.
+
+
+================================================================================
+DOMAIN 16: DIAGNOSIS & ROOT-CAUSE REASONING
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT contains static prompt heuristics for causal troubleshooting ("Muddy? Reduce
+bass PRE-distortion"), but does not execute a diagnostic workflow. It does not observe
+defects, generate candidate causes, weigh supporting/conflicting evidence, or rank hypotheses.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 40-44).
+  - ABSENT: Diagnostic engine, hypothesis formation, causal tracking.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Prompt contains valid causal rules linking sonic symptoms (mud, fizz, lost in mix) to processing causes (pre-gain bass, post-gain treble, midrange scoop).
+    Why Not Next Level (L3): Lacks deep diagnostic trees mapping multi-factor symptoms to root causes across the complete electro-acoustic chain.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: Does not analyze audio to detect symptoms; relies entirely on user prompt text.
+    Why Not Next Level (L1): Cannot independently identify acoustic defects from audio evidence.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Matches text keywords (e.g., "too dark") in prompt to predefined adjustments.
+    Why Not Next Level (L2): Does not formulate competing causal hypotheses; applies a single direct association.
+  Decision-Making:
+    Current Level: L1 (Vocabulary)
+    Evidence: Prescribes solutions from static rules.
+    Why Not Next Level (L2): Does not evaluate multiple candidate causes before choosing an intervention.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No verification of whether the diagnosed problem was resolved.
+    Why Not Next Level (L1): Does not track whether the causal hypothesis was confirmed or refuted by the outcome.
+
+CURRENT STRENGTHS:
+  - Valid causal heuristics in prompt text.
+KNOWLEDGE GAPS:
+  - Multi-factor acoustic diagnostic trees, falsification logic, symptom isolation.
+REASONING GAPS:
+  - Absence of diagnostic reasoning: jumps straight from text keywords to gear selection.
+ARCHITECTURAL MISPLACEMENT:
+  - Causal rules exist only as passive text inside prompt instructions.
+PLATFORM CONTAMINATION:
+  - None.
+PROFESSIONAL GAP:
+  - Operates as a feed-forward generator rather than a diagnostic sound engineer.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Build the diagnostic reasoning engine into the Sound Engineer, utilizing the Phase 1B EngineeringDecisionRecord.
+
+
+================================================================================
+DOMAIN 17: INTERVENTION SELECTION & MINIMALISM
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT demonstrates genuine engineering minimalism in specific contexts: it explicitly
+forbids unrequested rack EQs, delays, and reverbs for classic rock, and uses deterministic
+EQ deduplication to strip redundant stages. In metal contexts, however, it aggressively
+and unconditionally forces extra gear (OverScream and noise gates).
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (lines 80, 94, 374-379).
+  - DETERMINISTIC_BEHAVIOUR: /src/services/at5SignalChainNormalizer.ts (filterDuplicateEqsWithRemoved).
+  - RUNTIME_DEMONSTRATED: Strips redundant duplicate EQs and sets `rack_decision.status = 'not_needed'`.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L3 (Applied)
+    Evidence: Understands that unnecessary processing degrades tone authenticity and transparency; defines `rack_decision` to explicitly reject unneeded processing.
+    Why Not Next Level (L4): Does not balance the trade-off of whether an existing stage (e.g., amp tone stack) can accomplish the goal before introducing a new processor.
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: Reads user intent from text to determine if a dry, minimalist tone is requested.
+    Why Not Next Level (L2): Cannot measure signal degradation or assess whether processing is excessive from audio evidence.
+  Diagnosis:
+    Current Level: L2 (Conceptual)
+    Evidence: Recognizes that cluttered tone in vintage rock is caused by gratuitous post-processing.
+    Why Not Next Level (L3): Cannot diagnose whether a sonic defect requires an intervention or should be left alone.
+  Decision-Making:
+    Current Level: L3 (Applied)
+    Evidence: Actively enforces minimalism by stripping unrequested rack gear for vintage genres and deduplicating EQs.
+    Why Not Next Level (L4): In metal genres, completely abandons minimalism by unconditionally forcing OverScream and noise gates regardless of whether the amp alone could achieve the tone.
+  Outcome Reasoning:
+    Current Level: L1 (Vocabulary)
+    Evidence: Records `rack_decision.reason` explaining why processing was omitted.
+    Why Not Next Level (L2): Does not evaluate whether omitting a processor introduced unintended deficiencies.
+
+CURRENT STRENGTHS:
+  - Strong, explicit discipline regarding dry, raw signal chains for vintage genres.
+  - Robust deterministic EQ deduplication preventing redundant processing stages.
+KNOWLEDGE GAPS:
+  - Evaluating whether existing controls can achieve the goal before adding outboard gear.
+REASONING GAPS:
+  - Inconsistent application: minimalist for classic rock, hyper-interventionist for metal.
+ARCHITECTURAL MISPLACEMENT:
+  - EQ deduplication is buried in platform export normalization rather than in engineering design.
+PLATFORM CONTAMINATION:
+  - Minimalist rules are expressed around AT5 rack and stomp slots.
+PROFESSIONAL GAP:
+  - Lacks unified, principle-based intervention discipline across all musical genres.
+MIGRATION DISPOSITION:
+  - KEEP, EXTRACT & REHOME
+RATIONALE:
+  - Keep the minimalist principles and EQ deduplication logic; extract and rehome them into the Sound Engineer's decision core.
+
+
+================================================================================
+DOMAIN 18: TRADE-OFF & CONSTRAINT REASONING
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT recognizes trade-offs conceptually in comments and prompts (e.g., clean boost
+tightens bass and improves attack, but adds diode clipping; high gate threshold stops
+hiss, but truncates note decay). However, it does not dynamically balance trade-offs,
+explore competing options, or expose trade-off decisions in runtime contracts.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT line 68 notes diode clipping trade-off).
+  - REPRESENTED_NOT_EXERCISED: Phase 1B contract `EngineeringDecisionItem.tradeOffs` exists but is unexercised in Current TT.
+  - DETERMINISTIC_BEHAVIOUR: Hardcoded binary switching between "tight" and "raw" settings.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Acknowledges that tone interventions introduce trade-offs (e.g., gain vs. noise; tightness vs. low-end fullness).
+    Why Not Next Level (L3): Does not formulate trade-offs as multi-variable optimization problems or quantify acoustic compromises.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: Does not detect or measure the negative side-effects of an intervention from audio.
+    Why Not Next Level (L1): Cannot read trade-off consequences from audio evidence.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Identifies opposing terms in text (e.g., "tight" vs. "boomy").
+    Why Not Next Level (L2): Cannot diagnose when an existing problem was caused by an unmanaged trade-off from an earlier intervention.
+  Decision-Making:
+    Current Level: L2 (Conceptual)
+    Evidence: Switches between two fixed settings (Drive 1.0 vs Drive 4.5) based on prompt keywords.
+    Why Not Next Level (L3): Cannot dynamically balance competing goals; applies a hardcoded binary branch.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: `EngineeringDecisionItem.tradeOffs` is not populated during live Current generation.
+    Why Not Next Level (L1): Does not document or verify what was sacrificed when a decision was made.
+
+CURRENT STRENGTHS:
+  - Conceptual recognition that boosting and gating involve acoustic compromises.
+KNOWLEDGE GAPS:
+  - Multi-variable trade-off modeling (e.g., saturation vs. transient definition; low-cut tightness vs. fundamental weight).
+REASONING GAPS:
+  - Relies on binary keyword branching rather than conscious trade-off optimization.
+ARCHITECTURAL MISPLACEMENT:
+  - Trade-off contracts created in Phase 1B remain unlinked to the live generation path.
+PLATFORM CONTAMINATION:
+  - None.
+PROFESSIONAL GAP:
+  - Cannot evaluate or articulate acoustic trade-offs dynamically.
+MIGRATION DISPOSITION:
+  - REHOME & DEVELOP
+RATIONALE:
+  - Connect the unexercised Phase 1B trade-off contracts to the new Sound Engineer; develop dynamic trade-off balancing logic.
+
+
+================================================================================
+DOMAIN 19: UNCERTAINTY & EVIDENCE DISCIPLINE
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT possesses a numeric `confidence` field (0-100), but it is completely uncalibrated.
+In validation recipes, it is hardcoded to 100; in Gemini generation, it is an arbitrary
+number that has zero effect on execution flow. The system never states "insufficient
+evidence" and never requests user clarification.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/types.ts (line 113 defines `confidence?: number`).
+  - STATIC_RECIPE: Validation recipes hardcode `confidence: 100`.
+  - RUNTIME_DEMONSTRATED: Confidence is displayed as cosmetic text in UI; never used for branching.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L1 (Vocabulary)
+    Evidence: Schema includes a confidence field and warnings array.
+    Why Not Next Level (L2): Lacks understanding of epistemic uncertainty, probability calibration, or the distinction between measured vs. inferred confidence.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: Treats all user inputs as absolute, complete truths; never flags missing or contradictory information.
+    Why Not Next Level (L1): Cannot assess the reliability or ambiguity of input evidence.
+  Diagnosis:
+    Current Level: L0 (Absent)
+    Evidence: Always generates a definitive, complete preset regardless of how vague the prompt is (e.g., "good rock tone").
+    Why Not Next Level (L1): Never declares that available evidence is insufficient to diagnose a tone.
+  Decision-Making:
+    Current Level: L0 (Absent)
+    Evidence: Confidence values have zero impact on decision-making or execution branches.
+    Why Not Next Level (L1): Does not alter behavior or seek clarification when confidence is low.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: Emits cosmetic numbers without calibration or verification.
+    Why Not Next Level (L1): Cannot explain what evidence justifies its confidence score.
+
+CURRENT STRENGTHS:
+  - Field exists in data structures.
+KNOWLEDGE GAPS:
+  - Epistemic uncertainty, evidence calibration, missing evidence identification.
+REASONING GAPS:
+  - Fabricates certainty; produces concrete gear presets from vague, 2-word prompts without expressing doubt.
+ARCHITECTURAL MISPLACEMENT:
+  - Confidence is treated as display-only metadata.
+PLATFORM CONTAMINATION:
+  - None.
+PROFESSIONAL GAP:
+  - Total lack of evidence discipline; unable to express uncertainty or identify missing data.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Build genuine evidence discipline and calibrated confidence scoring into the Sound Engineer.
+
+
+================================================================================
+DOMAIN 20: ALTERNATIVE SOLUTION REASONING
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+The prompt instructs Gemini to rank candidate amplifiers in debug text, and the UI
+provides variation buttons ('primary', 'v1', 'v2'). However, the backend produces only a
+single concrete preset per run; variations are UI placeholders, and alternative signal
+chains are never generated or comparatively evaluated.
+
+EVIDENCE PROVENANCE:
+  - EXPLICIT_KNOWLEDGE: /src/services/geminiService.ts (MASTER_PROMPT lines 130, 252 asks for amp ranking).
+  - MODEL_DELEGATED: Gemini writes narrative justifications for alternative amps in `amplifier_debug`.
+  - ABSENT: Parallel generation of alternative signal chains, comparative evaluation.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L2 (Conceptual)
+    Evidence: Understands that multiple amplifiers could potentially satisfy a musical goal.
+    Why Not Next Level (L3): Lacks framework for systematically comparing distinct architectural pathways (e.g., upstream boost vs. downstream EQ vs. mic change).
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: Reads candidate amp models from the curated directory.
+    Why Not Next Level (L2): Cannot evaluate how competing solutions would perform against audio evidence.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Considers that multiple amps fit a genre tag.
+    Why Not Next Level (L2): Does not generate competing causal hypotheses that lead to different solutions.
+  Decision-Making:
+    Current Level: L2 (Conceptual)
+    Evidence: Gemini writes post hoc text ranking candidate amps, then selects one.
+    Why Not Next Level (L3): Only produces a single concrete signal chain; cannot output structured, viable alternative designs.
+  Outcome Reasoning:
+    Current Level: L1 (Vocabulary)
+    Evidence: Justifies the chosen amp over alternatives in narrative debug text.
+    Why Not Next Level (L2): Does not evaluate or predict the comparative acoustic trade-offs of the unselected alternatives.
+
+CURRENT STRENGTHS:
+  - Prompt explicitly encourages the model to consider and rank alternative amplifiers.
+KNOWLEDGE GAPS:
+  - Multi-path solution architecture, comparative trade-off scoring, multi-hypothesis design.
+REASONING GAPS:
+  - Produces narrative post hoc justification rather than generating true alternative solutions.
+ARCHITECTURAL MISPLACEMENT:
+  - UI variation buttons exist without backend architectural support.
+PLATFORM CONTAMINATION:
+  - Alternatives are conceived strictly as alternative AT5 amplifier models.
+PROFESSIONAL GAP:
+  - Generates a single deterministic solution; cannot present defensible alternatives to the user.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Develop multi-hypothesis generation and structured alternative solution evaluation in the Sound Engineer.
+
+
+================================================================================
+DOMAIN 21: ITERATIVE ENGINEERING & OUTCOME EVALUATION
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT is a purely feed-forward, open-loop generator. It accepts user input, generates
+a preset, and stops. It contains no mechanism to test its output, listen to the result,
+compare user audio against reference audio, or iteratively refine parameters based on an
+observed outcome.
+
+EVIDENCE PROVENANCE:
+  - ABSENT: Audio playback evaluation, closed-loop feedback, iterative parameter tuning.
+  - RUNTIME_DEMONSTRATED: Single-pass pipeline (Prompt -> JSON -> Post-Processing -> Export).
+  - UNKNOWN_PROVENANCE: `userPreset` dropzone produces hardcoded string `["Analysis completed with new engine"]`.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L0 (Absent)
+    Evidence: No knowledge or algorithms relating to iterative convergence, feedback error minimization, or outcome evaluation exist in the repository.
+    Why Not Next Level (L1): Does not recognize or model the analyze -> hypothesize -> intervene -> evaluate -> refine cycle.
+  Evidence Interpretation:
+    Current Level: L0 (Absent)
+    Evidence: Does not listen to or analyze generated audio.
+    Why Not Next Level (L1): Cannot read or evaluate the outcome of its own generation.
+  Diagnosis:
+    Current Level: L0 (Absent)
+    Evidence: Cannot diagnose whether an intervention succeeded, failed, or caused side-effects.
+    Why Not Next Level (L1): Generates zero outcome diagnoses.
+  Decision-Making:
+    Current Level: L0 (Absent)
+    Evidence: Cannot refine, adjust, or correct a preset based on test results.
+    Why Not Next Level (L1): Cannot make second-pass refinement decisions.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: No outcome evaluation loop exists.
+    Why Not Next Level (L1): Cannot compare predicted vs. actual acoustic results.
+
+CURRENT STRENGTHS:
+  - None.
+KNOWLEDGE GAPS:
+  - Closed-loop control theory, iterative refinement algorithms, outcome verification metrics.
+REASONING GAPS:
+  - Complete absence of an iterative evaluation loop; purely open-loop execution.
+ARCHITECTURAL MISPLACEMENT:
+  - None.
+PLATFORM CONTAMINATION:
+  - None.
+PROFESSIONAL GAP:
+  - Incapable of evaluating or refining its own work; fire-and-forget generation.
+MIGRATION DISPOSITION:
+  - DEVELOP
+RATIONALE:
+  - Core architectural capability required for future Sound Engineer iterations. Must be built from scratch.
+
+
+================================================================================
+DOMAIN 22: PROFESSIONAL ENGINEERING BEHAVIOUR
+================================================================================
+TARGET: L5 (Core)
+CURRENT CAPABILITY SUMMARY:
+Current TT produces professional-sounding presets for target genres through a combination
+of curated prompt directories, explicit negative constraints, and deterministic post-processing
+overrides. However, it exhibits few professional reasoning behaviors: it relies on static
+recipes, substitutes deterministic code for judgement, confuses keywords with acoustic
+evidence, and cannot explain trade-offs.
+
+EVIDENCE PROVENANCE:
+  - HYBRID: EXPLICIT_KNOWLEDGE + DETERMINISTIC_BEHAVIOUR + STATIC_RECIPE + PLATFORM_DERIVED across entire codebase.
+
+DIMENSION ASSESSMENT:
+  Knowledge:
+    Current Level: L3 (Applied)
+    Evidence: Embodies several core professional conventions (pre/post gain separation, clean boost mechanics, acoustic mic placement, avoiding clutter in vintage tones).
+    Why Not Next Level (L4): Lacks unified, first-principles cross-domain audio engineering knowledge; relies on fragmented rules of thumb.
+  Evidence Interpretation:
+    Current Level: L1 (Vocabulary)
+    Evidence: Extracts keywords from text prompts and matches genre tags.
+    Why Not Next Level (L2): Completely unable to interpret objective acoustic evidence from audio.
+  Diagnosis:
+    Current Level: L1 (Vocabulary)
+    Evidence: Matches text complaints to static fixes.
+    Why Not Next Level (L2): Does not perform causal diagnosis; jumps directly from symptom to gear.
+  Decision-Making:
+    Current Level: L2 (Conceptual)
+    Evidence: Produces viable signal chains by following rigid templates and enforcing code overrides.
+    Why Not Next Level (L3): Decisions are dominated by deterministic overrides and static recipes rather than flexible professional judgement.
+  Outcome Reasoning:
+    Current Level: L0 (Absent)
+    Evidence: Never evaluates, verifies, or refines generated presets.
+    Why Not Next Level (L1): Does not verify that its engineering decisions achieved the intended acoustic result.
+
+CURRENT STRENGTHS:
+  - Consistently produces usable, musically appropriate presets within its target genres.
+  - Good discipline regarding minimal processing for classic rock.
+KNOWLEDGE GAPS:
+  - Unified first-principles acoustic and electrical modeling across the whole signal chain.
+REASONING GAPS:
+  - Operates as a rule-based expert system, not an autonomous, evidence-driven Sound Engineer.
+ARCHITECTURAL MISPLACEMENT:
+  - Post-processing code overrides AI decisions, breaking architectural integrity.
+PLATFORM CONTAMINATION:
+  - Professional engineering intent is inextricably tangled with AmpliTube 5 implementations.
+PROFESSIONAL GAP:
+  - Achieves professional-looking results without executing professional engineering reasoning.
+MIGRATION DISPOSITION:
+  - EDUCATE & DEVELOP
+RATIONALE:
+  - Educate the Sound Engineer with foundational principles; develop autonomous, evidence-driven reasoning to replace hardcoded overrides.
+
+
+--------------------------------------------------------------------------------
+SECTION 5 — CONSOLIDATED GAP MATRIX
+--------------------------------------------------------------------------------
+
+The matrix below provides the consolidated evaluation across all 22 domains.
+Under the mandatory scoring rules, maturity levels are NOT averaged.
+
+-----------------------------------------------------------------------------------------------------------------------------
+Domain                         Target  Know  Evid  Diag  Decn  Outc  Primary Evidence Type      Primary Gap / Bottleneck    Disposition
+-----------------------------------------------------------------------------------------------------------------------------
+1. Source & Performance          L5     L1    L0    L0    L1    L0   EXPLICIT_KNOWLEDGE / REGEX Zero guitar/pickup modeling   DEVELOP
+2. Gain Staging & Headroom       L5     L3    L0    L1    L2    L0   EXPLICIT_KNOWLEDGE / CODE  No quantitative dB tracking   EXTRACT/DEVELOP
+3. Nonlinear & Distortion        L5     L3    L1    L2    L3    L0   EXPLICIT_KNOWLEDGE / CODE  No harmonic spectrum analysis EXTRACT/REHOME/EDUCATE
+4. Frequency & Spectral          L5     L4    L0    L2    L3    L0   EXPLICIT_KNOWLEDGE / CODE  No audio DSP measurement      EXTRACT/REHOME/DEVELOP
+5. Dynamics & Transients         L5     L2    L0    L1    L1    L0   EXPLICIT_KNOWLEDGE / CODE  No envelope/transient shaping DEVELOP
+6. Noise Engineering             L4     L2    L0    L1    L2    L0   DETERMINISTIC_LOGIC / REC  Crude static gate clamping    EXTRACT/DEVELOP
+7. Signal Topology & Order       L5     L3    L1    L2    L3    L1   EXPLICIT_KNOWLEDGE / CODE  Strict serial lock-in         KEEP/REHOME/DEVELOP
+8. Amplifier Behaviour           L5     L3    L1    L2    L3    L1   PLATFORM_DERIVED / DIREC   Coupled to AT5 brand names    PLATFORM-ONLY/DEVELOP
+9. Loudspeaker & Cabinet         L5     L3    L1    L2    L3    L1   EXPLICIT_KNOWLEDGE / DIREC Coupled to AT5 catalog        EXTRACT/REHOME/DEVELOP
+10. Microphone & Capture         L5     L4    L2    L3    L4    L2   DETERMINISTIC_REASONING    Metadata-driven, not audio    KEEP/EXTRACT/REHOME
+11. Phase & Multi-Source         L5     L2    L0    L1    L2    L0   EXPLICIT_KNOWLEDGE / CODE  Zero phase/comb-filter logic  DEVELOP
+12. Time, Modulation & Spatial   L4     L2    L0    L1    L2    L0   EXPLICIT_KNOWLEDGE / PLAT  Generic pedals, no 3D space   DEVELOP
+13. Psychoacoustics              L4     L2    L0    L1    L1    L0   EXPLICIT_KNOWLEDGE         No loudness/masking model     DEVELOP
+14. Musical & Production Context L4     L4    L2    L3    L3    L1   EXPLICIT_KNOWLEDGE / REC   Rigid static recipe traps     EXTRACT/REHOME/EDUCATE
+15. Reference Tone Matching      L5     L1    L1    L0    L1    L0   MODEL_DELEGATED (BLACKBOX) Zero audio DSP feature code   DEVELOP
+16. Diagnosis & Root-Cause       L5     L2    L0    L1    L1    L0   EXPLICIT_KNOWLEDGE (PROMPT)No diagnostic workflow        DEVELOP
+17. Intervention & Minimalism    L5     L3    L1    L2    L3    L1   EXPLICIT_KNOWLEDGE / CODE  Inconsistent across genres    KEEP/EXTRACT/REHOME
+18. Trade-Off & Constraints      L5     L2    L0    L1    L2    L0   EXPLICIT_KNOWLEDGE (PROMPT)Unexercised 1B contracts      REHOME/DEVELOP
+19. Uncertainty & Discipline     L5     L1    L0    L0    L0    L0   REPRESENTED_NOT_EXERCISED  Uncalibrated cosmetic numbers DEVELOP
+20. Alternative Solutions        L5     L2    L1    L1    L2    L1   MODEL_DELEGATED (PROMPT)   Post hoc text; 1 chain out    DEVELOP
+21. Iterative Outcome Evaluation L5     L0    L0    L0    L0    L0   ABSENT                     Open-loop; zero feedback loop DEVELOP
+22. Professional Behaviour       L5     L3    L1    L1    L2    L0   HYBRID (CODE + RULES)      Rules-based, not autonomous   EDUCATE/DEVELOP
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+SECTION 6 — CROSS-DOMAIN CAPABILITY ASSESSMENT
+--------------------------------------------------------------------------------
+
+Professional electric guitar tone engineering requires synthesizing causes and
+interventions across the complete electro-acoustic chain:
+Source -> Spectrum -> Nonlinear -> Amplifier -> Cabinet -> Capture -> Post-Processing -> Perceived Result.
+
+Below is the evaluation of Current TT's performance across the nine cross-domain
+engineering scenarios defined in Phase 1C.3a:
+
+--------------------------------------------------------------------------------
+Scenario 1: "Palm mutes are flubby, boomy, and lack tightness."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Investigate pickup inductance, pre-distortion low-end drive, tube blocking
+    distortion, power amp damping, cabinet enclosure resonance, and mic proximity effect.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? Yes, via regex keyword matching on "palm mute" or "flub".
+  - Multiple Causes Considered? No.
+  - Causal Tracing: Jumps directly from keyword to pre-distortion boost and gate clamp.
+  - Intervention Selection: Deterministically forces OverScream (Drive 1.0, Level 9.0)
+    and clamps gate release to 120 ms.
+  - Trade-Off Reasoning: None. Does not evaluate whether cutting bass thinned out single notes.
+  - Outcome Verification: None.
+Cross-Domain Rating: PARTIAL HEURISTIC (Produces a correct intervention via brute-force code override, but demonstrates zero acoustic diagnosis).
+
+--------------------------------------------------------------------------------
+Scenario 2: "Top-end distortion is fizzy, harsh, and buzzing."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Differentiate solid-state diode clipping from preamp tube saturation; check
+    power amp presence feedback; evaluate speaker cone breakup; check on-axis mic beaming.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? Yes, in prompt text and mic placement reasoning.
+  - Multiple Causes Considered? Partial. Recognizes diode clipping vs. mic on-axis placement.
+  - Causal Tracing: Traces fizz to either excessive treble or on-axis mic placement.
+  - Intervention Selection: Semantic mic placement engine automatically selects
+    "45° Off Axis" to tame harshness; normalizer reduces post-amp treble.
+  - Trade-Off Reasoning: Mentions in debug notes that off-axis softens highs without losing body.
+  - Outcome Verification: None.
+Cross-Domain Rating: APPLIED ACOUSTIC REASONING (Current TT's strongest cross-domain behavior, driven by `at5MicPlacementReasoning.ts`).
+
+--------------------------------------------------------------------------------
+Scenario 3: "Tone lacks pick attack definition and transient punch."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Check pick gauge/touch; evaluate front-end compressor attack; check preamp
+    saturation depth; inspect power supply sag; examine speaker transient response.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? Weakly (only if explicitly stated in text).
+  - Multiple Causes Considered? No.
+  - Causal Tracing: None. Assumes high-gain metal needs more boost level.
+  - Intervention Selection: Sets OverScream Level to 9.0.
+  - Trade-Off Reasoning: None.
+  - Outcome Verification: None.
+Cross-Domain Rating: ABSENT / ACCIDENTAL.
+
+--------------------------------------------------------------------------------
+Scenario 4: "Guitar sounds huge in solo, but completely disappears in a dense mix."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Recognize Fletcher-Munson masking; diagnose scooped midrange; identify low-end
+    conflict with bass guitar; reduce excessive stereo reverb.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? Yes, prompt contains rule: "Lost in mix? Boost midrange."
+  - Multiple Causes Considered? No. Focuses purely on midrange EQ boost.
+  - Causal Tracing: Links mix masking strictly to 700 Hz - 1.5 kHz frequencies.
+  - Intervention Selection: Tells Gemini to keep midrange forward for rhythm guitar.
+  - Trade-Off Reasoning: None.
+  - Outcome Verification: None.
+Cross-Domain Rating: CONCEPTUAL HEURISTIC.
+
+--------------------------------------------------------------------------------
+Scenario 5: "Dual-microphone setup sounds hollow, thin, and nasal."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Immediately diagnose phase cancellation and comb filtering caused by capsule
+    distance differences; check polarity; time-align capsules.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? No.
+  - Multiple Causes Considered? No.
+  - Causal Tracing: Blind to phase interaction. Dual mics are treated as additive filters.
+  - Intervention Selection: None. May attempt to boost EQ to restore hollow frequencies.
+  - Trade-Off Reasoning: None.
+  - Outcome Verification: None.
+Cross-Domain Rating: COMPLETE FAILURE (Lacks phase/polarity modeling entirely).
+
+--------------------------------------------------------------------------------
+Scenario 6: "Reference tone sounds wider, deeper, and more three-dimensional."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Distinguish double-tracking from stereo effects; evaluate room predelay and
+    early reflections; check contrasting left/right amplifier voicings.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? No.
+  - Multiple Causes Considered? No.
+  - Causal Tracing: None.
+  - Intervention Selection: May randomly insert a stereo chorus or large studio room.
+  - Trade-Off Reasoning: None.
+  - Outcome Verification: None.
+Cross-Domain Rating: ABSENT.
+
+--------------------------------------------------------------------------------
+Scenario 7: "High-gain modern metal rhythm has excessive idle noise and hiss."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Audit gain staging across pedals and preamp; isolate single-coil hum vs. thermal
+    hiss; apply dual-stage gating (input gate for hum, loop gate for hiss).
+Current TT Demonstrated Capability:
+  - Symptom Recognized? Yes, inferred automatically for all high-gain requests.
+  - Multiple Causes Considered? No.
+  - Causal Tracing: Assumes all noise is solved by clamping a noise gate.
+  - Intervention Selection: Deterministically clamps gate threshold to -45 dB and release to 120 ms.
+  - Trade-Off Reasoning: None.
+  - Outcome Verification: None.
+Cross-Domain Rating: STATIC RECIPE / PARAMETER CLAMPING.
+
+--------------------------------------------------------------------------------
+Scenario 8: "Tone is stiff, sterile, and lacks dynamic touch responsiveness."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Diagnose high power-amp damping, heavy negative feedback, solid-state rectification,
+    and excessive preamp compression; switch to cathode-biased power section with tube sag.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? No.
+  - Multiple Causes Considered? No.
+  - Causal Tracing: None.
+  - Intervention Selection: None.
+  - Trade-Off Reasoning: None.
+  - Outcome Verification: None.
+Cross-Domain Rating: ABSENT.
+
+--------------------------------------------------------------------------------
+Scenario 9: "Spectrum matches the reference on an RTA, but sounds completely wrong."
+--------------------------------------------------------------------------------
+Professional Expectation:
+  - Recognize that static RTAs do not display harmonic distortion texture, crest factor,
+    or speaker cone breakup; analyze THD, dynamic envelope, and nonlinear clipping.
+Current TT Demonstrated Capability:
+  - Symptom Recognized? No.
+  - Multiple Causes Considered? No.
+  - Causal Tracing: None.
+  - Intervention Selection: None.
+  - Trade-Off Reasoning: None.
+  - Outcome Verification: None.
+Cross-Domain Rating: ABSENT.
+
+
+--------------------------------------------------------------------------------
+SECTION 7 — SYSTEMIC FINDINGS
+--------------------------------------------------------------------------------
+
+The capability audit reveals eight systemic patterns that cut across all domains:
+
+1. THE "AUDIO-BLIND" PARADOX:
+   The user interface prominently features audio dropzones for Target Audio and
+   Your Recording, giving the user the strong impression of an intelligent,
+   listening AI. Under the hood, however, the user recording is dropped before
+   execution, all nine audio feature fields on `ToneProfile` are explicitly set to
+   `undefined`, and zero local audio DSP analysis is performed. Current TT is
+   completely audio-blind in application code.
+
+2. DETERMINISTIC OVERRIDES OF AI DECISIONS:
+   Instead of using Gemini as an intelligent sound engineer, the application polices
+   and overrides it with deterministic TypeScript logic. When Gemini generates a
+   valid tone, downstream code inspects strings, deletes user pedals, forces
+   OverScream, clamps gate parameters, and overwrites the engineering notes text.
+   The AI is treated as an unreliable draft generator, while hardcoded code acts
+   as the true engineer.
+
+3. STATIC RECIPE HIJACKING:
+   For key benchmark tones (AC/DC Malcolm Young, Pantera Cowboys From Hell,
+   Metallica Kill 'Em All), Current TT bypasses AI generation entirely when
+   validation recipes are active. These static recipes produce excellent presets,
+   creating an illusion of high model intelligence that is actually static file playback.
+
+4. PLATFORM-INDUCED MYOPIA:
+   Current TT cannot think about sound engineering outside the catalog and
+   constraints of AmpliTube 5. Prompts are filled with AT5 gear names, normalizers
+   are built to handle AT5 GUIDs and XML slot bugs, and filter design is crippled
+   by AT5's 2-band Parametric EQ limit. General sound engineering knowledge is
+   almost entirely conflated with AT5 operational knowledge.
+
+5. FEED-FORWARD OPEN-LOOP ARCHITECTURE:
+   Current TT has no concept of outcome verification. Once it emits a preset, the
+   execution lifecycle ends. It cannot listen to the result, compare it to the
+   target, or adjust a single parameter based on performance. It lacks the most
+   fundamental attribute of professional engineering: the iterative feedback loop.
+
+6. ABSENCE OF HYPOTHESIS FORMATION:
+   Current TT never formulates or tests causal hypotheses. It matches text
+   keywords directly to gear (e.g., "thrash" -> OverScream; "metal" -> Darrell 100;
+   "clean" -> compressor). It does not reason about causes, evidence, or alternatives.
+
+7. COSMETIC CONFIDENCE & METADATA:
+   The `confidence` output is an uncalibrated, cosmetic number. It is never used
+   to trigger alternative processing branches, warn the user of ambiguity, or
+   request additional information. The system projects false certainty on every run.
+
+8. RIGID SERIAL TOPOLOGY LOCK-IN:
+   The entire architecture assumes a single linear serial chain. It has no
+   representational or cognitive capability to handle parallel paths, wet/dry
+   routing, or dual-cabinet phase-aligned summing.
+
+
+--------------------------------------------------------------------------------
+SECTION 8 — CAPABILITY ASSETS WORTH PRESERVING
+--------------------------------------------------------------------------------
+
+Current TT contains several exceptionally high-value assets that should not be
+discarded, but rather extracted, rehomed, and elevated in the future architecture:
+
+1. GENUINE SOUND ENGINEERING KNOWLEDGE (PRESERVE & REHOME):
+   - The 10-Step Semantic Microphone Placement Model (/src/services/at5MicPlacementReasoning.ts):
+     This is the crown jewel of Current TT. Its modeling of proximity effect,
+     off-axis high-frequency rolloff, center-cap brightness, and complementary
+     dual-mic roles (57 attack + 121 warmth) is acoustically rigorous, platform-independent,
+     and production-proven. It must be preserved and rehomed into the Sound Engineer's
+     Semantic Tone Design engine.
+   - Acoustic Enclosure & Speaker Driver Descriptions (/src/services/at5CabinetKnowledge.ts):
+     The physical descriptions of open vs. closed cabinets and Celestion/EVM driver
+     voicings represent solid acoustic knowledge that should be transferred into the
+     Sound Engineer's knowledge base.
+   - Pre-Distortion Tightening Principles:
+     The explicit prompt principles explaining why low frequencies must be rolled
+     off before nonlinear clipping should be formalized into the Sound Engineer's
+     core DSP rules.
+
+2. USEFUL DETERMINISTIC MECHANISMS (PRESERVE IN PLATFORM TRANSLATION):
+   - Functional EQ Deduplication Taxonomy (/src/services/at5SignalChainNormalizer.ts):
+     The classification of EQs into pre_amp_stomp_eq, loop_eq, post_amp_rack_eq,
+     and final_shaping_eq is an excellent structural concept. It should be rehomed
+     to the Semantic Tone Design and Platform Translation layers to prevent redundant
+     processing.
+   - VIR Coordinate Math Service (/src/services/at5MicPlacementService.ts):
+     The trigonometric math mapping semantic labels ("Cap Edge", "45° Off Axis")
+     into AT5 VIR coordinates is clean, robust platform translation logic. It should
+     remain in the AT5 Platform Translator.
+
+3. USEFUL SEMANTIC STRUCTURES (PRESERVE IN ARCHITECTURE):
+   - Phase 1B Architectural Contracts (/src/sound-engineer/layer-contracts/*):
+     `EvidenceRecord`, `EngineeringDecisionRecord`, `SemanticToneDesign`,
+     `ValidationReport`, and `PlatformTranslationPlan`. These contracts are properly
+     designed and ready to be populated by the future Sound Engineer.
+
+4. PLATFORM-SPECIFIC KNOWLEDGE (DOWNSTREAM PRESERVATION):
+   - The AT5 Amplifier and Cabinet Catalogs (/src/services/at5AmplifierKnowledge.ts, at5Catalog.ts):
+     Essential for translating semantic designs into AmpliTube presets. Must be
+     retained strictly downstream in the AT5 Platform Translation layer.
+
+5. BEHAVIOURS THAT MUST NOT BE MIGRATED (RETIRE):
+   - Deterministic post-processing pedal swaps and gate clamping (`adjustThrashPedalSelection`).
+   - Static recipe intercepts that short-circuit AI generation.
+   - Forcing AT5 2-band Parametric EQ restrictions into the Sound Engineer prompt.
+   - Hardcoding cosmetic confidence numbers.
+
+
+--------------------------------------------------------------------------------
+SECTION 9 — ARCHITECTURAL MISPLACEMENT SUMMARY
+--------------------------------------------------------------------------------
+
+The audit reveals significant misplacement of responsibilities across architectural layers:
+
+---------------------------------------------------------------------------------------------------------
+Misplaced Knowledge / Behaviour            Current Location            Proper Architectural Location
+---------------------------------------------------------------------------------------------------------
+Pre-distortion boost & gate clamping       geminiService.ts (Post-Proc)AI Sound Engineer (Judgement)
+Functional EQ role deduplication           at5SignalChainNormalizer.ts Semantic Tone Design / Validation
+Semantic Mic Placement Reasoning           at5MicPlacementReasoning.ts AI Sound Engineer (Capture Design)
+AT5 2-Band Parametric EQ Restriction       geminiService.ts (Prompt)   AT5 Platform Translator (Mapping)
+Cabinet & Speaker Acoustic Descriptions    at5CabinetKnowledge.ts      AI Sound Engineer Knowledge Base
+Amp catalog names & knob parameters        geminiService.ts (Prompt)   AT5 Platform Translator (Roster)
+Validation Recipes (Static Presets)        geminiService.ts (Runtime)  Automated QA / Test Suite Only
+---------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+SECTION 10 — PLATFORM CONTAMINATION SUMMARY
+--------------------------------------------------------------------------------
+
+The following platform-specific elements currently contaminate upstream sound
+engineering concerns and must be decoupled:
+
+1. AMPLIFIER BADGES AS COGNITIVE CONCEPTS:
+   Current TT forces the AI to select from a directory of AT5-specific amplifier
+   names ("Brit 8000", "British Lead S100", "Darrell 100"). The Sound Engineer
+   should instead specify abstract amplifier behaviors (e.g., "EL34 Class AB,
+   high-gain 4-stage triode preamp, cathode-follower FMV tone stack, low damping factor").
+
+2. PLATFORM HARDWARE LIMITATIONS DICTATING ENGINEERING PRINCIPLES:
+   The MASTER_PROMPT explicitly tells Gemini: "AT5 Parametric EQ has ONLY 2 bands...
+   never generate 3 or 4 bands." This is a pure platform limitation that has been
+   allowed to infect the Sound Engineer's cognitive model.
+
+3. KNOB RANGES & PARAMETER ARTIFACTS:
+   The AI is forced to output parameters on AT5's 0.0 to 10.0 scale, rather than
+   physical or perceptual engineering units (dB, Hz, ms, ratio).
+
+4. SLOT ARCHITECTURE CONSTRAINTS:
+   The concept of "Stomp vs. Rack" is an AmpliTube 5 UI convention, not a universal
+   acoustic reality. The Sound Engineer should think in terms of Pre-Gain,
+   Post-Preamp (Loop), and Post-Acoustic Capture.
+
+
+--------------------------------------------------------------------------------
+SECTION 11 — UNKNOWN / UNPROVEN CAPABILITIES
+--------------------------------------------------------------------------------
+
+Static repository analysis cannot verify whether Gemini intrinsically possesses
+deeper sound-engineering capabilities when unconstrained by Current TT's prompts
+and overrides. The following areas remain UNKNOWN and require controlled testing
+in future phases:
+
+1. Multimodal Audio Perception:
+   Can Gemini 3.8 Flash accurately detect spectral tilt, harmonic distortion type,
+   or acoustic room reflections from raw guitar audio without text hints?
+2. First-Principles Causal Diagnosis:
+   When presented with a problematic guitar tone, can Gemini identify the root cause
+   without falling back on keyword templates?
+3. Unconventional Topological Reasoning:
+   Can Gemini design effective parallel or multiband guitar chains when given the
+   freedom to do so?
+
+
+--------------------------------------------------------------------------------
+SECTION 12 — PHASE 1C.3b CONCLUSIONS
+--------------------------------------------------------------------------------
+
+1. Current TT is a highly effective, rule-guided preset compiler for AmpliTube 5,
+   bolstered by excellent static recipes and robust acoustic microphone rules.
+2. Current TT does NOT meet the Phase 1C.3a Professional Sound Engineer Standards
+   in any core reasoning dimension. Its Evidence Interpretation, Diagnosis, and
+   Outcome Reasoning capabilities are largely absent (L0/L1).
+3. The gap between Current TT and the target standard is NOT a matter of tweaking
+   prompts. It is an architectural and cognitive divide: Current TT lacks audio
+   measurement, lacks a diagnostic engine, lacks trade-off balancing, and operates
+   in an open loop without outcome verification.
+4. The migration path forward is clear:
+   - Extract and preserve the brilliant semantic microphone placement engine and
+     acoustic knowledge.
+   - Decouple all AT5 platform logic, gear names, and XML quirks into a dedicated
+     downstream Platform Translation layer.
+   - Build a true, platform-independent AI Sound Engineer operating on physical
+     units, causal diagnosis, and closed-loop outcome evaluation.
+
+
+--------------------------------------------------------------------------------
+SECTION 13 — COMPLETION STATEMENT
+--------------------------------------------------------------------------------
+
+The Phase 1C.3b Current TT Professional Capability Assessment & Gap Matrix has been
+completed in strict compliance with project guidelines.
+
+Explicit Confirmations:
+  - All 22 professional competency domains were assessed individually.
+  - All five dimensions (Knowledge, Evidence Interpretation, Diagnosis,
+    Decision-Making, Outcome Reasoning) were independently scored for each domain.
+  - Every assigned score documents supporting evidence and explicitly explains
+    why the next higher maturity level was denied.
+  - Current TT was assessed strictly against the frozen Phase 1C.3a benchmark.
+  - The Phase 1C.3a benchmark was NOT lowered or altered in any way.
+  - Deterministic and static recipe successes were NOT credited as professional reasoning.
+  - Model-delegated tasks were NOT credited as demonstrated capability without code proof.
+  - Phase 1B contracts were treated as unexercised architecture, not live runtime reasoning.
+  - No single aggregate or averaged maturity score was calculated.
+  - No curriculum, training materials, or test suites were designed.
+  - Phase 1C.3c was NOT started.
+  - ZERO production source files were modified.
+  - ZERO prompts or Gemini instructions were altered.
+  - ZERO Firestore data was modified.
+  - ZERO Gemini API competency test calls were executed.
+  - The complete report has been compiled and saved as:
+    /TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt
+
+================================================================================
+END OF REPORT
+================================================================================

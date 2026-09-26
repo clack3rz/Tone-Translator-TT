@@ -1,0 +1,1251 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4a — SOUND ENGINEERING KNOWLEDGE ARCHITECTURE & LIFECYCLE (v1)
+Date: 2026-09-26
+Mode: READ-ONLY ARCHITECTURE / KNOWLEDGE SYSTEM DESIGN
+Authoritative Inputs:
+  - /TT_Professional_Sound_Engineer_Standards_v1.txt (Phase 1C.3a)
+  - /TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt (Phase 1C.2)
+  - /TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt (Phase 1C.3b)
+  - /TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.txt (Phase 1C.3c)
+Target Report: /TT_Sound_Engineering_Knowledge_Architecture_v1.txt
+================================================================================
+
+
+--------------------------------------------------------------------------------
+SECTION 1 — EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 ARCHITECTURAL PURPOSE & SCOPE
+Phase 1C.4a establishes the authoritative, platform-independent Sound Engineering
+Knowledge Architecture for the future Tone Translator (TT) AI Sound Engineer.
+
+This phase does NOT populate the Sound Engineer's knowledge base.
+It does NOT ingest or harvest external text, websites, papers, or textbooks.
+It does NOT modify production prompts, TypeScript application code, Firestore schemas,
+or execution contracts.
+It does NOT implement runtime DSP or retrieval (RAG) services.
+
+Phase 1C.4a defines the structural data contracts, entity relationships, claim
+granularity, provenance lineage, epistemic authority models, conflict resolution
+frameworks, numerical value typing, lifecycle state machines, governance gates, and
+retrieval-readiness metadata required so that when the library is later populated
+(Phase 1C.4b onward), knowledge operates strictly to inform first-principles
+reasoning without substituting for it.
+
+1.2 THE CARDINAL ARCHITECTURAL PRINCIPLE
+    KNOWLEDGE INFORMS REASONING.
+    KNOWLEDGE DOES NOT REPLACE REASONING.
+
+In audio engineering, whenever an architectural design allows knowledge to encode:
+    "Symptom X -> Mandatory Intervention Y"
+the system ceases to be an engineer and degenerates into a rigid recipe engine.
+The architecture designed herein guarantees that the Sound Engineering Library
+contains principles, physical models, causal mechanisms, evidence requirements,
+boundary conditions, and known trade-offs, while leaving hypothesis generation,
+diagnostic discrimination, intervention design, and outcome evaluation strictly to
+the cognitive reasoning process of the Sound Engineer.
+
+1.3 STRUCTURAL ADVANCEMENT OVER PHASE 1C.3c
+Phase 1C.3c proposed an initial single-entity `NormalizedKnowledgeUnit` schema as a
+pedagogical blueprint. Phase 1C.4a critically audits and refactors that concept into
+a relational multi-entity architectural model. A single monolithic object cannot
+faithfully represent:
+  - Multi-source provenance with diverging evidence tiers supporting one claim.
+  - Competing, conflicting, or unresolved claims across different authorities.
+  - The distinction between invariant physical laws and context-dependent tendencies.
+  - The separation between illustrative numerical examples and normative constraints.
+  - Fine-grained retrieval where symptoms, causal models, and interventions must be
+    traversed dynamically without loading fixed recipes.
+
+The resulting Phase 1C.4a architecture introduces atomic Knowledge Claims, Multi-Source
+Attributions, Explicit Boundary & Conditionality Contexts, Reconciled Conflict
+Records, and a Strict Five-State Governance Lifecycle with an isolated Experiential
+Quarantine Store.
+
+
+--------------------------------------------------------------------------------
+SECTION 2 — ARCHITECTURAL MISSION
+--------------------------------------------------------------------------------
+
+2.1 THE MISSION
+To construct a formal, platform-independent, verifiable knowledge representation
+and lifecycle system that equips the future TT AI Sound Engineer with trustworthy,
+scientifically grounded electro-acoustic and psychoacoustic understanding, while
+maintaining strict epistemic humility, provenance transparency, and immunity to
+dogmatic recipe generation or platform contamination.
+
+2.2 PRIMARY ARCHITECTURAL OBJECTIVES
+  1. Epistemic Grounding: Root all authoritative assertions in established physical
+     laws, peer-reviewed acoustics, manufacturer circuit documentation, and systematic
+     recording engineering literature.
+  2. Recipe Immunity: Structurally prevent the storage or retrieval of static
+     rule-pairs ("if thrash metal, then boost Tube Screamer with drive=0, tone=7").
+  3. Strict Provenance: Ensure every atomic claim traces directly to its source,
+     evidence tier, extraction method, reviewer signature, and confidence bounds.
+  4. Platform Decoupling: Ensure zero leakage of commercial brand names, proprietary
+     GUIDs, XML structures, or DAW/hardware-specific artifacts into the general
+     sound engineering library.
+  5. Asymmetric Authority: Rank claims based on domain-appropriate authority rather
+     than a naive flat authority tier (e.g., physics textbooks govern wave mechanics;
+     manufacturer schematics govern component nonlinearities; engineering handbooks
+     govern studio workflow conventions).
+  6. Cognitive Enablement: Package knowledge so that retrieval provides causal
+     mechanisms, discriminating observations, and trade-off vectors to the
+     Phase 1B `EngineeringDecisionRecord` pipeline.
+
+
+--------------------------------------------------------------------------------
+SECTION 3 — GOVERNING PRINCIPLES
+--------------------------------------------------------------------------------
+
+The architecture enforces twelve non-negotiable design principles:
+
+Principle 1: Knowledge First — Rules Only Where Rules Genuinely Exist
+Physics, mathematics, and schema invariants have rules (e.g., conservation of energy,
+0 dBFS digital ceiling, Nyquist-Shannon sampling limit, non-invertible comb filter
+nulls). Engineering interventions do not have universal rules; they have principles,
+trade-offs, and contextual tendencies. The architecture explicitly rejects the
+universalization of engineering practices.
+
+Principle 2: Principles, Not Answers
+Knowledge units represent the *why* and the *how*, never the pre-determined outcome.
+A unit explains why reducing low frequencies before clipping reduces intermodulation
+distortion; it never mandates an equalizer setting.
+
+Principle 3: Knowledge Is Not Reasoning
+The library is a cognitive repository of models and facts. The AI Sound Engineer
+performs abductive, deductive, and inductive reasoning using those models. Storing
+completed diagnostic conclusions inside the knowledge base is strictly prohibited.
+
+Principle 4: Platform Independence
+All knowledge entities are expressed in SI physical units (Hz, ms, dB, V, ohms, cm,
+degrees) and platform-independent semantic descriptors. Target platforms (such as
+IK Multimedia AmpliTube 5, Line 6 Helix, Neural DSP, or analog hardware) exist
+solely downstream in the Platform Translation Layer.
+
+Principle 5: Provenance Is Mandatory & Atomic
+A knowledge assertion without traceable source attribution, extraction metadata,
+and reviewer sign-off is treated as an unverified speculation and cannot enter the
+active library. Provenance attaches to individual atomic claims, not to entire
+composite documents.
+
+Principle 6: Claim Granularity & Atomicity
+Complex documents are decomposed into atomic, independently verifiable claims.
+This enables fine-grained versioning, multi-source consensus tracking, and modular
+retrieval without dragging in irrelevant assumptions.
+
+Principle 7: Conditional Knowledge & Boundary Limits
+Every engineering claim is valid only within specific boundary conditions (e.g.,
+small-signal linear operation, near-field acoustic radiation, high-gain clipping).
+Claims must explicitly state their operational envelopes, confounders, and failure modes.
+
+Principle 8: Preservation of Credible Conflict
+When two authoritative sources disagree (e.g., differing views on optimal speaker
+break-in mechanics or psychoacoustic masking thresholds), the architecture preserves
+both claims with their respective evidence tiers and contextual boundaries. The
+system never silently averages or arbitrarily discards conflicting evidence.
+
+Principle 9: Current TT Is a Source, Not an Authority
+Knowledge extracted from Current TT's prompts or code (e.g., microphone positioning
+reasoning or OverScream tightening) is treated as an unverified source claim. It
+must undergo identical extraction, classification, physical verification, and human
+expert review before entering the authoritative library.
+
+Principle 10: Rigorous Typing of Numerical Values
+Numbers in the library must be explicitly categorized. A physical constant (speed of
+sound = 343 m/s) is treated fundamentally differently from an illustrative frequency
+(e.g., "around 800 Hz") or a measured threshold. Illustrative numbers must never
+become normative boundaries.
+
+Principle 11: Human Expert Governance
+Machine learning models and autonomous agents may propose extracted claims or
+candidate lessons, but only human domain experts can promote claims to the
+authoritative `ACTIVE` state.
+
+Principle 12: Experiential Quarantine
+Insights gained from future runtime closed-loop iterations or user feedback are
+strictly quarantined as `CANDIDATE_LESSONS`. They cannot alter global knowledge
+without formal review and regression testing.
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — KNOWLEDGE VS REASONING BOUNDARY
+--------------------------------------------------------------------------------
+
+4.1 THE FUNCTIONAL DIVISION OF LABOR
+A sound engineering system consists of three coordinated cognitive layers:
+  1. The Knowledge Library: The repository of physical laws, transducer models,
+     circuit behaviors, psychoacoustic mechanics, and source literature.
+  2. The Runtime Evidence System: The DSP tools that measure the physical audio
+     (spectral distribution, crest factor, envelope slopes, phase correlation).
+  3. The Sound Engineer Reasoning Engine: The cognitive agent that synthesizes
+     evidence and knowledge to diagnose problems, balance trade-offs, and make
+     decisions.
+
+The diagram below defines the strict boundary of information flow:
+
++─────────────────────────────────────────────────────────────────────────────+
+│                       SOUND ENGINEERING KNOWLEDGE LIBRARY                   │
+│  - Invariant Physical Laws (Wave equations, Ohm's law, Fourier)             │
+│  - Causal Mechanism Models (Pre-clipping LF -> IMD -> Transient tightness)  │
+│  - Transducer Acoustics (Proximity effect = f(distance, polar pattern))      │
+│  - Boundary Conditions & Confounders (Near-field vs far-field limits)       │
+│  - Known Trade-Off Relationships (Noise floor vs high-gain sustain)         │
++──────────────────────────────────────┬──────────────────────────────────────+
+                                       │ (Retrieves Causal Models & Limits)
+                                       ▼
++───────────────────────────+    +────────────────────────────────────────────+
+│    RUNTIME EVIDENCE /     │    │        AI SOUND ENGINEER REASONING         │
+│         DSP TOOLS         │───>│  - Hypotheses Generation (H1, H2, H3)      │
+│  - Spectral Centroid (Hz) │    │  - Evidence Discriminating Tests           │
+│  - Crest Factor (dB)      │    │  - Root Cause Diagnosis                    │
+│  - Correlation Index (r)  │    │  - Intervention Selection & Parsimony      │
+│  - Attack/Decay (ms)      │    │  - Trade-Off Balancing (Accepting +3dB hiss)│
++───────────────────────────+    +─────────────────────┬──────────────────────+
+                                                       │ (Emits Semantic Design)
+                                                       ▼
+                                 +────────────────────────────────────────────+
+                                 │       SEMANTIC TONE DESIGN (Phase 1B)      │
+                                 │  - Abstract Signal Graph                   │
+                                 │  - Physical Parameter Values (SI units)    │
+                                 │  - Zero Platform Artifacts                 │
+                                 +─────────────────────┬──────────────────────+
+                                                       │ (Translates)
+                                                       ▼
+                                 +────────────────────────────────────────────+
+                                 │        PLATFORM TRANSLATION LAYER          │
+                                 │  - AmpliTube 5 GUIDs & XML Mapping         │
+                                 │  - Hardware SysEx / Slot Bounds            │
+                                 +────────────────────────────────────────────+
+
+4.2 COMPARATIVE BOUNDARY TABLE
+The following table delineates what information is permitted within the Knowledge
+Library versus what must reside in Reasoning, Evidence, or Translation:
+
+Item / Concept                  Correct Layer       Violation if Placed Elsewhere
+---------------------------------------------------------------------------------
+Speed of sound in air (343 m/s) Knowledge Library   Hardcoding in reasoning prompt
+Measured guitar attack = 14 ms  Runtime Evidence    Treating as knowledge fact
+"Tone is boomy due to mic prox" Reasoning Engine    Hardcoded in knowledge unit
+"Use TS9 with Drive 0, Tone 7"  PROHIBITED RECIPE   Stored as knowledge or rule
+Moving mic 5cm reduces LF boost Knowledge Library   Prescribing as only fix
+AT5 Model ID = 104 (OverScream) Platform Translator Contaminating Knowledge Library
+"Accepting hiss for sustain"    Reasoning Engine    Storing as static rule
+Validating EQ Q is between 0.1-16 Deterministic Guard Storing as general knowledge
+
+
+--------------------------------------------------------------------------------
+SECTION 5 — KNOWLEDGE CLASSIFICATION TAXONOMY
+--------------------------------------------------------------------------------
+
+Every piece of information entering the Knowledge Library must be categorized into
+one of eight mutually exclusive epistemological classes:
+
+Class 1: PHYSICAL_LAW
+  - Invariant mathematical and physical truths governing the universe.
+  - Examples: Wave equation, conservation of energy, Ohm's law, Faraday's law of
+    induction, Nyquist-Shannon sampling theorem, inverse square law.
+  - Mutability: Immutable. Overrides all other classes without exception.
+
+Class 2: ESTABLISHED_ENGINEERING_PRINCIPLE
+  - Well-grounded, peer-reviewed engineering theories supported by robust empirical
+    validation and mathematical modeling.
+  - Examples: Velocity-gradient acoustic proximity effect, tube grid-clipping transfer
+    characteristics, loudspeaker voice-coil reactive impedance rise, comb filtering
+    null spacing f = (2n+1)/(2*tau).
+  - Mutability: Highly stable; revised only upon rigorous scientific breakthrough.
+
+Class 3: EMPIRICAL_RELATIONSHIP
+  - Systematically measured correlations between physical variables observed across
+    controlled laboratory experiments.
+  - Examples: Fletcher-Munson / ISO 226 equal-loudness contours, paper cone breakup
+    frequency ranges for 12-inch guitar drivers, Bark critical masking bandwidths.
+  - Mutability: Stable; subject to measurement refinement and boundary qualification.
+
+Class 4: ENGINEERING_TENDENCY
+  - Observed behavioral tendency in complex electro-acoustic systems that holds true
+    across standard operating envelopes but has known exceptions.
+  - Examples: Pre-distortion high-pass filtering tends to increase perceived transient
+    attack tightness; open-back cabinets tend to produce wider spatial dispersion
+    with diminished sub-120 Hz fundamental weight.
+  - Mutability: Moderate; requires explicit boundary conditions and confounder tags.
+
+Class 5: CONTEXT_DEPENDENT_PRACTICE
+  - Systematic engineering methodologies developed by professional practitioners for
+    specific acoustic, musical, or production contexts.
+  - Examples: High-passing electric rhythm guitars at 100 Hz in a dense modern metal
+    mix to clear room for bass guitar fundamental; placing a ribbon mic 15 cm off-grill
+    at 45 degrees to tame aggressive modern ceramic speaker fizz.
+  - Mutability: Contextual; must never be applied outside its qualified context.
+
+Class 6: PROFESSIONAL_CONVENTION
+  - Industry agreements, calibration standards, and workflow heuristics that ensure
+    interoperability and professional consistency.
+  - Examples: 0 VU calibration to +4 dBu (-18 dBFS digital nominal operating level);
+    standard guitar cabinet impedance matching (4, 8, 16 ohms); EBU R128 loudness.
+  - Mutability: Governed by standards organizations (AES, EBU, IEC, IEEE).
+
+Class 7: HYPOTHETICAL_OR_COMPETING_MODEL
+  - Plausible engineering explanations where complete consensus has not been achieved
+    or where multiple valid circuit/acoustic models coexist.
+  - Examples: Competing models of vacuum tube cathode bypass capacitor phase smearing;
+    differing theories on the subjective perception of inter-sample peaks.
+  - Mutability: Dynamic; retains competing status until resolved.
+
+Class 8: ILLUSTRATIVE_EXAMPLE
+  - Concrete historical cases, reference settings, or laboratory demonstrations used
+    solely to illuminate an underlying principle.
+  - Examples: "In the 1970s, Malcolm Young's rhythm tone achieved extreme transient
+    clarity using high-headroom Marshall Super Bass heads with minimal preamp clipping."
+  - Mutability: Informational only. MUST NEVER BE TREATED AS A NORMATIVE TARGET.
+
+
+--------------------------------------------------------------------------------
+SECTION 6 — PROPOSED KNOWLEDGE ENTITY MODEL
+--------------------------------------------------------------------------------
+
+6.1 RELATIONAL ARCHITECTURE (AUDITING PHASE 1C.3c)
+Phase 1C.3c proposed a monolithic `NormalizedKnowledgeUnit` where principle, causal
+model, evidence indicators, hypotheses, interventions, trade-offs, and provenance
+were stored in a single JSON document.
+
+Architectural Audit Finding:
+The monolithic approach suffers from four fatal structural defects:
+  1. Provenance Conflation: A single document cannot capture when the *principle* is
+     derived from a Tier 1 textbook, the *causal model* is verified by a Tier 2 paper,
+     and the *trade-off* is documented in a Tier 3 studio manual.
+  2. Recipe Vulnerability: Packaging evidence indicators, competing hypotheses, and
+     specific interventions into one tight object creates a gravity well that pulls
+     the system back into "symptom-to-fix" lookup tables.
+  3. Conflict Paralysis: When two authorities disagree on a specific trade-off or
+     frequency range, the entire monolithic unit must either split or choose a side.
+  4. Redundant Proliferation: Fundamental principles (e.g., Comb Filtering) would need
+     to be duplicated across dozens of units dealing with room mics, dual cab mics,
+     flanging, and stereo widening.
+
+Refactored Architecture:
+Phase 1C.4a decomposes the knowledge library into five normalized, relational entities:
+  1. `KnowledgeClaim` (Atomic assertions of fact, principle, or causal mechanism)
+  2. `CausalModel` (Dynamic input -> mediating mechanism -> acoustic consequence networks)
+  3. `OperationalBoundary` (Explicit validity envelopes, confounders, and failure limits)
+  4. `SourceAttribution` (Atomic citation, quotation, evidence tier, and extraction lineage)
+  5. `ConflictRecord` (Explicit tracking of competing, divergent, or reconciled claims)
+
+6.2 CONCEPTUAL ENTITY RELATIONSHIP DIAGRAM
+
+   +────────────────────────+
+   │   SourceAttribution    │
+   │  - Source ID & Title   │
+   │  - Evidence Tier (1-4) │
+   │  - Exact Citation/Page │
+   │  - Extraction Lineage  │
+   +───────────┬────────────+
+               │ 1..*
+               │ supports
+               ▼ 1..*
+   +────────────────────────+          1..* relates to 1..*
+   │     KnowledgeClaim     │<───────────────────────────────────+
+   │  - Claim ID            │                                    │
+   │  - Domain ID (1-22)    │                                    │
+   │  - Classification (1-8)│                                    │
+   │  - Statement (Semantic)│                                    │
+   │  - Lifecycle State     │                                    │
+   +───────────┬────────────+                                    │
+               │                                                 │
+               ├───────────────────┐                             │
+               │ 1..*              │ 1..*                        │
+               ▼ governed by       ▼ informs                     │
+   +────────────────────────+  +────────────────────────+        │
+   │  OperationalBoundary   │  │      CausalModel       │        │
+   │  - Physical Envelope   │  │  - Input Stimulus      │        │
+   │  - Confounders         │  │  - Mediating Mechanism │        │
+   │  - Known Exceptions    │  │  - Acoustic Result     │        │
+   │  - Failure Modes       │  │  - Coupled Domains     │        │
+   +────────────────────────+  +────────────────────────+        │
+                                                                 │
+                                                                 │
+   +────────────────────────+                                    │
+   │     ConflictRecord     │                                    │
+   │  - Conflict ID         │                                    │
+   │  - Competing Claim IDs ├────────────────────────────────────┘
+   │  - Divergence Nature   │
+   │  - Reconciliation St.  │
+   +────────────────────────+
+
+6.3 DETAILED ENTITY SPECIFICATIONS
+
+Entity A: `KnowledgeClaim`
+  Fields:
+  - `claim_id`: String (Format: `KC-{domain_code}-{unique_hash}`)
+  - `domain_id`: Integer (1 to 22, matching Phase 1C.3a)
+  - `concept_name`: String (e.g., "Velocity Gradient Proximity Effect")
+  - `epistemic_class`: Enum (`PHYSICAL_LAW`, `ESTABLISHED_ENGINEERING_PRINCIPLE`,
+    `EMPIRICAL_RELATIONSHIP`, `ENGINEERING_TENDENCY`, `CONTEXT_DEPENDENT_PRACTICE`,
+    `PROFESSIONAL_CONVENTION`, `HYPOTHETICAL_OR_COMPETING_MODEL`, `ILLUSTRATIVE_EXAMPLE`)
+  - `statement`: String (Precise, platform-independent, declarative assertion)
+  - `formal_derivation_or_formula`: Optional String (e.g., "Delta_dB = 20 * log10(1 + (c / (2 * pi * f * r))^2)^0.5")
+  - `confidence_score`: Float (0.0 to 1.0, reflecting peer consensus and evidence quality)
+  - `lifecycle_state`: Enum (`CAPTURED`, `EXTRACTED`, `NORMALIZED`, `UNDER_REVIEW`,
+    `VALIDATED_ACTIVE`, `DEPRECATED`, `SUPERSEDED`, `REJECTED`)
+  - `attribution_ids`: Array of String (References to `SourceAttribution`)
+  - `boundary_ids`: Array of String (References to `OperationalBoundary`)
+  - `causal_model_ids`: Array of String (References to `CausalModel`)
+  - `superseded_by`: Optional String (Reference to newer `KnowledgeClaim`)
+  - `version`: Integer
+
+Entity B: `SourceAttribution`
+  Fields:
+  - `attribution_id`: String (Format: `SRC-{tier}-{source_hash}`)
+  - `source_class`: Enum (`PHYSICS_TEXTBOOK`, `PEER_REVIEWED_JOURNAL`,
+    `STANDARDS_BODY_DOC`, `MANUFACTURER_ENGINEERING_DOC`,
+    `PROFESSIONAL_ENGINEERING_TREATISE`, `EXPERT_STUDIO_INTERVIEW`, `CURRENT_TT_SOURCE`)
+  - `domain_authority_scope`: Array of Integer (Domains where this source is authoritative)
+  - `title`: String
+  - `authors`: Array of String
+  - `publisher_or_institution`: String
+  - `publication_year`: Integer
+  - `doi_or_isbn`: Optional String
+  - `exact_location`: String (Chapter, Section, Page number, Equation number)
+  - `quoted_claim`: String (Literal text from source)
+  - `extraction_method`: Enum (`MANUAL_EXPERT`, `SUPERVISED_SYNTHESIS`)
+  - `reviewer_id`: String
+  - `review_date`: Timestamp
+
+Entity C: `CausalModel`
+  Fields:
+  - `model_id`: String (Format: `CM-{domain_code}-{unique_hash}`)
+  - `model_name`: String
+  - `input_stimulus`: Object (Physical domain parameter, range, and unit)
+  - `mediating_stage`: Enum (`SOURCE`, `FRONT_END_ELECTRICAL`, `NONLINEAR_PREAMP`,
+    `POWER_STAGE`, `ELECTRO_ACOUSTIC_TRANSDUCER`, `ACOUSTIC_SPACE`, `CAPTURE_TRANSDUCER`,
+    `POST_PROCESSING_DIGITAL`)
+  - `mediating_mechanism`: String (Physical or circuit mechanism acting on stimulus)
+  - `acoustic_consequences`: Array of Objects:
+    - `consequence_description`: String
+    - `observable_domain`: Enum (`FREQUENCY`, `DYNAMICS`, `HARMONIC_SERIES`, `PHASE`, `SPATIAL`)
+    - `metric_indicator`: String (e.g., "Spectral Centroid", "Crest Factor")
+    - `direction_of_change`: Enum (`INCREASE`, `DECREASE`, `EXPAND`, `COMPRESS`, `SHIFT`)
+  - `trade_off_implications`: Array of Objects:
+    - `acoustic_gain`: String
+    - `acoustic_penalty`: String
+    - `mitigation_strategy`: String
+  - `coupled_domain_ids`: Array of Integer
+
+Entity D: `OperationalBoundary`
+  Fields:
+  - `boundary_id`: String (Format: `OB-{unique_hash}`)
+  - `applicable_envelope`: String (Operating conditions where claim is strictly valid)
+  - `prerequisites`: Array of String (Required physical states for validity)
+  - `confounding_variables`: Array of String (Variables that mask or mimic this phenomenon)
+  - `known_exceptions`: Array of String (Conditions where the claim breaks down)
+  - `failure_mode_description`: String (What occurs when boundaries are exceeded)
+
+Entity E: `ConflictRecord`
+  Fields:
+  - `conflict_id`: String (Format: `CR-{unique_hash}`)
+  - `competing_claim_ids`: Array of String (Length >= 2)
+  - `conflict_nature`: Enum (`DIRECT_CONTRADICTION`, `BOUNDARY_DIVERGENCE`,
+    `METHODOLOGICAL_DIFFERENCE`, `TERMINOLOGICAL_AMBIGUITY`)
+  - `competing_rationales`: Array of Objects:
+    - `claim_id`: String
+    - `source_id`: String
+    - `epistemic_justification`: String
+  - `reconciliation_status`: Enum (`UNRESOLVED_COMPETING`, `CONTEXTUALLY_RESOLVED`,
+    `RECONCILED_SUPERSEDED`)
+  - `reconciliation_notes`: Optional String
+  - `adjudicated_by`: Optional String (Expert reviewer ID)
+  - `adjudication_date`: Optional Timestamp
+
+
+--------------------------------------------------------------------------------
+SECTION 7 — KNOWLEDGEUNIT / CLAIM GRANULARITY
+--------------------------------------------------------------------------------
+
+7.1 THE ATOMICITY MANDATE
+A common failure in knowledge engineering is "chunky granularity," where an entire
+50-page chapter on "Guitar Recording" is ingested as a single knowledge unit.
+This leads to:
+  - Inability to cite specific provenance for specific numbers.
+  - Inability to invalidate one outdated claim without discarding fifty correct ones.
+  - Contextual bleeding during retrieval.
+
+The TT Sound Engineering Library mandates Atomic Claim Granularity:
+An atomic claim represents a single, irreducible electro-acoustic assertion that can
+be independently verified, assigned a specific evidence tier, bounded by operational
+conditions, and linked to exact source citations.
+
+7.2 GRANULARITY DECOMPOSITION EXAMPLE
+Source Text:
+"A cardioid dynamic microphone like the SM57 placed one inch from a guitar speaker grill
+exaggerates frequencies below 200 Hz due to acoustic proximity effect, while its
+heavy moving-coil diaphragm rolls off above 15 kHz and smooths high-frequency pick transients."
+
+Decomposition into Atomic Knowledge Entities:
+  - Claim 1: "Pressure-gradient transducers (cardioid/figure-8) exhibit acoustic
+    proximity effect, boosting low frequencies as capsule-to-source distance decreases
+    below the acoustic near-field threshold (r < lambda / 2*pi)."
+    [Class: PHYSICAL_LAW / ESTABLISHED_PRINCIPLE]
+  - Claim 2: "Moving-coil dynamic microphones exhibit higher diaphragm/coil mass than
+    thin ribbon or condenser transducers, resulting in slower transient acceleration
+    and inherent mechanical damping of high-frequency excursion above 12-15 kHz."
+    [Class: ESTABLISHED_ENGINEERING_PRINCIPLE]
+  - Claim 3: "Positioning a cardioid dynamic microphone 2.5 cm from a loudspeaker grill
+    typically produces a 4 dB to 8 dB rise across the 80 Hz - 200 Hz region relative
+    to a 30 cm distance."
+    [Class: EMPIRICAL_RELATIONSHIP / ILLUSTRATIVE_EXAMPLE]
+
+By splitting this single paragraph into three distinct claims, the architecture
+preserves invariant wave physics (Claim 1) independently of transducer mechanics
+(Claim 2) and illustrative numerical measurements (Claim 3).
+
+
+--------------------------------------------------------------------------------
+SECTION 8 — PROVENANCE ARCHITECTURE
+--------------------------------------------------------------------------------
+
+8.1 UNBROKEN CHAIN OF CUSTODY
+Every claim in the library must maintain full provenance traceability from original
+printed work to runtime retrieval.
+
+Data Pipeline Lineage:
+  1. Primary Document Acquisition -> Document Registry (Title, ISBN, Edition, Hash).
+  2. Extraction -> Extraction Log (Tool/Expert ID, Quoted Text, Page/Section).
+  3. Normalization -> Candidate Entity (Semantic formulation, parameter typing).
+  4. Dual Review -> Sign-Off Record (Reviewer 1, Reviewer 2, Comments, Date).
+  5. Cryptographic Commitment -> SHA-256 Claim Signature binding claim text,
+     source citation, and reviewer IDs.
+
+8.2 DERIVED AND SYNTHESIZED CLAIMS
+When a knowledge claim is synthesized from multiple sources (e.g., combining a
+vacuum tube cathode-follower model from a circuit textbook with measured distortion
+harmonics from a technical AES paper):
+  - The `attribution_ids` array must reference all contributing sources.
+  - The claim must be tagged with `synthesis_type: MULTI_SOURCE_CONSENSUS`.
+  - The synthesis rationale must be documented in the extraction log.
+  - The claim cannot claim an authority tier higher than the lowest tier among its
+    constituent dependencies.
+
+8.3 VERSIONING AND SUPERSEDING
+  - Knowledge claims are immutable once promoted to `VALIDATED_ACTIVE`.
+  - If an error is corrected or boundary conditions are refined, a new `KnowledgeClaim`
+    entity is created with an incremented version number (`version: 2`).
+  - The original claim's state transitions to `SUPERSEDED`, and its `superseded_by`
+    pointer is populated with the ID of the new claim.
+  - The runtime audit log maintains full historical lineage for retrospective analysis.
+
+
+--------------------------------------------------------------------------------
+SECTION 9 — SOURCE AUTHORITY / EVIDENCE MODEL
+--------------------------------------------------------------------------------
+
+9.1 CRITIQUE OF THE NAIVE LINEAR TIER MODEL
+Phase 1C.3c proposed a simple linear hierarchy (Tier 1 Physics down to Tier 4 Genre).
+While conceptually clear, a flat linear ranking fails in practice because
+authority is Domain-Dependent.
+
+Example of Linear Failure:
+  - An elite university theoretical physics textbook is Tier 1 for Maxwell's equations,
+    but provides zero useful guidance on the sonic breakup characteristics of a 1968
+    Celestion Greenback speaker.
+  - A technical whitepaper from Celestion's chief acoustic engineer is technically
+    "manufacturer literature" (Tier 2/3), yet for speaker voice-coil thermal compression
+    it is substantially more authoritative than a general university acoustics textbook.
+  - An experienced Grammy-winning recording engineer's masterclass is Tier 4 in pure
+    physics, but Tier 1 for practical studio workflow conventions regarding multi-mic
+    handover boundaries in modern rock productions.
+
+9.2 THE TWO-DIMENSIONAL AUTHORITY MATRIX
+Phase 1C.4a replaces the naive linear model with a Two-Dimensional Epistemic
+Authority Matrix combining Source Rigor with Domain Jurisdiction:
+
+Dimension 1: Source Rigor Tier (R-Tier)
+  - R1: Formally Proven Physical / Mathematical Law (Peer-reviewed, reproducible, textbook law).
+  - R2: Controlled Empirical & Scientific Engineering Research (AES, ASA, IEEE, calibrated lab data).
+  - R3: Authoritative Technical & Manufacturer Documentation (Circuit schematics, patents, whitepapers).
+  - R4: Systematic Professional Engineering Literature (Published treatises by master engineers).
+  - R5: Contextual Practitioner Practice & Interviews (Documented practitioner technique).
+
+Dimension 2: Domain Jurisdiction (J-Tier)
+  - J_CORE: The source is publishing within its primary technical discipline.
+  - J_APPLIED: The source is applying concepts from another field to its discipline.
+  - J_PERIPHERAL: The source is commenting informally outside its core expertise.
+
+Effective Epistemic Authority Score:
+    Authority = f(R-Tier, J-Tier)
+A claim has High Epistemic Authority if it has R1/R2 rigor with J_CORE jurisdiction,
+or R3/R4 rigor with J_CORE jurisdiction on practical engineering devices.
+A claim has Low Epistemic Authority if an R1 source makes a J_PERIPHERAL aesthetic
+comment, or an R5 source makes an unverified claim about quantum electrodynamics.
+
+
+--------------------------------------------------------------------------------
+SECTION 10 — CONDITIONAL KNOWLEDGE MODEL
+--------------------------------------------------------------------------------
+
+10.1 AVOIDING FALSE UNIVERSALITY
+The primary vector by which engineering knowledge degenerates into dogma is the
+omission of boundary conditions. Statements that are true under specific conditions
+become dangerously false when universalized.
+
+Universalized Dogma (Fatal):
+    "Boosting 800 Hz makes electric guitars cut through the mix."
+Conditional Reality (Professional):
+    "In a dense arrangement containing prominent synthesizers, bass guitar, and lead
+    vocals, elevating energy in the 800 Hz to 1.4 kHz band increases guitar articulation,
+    PROVIDED THAT the guitar is not already dominant in that band, AND PROVIDED THAT
+    the boost does not unbalance the vocal presence pocket."
+
+10.2 STRUCTURAL ENFORCEMENT OF BOUNDARIES
+Every `KnowledgeClaim` must be bound to an `OperationalBoundary` record specifying:
+  1. Envelope of Applicability: Quantitative ranges where the claim holds
+     (e.g., "Input signal level: -24 dBFS to -12 dBFS", "Acoustic distance: < 15 cm").
+  2. Prerequisites: Mandatory system states (e.g., "Amplifier must be operating in
+     power-tube saturation region", "Loudspeaker must be in a closed-back enclosure").
+  3. Confounders & Mimics: Other physical phenomena that produce identical symptoms
+     (e.g., "Acoustic proximity effect mimics electrical low-shelf boost; speaker
+     cone breakup mimics preamp diode clipping").
+  4. Failure Modes: What happens when the boundary is violated (e.g., "Applying this
+     high-pass filter to a single-coil guitar playing clean jazz leads results in a
+     thin, brittle tone with severe loss of warmth").
+
+
+--------------------------------------------------------------------------------
+SECTION 11 — CONFLICT & CONTRADICTION MODEL
+--------------------------------------------------------------------------------
+
+11.1 PRESERVATION OVER SILENT RESOLUTION
+In sound engineering, authoritative sources frequently present divergent viewpoints.
+Common examples include:
+  - Tube amplifier bias settings: Some authorities advocate hot biasing (70% plate
+    dissipation) for harmonic richness; others advocate cooler biasing (55-60%) to
+    preserve transient headroom and tube life.
+  - Microphone placement for high gain: Some master engineers mandate placing the
+    microphone dead-center on the cap for maximum bite and filtering fizz downstream;
+    others mandate placing the mic off-axis at the cap/cone junction to acoustic-filter
+    fizz at the diaphragm.
+
+If an AI knowledge architecture silently picks one side, it becomes dogmatic and
+fragile. If it averages them, it creates a mediocre compromise that satisfies neither
+physical reality.
+
+11.2 THE CONFLICT RECORD LIFECYCLE
+When two valid sources submit competing claims:
+  1. Both claims are ingested as distinct `KnowledgeClaim` entities.
+  2. A `ConflictRecord` entity is instantiated linking both Claim IDs.
+  3. The conflict is classified:
+     - `BOUNDARY_DIVERGENCE`: Both claims are true, but in different operational envelopes
+       (e.g., Mic A works best for vintage low-gain; Mic B works best for modern high-gain).
+     - `METHODOLOGICAL_DIFFERENCE`: Different technical philosophies achieving similar goals
+       (e.g., acoustic filtering via mic angle vs electrical filtering via post-EQ).
+     - `DIRECT_CONTRADICTION`: Mutual exclusion requiring controlled empirical adjudication.
+  4. The Reasoning Engine, upon encountering a conflict during retrieval, is supplied
+     with BOTH perspectives along with their respective trade-offs and boundary envelopes.
+     The engineer must reason through which perspective best fits the specific musical
+     and physical constraints of the task.
+
+
+--------------------------------------------------------------------------------
+SECTION 12 — NUMERICAL KNOWLEDGE HANDLING
+--------------------------------------------------------------------------------
+
+12.1 THE DANGER OF UNTYPED NUMBERS
+Numbers in audio engineering are frequently misunderstood:
+  - If a source states: "We notched out 400 Hz by 3 dB to clean up the boxy sound,"
+    a naive AI system stores: "Boxy sound = Cut 400 Hz by 3 dB."
+  - In reality, boxiness is a distributed resonance band between 300 Hz and 600 Hz
+    depending on cabinet volume, room modes, and tuning. Fixing 400 Hz as a rigid
+    constant is a catastrophic error.
+
+12.2 THE SEVEN-TIER NUMERICAL TYPING CONTRACT
+Every numerical value stored in the Knowledge Library must be explicitly typed into
+one of the following seven numerical classes:
+
+  Type 1: PHYSICAL_CONSTANT
+    - Invariant physical quantities.
+    - Example: Speed of sound in dry air at 20°C = 343.2 m/s; Electron charge = 1.602e-19 C.
+    - Enforced as exact mathematical invariant.
+
+  Type 2: HARD_ENGINEERING_BOUNDARY
+    - Strict physical or format limits beyond which failure or clipping occurs.
+    - Example: 0.0 dBFS (unquantized digital ceiling); 100% tube plate dissipation limit.
+    - Enforced as absolute upper/lower boundary.
+
+  Type 3: CALIBRATION_STANDARD
+    - Industry standardized reference values.
+    - Example: +4 dBu = 1.228 V RMS; 0 VU = -18 dBFS nominal alignment; 44.1 kHz / 48 kHz.
+    - Enforced as default operating calibration.
+
+  Type 4: EMPIRICALLY_MEASURED_RANGE
+    - Validated statistical distribution from controlled laboratory measurements.
+    - Example: Celestion Vintage 30 resonant frequency Fs = 75 Hz +/- 5 Hz; Guitar pickup
+      output impedance = 5.8 kOhm to 16.5 kOhm.
+    - Represented as a probability distribution (mean, standard deviation, min, max).
+
+  Type 5: CONTEXTUAL_RECOMMENDED_RANGE
+    - Published engineering guideline bounded by specific musical/technical contexts.
+    - Example: "High-pass guitar between 80 Hz and 120 Hz for modern heavy rock."
+    - Represented as an interval with soft edges [min, typical_low, typical_high, max].
+
+  Type 6: ILLUSTRATIVE_NOMINAL_VALUE
+    - A specific number cited in a case study solely to demonstrate a calculation or concept.
+    - Example: "In this example, an SM57 was placed 2.5 cm from the grill."
+    - MUST BE FLAGGED AS NON-NORMATIVE. Never used as a default or constraint.
+
+  Type 7: PLATFORM_PARAMETER_MAPPING
+    - Proprietary control scales belonging exclusively to the Platform Translation Layer.
+    - Example: AT5 Gain knob (0.0 to 10.0 scale mapped non-linearly to -20 dB to +40 dB).
+    - STRICTLY PROHIBITED FROM THE GENERAL SOUND ENGINEERING LIBRARY.
+
+
+--------------------------------------------------------------------------------
+SECTION 13 — CROSS-DOMAIN RELATIONSHIP MODEL
+--------------------------------------------------------------------------------
+
+13.1 AVOIDING SILOED KNOWLEDGE
+Engineering problems are fundamentally cross-domain. An issue observed in the
+Frequency domain (Domain 4) frequently originates in the Source domain (Domain 1),
+is mediated by the Nonlinear domain (Domain 3), and is compounded by the Capture
+domain (Domain 10).
+
+13.2 DIRECTED CROSS-DOMAIN COUPLING
+Every `CausalModel` in the library explicitly registers its cross-domain dependencies
+via directed graph relations:
+  - `UPSTREAM_SENSITIVITY`: Domains that dictate the input conditions to this model
+    (e.g., Preamp Distortion is sensitive to Pickup Output and Cable Capacitance).
+  - `DOWNSTREAM_CONSEQUENCE`: Domains that receive the output of this model
+    (e.g., Loudspeaker Breakup alters the harmonic spectrum entering the Microphone).
+  - `COLLATERAL_IMPACT`: Domains that suffer side-effects when this model is manipulated
+    (e.g., Increasing Preamp Gain increases Noise Floor and compresses Dynamics).
+
+This cross-domain wiring ensures that when the Sound Engineer retrieves knowledge
+about a symptom in Domain 4, the retrieval engine traverses the graph to return
+coupled causal models from Domains 1, 3, 8, 9, and 10.
+
+
+--------------------------------------------------------------------------------
+SECTION 14 — RETRIEVAL-READINESS METADATA
+--------------------------------------------------------------------------------
+
+14.1 PURPOSE OF RETRIEVAL METADATA
+The runtime retrieval engine (to be implemented in a subsequent phase) must be able
+to index and discover knowledge efficiently. However, retrieval metadata must
+assist discovery without encoding fixed symptom-to-fix pathways.
+
+14.2 MULTI-FACETED RETRIEVAL VECTOR
+Every `KnowledgeClaim` and `CausalModel` exposes a standardized metadata block
+indexed across ten orthogonal facets:
+  1. `competency_domain`: Array of Integers (1 to 22).
+  2. `electro_acoustic_stage`: Enum (`SOURCE`, `FRONT_END`, `PREAMP`, `POWER_AMP`,
+     `CABINET`, `ROOM`, `CAPTURE`, `POST_PROCESS`).
+  3. `physical_phenomenon`: Controlled vocabulary (e.g., `RESONANCE`, `SATURATION`,
+     `PROXIMITY_EFFECT`, `COMB_FILTERING`, `DYNAMIC_SAG`, `THERMAL_NOISE`).
+  4. `acoustic_symptom_tags`: Normalized descriptive tags (e.g., `MUDDY_LOW_END`,
+     `HARSH_FIZZ`, `WEAK_ATTACK`, `HOLLOW_PHASE`, `STEREO_COLLAPSE`).
+     *Crucial Distinction: Tags enable search filtering; they do NOT point to solutions.*
+  5. `evidence_metric_requirements`: Array of DSP metrics needed to evaluate this
+     concept (e.g., `SPECTRAL_CENTROID`, `CREST_FACTOR`, `PHASE_CORRELATION`).
+  6. `governing_laws`: References to foundational physical laws.
+  7. `authority_score`: Computed score based on Source Rigor and Jurisdiction.
+  8. `applicable_genres_or_eras`: Optional context tags (e.g., `MODERN_METAL`, `VINTAGE_BLUES`).
+  9. `conflict_flag`: Boolean (indicates whether active unresolved conflict exists).
+  10. `lifecycle_status`: Must be `VALIDATED_ACTIVE` for production retrieval.
+
+
+--------------------------------------------------------------------------------
+SECTION 15 — KNOWLEDGE LIFECYCLE & GOVERNANCE
+--------------------------------------------------------------------------------
+
+15.1 THE FIVE-STAGE KNOWLEDGE LIFECYCLE
+To ensure absolute integrity, knowledge claims advance through a deterministic
+finite state machine:
+
+  [STAGE 1: CAPTURED]
+    - Raw source document ingested into registry with cryptographic hash and biblio metadata.
+    - State: `SOURCE_REGISTERED`.
+
+  [STAGE 2: EXTRACTION & NORMALIZATION]
+    - Specialized parser or expert extracts atomic claims and maps them to the entity schema.
+    - Assigned Epistemic Class, Domain, and Numerical Types.
+    - State: `CANDIDATE_NORMALIZED`.
+
+  [STAGE 3: TECHNICAL PEER REVIEW]
+    - Two independent senior audio engineering experts evaluate the candidate:
+      * Reviewer A checks physical accuracy and mathematical derivation.
+      * Reviewer B checks boundary conditions, confounders, and anti-pattern risks.
+    - If rejected -> State: `REJECTED` (with immutable explanation).
+    - If approved -> State: `PEER_REVIEWED`.
+
+  [STAGE 4: ADVERSARIAL VALIDATION]
+    - The candidate unit is executed against the Phase 1C.3c Counterfactual Triad suite.
+    - Checks whether the knowledge unit induces recipe behavior or false certainty.
+    - If it fails -> Returned to Stage 2 for boundary tightening.
+    - If it passes -> State: `VALIDATED_ACTIVE`.
+
+  [STAGE 5: RETIREMENT & LINEAGE]
+    - When new research supersedes an active claim:
+    - State transitions to `SUPERSEDED` or `DEPRECATED`.
+    - Cryptographic pointer links to successor claim.
+
+15.2 THE GOVERNANCE STATE TRANSITION MATRIX
+Current State       Trigger                     Target State        Authorized Role
+-----------------------------------------------------------------------------------
+None                Register Source Document    CAPTURED            Ingestion Tool
+CAPTURED            Extract Atomic Claims       NORMALIZED          Knowledge Specialist
+NORMALIZED          Submit for Peer Review      UNDER_REVIEW        Knowledge Specialist
+UNDER_REVIEW        Expert Review Approved      PEER_REVIEWED       Senior Audio Reviewer (2x)
+UNDER_REVIEW        Expert Review Rejected      REJECTED            Senior Audio Reviewer
+PEER_REVIEWED       Passes Adversarial Triad    VALIDATED_ACTIVE    Governance Lead
+VALIDATED_ACTIVE    New Evidence Supersedes     SUPERSEDED          Governance Committee
+VALIDATED_ACTIVE    Flaw or Risk Discovered     DEPRECATED          Governance Committee
+
+
+--------------------------------------------------------------------------------
+SECTION 16 — CURRENT TT KNOWLEDGE INTAKE PATH
+--------------------------------------------------------------------------------
+
+16.1 TREATING CURRENT TT AS AN UNVERIFIED SOURCE
+Phase 1C.2 and Phase 1C.3b cataloged extensive sound engineering knowledge embedded
+inside Current TT's codebase (e.g., `geminiService.ts`, `at5MicPlacementReasoning.ts`,
+`at5CabinetKnowledge.ts`, `at5SignalChainNormalizer.ts`).
+
+However, Current TT's knowledge is contaminated with:
+  - Hardcoded heuristic rules ("Always boost TS9 for metal").
+  - Platform-specific AmpliTube 5 model IDs and coordinate systems.
+  - Undocumented numerical assumptions.
+
+16.2 THE CURRENT TT EXTRACTION PIPELINE
+No piece of Current TT code or prompt text may enter the Knowledge Library directly.
+It must follow the strict four-step intake pipeline:
+
+  Step 1: DECONSTRUCTION & SEPARATION
+    - Separate physical acoustic principles from deterministic code logic.
+    - Strip all AmpliTube 5 IDs, XML paths, and vendor-specific parameters.
+
+  Step 2: PHYSICAL FORMULATION
+    - Formulate the underlying physical principle in platform-independent language.
+    - Example: Current TT's "OverScream with Drive=0, Level=10 tightens palm mutes"
+      becomes:
+      "A symmetrical soft-clipping stage preceded by a high-pass filter (+720 Hz cutoff)
+      and mid-frequency boost (around 1 kHz) reduces low-frequency intermodulation
+      distortion and increases transient clarity when placed before a high-gain preamp."
+
+  Step 3: BOUNDARY & TRADE-OFF ENRICHMENT
+    - Document the operational boundaries and trade-offs that Current TT ignored
+      (e.g., "Trade-off: May thin single-note leads or induce nasal midrange honk").
+
+  Step 4: FORMAL GOVERNANCE REVIEW
+    - Ingest the formulated claim through the Stage 3 & 4 governance pipeline.
+    - Assign Source Class: `CURRENT_TT_SOURCE` (Authority: R4 / J_APPLIED).
+    - Require full peer review before promotion to `VALIDATED_ACTIVE`.
+
+
+--------------------------------------------------------------------------------
+SECTION 17 — EXPERIENTIAL & CANDIDATE LESSON QUARANTINE
+--------------------------------------------------------------------------------
+
+17.1 THE RUNTIME LEARNING RISK
+In future phases (Phase 1C.4 and beyond), the TT AI Sound Engineer will execute
+closed-loop iterations, comparing rendered audio against target references.
+If the system is allowed to autonomously convert a successful experiment into a
+global knowledge rule, catastrophic model collapse occurs:
+  - An intervention that succeeded purely due to an idiosyncratic combination of
+    source guitar, room acoustic, and pickup impedance would become a universal rule,
+    poisoning future sessions.
+
+17.2 THE ISOLATED QUARANTINE STORE
+The architecture establishes an entirely isolated storage container:
+`/knowledge/quarantine/candidate_lessons/`
+
+Quarantine Rules:
+  1. No entity in the quarantine store is visible to the runtime retrieval index.
+  2. Candidate lessons must log complete context: InputSnapshot, EvidenceRecord,
+     interventions applied, outcome audio deltas, and user feedback.
+  3. A candidate lesson must accumulate at least 50 independent corroborating sessions
+     across diverse simulated hardware and performance profiles before it can even
+     be submitted for human review.
+  4. Human governance review must determine whether the candidate lesson represents
+     a genuine physical engineering tendency or an accidental correlation.
+
+
+--------------------------------------------------------------------------------
+SECTION 18 — ARCHITECTURAL RESPONSIBILITY BOUNDARIES
+--------------------------------------------------------------------------------
+
+To prevent cross-contamination, the table below provides absolute boundaries for
+information placement across the Tone Translator ecosystem:
+
+Component Layer                 Allowed Content                     Strictly Prohibited
+---------------------------------------------------------------------------------------
+A. Sound Engineering Library    Physical laws, circuit models,      Target platform IDs,
+                                acoustic wave mechanics, boundary   DAW routing rules,
+                                conditions, trade-offs, citations.  fixed symptom-to-fix
+                                                                    recipe pairs.
+
+B. AI Sound Engineer Reasoning  Competing hypothesis graphs,        Hardcoding static
+                                diagnostic deductions, trade-off    values; storing
+                                balances, minimalist plans.         persistent global rules.
+
+C. Runtime Evidence / DSP       Objective audio measurements:       Acoustic theories,
+                                FFT spectrum, crest factor, LUFS,   artistic opinions,
+                                phase correlation, envelope ms.     platform presets.
+
+D. Deterministic Validation     Schema boundaries, physical         Subjective aesthetic
+                                impossibility guards, NaN checks,   judgments, genre
+                                non-invertible comb filter limits.  recommendations.
+
+E. Semantic Tone Design         Platform-independent topology,      AmpliTube 5 GUIDs,
+                                component circuit types, SI units   vendor model names,
+                                (Hz, dB, ms, V, ohms, cm, deg).     proprietary dial scales.
+
+F. Platform Translator          Translation maps: Semantic specs    Acoustic reasoning,
+                                -> AmpliTube 5 XML / Helix SysEx,   psychoacoustic theories,
+                                vendor coordinate systems.          closed-loop audio analysis.
+
+G. Exporter                     File system packaging (.at5p,       Signal chain design,
+                                .xml, .json), zip archives,         sound engineering
+                                base64 encoding.                    evaluations.
+
+
+--------------------------------------------------------------------------------
+SECTION 19 — INTEGRITY & FAILURE PROTECTIONS
+--------------------------------------------------------------------------------
+
+The architecture implements ten active structural protections against systemic failure:
+
+1. Unsupported AI Knowledge Ingestion Guard
+   Autonomous LLMs are strictly prohibited from writing directly to the Knowledge
+   Library. All candidate claims must originate from registered sources and pass
+   human review.
+
+2. Provenance Cryptographic Checksum
+   Every `KnowledgeClaim` includes a SHA-256 hash computed over its claim text,
+   source attribution ID, and boundary conditions. Tampering with claim text
+   invalidates the signature and drops the claim from retrieval.
+
+3. Source Misquotation Verification
+   During Stage 3 Peer Review, human reviewers must verify the `quoted_claim` against
+   the registered source document's exact page/section before signing off.
+
+4. Accidental Rule Creation Detection (Anti-Recipe Linter)
+   An automated schema linter scans candidate claims for imperative or normative
+   keywords (e.g., "always", "must", "never use", "set to X for genre Y").
+   Any claim containing imperative intervention rules is automatically rejected.
+
+5. Platform Contamination Firewall
+   A lexicon validator scans all knowledge entities for commercial vendor strings
+   (e.g., "AmpliTube", "IK Multimedia", "Fender 65 Deluxe Reverb", "TS808", "V30").
+   Entities containing commercial brand names are blocked unless explicitly categorized
+   as `ILLUSTRATIVE_EXAMPLE` with a platform-independent translation attached.
+
+6. Contradiction Isolation & Non-Deletion
+   Conflicting claims cannot be deleted by automated processes. They must generate
+   a `ConflictRecord` and require formal human adjudication.
+
+7. Silent Supersession Prevention
+   A claim cannot be replaced without creating an explicit `SUPERSEDED` state and
+   maintaining the historical audit log.
+
+8. Quarantine Isolation Enforcement
+   The runtime retrieval engine possesses zero network or file permissions to access
+   the `/knowledge/quarantine/` directory.
+
+9. Retrieval Status Gate
+   The retrieval query filter enforces: `WHERE lifecycle_state == 'VALIDATED_ACTIVE'`.
+   Drafts, unreviewed candidates, and deprecated claims are structurally unretrievable.
+
+10. Prompt-Injection Neutralization
+    All text fields extracted from third-party sources are sanitized and treated as
+    passive semantic data. Source text is never interpolated into LLM system prompts
+    as executable instructions.
+
+
+--------------------------------------------------------------------------------
+SECTION 20 — WORKED CONCEPTUAL EXAMPLES
+--------------------------------------------------------------------------------
+
+The following six worked examples demonstrate the exact entity representations
+required by the Phase 1C.4a architecture:
+
+--------------------------------------------------------------------------------
+Example A: Established Physical Principle
+--------------------------------------------------------------------------------
+Entity: `KnowledgeClaim`
+{
+  "claim_id": "KC-PH-10-PROXIMITY_EFFECT_01",
+  "domain_id": 10,
+  "concept_name": "Acoustic Proximity Effect in Velocity-Gradient Transducers",
+  "epistemic_class": "ESTABLISHED_ENGINEERING_PRINCIPLE",
+  "statement": "Pressure-gradient acoustic transducers (such as cardioid and figure-8 microphones) exhibit a pronounced increase in low-frequency sensitivity as the distance from a point or near-field acoustic source to the diaphragm decreases below the wavelength divided by 2*pi.",
+  "formal_derivation_or_formula": "Response_Ratio = sqrt(1 + (c / (2 * pi * f * r))^2)",
+  "confidence_score": 1.0,
+  "lifecycle_state": "VALIDATED_ACTIVE",
+  "attribution_ids": ["SRC-R1-BERANEK_ACOUSTICS_P120", "SRC-R2-NEUMANN_MIC_TECH_DOC"],
+  "boundary_ids": ["OB-PROXIMITY_BOUND_01"],
+  "causal_model_ids": ["CM-PROXIMITY_LF_RISE_01"],
+  "version": 1
+}
+
+Entity: `OperationalBoundary`
+{
+  "boundary_id": "OB-PROXIMITY_BOUND_01",
+  "applicable_envelope": "Source distance r < 0.5 meters; frequencies below 500 Hz.",
+  "prerequisites": ["Transducer must be pressure-gradient or combination (cardioid, supercardioid, figure-8). Pure omnidirectional pressure transducers are exempt."],
+  "confounding_variables": ["Electrical bass boost in preamplifier", "Cabinet enclosure boundary acoustic loading", "Loudspeaker resonant frequency Fs peaking."],
+  "known_exceptions": ["Pure pressure transducers (omni-directional capsules) exhibit zero proximity effect."],
+  "failure_mode_description": "Excessive proximity effect creates overwhelming low-frequency energy (100-200 Hz), mud, loss of transient intelligibility, and amplifier input headroom exhaustion."
+}
+
+--------------------------------------------------------------------------------
+Example B: Context-Dependent Engineering Tendency
+--------------------------------------------------------------------------------
+Entity: `KnowledgeClaim`
+{
+  "claim_id": "KC-ET-04-PRE_DIST_LF_FILTER_01",
+  "domain_id": 4,
+  "concept_name": "Pre-Distortion Low-Frequency Attenuation for Transient Definition",
+  "epistemic_class": "ENGINEERING_TENDENCY",
+  "statement": "Attenuating low-frequency energy (specifically below 150 Hz to 200 Hz) prior to a high-gain nonlinear saturation stage tends to reduce low-frequency intermodulation distortion and accelerate recovery from dynamic clipping, thereby increasing perceived pick-attack tightness on transient palm-muted guitar passages.",
+  "formal_derivation_or_formula": null,
+  "confidence_score": 0.92,
+  "lifecycle_state": "VALIDATED_ACTIVE",
+  "attribution_ids": ["SRC-R4-BLENCOWE_GUITAR_PREAMPS_CH4", "SRC-R4-SENIOR_RECORDING_SEC6"],
+  "boundary_ids": ["OB-PRE_DIST_LF_01"],
+  "causal_model_ids": ["CM-PRE_DIST_TIGHTNESS_01"],
+  "version": 1
+}
+
+Entity: `CausalModel`
+{
+  "model_id": "CM-PRE_DIST_TIGHTNESS_01",
+  "model_name": "Pre-Gain High-Pass Intermodulation Reduction",
+  "input_stimulus": { "parameter": "Low-frequency energy (<180 Hz)", "range": "-12 dB to 0 dB relative", "unit": "dB" },
+  "mediating_stage": "FRONT_END_ELECTRICAL",
+  "mediating_mechanism": "High-pass filtering reduces large-amplitude fundamental excursions from saturating grid-leak or diode stages, preventing DC bias shift and intermodulation sum/difference products.",
+  "acoustic_consequences": [
+    {
+      "consequence_description": "Reduction of low-frequency intermodulation hash and rumble during heavy chords",
+      "observable_domain": "HARMONIC_SERIES",
+      "metric_indicator": "Low-mid spectral clutter (150-300 Hz)",
+      "direction_of_change": "DECREASE"
+    },
+    {
+      "consequence_description": "Increased transient attack clarity and sharper dynamic envelope onset",
+      "observable_domain": "DYNAMICS",
+      "metric_indicator": "Attack Onset Slope",
+      "direction_of_change": "INCREASE"
+    }
+  ],
+  "trade_off_implications": [
+    {
+      "acoustic_gain": "Extremely fast, punchy, articulate palm-mute tracking",
+      "acoustic_penalty": "Loss of body, warmth, and fullness on unmuted single-note leads in upper registers",
+      "mitigation_strategy": "Compensate post-clipping in the power amplifier resonance control or speaker cabinet acoustic resonance."
+    }
+  ],
+  "coupled_domain_ids": [2, 3, 5, 8]
+}
+
+--------------------------------------------------------------------------------
+Example C: Two Credible but Apparently Conflicting Claims
+--------------------------------------------------------------------------------
+Entity: `KnowledgeClaim` (Claim 1)
+{
+  "claim_id": "KC-HM-10-DYNAMIC_MIC_CAP_CENTER_01",
+  "domain_id": 10,
+  "concept_name": "Center-Cap Microphone Alignment for Maximum High-Frequency Attack",
+  "epistemic_class": "CONTEXT_DEPENDENT_PRACTICE",
+  "statement": "Positioning a dynamic microphone directly on-axis aiming at the center of the loudspeaker dust cap captures maximum acoustic high-frequency content and aggressive transient attack, which can then be shaped downstream with studio post-equalization.",
+  "confidence_score": 0.85,
+  "lifecycle_state": "VALIDATED_ACTIVE",
+  "attribution_ids": ["SRC-R4-STUDIO_TECHNIQUES_ROCK_VOL2"],
+  "boundary_ids": ["OB-MIC_ALIGN_CAP_01"],
+  "causal_model_ids": ["CM-MIC_AXIS_DISPERSION_01"],
+  "version": 1
+}
+
+Entity: `KnowledgeClaim` (Claim 2)
+{
+  "claim_id": "KC-HM-10-DYNAMIC_MIC_CONE_EDGE_02",
+  "domain_id": 10,
+  "concept_name": "Off-Center Microphone Alignment for Acoustic High-Frequency Smoothing",
+  "epistemic_class": "CONTEXT_DEPENDENT_PRACTICE",
+  "statement": "Positioning a dynamic microphone laterally offset toward the speaker cone edge (or angled 45 degrees off-axis) acoustically attenuates aggressive 4-6 kHz beaming fizz at the transducer diaphragm, eliminating the need for phase-distorting electrical post-EQ filtering.",
+  "confidence_score": 0.88,
+  "lifecycle_state": "VALIDATED_ACTIVE",
+  "attribution_ids": ["SRC-R4-OWSINSKI_RECORDING_ENG_HANDBOOK"],
+  "boundary_ids": ["OB-MIC_ALIGN_CONE_02"],
+  "causal_model_ids": ["CM-MIC_AXIS_DISPERSION_01"],
+  "version": 1
+}
+
+Entity: `ConflictRecord`
+{
+  "conflict_id": "CR-MIC-01-CAP_VS_CONE_ALIGNMENT",
+  "competing_claim_ids": ["KC-HM-10-DYNAMIC_MIC_CAP_CENTER_01", "KC-HM-10-DYNAMIC_MIC_CONE_EDGE_02"],
+  "conflict_nature": "METHODOLOGICAL_DIFFERENCE",
+  "competing_rationales": [
+    {
+      "claim_id": "KC-HM-10-DYNAMIC_MIC_CAP_CENTER_01",
+      "source_id": "SRC-R4-STUDIO_TECHNIQUES_ROCK_VOL2",
+      "epistemic_justification": "Captures raw maximum physical bandwidth at the source; relies on precision minimum-phase digital post-filtering."
+    },
+    {
+      "claim_id": "KC-HM-10-DYNAMIC_MIC_CONE_EDGE_02",
+      "source_id": "SRC-R4-OWSINSKI_RECORDING_ENG_HANDBOOK",
+      "epistemic_justification": "Applies natural acoustic filtering via diaphragm wave integration, preventing harsh harmonic distortion from entering preamp electronics."
+    }
+  ],
+  "reconciliation_status": "CONTEXTUALLY_RESOLVED",
+  "reconciliation_notes": "Both practices are physically sound. Claim 1 applies when tracking dark, vintage-voiced speakers (e.g., Alnico Blue) where high-end beaming is musical. Claim 2 applies when tracking aggressive modern ceramic speakers (e.g., Celestion V30) into high-gain saturation where dust-cap beaming produces objectionable fizzy hash.",
+  "adjudicated_by": "EXPERT_REVIEWER_09",
+  "adjudication_date": "2026-09-26T04:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+Example D: Current TT Heuristic Converted into Principled Knowledge
+--------------------------------------------------------------------------------
+Original Current TT Heuristic (from `geminiService.ts` / `at5SignalChainNormalizer.ts`):
+    "if (genre === 'thrash' || genre === 'metal') { insert OverScream(Drive=0, Level=10, Tone=7); }"
+
+Converted Entity: `KnowledgeClaim`
+{
+  "claim_id": "KC-ET-03-OVERDRIVE_BOOST_FRONT_END_01",
+  "domain_id": 3,
+  "concept_name": "Front-End Overdrive Boost for Preamp Dynamic Staging",
+  "epistemic_class": "CONTEXT_DEPENDENT_PRACTICE",
+  "statement": "Utilizing an asymmetrical or symmetrical diode clipper with drive set to minimum, output level boosted high, and a high-pass tone profile acts as a band-limited clean boost. This delivers increased voltage swing to the amplifier's first tube stage while rolling off sub-200 Hz mud and boosting 1 kHz presence, tightening transient response without adding muddy pedal distortion.",
+  "confidence_score": 0.90,
+  "lifecycle_state": "VALIDATED_ACTIVE",
+  "attribution_ids": ["SRC-CURRENT_TT_MIC_REASONING_REFACTORED", "SRC-R4-KUEHNEL_PREAMPS_VOL2"],
+  "boundary_ids": ["OB-FRONT_BOOST_BOUND_01"],
+  "causal_model_ids": ["CM-FRONT_BOOST_STAGING_01"],
+  "version": 1
+}
+
+Entity: `OperationalBoundary`
+{
+  "boundary_id": "OB-FRONT_BOOST_BOUND_01",
+  "applicable_envelope": "High-gain multi-stage tube amplifiers with cascading preamps.",
+  "prerequisites": ["Amplifier input stage must have sufficient grid-handling headroom to avoid blocking distortion.", "Source guitar pickups must not already possess extreme pre-filtered high-output resonance (e.g., active EMG 81), which would double-filter and cause extreme nasal thinning."],
+  "confounding_variables": ["Active guitar onboard EQ", "Excessive cable capacitance"],
+  "known_exceptions": ["Clean jazz, acoustic guitar, vintage blues, or low-gain power-amp distortion styles where uncompressed low-frequency body is essential."],
+  "failure_mode_description": "Induces thin, brittle, honky midrange with excessive noise floor if applied to already-bright pickups or low-headroom vintage amplifiers."
+}
+
+--------------------------------------------------------------------------------
+Example E: Platform-Specific Fact Rejected / Re-Homed
+--------------------------------------------------------------------------------
+Incoming Data:
+    "AmpliTube 5 OverScream model ID is 104; its 'Tone' knob defaults to 5.0 and writes to XML path /Rack/Stomp[0]/Param[2]."
+
+Architectural Disposition:
+  - REJECTED FROM SOUND ENGINEERING KNOWLEDGE LIBRARY.
+  - Reason: Violates Principle 4 (Platform Independence) and Section 18 Boundary Rules.
+  - Re-homing Destination: `/src/services/at5ParameterManifest.ts` (AmpliTube 5 Platform Translation Adapter).
+  - Validation Gate Log: "Lexicon firewall flagged 'OverScream', 'model ID 104', and XML path. Successfully re-routed to Platform Translation Layer."
+
+--------------------------------------------------------------------------------
+Example F: Numerical Value Remaining Illustrative / Contextual
+--------------------------------------------------------------------------------
+Entity: `KnowledgeClaim`
+{
+  "claim_id": "KC-EX-04-BOXINESS_NOTCH_ILLUSTRATIVE_01",
+  "domain_id": 4,
+  "concept_name": "Cabinet Cavity Resonance Attenuation (Illustrative Example)",
+  "epistemic_class": "ILLUSTRATIVE_EXAMPLE",
+  "statement": "In a 1990s closed-back 4x12 birch-ply enclosure recording session, a narrow parametric notch of 3.5 dB centered at 420 Hz with a Q of 2.8 effectively removed an unmusical hollow wood boxiness resonance without degrading guitar body fundamentals.",
+  "confidence_score": 0.75,
+  "lifecycle_state": "VALIDATED_ACTIVE",
+  "attribution_ids": ["SRC-R5-ALBINI_STUDIO_NOTES_1993"],
+  "boundary_ids": ["OB-BOXINESS_ILLUSTRATIVE_01"],
+  "causal_model_ids": ["CM-CABINET_INTERNAL_STANDING_WAVE_01"],
+  "version": 1
+}
+
+Entity: `OperationalBoundary`
+{
+  "boundary_id": "OB-BOXINESS_ILLUSTRATIVE_01",
+  "applicable_envelope": "SPECIFIC CASE STUDY ONLY. NON-NORMATIVE.",
+  "prerequisites": ["Closed-back 4x12 cabinet exhibiting internal acoustic standing wave resonance."],
+  "confounding_variables": ["Snare drum rattle coupling into guitar cab", "Room boundary axial mode."],
+  "known_exceptions": ["Open-back combos, 1x12 cabinets, or well-damped modern composite enclosures where 420 Hz represents essential body and note fundamental power."],
+  "failure_mode_description": "Blindly notching 420 Hz on guitars without an acoustic cavity resonance scoops essential musical fundamentals, leaving the guitar hollow and anemic in the mix."
+}
+
+
+--------------------------------------------------------------------------------
+SECTION 21 — DECISIONS REQUIRED BEFORE KNOWLEDGE POPULATION
+--------------------------------------------------------------------------------
+
+Before Phase 1C.4b (Knowledge Base Population) can begin, the engineering leadership
+must formally resolve the following four architectural decisions:
+
+Decision 1: Storage Serialization Format
+  - Option A: Pure JSON Schema files residing in `/src/knowledge/authoritative/`.
+    * Pros: Highly transparent, version-controlled in Git, diffable, zero infrastructure.
+    * Cons: Higher memory overhead when querying thousands of claims; requires manual indexing.
+  - Option B: Embedded SQLite / DuckDB database compiled at build time.
+    * Pros: High-speed relational joins between Claims, Boundaries, and Sources; structured SQL queries.
+    * Cons: Binary diffs in Git; requires local query tooling.
+  - Option C: Hybrid (JSON source files in Git compiled to typed in-memory search trees at build time).
+  - Status: RECOMMENDED HYBRID (Option C).
+
+Decision 2: Peer Review Quorum Requirements
+  - Define whether one or two human expert signatures are mandatory for Tier 3 / Tier 4
+    contextual practice claims, or if single-expert approval suffices for non-physics domains.
+  - Recommendation: Dual review mandatory for Tier 1 & Tier 2; single expert plus
+    automated adversarial triad pass permitted for Tier 3 & Tier 4.
+
+Decision 3: Current TT Semantic Extraction Boundary
+  - Finalize whether the refactored microphone reasoning rules from Phase 1C.3b
+    will be ingested as a single comprehensive capture domain model or decomposed
+    into ~15 atomic knowledge units.
+  - Recommendation: Decompose into 15 atomic units (conforming to Section 7).
+
+Decision 4: Multi-Language & Mathematical Notation Support
+  - Determine whether mathematical formulas must be strictly encoded in LaTeX strings,
+    MathML, or executable TypeScript evaluation lambdas.
+  - Recommendation: LaTeX strings for documentation; pure mathematical evaluation lambdas
+    restricted to Deterministic Validation contracts.
+
+
+--------------------------------------------------------------------------------
+SECTION 22 — RECOMMENDED NEXT INCREMENT (PHASE 1C.4b)
+--------------------------------------------------------------------------------
+
+Upon formal sign-off of this Phase 1C.4a architecture, the project proceeds to:
+    PHASE 1C.4b — STAGE 1 & STAGE 2 KNOWLEDGE BASE POPULATION & SCHEMA COMPILATION
+
+Phase 1C.4b Objectives:
+  1. Author formal TypeScript data contracts and JSON Schema validators for the five
+     core entities (`KnowledgeClaim`, `SourceAttribution`, `CausalModel`,
+     `OperationalBoundary`, `ConflictRecord`).
+  2. Implement the build-time schema linter, provenance signature generator, and
+     lexicon anti-recipe firewall.
+  3. Ingest and peer-review the initial corpus of foundational Stage 1 & Stage 2
+     Knowledge Units (Physics, Transducers, Amplifiers, Nonlinear Systems).
+  4. Deconstruct and ingest Current TT's microphone placement reasoning and cabinet
+     pairing assets according to the Section 16 pipeline.
+
+
+--------------------------------------------------------------------------------
+SECTION 23 — COMPLETION STATEMENT
+--------------------------------------------------------------------------------
+
+Phase 1C.4a (Sound Engineering Knowledge Architecture & Lifecycle) is COMPLETE.
+
+All governing principles, relational entity models, provenance pipelines, epistemic
+authority matrices, numerical typing conventions, lifecycle state machines, and
+integrity safeguards have been formally designed and documented.
+
+Confirmations:
+  - Target report `/TT_Sound_Engineering_Knowledge_Architecture_v1.txt` created.
+  - No production application code, prompts, tests, or Firestore rules were modified.
+  - No external knowledge was ingested or scraped.
+  - No production knowledge base was populated.
+  - Phase 1C.4b was NOT started.
+
+================================================================================
+END OF REPORT — PHASE 1C.4a
+================================================================================

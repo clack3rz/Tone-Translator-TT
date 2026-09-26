@@ -1,0 +1,1180 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.2 — CURRENT SOUND ENGINEER KNOWLEDGE & PROVENANCE AUDIT REPORT (v1)
+Date: 2026-09-26
+Mode: READ-ONLY ARCHITECTURAL & KNOWLEDGE AUDIT
+Report Target: /TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt
+================================================================================
+
+--------------------------------------------------------------------------------
+SECTION 1 — EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 AUDIT SCOPE & METHODOLOGY
+This audit evaluates the current tone-engineering knowledge, provenance, and
+decision-making mechanisms within Tone Translator (TT). The investigation was
+conducted strictly as a read-only repository inspection. No application code,
+system prompts, test suites, or Firestore records were altered. No Gemini API
+calls were executed for dynamic testing.
+
+The audit traced the complete current decision path from user inputs to final
+preset export, evaluating:
+  - Application input handling and dropzone wiring (/src/App.tsx)
+  - Tone profile taxonomic classification (/src/services/toneProfileBuilder.ts)
+  - System prompts, amplifier and cabinet directories, and validation recipes
+    (/src/services/geminiService.ts)
+  - Post-generation deterministic mutations, pedal swapping, and noise gate
+    calibration (/src/services/geminiService.ts)
+  - Semantic microphone placement reasoning and multi-mic blending engines
+    (/src/services/at5MicPlacementReasoning.ts, at5MicPlacementService.ts)
+  - Hardware normalization, rack/stomp EQ deduplication, and signal chain
+    structural cleanup (/src/services/at5SignalChainNormalizer.ts)
+  - Parameter serialization and VIR coordinate translation
+    (/src/services/presetExporter.ts, at5ParameterManifest.ts, at5VerifiedProtocols.ts)
+  - Static validated profiles and knowledge bases
+    (/src/knowledge/validatedToneProfiles/acdc_jailbreak_malcolm_young_studio.json,
+     /src/services/at5AmplifierKnowledge.ts, /src/services/at5CabinetKnowledge.ts)
+  - Architectural Sound Engineer domain contracts and schemas
+    (/src/types.ts, /src/sound-engineer/*)
+
+1.2 OVERALL ARCHITECTURE OBSERVED
+Current TT tone generation operates not as an autonomous, general-purpose AI
+Sound Engineer reasoning from foundational acoustic first principles, but rather
+as a hybrid, multi-stage pipeline:
+  1. Front-End Taxonomy (AI or Static Recipe): Pre-classifies style, role, gain,
+     and hardware families.
+  2. Prompt-Augmented Generation (AI): Injects curated directories of specific
+     AmpliTube 5 gear, rules of thumb, and strict negative constraints into a
+     Gemini 3.8 Flash prompt to emit an initial AT5 signal chain.
+  3. Post-Generation Deterministic Surgery (Code): TypeScript logic inspects prompt
+     keywords and signal chain elements, overriding pedals (OverScream vs.
+     PROdrive), recalibrating noise gate timing/thresholds, forcing specific
+     semantic mic placements (position, distance, angle), and rewriting the
+     generated engineering notes.
+  4. Platform Normalization & Serialization (Code): TypeScript logic maps gear
+     names to AT5 GUIDs, deduplicates EQs based on functional slot rules, and
+     translates semantic parameters into XML attributes.
+
+1.3 MAJOR SOURCES OF CURRENT TT ENGINEERING BEHAVIOUR
+Engineering behaviour in TT originates from four distinct layers:
+  - Deterministic Application Code (Dominant for critical behaviours): Hardcoded
+    TypeScript logic makes the final decisions regarding boost pedal insertion,
+    noise gate thresholds/decay times, microphone position/distance/angle, and
+    EQ deduplication.
+  - AmpliTube 5 Platform Specifications (Heavily coupled): Knowledge of AT5-specific
+    gear names, knob parameter names, XML attributes, GUIDs, and 2-band limits on
+    Parametric EQ dictates much of what appears to be "engineering advice".
+  - Curated Static Recipes (High reliability on key benchmarks): Fixed presets
+    and keyword intercepts for Malcolm Young / AC/DC, Metallica Kill 'Em All,
+    and Pantera Cowboys From Hell bypass AI reasoning when validation mode is
+    active or when static recipes match.
+  - Gemini / LLM Intrinsic Capabilities (Constrained): Gemini performs semantic
+    matching between user prompt keywords and the curated AT5 amplifier/cabinet
+    directories, but its autonomous reasoning is heavily policed and frequently
+    overridden by downstream code.
+
+1.4 IMPORTANT PROVENANCE OBSERVATIONS
+  - Distinction between "Producing an outcome" and "Understanding a principle":
+    TT consistently produces professional-looking signal chains (e.g. cutting
+    bass before high-gain distortion, placing an OverScream before a Brit 8000),
+    but the system does not derive this from acoustic modeling or dynamic causal
+    reasoning. It applies deterministic heuristics ("if thrash -> OverScream
+    Level 9 Drive 1") and template rules.
+  - Complete decoupling of UI inputs: The "Your Recording" (currentAudio) dropzone
+    is accepted by the UI, converted to base64, passed into translateTone(),
+    and then silently ignored—never sent to Gemini or analyzed by DSP.
+  - Placeholder audio metrics: All nine audio feature extraction fields on
+    ToneProfile (spectral_centroid, low_end_tightness, etc.) are explicitly
+    overwritten with `undefined` in toneProfileBuilder.ts.
+  - Disconnect between contract vocabulary and runtime execution: Extensive domain
+    contracts created in Phase 1B (EvidenceRecord, EngineeringDecisionRecord,
+    SemanticToneDesign) exist only as type definitions and synthetic trace fixtures;
+    they do not execute during Current tone generation.
+
+1.5 LIMITATIONS OF STATIC REPOSITORY ANALYSIS
+Static inspection definitively reveals code paths, prompt contents, data schemas,
+and deterministic overrides. However, static inspection cannot prove whether
+Gemini internally "understands" sound engineering concepts when prompted without
+constraints. Claims regarding Gemini's intrinsic model capabilities are therefore
+classified as "Potentially model-intrinsic; not verifiable from repository
+evidence alone."
+
+
+--------------------------------------------------------------------------------
+SECTION 2 — CURRENT SOUND ENGINEER EXECUTION MAP
+--------------------------------------------------------------------------------
+
+The exact call graph and data flow for Current tone generation from user input
+to final preset export is mapped below:
+
+[User Inputs in UI: prompt, targetAudioFile, recordingAudioFile, userPreset, youtubeUrl]
+       |
+       v  (App.tsx: handleTranslate)
+[Optional Parallel Non-blocking Shadow Run: dispatchShadowRun() with synthetic trace]
+       |
+       v  (App.tsx: translateTone)
+[translateTone() in /src/services/geminiService.ts]
+       |
+       +---> [Step 1: buildToneProfile() in /src/services/toneProfileBuilder.ts]
+       |        |
+       |        +---> checkStaticToneProfileRecipes(lowerPrompt)
+       |        |       - Matches AC/DC, Kill 'Em All, Dr. Feelgood, Thrash Lead
+       |        |       - If matched: returns static ToneProfileResult immediately [STATIC_RECIPE]
+       |        |
+       |        +---> If no static match: calls Gemini with SYSTEM_PROMPT + targetAudio
+       |        |       - Emits structured ToneProfile JSON [INFERRED_RUNTIME / MODEL_INTRINSIC]
+       |        |       - Wipes audio placeholders: spectral_centroid = undefined, etc.
+       |        |
+       |        +---> If Gemini fails: fallback createLocalDeterministicToneProfile()
+       |                - Regex keyword heuristics [DETERMINISTIC_LOGIC]
+       |
+       +---> [Step 2: Validation Recipe Intercepts in geminiService.ts]
+       |        |
+       |        +---> If useValidationRecipes && AC/DC keyword:
+       |        |       - Returns hardcoded British Lead S100 + 4x12 Brit 8000 [STATIC_RECIPE]
+       |        |
+       |        +---> If useValidationRecipes && Pantera keyword:
+       |        |       - Returns hardcoded Darrell 100 + OverScream + Gate + Graphic EQ [STATIC_RECIPE]
+       |        |
+       |        +---> If useValidationRecipes && Metallica Kill 'Em All keyword:
+       |                - Returns hardcoded Brit 8000 + OverScream + Gate + Graphic EQ [STATIC_RECIPE]
+       |
+       +---> [Step 3: Main Gemini Request Construction in geminiService.ts]
+       |        - MASTER_PROMPT populated with:
+       |            * {user_input}: text prompt
+       |            * {amplifier_directory}: 30+ amps from AT5_AMPLIFIER_KNOWLEDGE [PLATFORM_DERIVED]
+       |            * {cabinet_speaker_directory}: AT5_CABINET_SPEAKER_KNOWLEDGE [EXPLICIT_TT_KNOWLEDGE / PLATFORM_DERIVED]
+       |            * SYSTEM DETECTED TONE PROFILE: JSON from Step 1
+       |            * youtubeUrl: string appended as text (if present)
+       |            * userPreset: stringified JSON appended as text (if present)
+       |            * targetAudio: inlineData base64 (if present)
+       |            * (NOTE: recordingAudioFile / currentAudio is NOT included in request!)
+       |        - Calls Gemini (gemini-3.8-flash) -> cleans and parses JSON response
+       |
+       +---> [Step 4: Deterministic Post-Processing in adjustThrashPedalSelection()]
+       |        |
+       |        +---> Noise Gate Calibration:
+       |        |       - Scans signal chain for any gate/filter
+       |        |       - Normalizes Release, Threshold, Depth
+       |        |       - If thrash/high-gain: forces Threshold "-45 dB", Release "120 ms", Depth "-60 dB"
+       |        |
+       |        +---> Boost Pedal Surgery:
+       |        |       - If thrash keywords or Marshall amp selected:
+       |        |           * Replaces any overdrive/distortion/fuzz with "OverScream"
+       |        |           * If no boost present: inserts "OverScream" before first amp
+       |        |           * If raw thrash: Drive 4.5, Level 6.5
+       |        |           * If tight thrash: Drive 1.0, Level 9.0
+       |        |           * Overwrites engineering_notes.gain_strategy & eq_strategy with static text
+       |        |           * Forces tone_summary.style to "1980's Metallica Kill 'Em All rhythm v2"
+       |        |       - If user explicitly asked for RAT/fuzzy/grunge:
+       |        |           * Overwrites overdrive/screamer with "PROdrive" (The RAT)
+       |        |
+       +---> [Step 5: Semantic Microphone Placement Reasoning Engine]
+       |        |  (ensureSignalChainSemanticPlacements in /src/services/at5MicPlacementReasoning.ts)
+       |        |
+       |        +---> Iterates all cab elements in signal chain:
+       |        |       - Identifies mic roles: 57=attack, 121=warmth/fizz, 87=detail/room, 421=body, 20=bass
+       |        |       - Evaluates tone profile (gain, distortion, style) & speaker brightness
+       |        |       - Resolves semantic position (Cap, Cap Edge, Cone, Cone Edge)
+       |        |       - Resolves semantic distance (Close, Medium, Far)
+       |        |       - Resolves semantic angle (On Axis, 45° Off Axis)
+       |        |       - Evaluates multi-mic complement (Mic 2 compensates Mic 1)
+       |        |       - Synthesizes placement string: e.g. "Cap Edge, W, Close, On Axis"
+       |        |       - Overwrites engineering_notes.microphone_debug with acoustic rationale
+       |
+       v
+[Current ToneResult stored in App.tsx state]
+       |
+       +---> UI Display (AT5SignalChainView, ToneProfileView, RunTraceInspector)
+       |
+       v  (On Export Click: presetExporter.ts)
+[Deterministic Export Pipeline: getExportData()]
+       |
+       +---> normaliseSignalChain() (/src/services/at5SignalChainNormalizer.ts)
+       |        - Maps gear names to canonical AT5 names via GEAR_NAME_MAP & catalog
+       |        - Groups and normalizes settings via resolveGearParameters()
+       |
+       +---> filterDuplicateEqsWithRemoved() (/src/services/at5SignalChainNormalizer.ts)
+       |        - Classifies EQs by functional role (pre_amp_stomp_eq, loop_eq, post_amp_rack_eq, final_shaping_eq)
+       |        - Ranks and deduplicates redundant EQs; protects validated profiles (Babadeaf 10-band)
+       |
+       +---> resolveCompositeMicPlacement() (/src/services/at5MicPlacementService.ts)
+       |        - Translates semantic placement strings into numeric VIR coordinates:
+       |          Angle (0, 45), Distance (cm/inches), XAxis, YAxis, Speaker index
+       |
+       +---> XML Serialization (/src/services/presetExporter.ts)
+                - Maps parameters to XML attributes using AT5 Parameter Manifest
+                - Assigns AT5 GUIDs
+                - Generates .at5p preset file download
+
+
+--------------------------------------------------------------------------------
+SECTION 3 — KNOWLEDGE PROVENANCE MAP
+--------------------------------------------------------------------------------
+
+The following table documents the significant engineering knowledge items and
+behaviours discovered in the codebase, classified by the Knowledge Provenance
+Taxonomy.
+
+--------------------------------------------------------------------------------
+ID: KB-001
+Description: Pre-gain low-end roll-off / tightening before high-gain distortion
+Competency Domain: 2 (Gain Staging), 3 (Nonlinear Processing), 4 (Spectral), 7 (Topology)
+Provenance: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC, PLATFORM_DERIVED
+Source File: /src/services/geminiService.ts
+Symbol / Location: MASTER_PROMPT (lines 31-36, 66-71), adjustThrashPedalSelection (lines 831-906)
+Runtime Path: Prompt instruction TO Gemini, followed by deterministic code override AFTER Gemini.
+Nature: Hybrid. Prompt instructs principle ("Use OverScream Drive 0 Level 10 to tighten low end"). If Gemini fails to include it or uses another pedal, adjustThrashPedalSelection() deterministically mutates the chain, injects OverScream, and overwrites the notes.
+Confidence: CONFIRMED
+Notes: Demonstrates deterministic enforcement of an engineering rule of thumb.
+
+--------------------------------------------------------------------------------
+ID: KB-002
+Description: Post-distortion high-frequency fizz attenuation via Off-Axis mic angle
+Competency Domain: 3 (Nonlinear Processing), 4 (Spectral), 10 (Microphone & Capture)
+Provenance: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+Source File: /src/services/at5MicPlacementReasoning.ts
+Symbol / Location: reasonSemanticMicPlacement (lines 374-393), determineAngleReason (lines 211-225)
+Runtime Path: Executed unconditionally on all generated cabinet elements via ensureSignalChainSemanticPlacements().
+Nature: Deterministic logic derived from explicit acoustic rules. If high-gain saturation or bright speaker is detected, angle is set to "45° Off Axis" with the reason "softens direct highs and helps control harshness and fizz without sacrificing body."
+Confidence: CONFIRMED
+Notes: Sound acoustic reasoning implemented deterministically in code.
+
+--------------------------------------------------------------------------------
+ID: KB-003
+Description: Microphone role assignment and complementary dual-mic blending
+Competency Domain: 10 (Microphone & Capture), 11 (Phase & Multi-Source Interaction)
+Provenance: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+Source File: /src/services/at5MicPlacementReasoning.ts
+Symbol / Location: determineMicrophoneRole (lines 58-92), determineMultiMicRelationship (lines 229-265)
+Runtime Path: Executed unconditionally in post-processing for all cabinet elements.
+Nature: Deterministic logic mapping transducer families (Dynamic 57 -> primary attack/presence; Ribbon 121 -> warmth/fizz control; Condenser 87 -> detail/space) and pairing them so Mic 1 provides attack at Cap Edge and Mic 2 provides warmth at Cone.
+Confidence: CONFIRMED
+Notes: Acoustic transducer physics encoded directly into TypeScript rules.
+
+--------------------------------------------------------------------------------
+ID: KB-004
+Description: Noise gate threshold and release calibration for rhythm tracking
+Competency Domain: 5 (Dynamics & Envelopes), 6 (Noise Engineering)
+Provenance: DETERMINISTIC_LOGIC, STATIC_RECIPE
+Source File: /src/services/geminiService.ts
+Symbol / Location: adjustThrashPedalSelection (lines 634-756)
+Runtime Path: Post-processing scan on all signal chain elements matching gate keywords.
+Nature: Pure deterministic logic. Parses gate settings; if thrash or high-gain is detected, it overrides Release to 120 ms, Threshold to -45 dB, and Depth to -60 dB to truncate palm-mute chugs.
+Confidence: CONFIRMED
+Notes: No acoustic measurement or audio signal analysis occurs; setting is clamped based on string matching.
+
+--------------------------------------------------------------------------------
+ID: KB-005
+Description: Functional EQ role separation and duplicate suppression
+Competency Domain: 4 (Spectral), 7 (Topology), 17 (Intervention & Minimalism)
+Provenance: DETERMINISTIC_LOGIC, PLATFORM_DERIVED
+Source File: /src/services/at5SignalChainNormalizer.ts
+Symbol / Location: filterDuplicateEqsWithRemoved (lines 1046-1250)
+Runtime Path: Invoked during preset export and signal chain normalization.
+Nature: Deterministic logic. Distinguishes pre_amp_stomp_eq, loop_eq, post_amp_rack_eq, and final_shaping_eq. Preserves one EQ per functional role, suppresses redundant duplicate EQs, and protects validated gear profiles (e.g. Babadeaf 10-Band Graphic).
+Confidence: CONFIRMED
+Notes: Implements the sound-engineering principle of avoiding redundant serial EQs in identical functional locations.
+
+--------------------------------------------------------------------------------
+ID: KB-006
+Description: Impedance interaction heuristic for vintage germanium fuzz
+Competency Domain: 1 (Source & Input), 7 (Signal Topology)
+Provenance: EXPLICIT_TT_KNOWLEDGE, MODEL_INTRINSIC
+Source File: /src/services/geminiService.ts
+Symbol / Location: MASTER_PROMPT (lines 116-119)
+Runtime Path: Supplied as prompt text to Gemini: "FUZZ logic: Germanium/Vintage Fuzz must be FIRST (or before buffers) for impedance interaction."
+Nature: Explicit knowledge supplied to the LLM. No deterministic code verifies or forces fuzz placement before buffers.
+Confidence: STRONG EVIDENCE (Prompt text confirmed; model adherence unverified by code).
+Notes: Valid electrical engineering principle supplied as a heuristic.
+
+--------------------------------------------------------------------------------
+ID: KB-007
+Description: Cabinet construction acoustic characteristics (Open vs. Closed vs. Ported)
+Competency Domain: 9 (Loudspeaker & Cabinet Engineering)
+Provenance: EXPLICIT_TT_KNOWLEDGE, PLATFORM_DERIVED
+Source File: /src/services/at5CabinetKnowledge.ts
+Symbol / Location: AT5_CABINET_SPEAKER_KNOWLEDGE (lines 45-59)
+Runtime Path: Embedded into MASTER_PROMPT as {cabinet_speaker_directory}.
+Nature: Explicit knowledge linking acoustic properties (open-back = wide dispersion, airy highs, loose bass; closed-back = directional, tight punch, controlled low-end) to specific AT5 cabinet models.
+Confidence: CONFIRMED
+Notes: General acoustic principles framed specifically in terms of AT5 cabinet choices.
+
+--------------------------------------------------------------------------------
+ID: KB-008
+Description: Speaker driver voicing and cone breakup characteristics
+Competency Domain: 9 (Loudspeaker & Cabinet Engineering)
+Provenance: EXPLICIT_TT_KNOWLEDGE, PLATFORM_DERIVED
+Source File: /src/services/at5CabinetKnowledge.ts
+Symbol / Location: AT5_CABINET_SPEAKER_KNOWLEDGE (lines 36-44)
+Runtime Path: Embedded into MASTER_PROMPT as {cabinet_speaker_directory}.
+Nature: Explicit knowledge documenting Celestion Greenback (warm mids, compression), Vintage 30 (aggressive upper mids, tight cut), G12T-75 (scooped mids, bite), EVM-12L (neutral, massive headroom, zero breakup).
+Confidence: CONFIRMED
+Notes: Accurate driver voicing knowledge mapped to AT5 speaker identifiers.
+
+--------------------------------------------------------------------------------
+ID: KB-009
+Description: AT5 Parametric EQ hardware 2-band limitation constraint
+Competency Domain: 4 (Spectral Engineering)
+Provenance: PLATFORM_DERIVED, EXPLICIT_TT_KNOWLEDGE
+Source File: /src/services/geminiService.ts
+Symbol / Location: MASTER_PROMPT (lines 85-89)
+Runtime Path: Embedded into MASTER_PROMPT.
+Nature: Pure platform constraint masquerading as engineering advice. Instructs Gemini that AT5 "Parametric EQ" has strictly two bands (Freq 1, Gain 1, Q 1, Freq 2, Gain 2, Q 2) and forbids abstract parameter generation, directing 3+ band needs to Graphic EQ.
+Confidence: CONFIRMED
+Notes: Would cease to have meaning outside AmpliTube 5.
+
+--------------------------------------------------------------------------------
+ID: KB-010
+Description: Volumetric Impulse Response (VIR) coordinate mapping from semantic placements
+Competency Domain: 10 (Microphone & Capture Engineering)
+Provenance: PLATFORM_DERIVED, DETERMINISTIC_LOGIC
+Source File: /src/services/at5MicPlacementService.ts
+Symbol / Location: resolveCompositeMicPlacement (lines 100-350)
+Runtime Path: Executed during preset export to calculate AT5 XML coordinates.
+Nature: Trigonometric / coordinate translation mapping semantic labels ("Cap Edge", "W", "Close", "45° Off Axis") into AT5 VIR numeric parameters: XAxis, YAxis, Distance, Angle.
+Confidence: CONFIRMED
+Notes: Platform translation service implementing semantic capture abstractions.
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — GEMINI PROMPT KNOWLEDGE INVENTORY
+--------------------------------------------------------------------------------
+
+4.1 EXPLICIT ENGINEERING PRINCIPLES SUPPLIED TO GEMINI
+Inspection of `MASTER_PROMPT` in `/src/services/geminiService.ts` (lines 19-269)
+reveals the following engineering principles explicitly communicated to Gemini:
+  1. Gain Pivot Architecture:
+     - Pre-Gain (Input stage): Shaping behaviour (Wah, Compressor, Mid-boosters,
+       EQ to tighten low end before nonlinear stages).
+     - Post-Gain (FX Loop / Rack): Refining tone (EQ for mix balance, modulation
+       for clarity, delay/reverb for spatialisation).
+  2. Gain Staging Discipline:
+     - Distribute gain incrementally across stages; never max out a single stage.
+     - Use clean boost with high level and low drive to tighten high-gain inputs.
+  3. Frequency Dominance:
+     - The electric guitar is fundamentally a midrange instrument.
+     - Metal: Moderate mid-scoop (bands 2-4) compensated with post-gain presence.
+     - Rock: Forward midrange focus (bands 6-8) for projection.
+  4. Causal Troubleshooting Heuristics:
+     - Muddy tone -> Reduce bass PRE-distortion.
+     - Harsh/fizzy tone -> Reduce treble/presence POST-distortion.
+     - Lost in mix -> Boost midrange (700 Hz - 1.5 kHz).
+     - Cluttered delay -> Synchronize to tempo and position in FX Loop/Rack.
+  5. Impedance & FX Order:
+     - Fuzz pedals must precede buffers for proper passive pickup impedance loading.
+     - Reverb must follow delay so delay repeats are properly spatialized.
+
+4.2 INSTRUCTIONS, HEURISTICS & NEGATIVE CONSTRAINTS
+  - Negative Constraints: Explicit lists forbidding modern high-gain amps,
+    rack EQs, or modulation for classic rock requests (e.g. AC/DC Malcolm Young).
+  - Control-Aware Generation: Gemini is strictly instructed to generate ONLY
+    parameters that physically exist on the selected amplifier model in
+    `AT5_AMPLIFIER_KNOWLEDGE`, baseline settings from `typicalSettings`, and
+    never invent knob names.
+  - Multi-Mic Role Rules: Explicitly mandates assigning distinct roles
+    (e.g., Dynamic 57 for attack, Ribbon 121 for warmth/fizz control).
+
+4.3 REQUESTED REASONING VS. REQUESTED OUTPUTS
+  - Requested Outputs: RFC 8259 JSON containing `tone_summary`, `signal_chain`,
+    `engineering_notes` (`gain_strategy`, `noise_control`, `eq_strategy`,
+    `amplifier_debug`, `microphone_debug`), `confidence`, `tone_adjustment_intent`,
+    and `rack_decision`.
+  - Nature of Requested Reasoning: Gemini is asked to "explain why the selected
+    amp was chosen over others" and "document systematic reasoning (style,
+    low-end requirements, cabinet construction, speaker family)".
+  - Limitation: The prompt asks Gemini to write *explanations after selecting gear*
+    rather than execute an evidence-based diagnostic or trade-off evaluation loop.
+
+4.4 SUPPLIED KNOWLEDGE VS. REQUESTED REASONING
+  - Supplied TO Gemini: Complete catalog of 30+ amps with knob lists and ranges,
+    detailed cabinet construction rules, speaker descriptions, mic placement
+    formatting rules, and genre templates.
+  - Requested FROM Gemini: Pattern matching between user prompt keywords and
+    the supplied catalog, followed by text justification in debug fields.
+
+
+--------------------------------------------------------------------------------
+SECTION 5 — DETERMINISTIC ENGINEERING BEHAVIOUR INVENTORY
+--------------------------------------------------------------------------------
+
+This section catalogues application TypeScript code that makes substantive
+tone-engineering decisions independently of, or by overriding, Gemini:
+
+--------------------------------------------------------------------------------
+1. Thrash Boost Pedal Override & Injection
+- File & Symbol: /src/services/geminiService.ts: adjustThrashPedalSelection()
+- Trigger: User prompt matches thrash/metal keywords OR Gemini selected a Marshall-family amp.
+- Decision: Overrides any distortion/overdrive pedal to "OverScream", or injects "OverScream" before the first amp if no boost exists. Sets Drive to 1.0 (or 4.5 for raw thrash) and Level to 9.0 (or 6.5). Overwrites engineering notes text.
+- Engineering Effect: Enforces pre-distortion low-end roll-off and upper-mid boost.
+- Provenance: DETERMINISTIC_LOGIC, STATIC_RECIPE, PLATFORM_DERIVED.
+- Rationale Represented? Hardcoded string in engineering_notes.
+- Platform Dependent? Yes ("OverScream" is the AT5 TS9 emulation).
+
+--------------------------------------------------------------------------------
+2. Noise Gate Parameter Calibration
+- File & Symbol: /src/services/geminiService.ts: adjustThrashPedalSelection()
+- Trigger: Presence of a noise gate in the chain + thrash/high-gain context.
+- Decision: Clamps Release to 120 ms, Threshold to -45 dB, and Depth to -60 dB. Converts raw numbers (0-10) to dB and ms units.
+- Engineering Effect: Imposes fast gating to truncate silence on high-gain palm mutes.
+- Provenance: DETERMINISTIC_LOGIC.
+- Rationale Represented? Hardcoded in code comments and notes.
+- Platform Dependent? Partial (formatting matches AT5 expected parameter units).
+
+--------------------------------------------------------------------------------
+3. Semantic Microphone Placement Assignment
+- File & Symbol: /src/services/at5MicPlacementReasoning.ts: reasonSemanticMicPlacement()
+- Trigger: Any cabinet element generated by Gemini with missing or partial mic placement.
+- Decision: Assigns Position (Cap, Cap Edge, Cone, Cone Edge), Distance (Close, Medium, Far), and Angle (On Axis, 45° Off Axis) based on mic model and toneProfile gain level.
+- Engineering Effect: Shapes acoustic frequency response and tames distortion fizz.
+- Provenance: DETERMINISTIC_LOGIC, EXPLICIT_TT_KNOWLEDGE.
+- Rationale Represented? Yes, dynamically constructed acoustic rationale string.
+- Platform Dependent? No for semantic concepts; yes for final VIR mapping.
+
+--------------------------------------------------------------------------------
+4. Functional EQ Deduplication & Role Management
+- File & Symbol: /src/services/at5SignalChainNormalizer.ts: filterDuplicateEqsWithRemoved()
+- Trigger: Export or normalization of a signal chain containing multiple EQs.
+- Decision: Categorizes EQs into pre_amp_stomp_eq, loop_eq, post_amp_rack_eq, and final_shaping_eq. Retains only the highest-ranking EQ per role; marks duplicates as SKIPPED.
+- Engineering Effect: Prevents unintended cascading EQ stages in the same signal path position.
+- Provenance: DETERMINISTIC_LOGIC, PLATFORM_DERIVED.
+- Rationale Represented? Yes, recorded in dedupeDebugMap reasons.
+- Platform Dependent? Yes (relies on AT5 stomp vs rack slot semantics).
+
+--------------------------------------------------------------------------------
+5. Single-Mic Ambiguity Auto-Routing
+- File & Symbol: /src/services/at5SignalChainNormalizer.ts: detectCabSettingsFormat()
+- Trigger: A cabinet has only a "Mic_1" key without schema version metadata.
+- Decision: Routes the mic to primary AT5 slot "Mic_0" rather than secondary slot "Mic_1".
+- Engineering Effect: Prevents a single primary mic from being exported as an unblended secondary mic.
+- Provenance: DETERMINISTIC_LOGIC, PLATFORM_DERIVED.
+- Rationale Represented? Yes, in CabFormatDetectionResult reason string.
+- Platform Dependent? Yes (resolves 0-indexed vs 1-indexed AT5 XML slot quirks).
+
+
+--------------------------------------------------------------------------------
+SECTION 6 — STATIC RECIPE / PROFILE INVENTORY
+--------------------------------------------------------------------------------
+
+The codebase contains several predetermined recipes and profiles that bypass
+or preempt AI reasoning:
+
+1. Static Tone Profile Recipes (/src/services/toneProfileBuilder.ts: lines 153-348)
+   - Trigger: Keyword matching in `checkStaticToneProfileRecipes(lowerPrompt)`.
+   - Profiles:
+     * AC/DC / Malcolm Young / Jailbreak: Hardcoded 1970s classic rock profile,
+       medium-low crunch, vintage Marshall likely, modern metal avoided.
+     * Metallica / Kill 'Em All / Hetfield: Hardcoded 1980s early thrash profile,
+       high gain, JCM800 likely, OverScream boost likely.
+     * Mötley Crüe / Dr. Feelgood / Mick Mars: Hardcoded late 1980s glam metal
+       profile, saturated, hot-rodded Marshall / Soldano likely.
+     * 1980s Thrash Lead: Hardcoded lead profile, compressed, delay/chorus likely.
+   - Provenance: STATIC_RECIPE.
+
+2. Validation Execution Recipes (/src/services/geminiService.ts: lines 324-562)
+   - Trigger: `useValidationRecipes === true` AND prompt keyword match.
+   - Complete Fixed Signal Chains:
+     * AC/DC Malcolm Young: British Lead S100 (Gain 4.0, Bass 4.5, Mid 7.5, Treble 5.5)
+       + 4x12 Brit 8000 (Brit Green, Dynamic 57 + Ribbon 121, Small Studio).
+     * Pantera Cowboys From Hell: Noise Gate + OverScream + Darrell 100
+       (Gain 7.5, Master 5.0, Mid 3.5) + 4x12 Brit 8000 + Graphic EQ (V-scoop).
+     * Metallica Kill 'Em All: Noise Gate + OverScream + Brit 8000
+       (Pre Amp 7.0, Mid 7.5, Presence 7.8) + 4x12 Brit 8000 + Graphic EQ.
+   - Provenance: STATIC_RECIPE, PLATFORM_DERIVED.
+
+3. Validated Tone Profile Knowledge File
+   - File: `/src/knowledge/validatedToneProfiles/acdc_jailbreak_malcolm_young_studio.json`
+   - Content: Complete validated configuration tested against Spotify playback.
+   - Role in Runtime: Not loaded dynamically via fs or import; its contents were
+     manually hardcoded into `toneProfileBuilder.ts` and `geminiService.ts`.
+   - Provenance: STATIC_RECIPE, REFERENCE_KNOWLEDGE.
+
+4. Deterministic Fallback Tone Profile (/src/services/toneProfileBuilder.ts: lines 354-439)
+   - Trigger: Gemini API failure, timeout, or invalid JSON.
+   - Behaviour: Regex parsing of prompt keywords (era: 70s/80s/90s/modern;
+     style: metal/rock/blues/jazz; gain: clean/edge/low/medium/high).
+   - Provenance: DETERMINISTIC_LOGIC.
+
+
+--------------------------------------------------------------------------------
+SECTION 7 — REPRESENTED BUT NOT EXERCISED KNOWLEDGE
+--------------------------------------------------------------------------------
+
+The following sound-engineering concepts exist in TypeScript interfaces, schemas,
+or contracts but are NOT populated, analyzed, or acted upon during Current
+runtime execution:
+
+1. ToneProfile Audio Feature Estimates (/src/types.ts: lines 61-71)
+   - Fields:
+     * `spectral_centroid?: number` (perceived brightness)
+     * `low_end_tightness?: number` (low-end tracking)
+     * `midrange_emphasis?: number` (midrange scoop vs forwardness)
+     * `gain_saturation_estimate?: number` (distortion saturation)
+     * `dynamic_range_estimate?: number` (compression level)
+     * `transient_attack_estimate?: number` (pick attack sharpness)
+     * `reverb_room_estimate?: number` (ambient room contribution)
+     * `width_estimate?: number` (stereo width tracking)
+     * `noise_fizz_estimate?: number` (background hum / fizz)
+   - Runtime Status: In `/src/services/toneProfileBuilder.ts` (lines 131-141), every
+     one of these fields is explicitly set to `undefined` upon JSON parsing.
+     No audio DSP feature extraction pipeline exists in Current TT.
+
+2. Sound Engineer Phase 1B Layer Contracts (/src/sound-engineer/layer-contracts/*)
+   - Contracts:
+     * `EvidenceRecord`: structured acoustic observations (ObservedSpectralBalance,
+       ObservedDynamicResponse, ObservedDistortionTexture).
+     * `EngineeringDecisionRecord`: explicit decisions with purpose, intent,
+       rationale, constraints, and tradeOffs.
+     * `SemanticToneDesign`: platform-independent amplifier, cabinet, and capture
+       specifications.
+     * `ValidationReport`: objective verification and acoustic metric checks.
+     * `PlatformTranslationPlan`: decoupling semantic intent from AT5 XML.
+   - Runtime Status: Only instantiated inside synthetic trace generators for
+     Shadow stream QA testing (/src/sound-engineer/trace/placeholderTrace.ts).
+     Current tone generation completely bypasses them.
+
+3. Tone Adjustment Intent (/src/types.ts: line 120, geminiService.ts: lines 256-260)
+   - Fields: `low_end`, `midrange`, `presence` inside `tone_adjustment_intent`.
+   - Runtime Status: Emitted by Gemini when prompted, but never inspected, parsed,
+     or used by any downstream normalization, export, or UI component.
+
+4. Confidence Values (/src/types.ts: line 113)
+   - Field: `confidence?: number` (0-100).
+   - Runtime Status: Displayed as text in the manifest copy-clipboard function.
+     Never used to trigger alternative branches, request user clarification,
+     or influence processing.
+
+
+--------------------------------------------------------------------------------
+SECTION 8 — INPUT / EVIDENCE UTILISATION
+--------------------------------------------------------------------------------
+
+Evaluation of all user and reference inputs accepted by the application:
+
+1. User Text Description (`prompt`)
+   - Accepted: Yes (UI text input).
+   - Stored: Yes (Working session localStorage).
+   - Passed to Gemini: Yes (Injected into Tone Profile Builder and MASTER_PROMPT).
+   - Influences Decisions: Primary driver of tone classification and gear selection.
+
+2. Target / Reference Audio (`targetAudioFile`)
+   - Accepted: Yes (UI dropzone 1).
+   - Stored: In memory only (not serialized to session storage).
+   - Passed to Gemini: Yes (Converted to base64 inlineData and sent in multimodal payload).
+   - Influences Decisions: Prompt instructs Gemini to prioritize reference audio.
+     However, no local DSP feature extraction is performed by TT; model-intrinsic
+     audio perception is entirely relied upon.
+
+3. Current / User Recording (`recordingAudioFile`)
+   - Accepted: Yes (UI dropzone 2: "Your Recording").
+   - Stored: In memory only.
+   - Passed to Gemini: NO. Converted to base64 in `App.tsx` and passed as parameter
+     `currentAudio` to `translateTone()`, but `translateTone()` NEVER includes it
+     in the request payload to Gemini or Tone Profile Builder.
+   - Influences Decisions: ZERO. Completely dropped and unused.
+
+4. YouTube Reference URL (`youtubeUrl`)
+   - Accepted: Yes (UI text input).
+   - Stored: Yes (Working session storage).
+   - Passed to Gemini: Yes, appended as a raw text string (`"Additional YouTube Context: <url>"`).
+   - Influences Decisions: Gemini cannot access external URLs during standard
+     generateContent calls. It only acts as contextual text if the URL contains
+     readable video title keywords.
+
+5. Imported Amplitube Preset (`userPreset`)
+   - Accepted: Yes (UI dropzone 3 for .at5p files).
+   - Stored: Yes (Parsed XML structure in session storage).
+   - Passed to Gemini: Yes, stringified JSON appended to prompt.
+   - Influences Decisions: Marginal text context. The UI comparison logic
+     hardcodes `setDiffs(["Analysis completed with new engine"])`. No actual
+     structural or parameter diffing occurs.
+
+6. Audio Feature Extraction Fields
+   - Accepted / Extracted: Not implemented. Overwritten to `undefined`.
+
+
+--------------------------------------------------------------------------------
+SECTION 9 — 22-DOMAIN COMPETENCY EVIDENCE MATRIX
+--------------------------------------------------------------------------------
+
+DOMAIN 1: SOURCE & PERFORMANCE
+CURRENT EVIDENCE: Minimal prompt mentions ("neck pickup", "palm muting", "sharp pick attack"). No guitar construction, scale length, pickup inductance, or input impedance analysis.
+SOURCE(S): /src/services/geminiService.ts (MASTER_PROMPT lines 67, 109)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, MODEL_INTRINSIC
+KNOWLEDGE PRESENT: Partial. General recognition that palm muting requires tight low end.
+CAPABILITY REQUESTED: No. TT does not ask Gemini to deduce or specify source guitar specs.
+CAPABILITY REPRESENTABLE: No. ToneProfile has no fields for pickup type, guitar scale, or tuning.
+BEHAVIOUR IMPLEMENTED: Keyword detection of "palm mute" triggers OverScream and gate clamp.
+REASONING DEMONSTRATED: None. Pure keyword trigger.
+PLATFORM DEPENDENCE: Independent concept, but unrepresented.
+CONFIDENCE: CONFIRMED (Lack of source reasoning confirmed).
+AUDIT NOTES: Current TT assumes downstream amp settings can solve source/performance issues.
+
+--------------------------------------------------------------------------------
+DOMAIN 2: SIGNAL LEVEL, GAIN STAGING & HEADROOM
+CURRENT EVIDENCE: Gain staging heuristics in prompt ("Distribute gain incrementally. Never max a single stage. Use OverScream Drive 0 Level 10 to tighten").
+SOURCE(S): /src/services/geminiService.ts (MASTER_PROMPT lines 35-36)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+KNOWLEDGE PRESENT: Yes, qualitative rules of thumb.
+CAPABILITY REQUESTED: Requested as text explanation in `gain_strategy`.
+CAPABILITY REPRESENTABLE: Yes, in `gain_strategy` string and amp knob values.
+BEHAVIOUR IMPLEMENTED: OverScream insertion sets Level 9.0 Drive 1.0 deterministically.
+REASONING DEMONSTRATED: Partial evidence of heuristic rule application; no dynamic stage-by-stage dB headroom calculation.
+PLATFORM DEPENDENCE: Platform-independent principle; implemented via AT5 OverScream.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Good qualitative rule of thumb; lacks quantitative stage gain accounting.
+
+--------------------------------------------------------------------------------
+DOMAIN 3: NONLINEAR PROCESSING & DISTORTION
+CURRENT EVIDENCE: Distinction between preamp tube saturation, solid-state diode clipping, power amp crunch, and fuzz.
+SOURCE(S): /src/services/geminiService.ts (lines 66-70, 79, 453, 834-845), /src/services/toneProfileBuilder.ts (lines 32, 173)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC, PLATFORM_DERIVED
+KNOWLEDGE PRESENT: Yes. Code distinguishes vintage raw clipping (OverScream Drive 4.5) from clean tightness (Drive 1.0).
+CAPABILITY REQUESTED: Yes, `distortion_type` in ToneProfile.
+CAPABILITY REPRESENTABLE: Yes, ToneProfile enum (clean, edge, crunch, overdrive, saturated, fuzz).
+BEHAVIOUR IMPLEMENTED: Yes, adjusts pedal drive/level based on thrash vs fuzz keywords.
+REASONING DEMONSTRATED: Partial. Heuristic classification based on keyword matching.
+PLATFORM DEPENDENCE: Mixed. Distortion concepts are general; pedal mappings are AT5-specific.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: One of TT's strongest heuristic areas, though rule-based rather than acoustically modeled.
+
+--------------------------------------------------------------------------------
+DOMAIN 4: FREQUENCY & SPECTRAL ENGINEERING
+CURRENT EVIDENCE: Pre- vs post-distortion EQ differentiation, Graphic vs Parametric EQ role assignment, 2-band AT5 Parametric EQ limitation.
+SOURCE(S): /src/services/geminiService.ts (lines 33-44, 85-102), /src/services/at5SignalChainNormalizer.ts (lines 953-1250)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC, PLATFORM_DERIVED
+KNOWLEDGE PRESENT: Yes. Explicit understanding that bass cut must happen pre-distortion to prevent muddiness, while presence/treble cuts happen post-distortion to tame fizz.
+CAPABILITY REQUESTED: Yes, `eq_strategy`, `rack_decision`, and `eq_intent`.
+CAPABILITY REPRESENTABLE: Yes, in `SignalChainElement.settings` and `RackDecision`.
+BEHAVIOUR IMPLEMENTED: Yes. Normalizer categorizes EQs into pre-amp vs post-amp roles and deduplicates redundant stages.
+REASONING DEMONSTRATED: Strong Evidence. Clear structural separation of spectral intervention locations.
+PLATFORM DEPENDENCE: Mixed. Pre/post distortion logic is universal; Parametric EQ 2-band rule is AT5-specific.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Solid architectural implementation of spectral placement principles.
+
+--------------------------------------------------------------------------------
+DOMAIN 5: DYNAMICS, ENVELOPE & TRANSIENTS
+CURRENT EVIDENCE: Fast noise gate attack/release for palm muting; compressor placement before amp input.
+SOURCE(S): /src/services/geminiService.ts (lines 113, 634-756)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+KNOWLEDGE PRESENT: Partial. Focuses almost exclusively on noise gating and generic compression.
+CAPABILITY REQUESTED: `attack` and `dynamics` fields in ToneProfile.
+CAPABILITY REPRESENTABLE: Yes, ToneProfile enums (soft/balanced/sharp; dynamic/compressed).
+BEHAVIOUR IMPLEMENTED: Deterministic clamping of gate Release to 120 ms.
+REASONING DEMONSTRATED: Minimal. Static clamping rather than envelope-adaptive derivation.
+PLATFORM DEPENDENCE: Largely platform-independent.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Lacks nuanced transient shaping or multiband dynamic reasoning.
+
+--------------------------------------------------------------------------------
+DOMAIN 6: NOISE ENGINEERING
+CURRENT EVIDENCE: Dedicated Noise Gate calibration logic with threshold and release clamping.
+SOURCE(S): /src/services/geminiService.ts (lines 634-756)
+PROVENANCE: DETERMINISTIC_LOGIC, STATIC_RECIPE
+KNOWLEDGE PRESENT: Partial. Knows that high gain generates hum/buzz requiring a gate.
+CAPABILITY REQUESTED: `noise_control` in engineering_notes.
+CAPABILITY REPRESENTABLE: Yes, in `noise_level` and `noise_control`.
+BEHAVIOUR IMPLEMENTED: Hardcoded injection of -45 dB threshold / 120 ms release.
+REASONING DEMONSTRATED: None. Does not analyze noise floor, SNR, or single-coil vs humbucker hum.
+PLATFORM DEPENDENCE: Independent principle; parameter units tailored to AT5.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Purely reactive parameter clamping.
+
+--------------------------------------------------------------------------------
+DOMAIN 7: SIGNAL TOPOLOGY & PROCESSING ORDER
+CURRENT EVIDENCE: Explicit canonical signal chain architecture defined in MASTER_PROMPT: Guitar -> Tuner -> Filter/Wah -> Compressor -> Pitch -> Drive -> Amp -> FX Loop -> Cab -> Rack.
+SOURCE(S): /src/services/geminiService.ts (lines 112-119), /src/services/at5SignalChainNormalizer.ts (lines 943-999)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+KNOWLEDGE PRESENT: Yes. Standard professional studio/live guitar signal flow.
+CAPABILITY REQUESTED: Full signal chain array in JSON output.
+CAPABILITY REPRESENTABLE: Yes, `signal_chain` array.
+BEHAVIOUR IMPLEMENTED: Normalizer reorganizes gear into correct pre-amp and post-amp slots.
+REASONING DEMONSTRATED: Strong Evidence. Enforces correct serial ordering.
+PLATFORM DEPENDENCE: Platform-independent ordering mapped to AT5 slots.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Solid topology model, but restricted strictly to serial single-path topology (no parallel routing or wet/dry/wet).
+
+--------------------------------------------------------------------------------
+DOMAIN 8: AMPLIFIER BEHAVIOUR
+CURRENT EVIDENCE: Curated directory of 30+ amplifiers with real-world names, categories, knob layouts, and typical settings.
+SOURCE(S): /src/services/at5AmplifierKnowledge.ts, /src/services/geminiService.ts (lines 126-137)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, PLATFORM_DERIVED
+KNOWLEDGE PRESENT: Extensive descriptive knowledge of specific amplifier models.
+CAPABILITY REQUESTED: Rank candidate amps, match control layouts, emit parameter values.
+CAPABILITY REPRESENTABLE: Yes, `type: 'amp'` in signal chain.
+BEHAVIOUR IMPLEMENTED: Matches prompt to amplifier directory items.
+REASONING DEMONSTRATED: Partial. Pattern matching against curated tags and descriptions.
+PLATFORM DEPENDENCE: Completely coupled to AmpliTube 5 amplifier roster.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: High competency on AT5 catalog; zero capability to model an amplifier independently of named commercial models.
+
+--------------------------------------------------------------------------------
+DOMAIN 9: LOUDSPEAKER & CABINET ENGINEERING
+CURRENT EVIDENCE: Detailed rule book on cabinet construction (open, closed, ported), sizing (1x12, 2x12, 4x12), and speaker driver characteristics (V30, Greenback, G12T-75, Jensen, EV).
+SOURCE(S): /src/services/at5CabinetKnowledge.ts, /src/services/geminiService.ts (lines 138-157)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, PLATFORM_DERIVED
+KNOWLEDGE PRESENT: High. Clear acoustic understanding of enclosure loading, low-end damping, and cone breakup.
+CAPABILITY REQUESTED: Systematic cabinet/speaker selection and debug justification.
+CAPABILITY REPRESENTABLE: Yes, `Speaker` parameter inside `cab` element.
+BEHAVIOUR IMPLEMENTED: Gemini selects cab and speaker; validation recipes force exact pairings.
+REASONING DEMONSTRATED: Strong Evidence in prompt instructions; partial in runtime execution.
+PLATFORM DEPENDENCE: General acoustic concepts mapped 1:1 to AT5 cabinet and speaker names.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: High-quality acoustic knowledge, but heavily coupled to AT5 naming.
+
+--------------------------------------------------------------------------------
+DOMAIN 10: MICROPHONE & CAPTURE ENGINEERING
+CURRENT EVIDENCE: 10-step semantic microphone placement reasoning engine evaluating position (Cap/Cone/Edge), distance, angle (On/Off Axis), and orientation (N/E/S/W).
+SOURCE(S): /src/services/at5MicPlacementReasoning.ts, /src/services/at5MicPlacementService.ts
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC, PLATFORM_DERIVED
+KNOWLEDGE PRESENT: Very High. Explicit modeling of proximity effect, off-axis high-frequency rolloff, and cone center brightness.
+CAPABILITY REQUESTED: Emitting 4D semantic placement strings in cab settings.
+CAPABILITY REPRESENTABLE: Yes, `Mic_0_Placement`, `Mic_1_Placement`.
+BEHAVIOUR IMPLEMENTED: Comprehensive post-processing engine calculates or completes placements.
+REASONING DEMONSTRATED: CONFIRMED. Demonstrates clear acoustic rationale linking target tone requirements to physical mic position.
+PLATFORM DEPENDENCE: Semantic model is platform-independent; translated to AT5 VIR coordinates during export.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: The most mature and rigorously reasoned engineering module in the codebase.
+
+--------------------------------------------------------------------------------
+DOMAIN 11: PHASE, POLARITY & MULTI-SOURCE INTERACTION
+CURRENT EVIDENCE: Multi-mic complementary blending logic (e.g. Mic 1 at Cap Edge Close On Axis for attack; Mic 2 at Cone Close 45° Off Axis for warmth).
+SOURCE(S): /src/services/at5MicPlacementReasoning.ts (lines 227-265)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+KNOWLEDGE PRESENT: Partial. Understands complementary frequency blending between two microphones.
+CAPABILITY REQUESTED: Dual microphone selection in MASTER_PROMPT.
+CAPABILITY REPRESENTABLE: Yes, `Mic_0` and `Mic_1`.
+BEHAVIOUR IMPLEMENTED: Automatically adjusts Mic 2 position based on Mic 1.
+REASONING DEMONSTRATED: Partial. Acoustic blending is modeled; phase cancellation, comb filtering, and polarity inversion are NOT dynamically modeled.
+PLATFORM DEPENDENCE: Largely platform-independent.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Good acoustic blending heuristics; no actual phase correlation calculation.
+
+--------------------------------------------------------------------------------
+DOMAIN 12: TIME-BASED, MODULATION & SPATIAL PROCESSING
+CURRENT EVIDENCE: FX loop placement rules for delay and reverb; room selection in cabinet (Small Studio, Large Studio, etc.).
+SOURCE(S): /src/services/geminiService.ts (lines 34, 44, 114, 118)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, MODEL_INTRINSIC, PLATFORM_DERIVED
+KNOWLEDGE PRESENT: Basic. Delay before reverb; room reverb in cab module; modulation after gain.
+CAPABILITY REQUESTED: `room` and `effects_profile` in ToneProfile.
+CAPABILITY REPRESENTABLE: Yes, `Room` setting in cab and pedal/rack elements.
+BEHAVIOUR IMPLEMENTED: Passes through Gemini selections; static recipes specify room type.
+REASONING DEMONSTRATED: Minimal. Memorized standard routing.
+PLATFORM DEPENDENCE: High (room choices correspond to AT5 room impulse options).
+CONFIDENCE: PARTIAL EVIDENCE
+AUDIT NOTES: Standard convention adherence; no spatial acoustic or stereo width modeling.
+
+--------------------------------------------------------------------------------
+DOMAIN 13: PSYCHOACOUSTICS & PERCEPTION
+CURRENT EVIDENCE: Brief prompt mention that "the guitar is a midrange instrument" and Fletcher-Munson-like advice regarding midrange projection.
+SOURCE(S): /src/services/geminiService.ts (lines 37-39, 43)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE
+KNOWLEDGE PRESENT: Minimal. Basic awareness of mix masking.
+CAPABILITY REQUESTED: None specifically.
+CAPABILITY REPRESENTABLE: No.
+BEHAVIOUR IMPLEMENTED: None.
+REASONING DEMONSTRATED: None.
+PLATFORM DEPENDENCE: Independent.
+CONFIDENCE: PARTIAL EVIDENCE
+AUDIT NOTES: No loudness compensation, equal-loudness contour modeling, or masking calculation.
+
+--------------------------------------------------------------------------------
+DOMAIN 14: MUSICAL & PRODUCTION CONTEXT
+CURRENT EVIDENCE: Extensive genre templates and historical artist/era associations (AC/DC 1970s analogue, Metallica 1980s thrash, 90s grunge).
+SOURCE(S): /src/services/toneProfileBuilder.ts, /src/services/geminiService.ts
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, STATIC_RECIPE, MODEL_INTRINSIC
+KNOWLEDGE PRESENT: High contextual knowledge of rock/metal history and recording aesthetics.
+CAPABILITY REQUESTED: Style, era, role, and production style classification in ToneProfile.
+CAPABILITY REPRESENTABLE: Yes, `ToneProfile` fields (`era`, `style`, `production_style`).
+BEHAVIOUR IMPLEMENTED: Strong keyword-to-genre classification.
+REASONING DEMONSTRATED: Strong Evidence of historical context utilization.
+PLATFORM DEPENDENCE: Platform-independent historical context.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Rich contextual mapping; tends to collapse into rigid static recipes for prominent bands.
+
+--------------------------------------------------------------------------------
+DOMAIN 15: REFERENCE ANALYSIS & TONE MATCHING
+CURRENT EVIDENCE: Reference audio input accepted via multimodal prompt; ToneProfile taxonomist prompt.
+SOURCE(S): /src/services/geminiService.ts (lines 564-572), /src/services/toneProfileBuilder.ts (lines 89-97)
+PROVENANCE: MODEL_INTRINSIC (Expected from Gemini)
+KNOWLEDGE PRESENT: None in application code. Delegated entirely to Gemini's multimodal black box.
+CAPABILITY REQUESTED: "If target audio is provided, prioritize spectral analysis of the audio over the text prompt."
+CAPABILITY REPRESENTABLE: Placeholder fields exist in `ToneProfile` but are wiped to `undefined`.
+BEHAVIOUR IMPLEMENTED: Audio bytes are uploaded to Gemini. No local DSP extraction occurs.
+REASONING DEMONSTRATED: NOT ESTABLISHED. Static analysis cannot verify how Gemini processes the audio.
+PLATFORM DEPENDENCE: Independent.
+CONFIDENCE: NOT ESTABLISHED
+AUDIT NOTES: UI implies deep audio analysis; codebase contains zero audio DSP extraction code.
+
+--------------------------------------------------------------------------------
+DOMAIN 16: DIAGNOSIS & ROOT-CAUSE REASONING
+CURRENT EVIDENCE: 4 troubleshooting rules in MASTER_PROMPT ("Muddy? Reduce Bass PRE-distortion. Harsh/Fizzy? Reduce Treble/Presence POST-distortion").
+SOURCE(S): /src/services/geminiService.ts (lines 40-44)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE
+KNOWLEDGE PRESENT: Basic causal troubleshooting rules.
+CAPABILITY REQUESTED: None. Gemini is not given a faulty tone to diagnose; it generates chains from scratch.
+CAPABILITY REPRESENTABLE: No diagnostic data structure exists in Current runtime.
+BEHAVIOUR IMPLEMENTED: None.
+REASONING DEMONSTRATED: None in execution (rules exist only as prompt text).
+PLATFORM DEPENDENCE: Independent.
+CONFIDENCE: PARTIAL EVIDENCE
+AUDIT NOTES: Causal troubleshooting knowledge is present in prompt text, but never exercised as a diagnostic workflow.
+
+--------------------------------------------------------------------------------
+DOMAIN 17: INTERVENTION SELECTION & MINIMALISM
+CURRENT EVIDENCE: Explicit prompt instructions for classic rock: "STRICTLY AVOID unrequested rack EQs, delays, reverbs, modulations, compressors... The signal path must remain pure, raw, and bone-dry." Rack decision field specifies "not_needed".
+SOURCE(S): /src/services/geminiService.ts (lines 80, 94, 374-379), /src/services/at5SignalChainNormalizer.ts (lines 1046-1250)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+KNOWLEDGE PRESENT: Yes. Recognizes that unnecessary processing degrades vintage tone authenticity.
+CAPABILITY REQUESTED: `rack_decision.status = "not_needed"`.
+CAPABILITY REPRESENTABLE: Yes, `RackDecision`.
+BEHAVIOUR IMPLEMENTED: EQ deduplication strips duplicate EQs; recipes omit pedals.
+REASONING DEMONSTRATED: Strong Evidence. Actively enforces minimal processing when appropriate.
+PLATFORM DEPENDENCE: Independent principle.
+CONFIDENCE: CONFIRMED
+AUDIT NOTES: Good implementation of engineering minimalism for specific vintage genres.
+
+--------------------------------------------------------------------------------
+DOMAIN 18: TRADE-OFF & CONSTRAINT REASONING
+CURRENT EVIDENCE: Mentioned in prompt regarding OverScream ("tightens low end, improves attack clarity, but introduces diode clipping").
+SOURCE(S): /src/services/geminiService.ts (lines 68, 834-845)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, DETERMINISTIC_LOGIC
+KNOWLEDGE PRESENT: Partial. Recognizes trade-off between clean boost (low drive / high volume) and dirty boost (high drive / low volume).
+CAPABILITY REQUESTED: Explanations in debug fields.
+CAPABILITY REPRESENTABLE: Represented in `EngineeringDecisionItem.tradeOffs` in Phase 1B contract, but NOT in Current ToneResult.
+BEHAVIOUR IMPLEMENTED: Code selects between tight vs raw overdrive settings.
+REASONING DEMONSTRATED: Partial. Rule-based switching rather than dynamic trade-off optimization.
+PLATFORM DEPENDENCE: Independent concept.
+CONFIDENCE: PARTIAL EVIDENCE
+AUDIT NOTES: Trade-offs are acknowledged in comments and prompts, but not modeled as competing optimization constraints.
+
+--------------------------------------------------------------------------------
+DOMAIN 19: UNCERTAINTY & EVIDENCE DISCIPLINE
+CURRENT EVIDENCE: `confidence` field (0-100) in ToneResult; `warnings` array in ToneProfileResult.
+SOURCE(S): /src/types.ts (lines 42, 61-71, 96, 113)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE
+KNOWLEDGE PRESENT: None. Confidence is emitted as an arbitrary integer (frequently hardcoded to 100 in recipes).
+CAPABILITY REQUESTED: `confidence: 0-100`.
+CAPABILITY REPRESENTABLE: Numeric field.
+BEHAVIOUR IMPLEMENTED: Displayed in UI; never used to branch, query, or adjust execution.
+REASONING DEMONSTRATED: None.
+PLATFORM DEPENDENCE: Independent.
+CONFIDENCE: NOT ESTABLISHED
+AUDIT NOTES: Confidence is cosmetic metadata. No true representation of epistemic uncertainty.
+
+--------------------------------------------------------------------------------
+DOMAIN 20: ALTERNATIVE SOLUTION REASONING
+CURRENT EVIDENCE: MASTER_PROMPT instructs Gemini to "rank candidate amps and explain why the selected amp was chosen over others" in `amplifier_debug`. UI has `activeVariation` state ('primary' | 'v1' | 'v2').
+SOURCE(S): /src/services/geminiService.ts (lines 130, 252), /src/App.tsx (line 147)
+PROVENANCE: EXPLICIT_TT_KNOWLEDGE, MODEL_INTRINSIC
+KNOWLEDGE PRESENT: Partial. Asks for ranking of alternatives.
+CAPABILITY REQUESTED: Ranking candidates in debug text.
+CAPABILITY REPRESENTABLE: Text only in `amplifier_debug`. No structured alternative signal chains.
+BEHAVIOUR IMPLEMENTED: UI has variation buttons, but generation returns a single chain.
+REASONING DEMONSTRATED: Minimal. LLM writes narrative justifications for alternatives post hoc.
+PLATFORM DEPENDENCE: Dependent on AT5 amp roster.
+CONFIDENCE: PARTIAL EVIDENCE
+AUDIT NOTES: Post hoc justification rather than genuine multi-hypothesis evaluation.
+
+--------------------------------------------------------------------------------
+DOMAIN 21: ITERATIVE ENGINEERING & OUTCOME EVALUATION
+CURRENT EVIDENCE: `currentAudio` dropzone in UI; `userPreset` comparison placeholder.
+SOURCE(S): /src/App.tsx (lines 452-466, 553-560)
+PROVENANCE: UNKNOWN_PROVENANCE / INCOMPLETE
+KNOWLEDGE PRESENT: None.
+CAPABILITY REQUESTED: None.
+CAPABILITY REPRESENTABLE: No comparison or delta schema exists in Current runtime.
+BEHAVIOUR IMPLEMENTED: `currentAudio` is discarded. `userPreset` drop produces a hardcoded string `["Analysis completed with new engine"]`.
+REASONING DEMONSTRATED: None. No iterative analyse -> intervene -> evaluate -> refine loop exists.
+PLATFORM DEPENDENCE: Independent.
+CONFIDENCE: CONFIRMED (Absence of iterative evaluation loop confirmed).
+AUDIT NOTES: Entirely absent from current execution.
+
+--------------------------------------------------------------------------------
+DOMAIN 22: PROFESSIONAL ENGINEERING BEHAVIOUR
+CURRENT EVIDENCE: Clean separation between preamp gain and master volume; refusal to use metal amps for classic rock; systematic mic role assignment; minimal intervention in dry rock tones.
+SOURCE(S): Entire codebase.
+PROVENANCE: Hybrid (EXPLICIT_TT_KNOWLEDGE + DETERMINISTIC_LOGIC + PLATFORM_DERIVED)
+KNOWLEDGE PRESENT: Moderate. Embodies several sound principles, but heavily enforced by rigid rules rather than flexible first-principles reasoning.
+CAPABILITY REQUESTED: JSON generation conforming to rigid professional engineering templates.
+CAPABILITY REPRESENTABLE: Partial.
+BEHAVIOUR IMPLEMENTED: Produces professional-sounding presets reliably for target genres.
+REASONING DEMONSTRATED: Mixed. Produces engineering-grade results through a combination of curated prompts and deterministic guardrails.
+PLATFORM DEPENDENCE: Heavily entangled with AmpliTube 5.
+CONFIDENCE: STRONG EVIDENCE
+AUDIT NOTES: Functions as a competent automated preset generator, not yet as an autonomous Sound Engineer.
+
+
+--------------------------------------------------------------------------------
+SECTION 10 — REASONING QUALITY OBSERVATIONS
+--------------------------------------------------------------------------------
+
+10.1 CAUSAL REASONING & HYPOTHESIS FORMATION
+Current TT exhibits causal reasoning primarily in its static instructions (e.g.
+"reduce bass before distortion to prevent mud") and in its deterministic microphone
+placement engine (`reasonSemanticMicPlacement`). However, runtime execution does
+not form hypotheses about the user's specific audio signal. It performs pattern
+classification (matching text keywords to genre templates) followed by rule
+application.
+
+10.2 ALTERNATIVE SOLUTIONS & TRADE-OFFS
+While `MASTER_PROMPT` requests that Gemini document amp ranking in debug text,
+the system produces only a single concrete signal chain. Trade-offs (such as
+loss of dynamic touch responsiveness when engaging an overdrive pedal) are
+not modeled as competing objective functions or presented to the user as viable
+alternatives.
+
+10.3 OBSERVATION VS. INFERENCE VS. ASSUMPTION
+Current TT frequently conflates observation with assumption:
+  - Mention of the word "thrash" causes the system to *assume* the guitar needs
+    a TS9-style boost with Drive 1 and Level 9, regardless of what pickups or
+    playing technique are actually being used.
+  - Mention of "AC/DC" causes the system to *assume* a British Lead S100 and
+    forbid any overdrive pedals, even if the user is playing a low-output Stratocaster
+    that might require a slight boost to reach crunch territory.
+
+10.4 UNCERTAINTY & CONFIDENCE
+The `confidence` output is an uncalibrated number. In validation recipes, it is
+hardcoded to 100. In Gemini generation, it is an arbitrary integer that has no
+effect on system behavior. The system does not indicate what information is
+missing or uncertain.
+
+10.5 MINIMAL INTERVENTION
+Current TT demonstrates good discipline regarding minimal intervention in
+vintage classic rock contexts, where it actively strips and penalizes unrequested
+effects, reverbs, and EQs. In metal contexts, however, it aggressively injects
+noise gates and overdrive pedals deterministically.
+
+10.6 WHOLE-CHAIN REASONING
+Whole-chain interaction is respected in the fixed ordering rules (pre-gain vs
+post-gain) and in the dual-mic placement engine (Mic 2 placement adjusts to
+complement Mic 1). However, complex interactions (such as power amp sag altering
+preamp tone stack responsiveness) are not modeled.
+
+10.7 ITERATIVE EVALUATION
+Completely absent. The pipeline is purely feed-forward: Input -> Prompt -> JSON ->
+Deterministic Overrides -> Export. There is no feedback loop to test or refine
+the generated preset.
+
+
+--------------------------------------------------------------------------------
+SECTION 11 — PLATFORM COUPLING INVENTORY
+--------------------------------------------------------------------------------
+
+This section identifies sound-engineering behaviours currently entangled with
+AmpliTube 5, evaluated under Ownership Tests A, B, and C:
+
+Test A: If AmpliTube 5 disappeared tomorrow, would this decision still make
+engineering sense?
+Test B: Could competent professional engineers reasonably choose different
+solutions?
+Test C: Is the logic merely ensuring valid/safe representation or execution?
+
+--------------------------------------------------------------------------------
+Item 1: Amplifier Selection by AT5 Display Name
+- Source: /src/services/at5AmplifierKnowledge.ts, geminiService.ts
+- Coupling Nature: Gemini is forced to emit exact AT5 model strings ("British Lead S100",
+  "Brit 8000", "Metal Lead V", "Darrell 100").
+- Test A (Makes sense without AT5?): NO. A platform-independent engineer would specify
+  "Late 60s 100W EL34 Non-Master-Volume Plexi, bright channel jumped", not an IK Multimedia string.
+- Classification: PLATFORM_DERIVED (Platform Implementation).
+
+--------------------------------------------------------------------------------
+Item 2: Parametric EQ 2-Band Restriction
+- Source: /src/services/geminiService.ts: MASTER_PROMPT (lines 85-89)
+- Coupling Nature: Forbids more than 2 bands on Parametric EQ because AT5's rack
+  parametric module only has 2 bands.
+- Test A (Makes sense without AT5?): NO. In standard studio engineering, parametric
+  EQs typically offer 4 to 6 bands.
+- Classification: PLATFORM_DERIVED (Pure Platform Limitation).
+
+--------------------------------------------------------------------------------
+Item 3: Semantic Microphone Placement & Blending
+- Source: /src/services/at5MicPlacementReasoning.ts
+- Coupling Nature: Decides Cap Edge / Close / On Axis vs Cone / 45° Off Axis.
+- Test A (Makes sense without AT5?): YES. Microphone placement physics (proximity
+  effect, off-axis high-frequency rolloff, center-cap brightness) are universal
+  acoustic principles.
+- Test B (Engineers choose differently?): YES. Different engineers choose different
+  mic positions based on the mix.
+- Classification: EXPLICIT_TT_KNOWLEDGE / SOUND ENGINEER DOMAIN (Genuinely general
+  engineering knowledge expressed through an abstraction layer, translated to AT5 VIR).
+
+--------------------------------------------------------------------------------
+Item 4: Pre-Gain Low-End Tightening
+- Source: /src/services/geminiService.ts: lines 31-36
+- Coupling Nature: Implemented via "OverScream", but the principle ("cut sub-bass
+  before nonlinear clipping") is universal.
+- Test A (Makes sense without AT5?): YES. High-pass filtering before distortion is
+  a foundational audio engineering technique across all DAWs and modelers.
+- Classification: MIXED (General engineering principle implemented via AT5 gear).
+
+--------------------------------------------------------------------------------
+Item 5: EQ Deduplication & Role Segregation
+- Source: /src/services/at5SignalChainNormalizer.ts: filterDuplicateEqsWithRemoved()
+- Coupling Nature: Segregates pre-amp stomp EQ vs post-amp rack EQ.
+- Test A (Makes sense without AT5?): YES. Distinguishing pre-distortion tone
+  shaping from post-distortion mix balancing is universal.
+- Classification: MIXED (Sound engineering intent implemented to manage AT5 slots).
+
+--------------------------------------------------------------------------------
+Item 6: AT5 GUID Mapping & XML Parameter Translation
+- Source: /src/services/presetExporter.ts, at5ParameterManifest.ts
+- Coupling Nature: Translates knob values into 0.0-1.0 floats, assigns hex GUIDs.
+- Test A (Makes sense without AT5?): NO.
+- Test C (Merely ensuring valid execution?): YES.
+- Classification: PLATFORM_DERIVED (Deterministic Validation / Platform Serialization).
+
+
+--------------------------------------------------------------------------------
+SECTION 12 — MODEL-INTRINSIC KNOWLEDGE BOUNDARY
+--------------------------------------------------------------------------------
+
+12.1 KNOWLEDGE EXPECTED FROM GEMINI WITHOUT EXPLICIT TT PROVISION
+Current TT relies on Gemini's pre-trained knowledge for:
+  - Mapping esoteric artist requests not in static recipes (e.g. David Gilmour,
+    Brian May, The Edge) to appropriate hardware families.
+  - Multimodal interpretation of audio uploads (timbre, frequency tilt, distortion).
+  - Writing fluent justifications in `engineering_notes`.
+  - Inferring unstated genre conventions (e.g. that "shoegaze" implies heavy reverb).
+
+12.2 CANDIDATE AREAS REQUIRING CONTROLLED COMPETENCY TESTING (PHASE 1C.3+)
+Static repository analysis cannot verify whether Gemini reliably executes these
+competencies. Future controlled testing must evaluate:
+  1. Unconstrained Multimodal Hearing: Can Gemini accurately describe spectral
+     balance and distortion character from audio alone, without text prompts?
+  2. Acoustic Problem Diagnosis: Can Gemini identify phase cancellation or
+     pre-gain mud when presented with problematic audio or parameter sets?
+  3. Novel Signal Chain Topology: Can Gemini design functional chains outside
+     the rigid serial template (e.g. parallel fuzz/clean bass paths)?
+  4. Dynamic Headroom Reasoning: Can Gemini calculate stage-to-stage gain levels
+     without falling back on memorized OverScream heuristics?
+
+
+--------------------------------------------------------------------------------
+SECTION 13 — UNKNOWN / AMBIGUOUS PROVENANCE
+--------------------------------------------------------------------------------
+
+1. User Preset Diffing (`userPreset` dropzone)
+   - Finding: In `App.tsx` (line 461), dropping an existing `.at5p` preset triggers
+     `setDiffs(["Analysis completed with new engine"])`.
+   - Ambiguity: The UI indicates an active comparison or diffing capability, but
+     no comparison logic exists in the codebase. It is unclear whether this was an
+     abandoned prototype or an unfinished feature.
+   - Classification: UNKNOWN_PROVENANCE (Incomplete stub).
+
+2. Tone Adjustment Intent Processing
+   - Finding: `tone_adjustment_intent` is generated by Gemini and defined in types,
+     but never read downstream.
+   - Ambiguity: Unclear whether downstream normalization was intended to consume
+     these intents for parameter biasing or if they were purely informational.
+   - Classification: UNKNOWN_PROVENANCE.
+
+3. Dropzone Audio Handling (`recordingAudioFile`)
+   - Finding: Accepted in UI, converted to base64, passed to `translateTone()`,
+     and then never sent to Gemini.
+   - Ambiguity: Whether this was intentionally omitted due to token costs, or
+     accidentally dropped during API refactoring.
+   - Classification: UNKNOWN_PROVENANCE.
+
+
+--------------------------------------------------------------------------------
+SECTION 14 — FACTUAL BASELINE FINDINGS
+--------------------------------------------------------------------------------
+
+The audit establishes the following objective facts regarding Current TT:
+
+1. Current TT contains high-quality, explicit acoustic knowledge in its
+   Semantic Microphone Placement Engine (/src/services/at5MicPlacementReasoning.ts).
+   This module reasons from acoustic transducer principles (proximity effect,
+   off-axis dispersion, cone breakup) to assign 4D mic placements.
+
+2. Critical tone-shaping decisions are made deterministically AFTER Gemini has
+   finished generating. In thrash and high-gain contexts, TypeScript code
+   overrides boost pedals to OverScream, sets Drive and Level, clamps Noise Gate
+   parameters, and overwrites engineering notes.
+
+3. Current TT uses static recipes that completely bypass AI reasoning for prominent
+   test cases (AC/DC Malcolm Young, Pantera Cowboys From Hell, Metallica Kill 'Em All)
+   when validation mode is enabled, and in Tone Profile classification.
+
+4. Current TT does NOT perform audio DSP feature extraction. The nine audio
+   feature fields in `ToneProfile` are explicitly wiped to `undefined` upon parsing.
+
+5. Current TT accepts a user recording ("Your Recording") in the UI, but completely
+   drops it before making the Gemini API call. The user recording has zero influence
+   on generated tone.
+
+6. Current TT's sound engineering concepts are heavily coupled to AmpliTube 5.
+   Prompts, normalizers, and directories are constructed around AT5 gear names,
+   AT5 parameter names, and AT5 hardware limitations (such as the 2-band Parametric EQ).
+
+7. Current TT signal chains are strictly serial. There is no representation or
+   reasoning for parallel paths, dual-amp rigs, or wet/dry/wet topologies.
+
+8. Current TT contains extensive domain contract skeletons created in Phase 1B
+   (EvidenceRecord, EngineeringDecisionRecord, SemanticToneDesign), but these
+   contracts are currently unexercised by the live tone translation engine.
+
+9. Current TT has no iterative evaluation or feedback loop. It cannot test its
+   own generated presets, observe results, or refine its output.
+
+
+--------------------------------------------------------------------------------
+SECTION 15 — AUDIT COVERAGE & LIMITATIONS
+--------------------------------------------------------------------------------
+
+15.1 FILES & AREAS INSPECTED
+  - /src/App.tsx (Full input flow, dropzones, state wiring, export triggers)
+  - /src/services/geminiService.ts (Prompts, directories, recipes, post-processing)
+  - /src/services/toneProfileBuilder.ts (Taxonomy, recipes, heuristic fallbacks)
+  - /src/services/at5MicPlacementReasoning.ts (10-step mic placement reasoning)
+  - /src/services/at5MicPlacementService.ts (Semantic placement parsing & VIR math)
+  - /src/services/at5SignalChainNormalizer.ts (Gear normalization, EQ deduplication)
+  - /src/services/presetExporter.ts (Preset XML serialization & parameter mapping)
+  - /src/services/at5ParameterManifest.ts (Parameter definitions & conversion)
+  - /src/services/at5VerifiedProtocols.ts (Verified GUIDs and aliases)
+  - /src/services/at5AmplifierKnowledge.ts (AmpliTube amplifier directory)
+  - /src/services/at5CabinetKnowledge.ts (Cabinet and speaker selection rule book)
+  - /src/types.ts & /src/sound-engineer/* (Contracts, schemas, and trace structures)
+  - /src/knowledge/validatedToneProfiles/* (Static benchmark profile)
+
+15.2 EXECUTION PATHS TRACED
+  - User Input -> handleTranslate -> translateTone -> buildToneProfile -> Gemini
+    -> adjustThrashPedalSelection -> ensureSignalChainSemanticPlacements -> toneResult.
+  - toneResult -> normaliseSignalChain -> filterDuplicateEqsWithRemoved
+    -> resolveCompositeMicPlacement -> getExportData -> .at5p download.
+  - Session persistence -> saveWorkingSession / loadWorkingSession.
+
+15.3 AREAS NOT INSPECTED DYNAMICALLY
+  - Dynamic Gemini model responses were not sampled via API in this phase, per
+    strict read-only audit instructions.
+  - Remote Firestore collections were not queried dynamically.
+
+15.4 LIMITATIONS
+  - Static inspection cannot quantify Gemini's internal knowledge or latency.
+  - Static inspection cannot predict how Gemini would behave if deterministic
+    guardrails were removed.
+
+
+--------------------------------------------------------------------------------
+SECTION 16 — PHASE 1C.2 COMPLETION STATEMENT
+--------------------------------------------------------------------------------
+
+The Phase 1C.2 Current Sound Engineer Knowledge & Provenance Audit has been
+successfully completed in strict accordance with the audit guidelines.
+
+Explicit Confirmations:
+  - ZERO production source files were modified.
+  - ZERO prompts or Gemini instructions were altered.
+  - ZERO Current tone generation behaviours were changed.
+  - ZERO Shadow execution behaviours were changed.
+  - ZERO Firestore data was altered.
+  - ZERO Gemini API competency test calls were executed.
+  - ZERO Phase 1C.3 remediation or implementation work was initiated.
+  - The audit report has been compiled and saved as:
+    /TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt
+
+================================================================================
+END OF REPORT
+================================================================================
