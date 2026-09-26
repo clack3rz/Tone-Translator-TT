@@ -58,7 +58,7 @@ import {
   initSessionLifecycleDiagnostics,
   WorkingSessionData
 } from './services/sessionStorage';
-import { SoundEngineerDevPanel } from './components/SoundEngineerDevPanel';
+import { WorkspaceToolbar } from './components/WorkspaceToolbar';
 import {
   dispatchShadowRun,
   ShadowDispatchInputs,
@@ -175,6 +175,14 @@ export default function App() {
       shadowCancelRef.current('Shadow run cancelled by user from dev panel');
     }
   }, []);
+
+  const handleResetShadow = useCallback(() => {
+    // Only allow reset if not currently running
+    if (shadowState?.status === 'running') return;
+    setShadowState(null);
+    activeShadowRunIdRef.current = null;
+    shadowCancelRef.current = null;
+  }, [shadowState]);
 
   // Lifecycle diagnostics and restored banner auto-dismiss
   useEffect(() => {
@@ -725,59 +733,22 @@ export default function App() {
         </div>
       </header>
 
-      {/* 2. TOP-TIER: Signal Ribbon */}
-      {toneResult && (
-        <div className="bg-black/80 border-b border-white/5 px-12 py-2 flex items-center gap-4 shrink-0 overflow-x-auto scrollbar-hide">
-          <span className="text-[8px] font-mono text-gray-600 uppercase tracking-widest mr-2">Tone Iterations:</span>
-          <button 
-            onClick={() => { setActiveVariation('primary'); setActiveGearId(null); }}
-            className={`px-3 py-1 rounded text-[10px] font-bold transition-all uppercase tracking-tighter ${activeVariation === 'primary' ? 'bg-gear-accent text-black scale-105 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'bg-white/5 text-gray-500 hover:text-white'}`}
-          >
-            Studio Reference
-          </button>
-          
-          <div className="flex-1" />
-          
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsChainViewOpen(!isChainViewOpen)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all uppercase tracking-widest font-bold text-[9px] ${
-                isChainViewOpen 
-                  ? 'bg-white/10 border-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
-                  : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-              }`}
-            >
-              <Activity className="w-3 h-3" />
-              Inspect Chain
-            </button>
-            <button 
-              onClick={handleRefreshChain}
-              disabled={isDbRefreshing}
-              className="group p-1.5 hover:bg-white/10 rounded-md transition-all text-gray-400 hover:text-white border border-transparent hover:border-white/10"
-              title="Refresh Chain (Re-run analysis against updated database)"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isDbRefreshing ? 'animate-spin text-gear-accent' : ''}`} />
-            </button>
-
-            <button 
-              onClick={handleClearWorkingSession}
-              className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/10 hover:border-red-500/40 text-gray-400 hover:text-red-400 transition-all text-[9px] font-bold uppercase tracking-widest"
-              title="Clear working session and start new tone"
-            >
-              <RotateCcw className="w-3 h-3" />
-              New Chain
-            </button>
-
-            <button 
-              onClick={initiateExport}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gear-accent/30 text-gear-accent font-bold text-[9px] hover:bg-gear-accent hover:text-black transition-all uppercase tracking-widest shadow-lg shadow-black/20"
-            >
-              <Download className="w-3 h-3" />
-              EXPORT .AT5P
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 2. TOP-TIER: Persistent Workspace & Development Toolbar (Phase 1A.4a) */}
+      <WorkspaceToolbar
+        shadowModeEnabled={shadowModeEnabled}
+        onToggleShadowMode={setShadowModeEnabled}
+        faultMode={shadowFaultMode}
+        onChangeFaultMode={setShadowFaultMode}
+        shadowState={shadowState}
+        onCancelShadow={handleCancelShadow}
+        onResetShadow={handleResetShadow}
+        hasToneResult={Boolean(toneResult && toneResult.signal_chain && toneResult.signal_chain.length > 0)}
+        hasActiveContent={Boolean(toneResult || prompt.trim().length > 0 || userPreset)}
+        isDbRefreshing={isDbRefreshing}
+        onRefreshChain={handleRefreshChain}
+        onClearSession={handleClearWorkingSession}
+        onExportPreset={initiateExport}
+      />
 
       {/* Restored Session Notification */}
       <AnimatePresence>
@@ -845,18 +816,6 @@ export default function App() {
               </div>
             )
           )}
-
-          {/* Sound Engineer Development & QA Panel */}
-          <div className="max-w-6xl mx-auto">
-            <SoundEngineerDevPanel
-              shadowModeEnabled={shadowModeEnabled}
-              onToggleShadowMode={setShadowModeEnabled}
-              faultMode={shadowFaultMode}
-              onChangeFaultMode={setShadowFaultMode}
-              shadowState={shadowState}
-              onCancelShadow={handleCancelShadow}
-            />
-          </div>
         </div>
       </main>
 

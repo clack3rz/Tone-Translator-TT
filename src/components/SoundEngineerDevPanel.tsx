@@ -176,7 +176,7 @@ export const SoundEngineerDevPanel: React.FC<SoundEngineerDevPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] text-zinc-500">UAT Fault Mode:</span>
                   <div className="inline-flex rounded-lg p-0.5 bg-zinc-900 border border-zinc-800">
-                    {(["normal", "fail", "timeout"] as ShadowFaultMode[]).map((mode) => (
+                    {(["normal", "fail", "timeout", "hold"] as ShadowFaultMode[]).map((mode) => (
                       <button
                         key={mode}
                         type="button"

@@ -25,7 +25,7 @@ import { ShadowRunState } from "./shadowRunState";
  * Supported fault injection modes for Shadow UAT testing.
  * Affects ONLY the isolated Shadow execution, never CURRENT production.
  */
-export type ShadowFaultMode = "normal" | "fail" | "timeout";
+export type ShadowFaultMode = "normal" | "fail" | "timeout" | "hold";
 
 export interface ShadowDispatchInputs {
   /** User text description or musical prompt */
@@ -42,6 +42,8 @@ export interface ShadowDispatchInputs {
   useValidationRecipes?: boolean;
   /** UAT fault injection mode (defaults to 'normal') */
   faultMode?: ShadowFaultMode;
+  /** Optional custom duration for HOLD mode in ms (defaults to 10000ms for manual UAT) */
+  holdDurationMs?: number;
 }
 
 export interface ShadowDispatchResult {
@@ -134,6 +136,24 @@ export function dispatchShadowRun(
     controllerOptions.customExecutor = async () => {
       // Delay longer than timeoutMs to trigger controller timeout logic
       await new Promise((resolve) => setTimeout(resolve, 200));
+    };
+  } else if (faultMode === "hold") {
+    const holdMs = inputs.holdDurationMs ?? 10000;
+    controllerOptions.customExecutor = async (_snapshot, signal) => {
+      // Deliberately hold Shadow run in 'running' status for manual cancellation UAT (~10s)
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(() => {
+          signal.removeEventListener("abort", onAbort);
+          resolve();
+        }, holdMs);
+
+        const onAbort = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+
+        signal.addEventListener("abort", onAbort, { once: true });
+      });
     };
   }
 
