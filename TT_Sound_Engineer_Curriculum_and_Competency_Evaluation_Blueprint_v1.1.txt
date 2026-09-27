@@ -1,0 +1,2168 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.3c-R — SOUND ENGINEER CURRICULUM & COMPETENCY EVALUATION BLUEPRINT (v1.1)
+REVISION STATUS: PHASE 1C.3c-R — v1.1 CORRECTIVE FREEZE CANDIDATE
+Date: 2026-09-26
+Mode: READ-ONLY CURRICULUM / COMPETENCY SYSTEM DESIGN
+Authoritative Inputs:
+  - Phase 1C.1: Professional Sound Engineer Competency Model
+  - Phase 1C.2: Current TT Sound Engineer Knowledge Inventory (/TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt)
+  - Phase 1C.3a: Professional Sound Engineer Standards & Target Maturity v1 (/TT_Professional_Sound_Engineer_Standards_v1.txt)
+  - Phase 1C.3b: Current TT Professional Capability Assessment & Gap Matrix v1 (/TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt)
+  - Phase 1C.3c: Sound Engineer Curriculum & Competency Evaluation Blueprint v1 (/TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.txt)
+Target Report: /TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt
+================================================================================
+
+
+--------------------------------------------------------------------------------
+v1 -> v1.1 CORRECTION SUMMARY
+--------------------------------------------------------------------------------
+
+The following material corrections have been applied in this v1.1 Corrective
+Freeze Candidate, resolving all issues identified during Phase 1C.3c architectural
+review without altering the signed-off Phase 1C.3a benchmark or re-scoring Current TT:
+
+1. Frozen 1C.3a Maturity Benchmark Restored (Section 7, Section 17):
+   - Restored exactly the frozen Phase 1C.3a standard: 18 Core Domains target L5;
+     4 Supporting Domains target L4 (Domain 6 Noise Engineering, Domain 12 Spatial
+     Processing, Domain 13 Psychoacoustics, Domain 14 Musical Context).
+   - Removed and invalidated v1 constructs: Junior/Professional certification tiers,
+     the reduced list of only 9 L5 domains, and replacement benchmark floors
+     (e.g., "K >= L4 across all domains").
+
+2. Five-Dimension Competency Model Preserved (Section 5, Section 7, Section 17):
+   - Preserved all five assessment dimensions: Knowledge, Evidence Interpretation,
+     Diagnosis, Decision-Making, and Outcome Reasoning.
+   - Prohibited collapsing dimensional scores into an aggregate single number.
+
+3. Phase Boundaries Restored (Section 1, Section 22):
+   - Restored authoritative Phase 1C sequence: Phase 1C.4 (Sound Engineering Knowledge
+     Architecture), Phase 1C.5 (Engineering Reasoning Specification), Phase 1C.6
+     (Competency Evaluation / Benchmark Suite).
+   - Removed the v1 roadmap that redefined Phase 1C.4 as "Curriculum Implementation &
+     Knowledge Base Population"; rewrote Section 22 as "Handoff & Dependency
+     Recommendations".
+
+4. Seven-Step Method Classified as Educational Scaffold (Section 10):
+   - Classified the seven-step cycle strictly as an Educational and Competency-
+     Evaluation Scaffold, NOT as the frozen runtime reasoning architecture (which
+     belongs to Phase 1C.5).
+   - Replaced single root-cause dogmatism with "evidence-supported working hypothesis",
+     acknowledging underdetermined systems, interacting causes, and multiple
+     defensible interventions.
+
+5. Phase 1B Contract Ownership Corrected (Section 10, Section 20):
+   - Corrected Phase 1B contract boundaries: ValidationReport validates/checks
+     integrity (Check/Warn/Fail) and does not own acoustic outcome reasoning;
+     RunTrace/RunTraceRecorder provides execution observability and lineage and
+     does not own iterative engineering judgement. Outcome reasoning and review
+     belong to the Sound Engineer reasoning layer (Phase 1C.5).
+
+6. Knowledge Unit Schema Status Bounded (Section 11):
+   - Explicitly marked the JSON schema as an "ILLUSTRATIVE CANDIDATE REPRESENTATION"
+     (non-binding, not production contracts, not a storage decision).
+
+7. Source & Evidence Language Refined (Section 12):
+   - Removed absolute terms ("incontrovertible") and simplistic source hierarchies.
+   - Established that evidence quality depends on source rigor, relevance, subject
+     jurisdiction, methodology, reproducibility, corroboration, operational
+     boundaries, and contextual applicability.
+
+8. Technical Overclaims & Bounded Rules Corrected (Section 7, Section 9, Section 10):
+   - 0 VU digital alignment: Removed universal -18 dBFS claims; alignment is facility
+     and context dependent (AES17, EBU, SMPTE).
+   - Harmonic distortion: Removed simplistic "even = warm, odd = harsh" rules;
+     both even and odd harmonics occur in musical instruments and pleasant saturation;
+     intermodulation distortion (IMD) is the primary acoustic culprit of harsh mud.
+   - Presence / negative feedback: Corrected circuit physics in Domain 8 (increasing
+     presence reduces HF negative feedback, lifting highs and reducing damping;
+     lowering presence increases negative feedback).
+   - Microphone distance-to-delay: Classified as approximate and environment-
+     dependent (speed of sound c ~ 343 m/s in air at 20°C).
+   - Proximity effect: Formulated based on transducer topology (pure pressure omni
+     has no proximity effect; pressure-gradient cardioid/figure-8 exhibit proximity).
+   - LUFS & numerical precision: Removed false precision (such as universal +/-0.1 LUFS);
+     tagged all exact numerical values as illustrative examples or evaluation fixtures.
+   - Exact equipment inference: Recognized as fundamentally underdetermined from audio.
+   - Parsimony: Defined as a reasoning principle/heuristic, not a physical "law".
+   - Professional behaviour (Domain 22): Removed rigid absolutes; framed around
+     epistemic honesty, transparency, and defensible engineering judgement.
+
+9. Scenario Values Explicitly Classified (Section 9):
+   - Explicitly classified all exact numbers in the nine cross-domain scenarios as
+     either [ILLUSTRATIVE EXAMPLE] or [CONTROLLED EVALUATION FIXTURE]. Evaluation
+     permits multiple defensible interventions.
+
+10. Automatic Failure Conditions Refined (Section 18):
+    - Removed arbitrary thresholds (such as the unexplained "80%" rule); based failure
+      conditions on fundamental professional reasoning failures.
+    - Clarified that closed-loop measurement is not required where unavailable, and
+      downstream compensation is permitted when technically justified and proportionate.
+
+11. Stage Progression Prerequisites Decoupled (Section 6, Section 8):
+    - Separated Learning Prerequisites from Evidence-Capability Prerequisites and
+      Certification Prerequisites. Removed v1 rule blocking education on earlier-stage
+      L3 Evidence attainment.
+
+12. Current TT Asset Migration Language Corrected (Section 20):
+    - Designated Current TT as a legacy knowledge source to be deconstructed and
+      re-validated rather than automatically promoted into authoritative knowledge.
+
+13. Reflective Feedback & Reviewed Experience Bounded Note Added (Section 14, Section 19):
+    - Added a bounded curriculum requirement recognizing that professional competency
+      benefits from structured decision-quality feedback, without designing Phase 1C.5
+      runtime loops.
+
+14. Educational Feasibility Preserved (Section 4, Section 7, Section 21):
+    - Confirmed baseline feasibility counts: 10 YES, 11 PARTIALLY, 1 NO (Domain 21
+      is the sole NO, requiring runtime closed-loop rendering).
+
+15. Conclusion & Ownership Balance Corrected (Section 23):
+    - Replaced "Deterministic Code Must Yield to Autonomous Judgement" with the
+      architectural principle balancing AI Sound Engineer judgement with deterministic
+      validation, platform translation, and export serialization boundaries.
+
+
+--------------------------------------------------------------------------------
+SECTION 1 — EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 PURPOSE & CORE ARCHITECTURAL QUESTION
+Phase 1C.3c-R establishes the corrected, authoritative educational blueprint and
+competency evaluation architecture for the Tone Translator (TT) AI Sound Engineer.
+Its purpose is to design the educational progression and evaluation system that will
+transition the AI Sound Engineer from the demonstrated Current TT capability baseline
+(Phase 1C.2 / 1C.3b) toward the independently frozen Professional Sound Engineer
+Standards (Phase 1C.3a).
+
+This blueprint directly answers four governing questions:
+  1. What must the future TT Sound Engineer learn?
+  2. What capabilities must the runtime and evidence architecture provide rather
+     than teach?
+  3. How should disciplined, first-principles professional engineering reasoning
+     be developed rather than replaced with static rules or prompt recipes?
+  4. How will the system prove, through counterfactual and adversarial evaluation,
+     that genuine engineering competence has been achieved?
+
+1.2 THE CARDINAL DISTINCTION: EDUCATION VS ARCHITECTURAL CAPABILITY
+A fatal trap in sound engineering AI design is attempting to "educate" an AI model
+on concepts it cannot observe, or attempting to solve architectural blindness
+through prompt engineering. This blueprint strictly enforces the boundary between:
+  - Education & Cognition: Physical principles, electrical models, causal acoustics,
+    psychoacoustic mechanics, competing hypothesis formulation, trade-off analysis,
+    and uncertainty calibration.
+  - Runtime & Evidence Tooling: Objective audio DSP feature extraction (spectral
+    centroid, harmonic distribution, crest factor, envelope onset/decay slopes,
+    phase correlation), closed-loop audio comparison, checkpoint state persistence,
+    and schema validation.
+
+Education cannot teach a model to hear what the software runtime fails to measure.
+Conversely, runtime measurements cannot produce tone without a causal reasoning
+framework that understands WHY electrical and acoustic transformations interact.
+
+1.3 AUTHORITATIVE PROJECT ROADMAP CONTEXT
+This document operates within the frozen Phase 1C lifecycle sequence:
+  - Phase 1C.3a: Professional Sound Engineer Standards & Target Maturity (Frozen)
+  - Phase 1C.3b: Current TT Professional Capability Gap Matrix (Frozen)
+  - Phase 1C.3c-R: Curriculum & Competency Evaluation Blueprint (Current Freeze Candidate)
+  - Phase 1C.4: Sound Engineering Knowledge Architecture (Design of representation,
+    sourcing, validation, governance, retrieval, and migration)
+  - Phase 1C.5: Engineering Reasoning Specification (Design of hypothesis formation,
+    alternatives comparison, trade-offs, decision-making, and outcome review)
+  - Phase 1C.6: Competency Evaluation / Benchmark Suite (Formal evaluation system
+    verifying achievement of Phase 1C.3a standards)
+
+
+--------------------------------------------------------------------------------
+SECTION 2 — EDUCATIONAL MISSION
+--------------------------------------------------------------------------------
+
+2.1 THE MISSION STATEMENT
+"To cultivate in the TT Sound Engineer an autonomous, first-principles engineering
+intellect capable of interpreting objective acoustic evidence, forming competing
+evidence-supported working hypotheses across the electro-acoustic signal chain,
+selecting minimal and defensible interventions, evaluating cross-domain trade-offs,
+and verifying outcomes against reference standards without relying on static recipes,
+deterministic keyword overrides, or platform-specific artifacts."
+
+2.2 THE ANTI-RECIPE DOCTRINE
+Professional audio engineering is not a dictionary of symptoms and fixes. A system
+trained on heuristics such as:
+    "Metal rhythm -> boost 808 Screamer -> cut 400 Hz -> clamp noise gate"
+has not learned sound engineering; it has memorized a caricature.
+
+When real-world conditions diverge from textbook tropes—such as an active-pickup
+extended-range guitar with excessive pre-filtering, or a vintage fuzz into a
+high-headroom clean amplifier—static heuristics fail catastrophically. The educational
+mission mandates that every curriculum unit develops the complete causal chain:
+    PRINCIPLE -> CAUSAL MODEL -> EVIDENCE REQUIREMENTS ->
+    EVIDENCE-SUPPORTED WORKING HYPOTHESES -> DISCRIMINATING OBSERVATIONS ->
+    INTERVENTION CANDIDATES -> TRADE-OFF REASONING ->
+    PREDICTED CONSEQUENCES -> EMPIRICAL VERIFICATION -> REVISION.
+
+
+--------------------------------------------------------------------------------
+SECTION 3 — AUTHORITATIVE INPUTS & SIGNED-OFF CONSTRAINTS
+--------------------------------------------------------------------------------
+
+3.1 AUTHORITATIVE INPUT BASES
+This blueprint is constructed exclusively from signed-off project artifacts:
+  1. Phase 1C.1: Professional Sound Engineer Competency Model.
+  2. Phase 1C.2: Current TT Sound Engineer Knowledge Inventory (/TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt).
+  3. Phase 1C.3a: Professional Sound Engineer Standards & Target Maturity v1 (/TT_Professional_Sound_Engineer_Standards_v1.txt).
+  4. Phase 1C.3b: Current TT Professional Capability Assessment & Gap Matrix v1 (/TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt).
+  5. Phase 1C.3c: Sound Engineer Curriculum & Competency Evaluation Blueprint v1 (/TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.txt).
+
+3.2 AUTHORITY AND BENCHMARK INTEGRITY RULES
+  - Phase 1C.3a is the frozen professional benchmark: 18 Core Domains target L5;
+    4 Supporting Domains target L4. Phase 1C.3c-R does NOT alter, redefine, weaken,
+    or replace these targets.
+  - Phase 1C.3b is the authoritative baseline assessment of Current TT. Phase 1C.3c-R
+    does NOT re-score Current TT.
+  - The five evaluation dimensions (Knowledge, Evidence Interpretation, Diagnosis,
+    Decision-Making, Outcome Reasoning) are strictly preserved without dimensional
+    or numerical averaging.
+
+3.3 SIGNED-OFF REVIEW ANNOTATIONS FROM PHASE 1C.3b
+  1. Microphone Reasoning Preservation: Current TT contains high-value acoustic
+     physics in its capture heuristics. These concepts must be extracted and taught
+     conceptually rather than migrating the deterministic TypeScript engine unchanged.
+  2. Precise Perception Terminology: Current TT is not loosely "audio blind." Reference
+     audio is ingested multimodally by Gemini, but Current TT has zero application-level
+     DSP feature extraction, user input recordings are discarded before inference,
+     target perception is unverified model delegation, and closed-loop comparison is absent.
+  3. Objective Quality Language: Subjective assertions such as "produces excellent
+     presets" or "professional sounding" are prohibited as evidence unless supported
+     by controlled, blind empirical validation.
+  4. Knowledge vs. Rules Distinction: Valid engineering tendencies must never be
+     hardcoded as universal rules. "Reducing low-frequency energy before nonlinear
+     clipping tightens transient definition" is sound knowledge; "Always cut bass
+     before distortion in high-gain" is a flawed rule.
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — EDUCATION VS CAPABILITY GAP FRAMEWORK
+--------------------------------------------------------------------------------
+
+4.1 GAP TAXONOMY
+Every identified deficiency across the 22 domains is classified into one or more of
+the following six functional categories:
+
+  Category A: KNOWLEDGE / EDUCATION
+    Deficiencies where the cognitive model lacks understanding of physics,
+    circuits, acoustics, or signal interactions.
+    Resolution: Curated technical instruction and validated knowledge units.
+
+  Category B: REASONING / COGNITIVE METHOD
+    Deficiencies where the engineer possesses facts but lacks the structured
+    reasoning process to formulate competing hypotheses, isolate variables, or
+    evaluate trade-offs.
+    Resolution: Cognitive workflow frameworks and adversarial problem training.
+
+  Category C: EVIDENCE / TOOLING CAPABILITY
+    Deficiencies where necessary physical data cannot be perceived by the model
+    alone and must be extracted from the signal by external tools.
+    Resolution: Objective DSP feature extraction services (spectral, temporal, phase).
+
+  Category D: ARCHITECTURAL RUNTIME CAPABILITY
+    Deficiencies where the execution pipeline lacks structural facilities to support
+    the engineering behavior (e.g., feedback loops, multi-pass refinement, tracing).
+    Resolution: Runtime execution engine, checkpoint lineage, and dual-stream harness.
+
+  Category E: PLATFORM TRANSLATION CAPABILITY
+    Deficiencies or artifacts that belong strictly downstream in platform-specific
+    adapters and must not be taught as general engineering knowledge.
+    Resolution: Independent platform translation layers (e.g., AmpliTube 5 adapter).
+
+  Category F: DETERMINISTIC VALIDATION
+    Deficiencies concerning logical consistency, mathematical boundaries, schema
+    invariants, and physical impossibility checks.
+    Resolution: Deterministic contract validators and schema enforcement guards.
+
+4.2 THE "CAN EDUCATION ALONE FIX IT?" TRICHOTOMY
+To prevent architectural misallocation, every domain gap is assessed against the
+following triad:
+  - YES (10 Domains): Defect is purely cognitive or informational. Resolvable entirely
+    via knowledge representation and reasoning frameworks.
+  - PARTIALLY (11 Domains): Knowledge and reasoning can improve hypotheses and
+    trade-off decisions, but verified execution requires runtime evidence or tools.
+  - NO (1 Domain): Defect is structural or perceptual. Teaching cannot provide
+    sensory data that the system cannot measure, nor can it execute an iterative
+    loop if the runtime lacks closed-loop plumbing (Domain 21).
+
+
+--------------------------------------------------------------------------------
+SECTION 5 — CURRICULUM DESIGN PRINCIPLES
+--------------------------------------------------------------------------------
+
+5.1 THE FIFTEEN-POINT CURRICULUM UNIT TEMPLATE
+All curriculum units must conform to a unified structural contract:
+  1. Domain: The governing engineering discipline (1 to 22).
+  2. Concept: The specific physical or acoustic phenomenon.
+  3. Engineering Principle: The foundational physical law or established theory.
+  4. Causal Model: The mathematical/physical mechanism linking inputs to outputs.
+  5. Relevant Evidence: Objective measurements and perceptual features indicating
+     the state of this phenomenon.
+  6. Evidence Limitations: Confounders, measurement ambiguities, and acoustic illusions.
+  7. Plausible Hypotheses: Competing root causes or interacting mechanisms.
+  8. Discriminating Tests: Observations or diagnostic probes that isolate the cause.
+  9. Primary Interventions: Candidate adjustments across the signal chain.
+  10. Alternative Interventions: Non-obvious or upstream/downstream alternative fixes.
+  11. Trade-Off Analysis: What sonic attributes are compromised when this fix is applied.
+  12. Expected Consequences: First-order and second-order acoustic results.
+  13. Uncertainty Rating: Inherent ambiguity and confidence limits of the diagnosis.
+  14. Cross-Domain Dependencies: Coupled upstream and downstream domains.
+  15. Anti-Patterns & Pitfalls: Flawed heuristics, over-processing, and recipe traps.
+
+5.2 FIVE-DIMENSIONAL PEDAGOGY
+Education must develop all five assessment dimensions symmetrically:
+  - D1 (Knowledge): Physical grounding, circuit topography, wave mechanics.
+  - D2 (Evidence Interpretation): Reading DSP metrics, recognizing maskers/confounders.
+  - D3 (Diagnosis): Causal tracing, abductive reasoning, hypothesis ranking.
+  - D4 (Decision-Making): Minimalist intervention, constraint balancing, gain preservation.
+  - D5 (Outcome Reasoning): Verification metric definition, falsification, refinement.
+
+
+--------------------------------------------------------------------------------
+SECTION 6 — CURRICULUM ARCHITECTURE & LEARNING STAGES
+--------------------------------------------------------------------------------
+
+The educational architecture is structured into seven sequential, cumulative
+learning stages:
+
+  STAGE 1: FOUNDATIONAL PHYSICS & TRANSDUCTION MECHANICS
+    Focus: Electrical signals, transducer physics, electromagnetic induction, wave mechanics.
+    Domains: 1 (Source), 2 (Gain Staging), 10 (Microphone Physics), 11 (Wave Phase).
+
+  STAGE 2: NONLINEAR SYSTEMS & DYNAMIC BEHAVIOUR
+    Focus: Harmonic generation, clipping topologies, power supply sag, dynamic envelopes.
+    Domains: 3 (Nonlinear/Distortion), 5 (Dynamics/Transients), 8 (Amplifier Circuits).
+
+  STAGE 3: ACOUSTIC RESONANCE & SPATIAL PROPAGATION
+    Focus: Loudspeaker impedance, cone breakup, cabinet acoustics, room acoustics, 3D space.
+    Domains: 9 (Loudspeaker/Cabinet), 10 (Capture Geometry), 12 (Spatial Processing).
+
+  STAGE 4: PSYCHOACOUSTICS & SPECTRAL INTEGRATION
+    Focus: Auditory perception, equal-loudness contours, masking, critical bands, noise.
+    Domains: 4 (Spectral Engineering), 6 (Noise Engineering), 13 (Psychoacoustics).
+
+  STAGE 5: SYSTEM TOPOLOGY & CROSS-DOMAIN CAUSALITY
+    Focus: End-to-end signal flow, reactive loading, pre/post filtering, contextual fit.
+    Domains: 7 (Signal Topology), 14 (Musical Context), 18 (Trade-Offs).
+
+  STAGE 6: DIAGNOSTIC REASONING & EVIDENCE DISCIPLINE
+    Focus: Competing hypotheses, root-cause isolation, uncertainty bounds, reference deltas.
+    Domains: 15 (Reference Analysis), 16 (Diagnosis), 19 (Uncertainty Discipline),
+             20 (Alternative Solutions).
+
+  STAGE 7: AUTONOMOUS PROFESSIONAL PRACTICE & CLOSED-LOOP REFINEMENT
+    Focus: Minimalist intervention, closed-loop iteration, self-falsification, ethics.
+    Domains: 17 (Intervention Selection), 21 (Iterative Evaluation), 22 (Professional Behaviour).
+
+
+--------------------------------------------------------------------------------
+SECTION 7 — 22-DOMAIN CURRICULUM GAP MAP
+--------------------------------------------------------------------------------
+
+================================================================================
+DOMAIN 1: SOURCE & PERFORMANCE
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L1 | Evidence: L0 | Diagnosis: L0 | Decision: L1 | Outcome: L0
+Required Educational Outcome:
+  Mastery of guitar electro-mechanical generation: string alloy/gauge tension,
+  magnetic pickup types (single-coil, PAF humbucker, high-output ceramic, active),
+  pickup inductance/resonant peak (Q), volume/tone potentiometer loading (250k vs
+  500k vs 1M, cable capacitance loading), pick materials/angles, and player touch.
+Knowledge Requirements:
+  - Equivalent RLC circuit of guitar pickups and cable capacitance.
+  - Dynamic spectral variation caused by pick hardness, attack angle, and palm-mute damping.
+  - Asymmetric vs symmetric string excursion harmonics; magnetic pull drag on strings.
+Evidence-Interpretation Requirements:
+  - Inferring general pickup class and resonance profile from spectral centroid and decay.
+  - Distinguishing player muting technique from amplifier sag or gate clamp.
+  - Recognizing that pickup/source characteristics are often underdetermined from audio alone.
+Diagnostic Requirements:
+  - Formulating competing hypotheses for dull attack: pickup height vs pot loading vs
+    dead strings vs pick technique.
+Decision-Making Requirements:
+  - Determining when an upstream source limitation cannot be repaired downstream by EQ
+    without degrading signal-to-noise ratio.
+Outcome-Reasoning Requirements:
+  - Predicting how shifting pickup height alters magnetic pull (intonation flutter)
+    versus output voltage and dynamic punch.
+Cross-Domain Dependencies:
+  - Directly drives Domain 2 (Gain Staging), Domain 3 (Distortion), Domain 8 (Amp Input).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - input pickup measurement).
+Can Education Alone Fix It? PARTIALLY.
+  Education teaches pickup/string physics, but runtime must extract input signal
+  dynamic range and frequency profile from audio.
+Required Non-Educational Capability:
+  DSP analysis of input instrument audio; UI capture of guitar/pickup metadata.
+Current TT Assets to Preserve:
+  Keyword prompts distinguishing neck vs bridge pickups in geminiService.ts.
+Anti-Patterns to Eliminate:
+  Ignoring guitar pickup type and forcing uniform amp models; assuming all input
+  guitars deliver 1.0 V RMS; claiming exact pickup model identification from audio.
+Proposed Competency Evidence:
+  Diagnosing pickup resonant peak mis-match from an audio sample and recommending
+  input impedance, gain, or acoustic compensation.
+
+================================================================================
+DOMAIN 2: SIGNAL LEVEL, GAIN STAGING & HEADROOM
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L3 | Evidence: L0 | Diagnosis: L1 | Decision: L2 | Outcome: L0
+Required Educational Outcome:
+  Rigorous quantitative gain staging across analog-modeled stages: nominal operating
+  levels (dBu, dBV, dBFS), stage-by-stage headroom management, input pad compensation,
+  inter-stage clipping margins, and SNR optimization. Context-dependent digital calibration.
+Knowledge Requirements:
+  - Operating level calibration: 0 VU nominal reference alignment is context-dependent
+    (e.g., -18 dBFS EBU, -20 dBFS SMPTE/AES17, -14 dBFS broadcast/mastering).
+  - Tube stage grid-leak, bias limits, and blocking distortion under heavy overdrive.
+  - Dynamic range preservation across multi-effects blocks.
+Evidence-Interpretation Requirements:
+  - Quantifying stage peak-to-average power ratio (crest factor) and true peak overshoot.
+  - Identifying digital converter overs versus modeled analog saturation.
+Diagnostic Requirements:
+  - Tracing harsh inter-stage distortion to accidental block gain buildup (+12 dB boost
+    in parametric EQ driving chorus input).
+Decision-Making Requirements:
+  - Balancing drive level against noise floor; applying attenuation pads before sensitive
+    modulation blocks.
+Outcome-Reasoning Requirements:
+  - Verifying that boosting drive on a pedal did not push the amplifier input grid into
+    unwanted blocking distortion.
+Cross-Domain Dependencies:
+  - Strongly coupled to Domain 3 (Distortion), Domain 6 (Noise), Domain 8 (Amplifier).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - peak/RMS metering), F (Validation).
+Can Education Alone Fix It? PARTIALLY.
+  Knowledge provides dBu/dBFS calibration; DSP metering must measure true dB levels.
+Required Non-Educational Capability:
+  True-peak and RMS meter probes between signal chain nodes.
+Current TT Assets to Preserve:
+  Clean boost mechanics in geminiService.ts (high level, low drive for front-end tightening).
+Anti-Patterns to Eliminate:
+  Treating gain knobs as dimensionless 1-10 dials; ignoring inter-stage level creep;
+  prescribing a single universal digital 0 VU alignment level across all facilities.
+Proposed Competency Evidence:
+  Calculating stage-by-stage gain budgets to preserve dynamic headroom while achieving
+  targeted saturation depth.
+
+================================================================================
+DOMAIN 3: NONLINEAR PROCESSING & DISTORTION
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L3 | Evidence: L1 | Diagnosis: L2 | Decision: L3 | Outcome: L0
+Required Educational Outcome:
+  Deep first-principles comprehension of distortion mechanisms: soft vs hard diode
+  clipping, asymmetrical vs symmetrical wave shaping, triode grid-clipping, pentode
+  screen compression, crossover distortion, intermodulation distortion (IMD), and
+  harmonic spectra distribution across octaves.
+Knowledge Requirements:
+  - Fourier analysis of clipping functions: odd harmonics dominate symmetric clipping
+    (including push-pull stages and square-wave saturation); even harmonics dominate
+    asymmetric clipping (single-ended stages). Both harmonic classes are musically vital;
+    intermodulation distortion (IMD) from low frequencies entering non-linear stages
+    is the primary cause of dissonant, flubby mud.
+  - Slew-rate limiting, op-amp rail clamping, and fuzz Germanium/Silicon bias dependencies.
+Evidence-Interpretation Requirements:
+  - Analyzing Total Harmonic Distortion (THD) and harmonic distribution across octaves.
+  - Detecting excessive IMD in polyphonic chord playing.
+Diagnostic Requirements:
+  - Discriminating between preamp tube saturation, power tube saturation, speaker cone
+    breakup, and digital clipping.
+Decision-Making Requirements:
+  - Staging progressive saturation across multiple gentle stages vs one harsh clipper.
+Outcome-Reasoning Requirements:
+  - Predicting how cutting pre-distortion LF (80-200 Hz) alters harmonic density at 1-3 kHz.
+Cross-Domain Dependencies:
+  - Dependent on Domain 2 (Gain Staging), Domain 4 (Spectral), Domain 8 (Amplifier).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - harmonic spectrum analyzer).
+Can Education Alone Fix It? PARTIALLY.
+  Educational curriculum teaches nonlinear transfer curves; DSP spectrum analyzer is
+  required to inspect harmonic series.
+Required Non-Educational Capability:
+  Real-time FFT harmonic decomposition display.
+Current TT Assets to Preserve:
+  OverScream tightening logic in geminiService.ts and at5SignalChainNormalizer.ts.
+Anti-Patterns to Eliminate:
+  "Gain 10 solves everything"; teaching simplistic "even = warm, odd = harsh" dogmas;
+  stacking multiple high-gain pedals into a high-gain amplifier without filtering.
+Proposed Competency Evidence:
+  Demonstrating why a soft-clipping mid-boost circuit preserves polyphonic chord clarity
+  whereas an unfiltered hard-clipper creates dissonant intermodulation hash.
+
+================================================================================
+DOMAIN 4: FREQUENCY & SPECTRAL ENGINEERING
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L4 | Evidence: L0 | Diagnosis: L2 | Decision: L3 | Outcome: L0
+Required Educational Outcome:
+  Mastery of acoustic and electrical spectral sculpting: critical audio bands (sub,
+  low-bass, mud/boxiness, body, nasal honk, presence, sibilance/fizz, air), passive
+  vs active EQ curves, minimum-phase vs linear-phase shift, resonant Q bandwidths,
+  and tone stack topologies (Fender, Marshall, Vox, Baxandall).
+Knowledge Requirements:
+  - RLC filter mathematics; phase shift associated with steep minimum-phase filters.
+  - Spectral masking thresholds and critical bandwidths (Bark scale).
+Evidence-Interpretation Requirements:
+  - Reading spectral centroid, spectral tilt, and energy distribution.
+  - Pinpointing narrow acoustic resonances without visual RTA bias.
+Diagnostic Requirements:
+  - Distinguishing electrical tone-stack mid-scoop from cabinet wood cavity resonance
+    or microphone off-axis cancellation.
+Decision-Making Requirements:
+  - Functional EQ allocation: pre-gain corrective filtering vs tone-stack character
+    vs post-capture surgical cleanup.
+Outcome-Reasoning Requirements:
+  - Predicting phase artifacts and dynamic level shifts caused by steep filter slopes.
+Cross-Domain Dependencies:
+  - Intersects with every domain; foundational to 8 (Amp), 9 (Cab), 10 (Mic), 14 (Mix).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - spectral analyzer), F (Validation).
+Can Education Alone Fix It? PARTIALLY.
+  Curriculum teaches acoustic band interactions; DSP spectral extraction is essential.
+Required Non-Educational Capability:
+  Multiband spectral centroid and energy distribution extractor.
+Current TT Assets to Preserve:
+  Functional EQ taxonomy (Pre, Stack, Post) and deduplication rules in at5SignalChainNormalizer.ts.
+Anti-Patterns to Eliminate:
+  Boosting EQ to fix acoustic phase cancellation; excessive narrow notch filtering creating ringing.
+Proposed Competency Evidence:
+  Resolving a boxy mid-frequency accumulation in a mix using complementary EQ allocation
+  between guitar and snare without thinning the guitar's fundamental body.
+
+================================================================================
+DOMAIN 5: DYNAMICS, ENVELOPE & TRANSIENTS
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L0 | Diagnosis: L1 | Decision: L1 | Outcome: L0
+Required Educational Outcome:
+  Comprehensive modeling of transient attack, sustain, decay, and release: optical,
+  VCA, FET, and variable-mu compressor behavior; peak vs RMS sensing; knee topology;
+  sidechain high-pass filtering; transient designer acceleration; and power supply sag.
+Knowledge Requirements:
+  - Ballistics of envelope followers; attack times relative to fundamental period
+    (e.g., 82 Hz low E period ~12.2 ms; ~20-30 ms attack preserves initial pick transient).
+  - Pumping, breathing, and harmonic distortion generated by rapid release on low frequencies.
+Evidence-Interpretation Requirements:
+  - Measuring crest factor (peak-to-RMS ratio) and envelope attack slope in milliseconds.
+Diagnostic Requirements:
+  - Diagnosing whether squashed dynamics originate from an over-driven compressor,
+    excessive preamp clipping, or severe tube rectifier sag.
+Decision-Making Requirements:
+  - Placing compression pre-overdrive (for touch sensitivity/sustain) vs post-cabinet
+    (for studio level leveling).
+Outcome-Reasoning Requirements:
+  - Predicting how slow compressor attack accentuates pick click while reducing body sustain.
+Cross-Domain Dependencies:
+  - Directly affects Domain 1 (Touch), Domain 2 (Gain Staging), Domain 8 (Amp Sag).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - envelope/crest factor extractor).
+Can Education Alone Fix It? PARTIALLY.
+  Curriculum provides dynamic ballistics knowledge; DSP envelope detector measures actual audio.
+Required Non-Educational Capability:
+  Transient envelope detector measuring attack duration and crest factor.
+Current TT Assets to Preserve:
+  Compressor catalog parameters in at5ParameterManifest.ts and compressorResolver.test.ts.
+Anti-Patterns to Eliminate:
+  Applying fast-attack brickwall limiting to guitar signals, destroying pick dynamics;
+  confusing gain with compression.
+Proposed Competency Evidence:
+  Configuring a compressor to tame wild palm-mute thump (using ~30 ms attack, sidechain
+  HPF) without squashing unmuted leads.
+
+================================================================================
+DOMAIN 6: NOISE ENGINEERING
+================================================================================
+Target Maturity: L4 (High - Supporting)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L0 | Diagnosis: L1 | Decision: L2 | Outcome: L0
+Required Educational Outcome:
+  Systematic noise management across high-gain systems: thermal Johnson-Nyquist noise,
+  single-coil 50/60 Hz electromagnetic hum, grounding loops, digital clock hash,
+  noise gate threshold/hysteresis/decay ballistics, downward expanders, and sidechain keying.
+Knowledge Requirements:
+  - Physics of high gain (cascaded gain stages lift thermal noise floor into audibility).
+  - Principles of downward expansion vs hard gating; preventing unnatural note cutoff.
+Evidence-Interpretation Requirements:
+  - Measuring idle floor noise level and identifying 50/60 Hz harmonic hum spikes.
+Diagnostic Requirements:
+  - Distinguishing guitar pickup electromagnetic induction from tube microphonics or
+    ground-loop chassis currents.
+Decision-Making Requirements:
+  - Using an intelligent multi-stage gate: clean guitar input sidechain driving a post-preamp
+    expander loop.
+Outcome-Reasoning Requirements:
+  - Verifying that gate release does not chop off natural reverb tails or fading vibrato notes.
+Cross-Domain Dependencies:
+  - Directly coupled with Domain 1 (Pickups), Domain 2 (Gain Staging), Domain 8 (Amps).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - noise floor analyzer), F (Validation).
+Can Education Alone Fix It? PARTIALLY.
+  Knowledge covers grounding/gate ballistics; noise floor DSP detector is required.
+Required Non-Educational Capability:
+  Idle audio noise floor detector with FFT hum analysis.
+Current TT Assets to Preserve:
+  Noise gate parameter limits and clamp protection in at5VerifiedParameterOverrides.ts.
+Anti-Patterns to Eliminate:
+  Clamping a hard gate with aggressive release onto every high-gain patch; attempting
+  to gate noise out of sustained ringing chords.
+Proposed Competency Evidence:
+  Designing a noise-reduction strategy using input-keyed sidechain expansion that silences
+  idle single-coil buzz without audibly choking sustained notes.
+
+================================================================================
+DOMAIN 7: SIGNAL TOPOLOGY & PROCESSING ORDER
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L3 | Evidence: L1 | Diagnosis: L2 | Decision: L3 | Outcome: L1
+Required Educational Outcome:
+  Mastery of complex signal paths: series, parallel, split-band, mid-side, and multi-amp
+  matrix routing. Understanding the mathematical commutativity of linear operations
+  (EQ -> Delay == Delay -> EQ) and non-commutativity of nonlinear operations
+  (Distortion -> Reverb != Reverb -> Distortion).
+Knowledge Requirements:
+  - Mathematical theory of linear time-invariant (LTI) systems vs nonlinear systems.
+  - Phase alignment in parallel split paths (wet/dry/wet, bass-clean/guitar-distorted).
+Evidence-Interpretation Requirements:
+  - Tracing muddy wash back to spatial reverbs placed before high-gain preamps.
+Diagnostic Requirements:
+  - Diagnosing phase comb-filtering in parallel paths caused by mismatched latency
+    or differing filter phase shifts.
+Decision-Making Requirements:
+  - Routing modulation (chorus/flanger) pre-distortion (vintage psychedelic chew) vs
+    post-distortion (clean studio polish).
+Outcome-Reasoning Requirements:
+  - Predicting gain-structure inflation when summing parallel coherent signals (+6 dB).
+Cross-Domain Dependencies:
+  - Coordinates all processing domains; fundamental to 8 (Amps), 11 (Phase), 12 (Spatial).
+Gap Categories: A (Knowledge), B (Reasoning), D (Architecture - parallel path routing), F (Validation).
+Can Education Alone Fix It? PARTIALLY.
+  Knowledge teaches LTI ordering laws; runtime architecture must support parallel topologies.
+Required Non-Educational Capability:
+  Graph-based signal routing runtime supporting arbitrary parallel branching.
+Current TT Assets to Preserve:
+  TopologyMap.tsx visualization and serial routing validation rules in at5DatabaseService.ts.
+Anti-Patterns to Eliminate:
+  Treating the signal chain as an immutable fixed serial string: Guitar -> Stomp -> Amp -> Cab -> Rack.
+Proposed Competency Evidence:
+  Designing a parallel routing matrix that isolates stereo modulation from dry center-channel
+  punch while avoiding phase cancellation.
+
+================================================================================
+DOMAIN 8: AMPLIFIER BEHAVIOUR
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L3 | Evidence: L1 | Diagnosis: L2 | Decision: L3 | Outcome: L1
+Required Educational Outcome:
+  First-principles electrical and dynamic modeling of tube, solid-state, and hybrid
+  amplification: triode/pentode operating classes (Class A, AB), cathode bypass caps,
+  interstage coupling caps, phase inverters (long-tailed pair, cathodyne), negative
+  feedback loops, presence/resonance filters, output transformer saturation, and power
+  supply rail sag (choke vs resistor, tube vs solid-state rectifiers).
+Knowledge Requirements:
+  - Circuit topology differences between tweed 5F6-A, British JTM45/Plexi, Top Boost,
+    and high-gain cascading architectures.
+  - Negative feedback loop physics: Increasing the presence control *reduces* high-frequency
+    negative feedback, which *increases* high-frequency gain and reduces damping factor
+    at high frequencies; lowering presence *increases* negative feedback, smoothing highs
+    and tightening control.
+  - Power supply rail sag and recovery dynamics under transient load.
+Evidence-Interpretation Requirements:
+  - Recognizing power amp sag compression vs preamp saturation from waveform crest factor
+    and recovery envelope.
+Diagnostic Requirements:
+  - Diagnosing flubby bass as insufficient negative feedback damping or oversized
+    interstage coupling capacitors blocking grid recovery.
+Decision-Making Requirements:
+  - Adjusting master volume vs preamp gain to control where saturation occurs (front-end
+    clipping vs power-stage compression and transformer color).
+Outcome-Reasoning Requirements:
+  - Predicting how altering presence and resonance controls affects power amplifier
+    stability, loudspeaker damping, and perceived bite.
+Cross-Domain Dependencies:
+  - Couples directly with 2 (Gain), 3 (Distortion), 4 (EQ), 9 (Speaker Interaction).
+Gap Categories: A (Knowledge), B (Reasoning), E (Platform - decouples generic amp circuits
+  from AT5 proprietary amp models).
+Can Education Alone Fix It? YES.
+  Deep amplifier circuit knowledge can be taught completely through comprehensive
+  circuit models and platform-independent semantic parameters.
+Required Non-Educational Capability:
+  Semantic Tone Design amplifier representation (decoupled from commercial brand names).
+Current TT Assets to Preserve:
+  Amplifier circuit attributes in at5AmplifierKnowledge.ts (master volume, tone stack type).
+Anti-Patterns to Eliminate:
+  Equating an amp model to a static graphic skin; assuming all amps clip identically;
+  misunderstanding negative-feedback circuit mechanics.
+Proposed Competency Evidence:
+  Explaining precisely why diming a non-master-volume valve amplifier softens transient
+  punch through power-stage bias excursions and output transformer saturation.
+
+================================================================================
+DOMAIN 9: LOUDSPEAKER & CABINET ENGINEERING
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L3 | Evidence: L1 | Diagnosis: L2 | Decision: L3 | Outcome: L1
+Required Educational Outcome:
+  Acoustic and mechanical engineering of guitar transducers and enclosures: voice coil
+  inductance, magnet types (Alnico, Ceramic, Neodymium), paper cone breakup modes,
+  dust cap high-frequency beaming, Thiele-Small resonant frequency (Fs), enclosure
+  designs (open-back dipole cancellation vs closed-back acoustic suspension/tuning),
+  baffle diffraction, and internal box resonances.
+Knowledge Requirements:
+  - Loudspeaker reactive impedance curve (nominal 8 ohms peaking at resonance and rising at HF).
+  - Acoustic dipole cancellation in open-back cabinets below baffle transition frequency.
+  - Directional high-frequency beaming (dispersion narrowing as wavelength approaches cone diameter).
+Evidence-Interpretation Requirements:
+  - Identifying cabinet wood resonance thump vs speaker electrical resonance.
+Diagnostic Requirements:
+  - Distinguishing harsh high-frequency fizz caused by an aggressive speaker peak
+    from circuit clipping.
+Decision-Making Requirements:
+  - Selecting cabinet construction to match musical context (open-back for spatial room
+    spread; closed 4x12 for focused low-end palm-mute punch).
+Outcome-Reasoning Requirements:
+  - Predicting how changing a cabinet from closed to open back alters low-end boundary
+    support and spatial reflection patterns.
+Cross-Domain Dependencies:
+  - Intersects with 8 (Amp Damping), 10 (Mic Placement), 11 (Phase), 13 (Psychoacoustics).
+Gap Categories: A (Knowledge), B (Reasoning), E (Platform - VIR coordinates vs acoustic angles).
+Can Education Alone Fix It? YES.
+  Acoustic transducer physics and cabinet enclosure modeling are conceptual and platform-independent.
+Required Non-Educational Capability:
+  Semantic representation of cabinet enclosure type, volume, and speaker cone voicing.
+Current TT Assets to Preserve:
+  Speaker voice data and cabinet pairings in at5CabinetKnowledge.ts and virSpeakerOrientationPhase1.test.ts.
+Anti-Patterns to Eliminate:
+  Treating cabinets as flat IR filters; ignoring acoustic dispersion geometry.
+Proposed Competency Evidence:
+  Analyzing how speaker cone breakup creates harmonic distortion that smooths harsh
+  preamp clipping into musical upper harmonics.
+
+================================================================================
+DOMAIN 10: MICROPHONE & CAPTURE ENGINEERING
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L4 | Evidence: L2 | Diagnosis: L3 | Decision: L4 | Outcome: L2
+Required Educational Outcome:
+  Mastery of studio capture acoustics: transducer operating principles (moving-coil
+  dynamic, thin ribbon, large-diaphragm condenser, small-diaphragm condenser), polar
+  patterns (cardioid, figure-8, omni, supercardioid), velocity-gradient acoustic
+  proximity effect, off-axis high-frequency frequency response attenuation, diaphragm
+  transient mass, preamplifier input impedance loading, and multi-mic boundary phase alignment.
+Knowledge Requirements:
+  - Proximity effect physics: Proximity LF boost occurs in pressure-gradient transducers
+    (cardioid, figure-8) as distance to source decreases below near-field transition;
+    pure pressure transducers (omnidirectional) exhibit NO proximity effect.
+  - Off-axis polar response: high-frequency phase cancellation across large diaphragms
+    softens treble when angled off-axis.
+  - Acoustic propagation delay: sound velocity c ~ 343 m/s in air at 20°C (~0.29 ms per 10 cm,
+    ~1 ms per 34 cm / 1.1 ft). Exact delay depends on atmospheric conditions.
+Evidence-Interpretation Requirements:
+  - Discriminating between proximity-induced LF buildup and electrical bass boost.
+  - Identifying diaphragm transient distortion and off-axis comb filtering.
+Diagnostic Requirements:
+  - Tracing harsh fizzy top-end directly to an on-axis dynamic mic centered over dust cap.
+Decision-Making Requirements:
+  - Deciding placement geometry: distance from grill, lateral offset (center cap to cone edge),
+    angle (0 to 45 degrees), and complementary pairing (e.g., dynamic for bite + ribbon for body).
+Outcome-Reasoning Requirements:
+  - Predicting phase delay and comb-filter notch frequencies when introducing a second capture mic.
+Cross-Domain Dependencies:
+  - Directly coupled with 9 (Loudspeaker), 11 (Phase Alignment), 14 (Production Context).
+Gap Categories: A (Knowledge), B (Reasoning - elevating deterministic logic to autonomous judgment).
+Can Education Alone Fix It? YES.
+  Current TT contains high-grade acoustic knowledge in at5MicPlacementReasoning.ts; the task
+  is educating the cognitive model to reason from evidence rather than rigid code rules.
+Required Non-Educational Capability:
+  Semantic capture schema expressing physical distances (cm), radial angles (degrees),
+  and transducer polar types.
+Current TT Assets to Preserve:
+  Acoustic reasoning principles, distance/angle matrices, and complementary pairing
+  logic in at5MicPlacementReasoning.ts and at5MicPlacementService.ts.
+Anti-Patterns to Eliminate:
+  Placing microphones purely by visual graphic alignment; hardcoding a fixed "SM57 + C414"
+  recipe regardless of tone; universalizing proximity effect to omnidirectional mics.
+Proposed Competency Evidence:
+  Formulating a 3-step capture adjustment (lateral shift, off-axis angle, distance trim)
+  to eliminate high-end fizz while retaining low-end palm-mute punch.
+
+================================================================================
+DOMAIN 11: PHASE, POLARITY & MULTI-SOURCE INTERACTION
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L0 | Diagnosis: L1 | Decision: L2 | Outcome: L0
+Required Educational Outcome:
+  Rigorous wave mechanics: absolute acoustic polarity (0 vs 180 degrees) vs frequency-
+  dependent phase delay (time delay tau producing comb filtering nulls at f = (2n+1) / (2 * tau)),
+  phase cancellation notches, 3:1 distance rule, all-pass filter phase rotation,
+  and delay alignment.
+Knowledge Requirements:
+  - Mathematical formulation of comb filtering: null depth, frequency spacing, and
+    audible coloration (nasal/hollow character).
+  - Vector addition of acoustic waves arriving at disparate microphone diaphragms.
+Evidence-Interpretation Requirements:
+  - Interpreting phase correlation meters (+1.0 in-phase, 0.0 uncorrelated, -1.0 inverted).
+  - Detecting hollow nasal comb-filtering notches in audio spectra.
+Diagnostic Requirements:
+  - Diagnosing thin, bass-deficient tone as acoustic phase cancellation between dual
+    cab mics rather than poor amplifier bass EQ.
+Decision-Making Requirements:
+  - Applying polarity reversal, microsecond delay trim, or physical mic repositioning
+    to achieve constructive acoustic summation.
+Outcome-Reasoning Requirements:
+  - Predicting the frequency of the first cancellation null based on acoustic path length delta.
+Cross-Domain Dependencies:
+  - Directly impacts 7 (Topology), 9 (Loudspeaker), 10 (Microphone), 12 (Spatial).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - phase correlation meter & delay delta).
+Can Education Alone Fix It? PARTIALLY.
+  Curriculum teaches wave superposition mathematics; DSP correlation meter must
+  measure phase alignment in runtime audio.
+Required Non-Educational Capability:
+  Phase correlation and cross-correlation delay detector between signal streams.
+Current TT Assets to Preserve:
+  Phase inversion check heuristics in micOrientationExportAccounting.test.ts.
+Anti-Patterns to Eliminate:
+  Attempting to fix comb-filtering hollow tone by boosting graphic EQ; flipping phase
+  blindly without checking low-end summation.
+Proposed Competency Evidence:
+  Demonstrating phase alignment calculation for dual microphones on a cabinet and
+  verifying positive low-frequency reinforcement across 80-250 Hz.
+
+================================================================================
+DOMAIN 12: TIME-BASED, MODULATION & SPATIAL PROCESSING
+================================================================================
+Target Maturity: L4 (High - Supporting)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L0 | Diagnosis: L1 | Decision: L2 | Outcome: L0
+Required Educational Outcome:
+  Principles of time-delay, modulation, and reverberant acoustic spaces: chorusing
+  (pitch modulation via LFO delay), flanging (comb-filter sweep <10 ms), phasing
+  (all-pass filter phase shift poles), tape wow/flutter, bucket-brigade device (BBD)
+  clock clocking/aliasing, algorithmic vs convolution reverb, early reflection density,
+  pre-delay separation, and Haas effect stereo widening.
+Knowledge Requirements:
+  - Haas effect window (~1-30 ms localization precedence); comb-filter artifacts when
+    summed to mono.
+  - Reverb decay damping (high-frequency absorption in real air/surfaces).
+Evidence-Interpretation Requirements:
+  - Measuring early-to-late reverberation ratios and delay tempo-sync divisions.
+Diagnostic Requirements:
+  - Diagnosing mix clutter as excessive wet reverb wash obscuring guitar note separation.
+Decision-Making Requirements:
+  - Setting delay pre-delay to decouple guitar transient attack from reverb wash;
+    high-passing reverb returns to prevent low-end mud.
+Outcome-Reasoning Requirements:
+  - Predicting mono-compatibility collapse when using inverted-phase stereo widening.
+Cross-Domain Dependencies:
+  - Interacts with 7 (Routing Order), 11 (Phase), 13 (Psychoacoustics), 14 (Mix Context).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - stereo correlation / RT60 measurement).
+Can Education Alone Fix It? PARTIALLY.
+  Curriculum provides spatial physics; DSP tools measure stereo width and reverberation time.
+Required Non-Educational Capability:
+  Stereo field vectorscope and RT60 decay measurement tools.
+Current TT Assets to Preserve:
+  Modulation pedal taxonomy in at5ParameterManifest.ts.
+Anti-Patterns to Eliminate:
+  Applying heavy stereo reverb pre-distortion; widening guitar tracks with out-of-phase
+  delays that vanish completely in mono playback.
+Proposed Competency Evidence:
+  Designing a delay/reverb space using pre-delay and filtering that breathes between
+  phrases without masking rhythm articulation.
+
+================================================================================
+DOMAIN 13: PSYCHOACOUSTICS & PERCEPTION
+================================================================================
+Target Maturity: L4 (High - Supporting)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L0 | Diagnosis: L1 | Decision: L1 | Outcome: L0
+Required Educational Outcome:
+  Understanding human auditory perception: Fletcher-Munson / ISO 226 equal-loudness
+  contours (perceived bass/treble drop at low SPL), frequency masking (narrowband noise
+  masking adjacent tones), temporal masking (pre- and post-masking), Haas effect,
+  interaural time/level differences (ITD/ILD), and the missing fundamental effect.
+Knowledge Requirements:
+  - Auditory filter critical bands (Bark scale and Equivalent Rectangular Bandwidth ERB).
+  - Loudness bias: Louder signals are systematically perceived as having fuller bass
+    and superior clarity even when frequency response is identical.
+  - Loudness difference threshold: Just Noticeable Difference (JND) for level is
+    typically ~0.5 to 1.0 dB under standard listening conditions.
+Evidence-Interpretation Requirements:
+  - Normalizing playback loudness (LUFS) before conducting A/B comparisons.
+Diagnostic Requirements:
+  - Explaining why a tone that sounds massive at 95 dB SPL in a room sounds thin and
+    sterile when monitored at 65 dB SPL in headphones.
+Decision-Making Requirements:
+  - Compensating for equal-loudness curves without destroying high-gain headroom;
+    relying on mid-harmonic saturation to convey low-end weight on small playback systems.
+Outcome-Reasoning Requirements:
+  - Predicting how ear sensitivity peaking at 2.5-4 kHz accentuates fatigue if distortion
+    harmonics concentrate in this region.
+Cross-Domain Dependencies:
+  - Directly governs 2 (Levels), 4 (EQ), 14 (Production), 15 (Tone Matching), 21 (Evaluation).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - integrated LUFS loudness meter).
+Can Education Alone Fix It? PARTIALLY.
+  Education teaches human hearing mechanisms; runtime must enforce strict LUFS matching.
+Required Non-Educational Capability:
+  EBU R128 integrated LUFS loudness normalization engine.
+Current TT Assets to Preserve:
+  Perceptual mid-range boost rules for mix cutting in geminiService.ts.
+Anti-Patterns to Eliminate:
+  A/B testing without loudness normalization; claiming ungrounded precision (e.g.
+  universal +/-0.1 LUFS) outside controlled test fixtures.
+Proposed Competency Evidence:
+  Designing an A/B evaluation protocol that normalizes loudness to eliminate auditory
+  bias during tone verification.
+
+================================================================================
+DOMAIN 14: MUSICAL & PRODUCTION CONTEXT
+================================================================================
+Target Maturity: L4 (High - Supporting)
+Current Five-Dimensional Baseline:
+  Knowledge: L4 | Evidence: L2 | Diagnosis: L3 | Decision: L3 | Outcome: L1
+Required Educational Outcome:
+  Mastery of electric guitar's functional role across musical arrangements: bass-guitar
+  frequency handover, kick-drum transient collision, vocal pocket clearing,
+  rhythm double-tracking stereo imaging, and lead guitar mix elevation. Contextual
+  awareness that genre examples are illustrative conventions, not engineering laws.
+Knowledge Requirements:
+  - Production conventions across eras (classic rock, blues, wet 80s, dry 90s, modern metal).
+  - Arrangement density and its impact on guitar bandwidth allocation.
+Evidence-Interpretation Requirements:
+  - Analyzing multi-track arrangement density from audio or text production metadata.
+Diagnostic Requirements:
+  - Diagnosing a guitar track that sounds glorious in isolation but turns to mud when
+    mixed with bass guitar and rhythm section.
+Decision-Making Requirements:
+  - Carving high-pass and low-pass boundaries to seat the guitar cleanly between bass
+    fundamentals and cymbal air.
+Outcome-Reasoning Requirements:
+  - Predicting that thinning the guitar's solo body makes the overall band mix sound
+    larger and punchier.
+Cross-Domain Dependencies:
+  - Couples with 4 (EQ), 7 (Routing), 12 (Spatial), 17 (Minimalism), 18 (Trade-Offs).
+Gap Categories: A (Knowledge), B (Reasoning).
+Can Education Alone Fix It? YES.
+  Production context and arrangement roles are fundamental engineering concepts that
+  can be fully mastered through curriculum education and context models.
+Required Non-Educational Capability:
+  Contextual metadata input capturing arrangement instrumentation and tempo.
+Current TT Assets to Preserve:
+  Curated genre signal-chain templates and era knowledge in geminiService.ts and
+  amplitube5_gear_catalog.json.
+Anti-Patterns to Eliminate:
+  Crafting "bedroom solo tones" that occupy 40 Hz to 15 kHz, leaving no room for
+  bass guitar, kick drum, or vocals; treating genre tropes as mandatory laws.
+Proposed Competency Evidence:
+  Demonstrating how to notch a rhythm guitar track in the vocal presence pocket while
+  boosting lower midrange to retain guitar power and authority in a dense arrangement.
+
+================================================================================
+DOMAIN 15: REFERENCE ANALYSIS & TONE MATCHING
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L1 | Evidence: L1 | Diagnosis: L0 | Decision: L1 | Outcome: L0
+Required Educational Outcome:
+  Systematic reverse-engineering of target reference recordings: isolating guitar
+  stems, extracting objective spectral envelopes, estimating dynamic crest factors,
+  identifying amplifier saturation architecture, detecting cabinet resonance and
+  microphone placement geometry, and measuring acoustic reverberation decay.
+  Recognizing that exact commercial equipment is underdetermined from audio alone.
+Knowledge Requirements:
+  - Reverse causal analysis: deducing signal chain topologies from acoustic artifacts.
+  - Acoustic underdetermination: understanding that different equipment chains can
+    produce identical spectral/dynamic signatures.
+  - Limitations of stem separation algorithms (phase smearing and transient artifacts).
+Evidence-Interpretation Requirements:
+  - Computing spectral difference curves (target reference minus current signal) in dB.
+  - Distinguishing production master processing (tape saturation, mastering limiter)
+    from raw guitar amplifier tone.
+Diagnostic Requirements:
+  - Explaining why a simple EQ match filter fails to replicate a reference tone because
+    the difference is dynamic nonlinear saturation, not linear frequency response.
+Decision-Making Requirements:
+  - Selecting which signal chain parameter (gain, amp sag, mic position, or post-EQ)
+    is the primary causal agent for a reference mismatch.
+Outcome-Reasoning Requirements:
+  - Predicting convergence metrics across iterative adjustment passes.
+Cross-Domain Dependencies:
+  - Synthesizes all physical domains; directly drives 16 (Diagnosis) and 21 (Iteration).
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - DSP reference comparison engine).
+Can Education Alone Fix It? PARTIALLY.
+  Curriculum teaches reverse-engineering deduction; DSP matching engine must extract
+  reference audio feature deltas.
+Required Non-Educational Capability:
+  Audio DSP reference comparison service computing spectral, dynamic, and temporal deltas.
+Current TT Assets to Preserve:
+  Multimodal reference ingestion prompt structures in geminiService.ts.
+Anti-Patterns to Eliminate:
+  Treating static text descriptions ("like Master of Puppets") as equivalent to
+  analyzing actual audio waveforms; applying static EQ matching curves; claiming to
+  uniquely identify exact gear models from audio evidence.
+Proposed Competency Evidence:
+  Given a reference recording stem, isolating its spectral centroid, identifying its
+  dominant harmonic saturation, and deducing a capture and saturation strategy.
+
+================================================================================
+DOMAIN 16: DIAGNOSIS & ROOT-CAUSE REASONING
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L0 | Diagnosis: L1 | Decision: L1 | Outcome: L0
+Required Educational Outcome:
+  Rigorous diagnostic methodology: moving from perceived symptoms to objective evidence,
+  generating multiple evidence-supported working hypotheses, executing discriminating tests,
+  and isolating primary causal mechanisms while avoiding symptom-masking interventions.
+Knowledge Requirements:
+  - Causal graphs of guitar audio systems; distinction between root causes, mediating
+    mechanisms, and observable symptoms.
+  - Principles of diagnostic parsimony (Occam's razor in electro-acoustics).
+  - Managing interacting causes in complex, coupled systems.
+Evidence-Interpretation Requirements:
+  - Identifying contradictory evidence that falsifies a working hypothesis.
+Diagnostic Requirements:
+  - Given a complex symptom (e.g., "harsh top end"), generating and evaluating competing
+    working hypotheses spanning capture, circuit, and source domains.
+Decision-Making Requirements:
+  - Intervening at the primary physical cause rather than applying compensatory EQ
+    downstream to mask the defect without justification.
+Outcome-Reasoning Requirements:
+  - If the primary intervention fails to resolve the symptom, revising the working
+    hypotheses and testing alternative causal mechanisms.
+Cross-Domain Dependencies:
+  - Central cognitive engine linking evidence (Domains 1-15) to decisions (Domains 17-22).
+Gap Categories: A (Knowledge), B (Reasoning - structured abductive diagnosis).
+Can Education Alone Fix It? YES.
+  Diagnostic methodology is a cognitive discipline taught through formal causal
+  structures and adversarial diagnostic case studies.
+Required Non-Educational Capability:
+  Diagnostic scratchpad contract (formal EngineeringDecisionRecord tracking hypotheses).
+Current TT Assets to Preserve:
+  Symptom taxonomy in MASTER_PROMPT (/src/services/geminiService.ts).
+Anti-Patterns to Eliminate:
+  "Symptom -> Instant Preset Fix"; jumping to gear replacement without diagnosing
+  circuit or acoustic origin; dogmatic single-hypothesis fixation.
+Proposed Competency Evidence:
+  Successfully discriminating between an acoustic capture defect (mic angle) and an
+  electrical amplifier defect (excessive presence) on a blind test audio sample.
+
+================================================================================
+DOMAIN 17: INTERVENTION SELECTION & MINIMALISM
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L3 | Evidence: L1 | Diagnosis: L2 | Decision: L3 | Outcome: L1
+Required Educational Outcome:
+  Mastery of surgical, minimalist engineering: selecting the intervention that achieves
+  the sonic goal with the fewest processing stages, minimal side-effects, and maximum
+  signal integrity. Parsimony as a guiding reasoning principle, not an absolute physical law.
+Knowledge Requirements:
+  - Accumulation of phase distortion, noise, and latency across cascading digital/analog blocks.
+  - "Fix it at the source": adjusting capture geometry or input gain before adding outboard equalizers.
+Evidence-Interpretation Requirements:
+  - Detecting when an added processing block introduces more problems than it solves.
+Diagnostic Requirements:
+  - Recognizing when an existing processor is redundant and should be removed.
+Decision-Making Requirements:
+  - Choosing focused parameter adjustments over complex multi-pedal signal chains;
+    declining to add an EQ block when adjusting microphone position achieves the goal.
+Outcome-Reasoning Requirements:
+  - Demonstrating that the minimalist signal chain achieves higher dynamic punch and
+    transparency than an over-processed chain.
+Cross-Domain Dependencies:
+  - Directly governs 7 (Topology), 8 (Amps), 10 (Mics), 18 (Trade-Offs).
+Gap Categories: A (Knowledge), B (Reasoning).
+Can Education Alone Fix It? YES.
+  Minimalism is an engineering philosophy and decision discipline instilling restraint
+  and efficiency.
+Required Non-Educational Capability:
+  Complexity penalty metric in preset optimization algorithms.
+Current TT Assets to Preserve:
+  Clean classic rock minimal chain rules in MASTER_PROMPT (/src/services/geminiService.ts).
+Anti-Patterns to Eliminate:
+  Adding 3 EQs, 2 overdrives, and a limiter to solve a boomy low-end that could be
+  fixed by trimming the amplifier bass control or adjusting mic placement.
+Proposed Competency Evidence:
+  Solving a muddy rhythm tone using a focused parameter adjustment while rejecting
+  unnecessary outboard processing blocks.
+
+================================================================================
+DOMAIN 18: TRADE-OFF & CONSTRAINT REASONING
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L0 | Diagnosis: L1 | Decision: L2 | Outcome: L0
+Required Educational Outcome:
+  Explicit evaluation of inescapable engineering compromises: high gain vs noise floor,
+  tight low-end vs body/weight, pick attack cut vs harshness, stereo width vs mono
+  compatibility, and pre-distortion cut vs single-note fullness.
+Knowledge Requirements:
+  - Conservation of dynamic headroom and acoustic energy laws.
+  - Collateral side-effects of every linear and nonlinear transformation.
+Evidence-Interpretation Requirements:
+  - Monitoring collateral changes in adjacent frequency bands or dynamic zones when an
+    intervention is applied.
+Diagnostic Requirements:
+  - Identifying when a current defect was created by a previous over-correction.
+Decision-Making Requirements:
+  - Articulating explicit trade-off statements: documenting accepted trade-offs
+    (e.g., slight noise floor rise in exchange for pick articulation and sustain).
+Outcome-Reasoning Requirements:
+  - Verifying that trade-offs remain within acceptable production tolerances.
+Cross-Domain Dependencies:
+  - Intersects with all domains; directly shapes 2 (Gain), 3 (Distortion), 4 (EQ), 6 (Noise).
+Gap Categories: A (Knowledge), B (Reasoning).
+Can Education Alone Fix It? YES.
+  Trade-off analysis is a cognitive decision-making discipline taught through multi-objective
+  optimization frameworks.
+Required Non-Educational Capability:
+  Contract field for explicit trade-off recording in EngineeringDecisionRecord.
+Current TT Assets to Preserve:
+  Trade-off commentary fields in Phase 1B engineering decision contracts.
+Anti-Patterns to Eliminate:
+  Treating engineering interventions as "free lunches"; assuming gain can be boosted
+  without raising noise or compressing dynamics.
+Proposed Competency Evidence:
+  Producing a formal trade-off ledger for a high-gain solo patch documenting how sustain
+  was achieved, what noise penalty was incurred, and how gating was balanced.
+
+================================================================================
+DOMAIN 19: UNCERTAINTY & EVIDENCE DISCIPLINE
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L1 | Evidence: L0 | Diagnosis: L0 | Decision: L0 | Outcome: L0
+Required Educational Outcome:
+  Absolute intellectual honesty and epistemic discipline: distinguishing known facts
+  from reasonable inferences, unverified assumptions, and complete unknowns. Explicitly
+  declaring low confidence when evidence is ambiguous or missing.
+Knowledge Requirements:
+  - Bayesian probability principles in engineering diagnosis.
+  - Acoustic ambiguity: understanding that multiple distinct electro-acoustic chains
+    can yield identical steady-state spectral plots.
+Evidence-Interpretation Requirements:
+  - Classifying input information into: Verified Acoustic Measurement, User Claim,
+    Model Inference, and Speculative Assumption.
+Diagnostic Requirements:
+  - Refusing to declare a definitive root cause when available evidence supports multiple
+    equally probable hypotheses; stating: "Insufficient evidence to isolate cause."
+Decision-Making Requirements:
+  - Choosing non-destructive, conservative interventions when operating under high
+    uncertainty.
+Outcome-Reasoning Requirements:
+  - Calibrating confidence ratings against empirical outcome verification success rates.
+Cross-Domain Dependencies:
+  - Foundational to 15 (Tone Matching), 16 (Diagnosis), 20 (Alternatives), 21 (Iteration).
+Gap Categories: A (Knowledge), B (Reasoning).
+Can Education Alone Fix It? YES.
+  Epistemic discipline and uncertainty calibration are cognitive virtues developed
+  through rigorous training and strict contract schemas.
+Required Non-Educational Capability:
+  Uncertainty metadata fields and strict schema enforcement prohibiting cosmetic confidence.
+Current TT Assets to Preserve:
+  EvidenceRecord and InputProvenance contract schemas created in Phase 1B.
+Anti-Patterns to Eliminate:
+  Emitting high confidence on unverified inferences; hallucinating pickup or amplifier
+  models from compressed audio without evidence.
+Proposed Competency Evidence:
+  Correctly refusing to identify a specific amplifier model from an audio clip, instead
+  providing a ranked probability distribution across candidate circuit classes.
+
+================================================================================
+DOMAIN 20: ALTERNATIVE SOLUTION REASONING
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L2 | Evidence: L1 | Diagnosis: L1 | Decision: L2 | Outcome: L1
+Required Educational Outcome:
+  Ability to generate distinct, viable, competing architectural approaches to solve
+  the same acoustic problem: solving flubby bass via pre-overdrive EQ vs pickup adjustment
+  vs speaker change vs mic repositioning; providing distinct creative options with
+  clear trade-off comparisons.
+Knowledge Requirements:
+  - Functional equivalence across different domains of the signal chain.
+  - Variety in artistic and engineering traditions achieving identical goals.
+Evidence-Interpretation Requirements:
+  - Evaluating how alternative signal chains satisfy reference requirements.
+Diagnostic Requirements:
+  - Identifying which alternative approach best respects unique user hardware constraints.
+Decision-Making Requirements:
+  - Formulating primary, secondary, and fallback engineering strategies.
+Outcome-Reasoning Requirements:
+  - Explaining precisely how the sonic character of Solution A differs from Solution B
+    while both address the targeted acoustic issue.
+Cross-Domain Dependencies:
+  - Couples with 16 (Diagnosis), 17 (Minimalism), 18 (Trade-Offs), 21 (Iteration).
+Gap Categories: A (Knowledge), B (Reasoning).
+Can Education Alone Fix It? YES.
+  Generating and comparing multiple architectural designs is a core cognitive skill.
+Required Non-Educational Capability:
+  Semantic Tone Design schema supporting alternative candidate branch trees.
+Current TT Assets to Preserve:
+  Alternative suggestions prompt in geminiService.ts.
+Anti-Patterns to Eliminate:
+  Offering "alternatives" that are merely trivial variations of the same pedal while
+  ignoring different architectural paradigms.
+Proposed Competency Evidence:
+  Presenting three fundamentally different engineering solutions to brighten a dark
+  tone (Acoustic: mic angle; Electrical: Bright cap switch; Transducer: Speaker voicing)
+  with comparative trade-off notes.
+
+================================================================================
+DOMAIN 21: ITERATIVE ENGINEERING & OUTCOME EVALUATION
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L0 | Evidence: L0 | Diagnosis: L0 | Decision: L0 | Outcome: L0
+Required Educational Outcome:
+  Closed-loop scientific methodology: making an intervention, predicting the acoustic
+  consequences, evaluating resulting audio, measuring the outcome against predicted
+  criteria, diagnosing residual errors or unintended side-effects, and executing
+  refined follow-up adjustments until convergence is achieved. Closed-loop iteration
+  is applied where evidence channels are available.
+Knowledge Requirements:
+  - Control systems theory: feedback loops, error signals, overshoot, damping, and
+    iterative convergence.
+  - Falsification logic: knowing what observation proves an intervention failed.
+Evidence-Interpretation Requirements:
+  - Comparing Before vs After audio measurements across spectral, temporal, and phase metrics.
+Diagnostic Requirements:
+  - Diagnosing whether an unexpected outcome resulted from model error, unmodeled
+    hardware interactions, or secondary side-effects.
+Decision-Making Requirements:
+  - Deciding whether to refine the current approach, roll back to a previous checkpoint,
+    or abandon the hypothesis entirely.
+Outcome-Reasoning Requirements:
+  - Rigorous self-evaluation; refusing to declare success until objective and perceptual
+    criteria are satisfied.
+Cross-Domain Dependencies:
+  - The capstone execution engine governing all engineering decisions and outcomes.
+Gap Categories: A (Knowledge), B (Reasoning), C (Tooling - delta analysis), D (Architecture - feedback loop).
+Can Education Alone Fix It? NO.
+  While the scientific mindset is taught, closed-loop iteration is physically impossible
+  without runtime rendering, audio capture, and stateful checkpoint lineage.
+Required Non-Educational Capability:
+  Runtime closed-loop feedback engine; automated audio rendering and delta measurement service.
+Current TT Assets to Preserve:
+  CheckpointEnvelope and RunTraceRecorder infrastructure developed in Phase 1B.
+Anti-Patterns to Eliminate:
+  "Fire and forget" tone generation; assuming a generated preset is perfect without
+  verifying its acoustic output; demanding closed loop when evidence is unavailable.
+Proposed Competency Evidence:
+  Executing a multi-pass tone refinement loop where pass 1 over-corrects, pass 2
+  diagnoses the overshoot, and pass 3 converges within targeted tolerances.
+
+================================================================================
+DOMAIN 22: PROFESSIONAL ENGINEERING BEHAVIOUR
+================================================================================
+Target Maturity: L5 (Core)
+Current Five-Dimensional Baseline:
+  Knowledge: L3 | Evidence: L1 | Diagnosis: L1 | Decision: L2 | Outcome: L0
+Required Educational Outcome:
+  Consummate engineering professionalism: operating from first principles, respecting
+  the integrity of the artist's source tone, communicating transparently using standard
+  engineering terminology, strictly decoupling platform-independent intent from target
+  hardware/software, and exercising disciplined restraint. Balancing confidence with
+  appropriate epistemic humility.
+Knowledge Requirements:
+  - Professional studio ethics, acoustic standards, and engineering communication conventions.
+  - Strict boundary awareness: knowing what the AI sound engineer is responsible for
+    versus downstream translators and deterministic validators.
+Evidence-Interpretation Requirements:
+  - Interpreting artist intent and subjective descriptions ("warm", "woody", "glassy")
+    into physical parameters without distorting artistic goals.
+Diagnostic Requirements:
+  - Maintaining objectivity; never blaming tools or guessing blindly.
+Decision-Making Requirements:
+  - Respectfully clarifying physical constraints when a user request violates acoustic
+    laws (e.g., expecting sub-bass extension from an open-back small enclosure) and
+    offering constructive engineering alternatives.
+Outcome-Reasoning Requirements:
+  - Transparently admitting when a requested tone cannot be achieved with available
+    equipment or within physical constraints.
+Cross-Domain Dependencies:
+  - Governs all 21 preceding domains and defines overall system integrity.
+Gap Categories: A (Knowledge), B (Reasoning).
+Can Education Alone Fix It? YES.
+  Professional mindset, ethical standards, and platform-independent discipline are
+  the core product of professional education.
+Required Non-Educational Capability:
+  Architecture boundary enforcement preventing platform-specific leaks into the sound
+  engineer reasoning layer.
+Current TT Assets to Preserve:
+  Clean classic rock discipline and negative constraint rules in geminiService.ts.
+Anti-Patterns to Eliminate:
+  Marketing hype, sycophancy, apologizing to the user instead of explaining physics,
+  and hardcoding commercial brand names into acoustic reasoning.
+Proposed Competency Evidence:
+  Providing a transparent engineering explanation of physical trade-offs when an
+  artist request conflicts with electro-acoustic reality, proposing optimal compromises.
+
+
+--------------------------------------------------------------------------------
+SECTION 8 — CURRICULUM DEPENDENCY & PREREQUISITE MAP
+--------------------------------------------------------------------------------
+
+8.1 PREREQUISITE DIRECTED ACYCLIC GRAPH (DAG)
+The education of the AI Sound Engineer follows a developmental dependency structure:
+
+  [STAGE 1: FOUNDATIONS]
+    Domain 1 (Source & Performance)
+    Domain 2 (Gain Staging & Headroom)
+    Domain 10 (Microphone Physics & Transduction)
+    Domain 11 (Phase & Polarity Mechanics)
+           │
+           ├────────────────────────────┐
+           ▼                            ▼
+  [STAGE 2: NONLINEAR SYSTEMS]   [STAGE 3: ACOUSTIC RES.]
+    Domain 3 (Distortion)          Domain 9 (Loudspeaker/Cab)
+    Domain 5 (Dynamics)            Domain 10 (Capture Geometry)
+    Domain 8 (Amplifier Behaviour) Domain 12 (Spatial Reverb)
+           │                            │
+           └──────────────┬─────────────┘
+                          ▼
+  [STAGE 4: PSYCHOACOUSTICS & SPECTRAL]
+    Domain 4 (Frequency & Spectral Engineering)
+    Domain 6 (Noise Engineering)
+    Domain 13 (Psychoacoustics & Auditory Perception)
+                          │
+                          ▼
+  [STAGE 5: SYSTEM TOPOLOGY & CONTEXT]
+    Domain 7 (Signal Topology & Commutativity)
+    Domain 14 (Musical & Production Context)
+    Domain 18 (Trade-Offs & Multi-Objective Balance)
+                          │
+                          ▼
+  [STAGE 6: DIAGNOSTIC REASONING & EVIDENCE]
+    Domain 15 (Reference Analysis & Deconstruction)
+    Domain 16 (Diagnosis & Causal Graphs)
+    Domain 19 (Uncertainty & Epistemic Discipline)
+    Domain 20 (Alternative Solution Architecture)
+                          │
+                          ▼
+  [STAGE 7: AUTONOMOUS PROFESSIONAL PRACTICE]
+    Domain 17 (Intervention Selection & Parsimony)
+    Domain 21 (Iterative Closed-Loop Refinement)
+    Domain 22 (Professional Engineering Behaviour)
+
+8.2 PROGRESSION PREREQUISITES ARCHITECTURE
+Progression through the curriculum distinguishes three distinct prerequisite types:
+
+  A. LEARNING PREREQUISITES:
+     Concepts and causal models in Stage N must be understood before the advanced
+     theories in Stage N+1 can be meaningfully taught (e.g., understanding RLC filter
+     theory in Stage 1 before tone stack interaction in Stage 2).
+
+  B. EVIDENCE-CAPABILITY PREREQUISITES:
+     Specific runtime DSP measurement capabilities required to observe real audio
+     signals in that domain (e.g., crest factor detection for Domain 5, phase
+     correlation for Domain 11). Conceptual learning may proceed even if runtime
+     DSP tools are still under development.
+
+  C. CERTIFICATION PREREQUISITES:
+     What must exist before a domain can be formally benchmarked at its target
+     maturity level (L4/L5) in Phase 1C.6. Certification requires that both cognitive
+     reasoning and runtime evidence capabilities are fully demonstrated.
+
+
+--------------------------------------------------------------------------------
+SECTION 9 — CROSS-DOMAIN PROFESSIONAL REASONING CURRICULUM
+--------------------------------------------------------------------------------
+
+NUMERICAL VALUES IN SCENARIOS:
+ALL SPECIFIC NUMERICAL VALUES (FREQUENCIES, dB LEVELS, ANGLES, DISTANCES, TIMES)
+IN THE FOLLOWING SCENARIOS ARE CLASSIFIED AS EITHER [ILLUSTRATIVE EXAMPLE] OR
+[CONTROLLED EVALUATION FIXTURE]. THEY MUST NOT BE CONVERTED INTO NORMATIVE SOUND
+ENGINEERING RULES. EVALUATION MUST PERMIT MULTIPLE DEFENSIBLE INTERVENTIONS.
+
+--------------------------------------------------------------------------------
+Scenario 1: "Palm mutes are flubby, boomy, and lack tightness."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 1 (Source touch/pickup), Domain 2 (Gain staging), Domain 3 (Nonlinear IMD),
+  Domain 4 (Pre-gain EQ), Domain 8 (Amp sag/damping), Domain 9 (Cab resonance),
+  Domain 10 (Mic proximity).
+Educational Reasoning Pathway:
+  1. Observation: Perceived loose, boomy low-end decay on palm-muted transient chugs.
+  2. Evidence Requirements: Crest factor, low-frequency decay time, 80-150 Hz energy,
+     pre-clipping vs post-clipping spectrum [CONTROLLED EVALUATION FIXTURE].
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Excessive sub-150 Hz energy entering high-gain nonlinear stage, generating
+       low-frequency intermodulation distortion and blocking recovery.
+     - H2: Underdamped power amplifier allowing loudspeaker cone resonance to ring.
+     - H3: Directional microphone placed close to grill, exaggerating bass via proximity effect.
+     - H4: Loose player palm muting failing to damp string excursion behind bridge.
+  4. Discriminating Tests:
+     - Inspect pre-distortion filtering profile.
+     - Check microphone distance and polar pattern.
+     - Check power amp negative feedback / resonance damping parameters.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Introduce pre-distortion low-cut shelf (e.g., ~6 dB cut below ~200 Hz [ILLUSTRATIVE EXAMPLE]).
+     - Option B: Back directional microphone off grill (e.g., ~5 cm [ILLUSTRATIVE EXAMPLE]) to reduce proximity.
+     - Option C: Increase power amp negative feedback damping.
+  6. Trade-Off Analysis:
+     - Option A tightens mutes but may make single notes on high strings feel thinner.
+     - Option B reduces boom naturally but introduces more room bleed/reflections.
+  7. Predicted Outcome: Rapid transient decay on palm mutes, reduced intermodulation
+     hash, punchy fundamental without lingering mud.
+  8. Outcome Verification: Measure low-frequency decay slope and transient recovery.
+
+--------------------------------------------------------------------------------
+Scenario 2: "Top-end distortion is fizzy, harsh, and buzzing."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 3 (Clipping harmonics), Domain 4 (Post-EQ), Domain 8 (Presence/bright cap),
+  Domain 9 (Speaker cone breakup/beaming), Domain 10 (Mic placement angle/offset).
+Educational Reasoning Pathway:
+  1. Observation: Grating, buzzy high-frequency energy between 4 kHz and 8 kHz [ILLUSTRATIVE EXAMPLE].
+  2. Evidence Requirements: High-frequency harmonic distribution, mic angle/offset,
+     presence control position.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Microphone positioned on-axis aiming directly at central dust cap beaming zone.
+     - H2: Harsh solid-state/diode clipping generating dense odd-order high harmonics.
+     - H3: Power amp presence control lifted excessively, reducing negative feedback at HF.
+     - H4: Bright cap network passing excessive top end into high-gain preamp.
+  4. Discriminating Tests:
+     - Inspect capture geometry (distance and lateral offset from dust cap).
+     - Check speaker response characteristics and presence control position.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Angle microphone off-axis (~30°-45°) or shift laterally toward cone edge [ILLUSTRATIVE EXAMPLE].
+     - Option B: Lower amplifier presence control (increasing HF negative feedback).
+     - Option C: Insert post-distortion low-pass smoothing filter.
+  6. Trade-Off Analysis:
+     - Moving mic off-axis smooths highs acoustically without digital filter phase artifacts.
+     - Lowering presence increases speaker damping and may slightly soften note immediacy.
+  7. Predicted Outcome: Smooth top end with natural transition into saturation; reduced fizz.
+  8. Outcome Verification: Spectral analysis confirming smooth rolloff above 5 kHz.
+
+--------------------------------------------------------------------------------
+Scenario 3: "Tone lacks pick attack definition and transient punch."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 1 (Pick technique/impedance), Domain 2 (Gain staging), Domain 3 (Clipping depth),
+  Domain 5 (Dynamics/envelope), Domain 8 (Power supply sag).
+Educational Reasoning Pathway:
+  1. Observation: Note attacks are mushy, compressed, and indistinct; fast runs blend together.
+  2. Evidence Requirements: Crest factor, attack onset slope (ms), preamp gain level.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Excessive preamp saturation flattening dynamic pick transient.
+     - H2: Fast-attack compressor placed before amplifier squashing transient spike.
+     - H3: Power supply rectifier sag compressing heavily on transient onset.
+     - H4: Pickup set too close to strings (magnetic damping) or overly soft pick gauge.
+  4. Discriminating Tests:
+     - Measure crest factor across note attack.
+     - Inspect signal chain for front-end compression or excessive drive levels.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Moderate preamp gain and introduce clean front-end level boost.
+     - Option B: Lengthen compressor attack time (e.g., ~20-30 ms [ILLUSTRATIVE EXAMPLE]) to let transients through.
+     - Option C: Adjust power supply sag modeling for faster recovery.
+  6. Trade-Off Analysis:
+     - Moderating gain restores attack definition but reduces overall sustain.
+  7. Predicted Outcome: Crisp initial pick attack followed by sustained body.
+  8. Outcome Verification: Crest factor increases; transient onset definition restored.
+
+--------------------------------------------------------------------------------
+Scenario 4: "Guitar sounds huge in solo, but completely disappears in a dense mix."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 4 (Spectral allocation), Domain 12 (Spatial wash), Domain 13 (Psychoacoustics/masking),
+  Domain 14 (Production arrangement), Domain 17 (Minimalism).
+Educational Reasoning Pathway:
+  1. Observation: Massive tone in isolation vanishes behind bass, drums, and vocals in full mix.
+  2. Evidence Requirements: Arrangement spectral overlap, midrange energy distribution,
+     reverb wet percentage.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Scooped midrange where guitar carries articulation, masked by snare and vocals.
+     - H2: Excessive low-end energy masked by bass guitar and kick drum.
+     - H3: Heavy stereo reverb wash diffusing direct sound into background blur.
+  4. Discriminating Tests:
+     - Solo rhythm section: test whether guitar intelligibility returns when bass/drums mute.
+     - Check stereo correlation and spatial wet/dry ratios.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Boost midrange presence (e.g., ~800 Hz - 1.4 kHz [ILLUSTRATIVE EXAMPLE]) and low-cut below ~100 Hz.
+     - Option B: Reduce reverb wet mix and lengthen pre-delay to separate direct transient.
+     - Option C: Refine stereo placement and pan pocket.
+  6. Trade-Off Analysis:
+     - Mid-forward guitar tone may sound slightly boxy or honky in solo, but sits clearly in mix.
+  7. Predicted Outcome: Guitar articulates clearly through rhythm section without overall fader boost.
+  8. Outcome Verification: Intelligibility and presence confirmed in full mix context.
+
+--------------------------------------------------------------------------------
+Scenario 5: "Dual-microphone setup sounds hollow, thin, and nasal."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 9 (Speaker dispersion), Domain 10 (Microphone geometry), Domain 11 (Wave phase mechanics),
+  Domain 17 (Intervention parsimony).
+Educational Reasoning Pathway:
+  1. Observation: Soloing either mic sounds full; summing both sounds thin, hollow, and nasal.
+  2. Evidence Requirements: Phase correlation meter, individual mic distances, summed frequency nulls.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Acoustic comb filtering caused by capsule distance/arrival time delta.
+     - H2: Polarity inversion (180° out of phase) between channels.
+     - H3: Destructive interference between two disparate speakers in multi-speaker cab.
+  4. Discriminating Tests:
+     - Solo mic 1, solo mic 2, sum both: check whether summed low-end level drops below solo level.
+     - Measure physical distance delta between diaphragms.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Align physical mic diaphragms to identical acoustic arrival plane.
+     - Option B: Invert polarity on one channel if reversed.
+     - Option C: Mute secondary microphone (minimalist single-mic solution).
+  6. Trade-Off Analysis:
+     - Physical alignment preserves low-frequency punch without electrical filter phase smearing.
+     - Single mic eliminates all phase comb filtering at cost of dual-transducer blending.
+  7. Predicted Outcome: Full-bodied low-mid response and elimination of comb-filtered nasal notches.
+  8. Outcome Verification: Phase correlation index shows positive reinforcement across audio band.
+
+--------------------------------------------------------------------------------
+Scenario 6: "Reference sounds wider, deeper, and more three-dimensional."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 7 (Parallel routing), Domain 9 (Cabinet dispersion), Domain 10 (Room capture),
+  Domain 11 (Stereo phase), Domain 12 (Spatial early reflections), Domain 13 (Haas effect).
+Educational Reasoning Pathway:
+  1. Observation: Current tone is flat and centered; reference has immersive width and depth.
+  2. Evidence Requirements: Stereo vectorscope, L/R cross-correlation, early reflection analysis.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Reference utilizes true double-tracking (separate performances panned hard L/R).
+     - H2: Reference utilizes distant ambient room microphones blended behind direct sound.
+     - H3: Reference employs micro-pitch or Haas delay widening.
+  4. Discriminating Tests:
+     - Check mono fold-down: determine whether signal collapses or retains independent tracking.
+     - Analyze early reflection signature in reference stem.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Introduce blended room microphones placed in an ambient acoustic space.
+     - Option B: Double-track guitar parts with complementary tonal voicings.
+     - Option C: Apply subtle stereo micro-delay with mono-compatibility safeguard.
+  6. Trade-Off Analysis:
+     - Ambient room mics add depth but reduce dry punch in fast tempos.
+     - Synthetic stereo widening risks comb filtering in mono playback environments.
+  7. Predicted Outcome: Expansive stereo panorama with palpable physical depth.
+  8. Outcome Verification: Vectorscope displays stable stereo spread; mono summation retains punch.
+
+--------------------------------------------------------------------------------
+Scenario 7: "High-gain idle hiss and noise staging."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 1 (Pickup shielding), Domain 2 (Gain staging), Domain 3 (Saturation gain),
+  Domain 6 (Noise engineering), Domain 8 (Preamp tube noise), Domain 17 (Minimalism).
+Educational Reasoning Pathway:
+  1. Observation: Severe hiss and buzz during pauses between notes in high-gain patch.
+  2. Evidence Requirements: Idle noise floor spectrum (dBFS), 50/60 Hz hum vs white hiss.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Compounding excessive gain blocks (+20 dB boost into dimed high-gain amp).
+     - H2: Noisy front-end pedal or unshielded single-coil pickups picking up RF/hum.
+     - H3: Uncalibrated digital post-amp gain boosting thermal noise floor.
+     - H4: Absence of appropriate downward expansion / gating.
+  4. Discriminating Tests:
+     - Spectral noise analysis: check for sharp 50/60 Hz harmonics vs broadband hiss.
+     - Mute input signal: isolate upstream source noise from amplifier thermal floor.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Rebalance gain staging: moderate boost level and optimize preamp gain.
+     - Option B: Implement downward expander keyed off clean guitar input.
+     - Option C: Remove redundant gain or boost blocks.
+  6. Trade-Off Analysis:
+     - Aggressive gating risks cutting note decay tails unnaturally.
+     - Optimizing gain staging reduces noise at the source without gating artifacts.
+  7. Predicted Outcome: Idle noise drops to acceptable level; natural note decay into silence.
+  8. Outcome Verification: Idle floor measured; note tails sustain cleanly without chatter.
+
+--------------------------------------------------------------------------------
+Scenario 8: "Stiff, sterile touch response and lack of sustain."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 1 (Player dynamics), Domain 2 (Input sensitivity), Domain 3 (Nonlinear compression),
+  Domain 5 (Dynamics/sag), Domain 8 (Cathode bias/power supply), Domain 9 (Speaker compression).
+Educational Reasoning Pathway:
+  1. Observation: Tone feels unyielding and unresponsive to picking strength; notes die abruptly.
+  2. Evidence Requirements: Dynamic transfer curve (input vs output), decay envelope, sag profile.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Power amp running completely linear with excessive headroom and zero sag.
+     - H2: Amplifier biased overly cold (crossover distortion and lack of bloom).
+     - H3: Noise gate threshold set too high, cutting low-level sustained vibrations.
+     - H4: Padded converter input dropping instrument level below sweet spot.
+  4. Discriminating Tests:
+     - Test dynamic response: evaluate how harmonic content shifts between soft and hard picking.
+     - Check noise gate threshold and decay ballistics.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Introduce power supply sag and valve rectifier emulation.
+     - Option B: Warm the amplifier bias into optimal operating range.
+     - Option C: Add gentle front-end optical compression for singing sustain.
+  6. Trade-Off Analysis:
+     - Increasing sag improves touch elasticity and sustain but softens fast palm-mute tightness.
+  7. Predicted Outcome: Responsive, blooming feel under fingers; natural touch sensitivity.
+  8. Outcome Verification: Dynamic range compression and sustain length verified.
+
+--------------------------------------------------------------------------------
+Scenario 9: "Spectrum matches RTA but perceptually sounds completely wrong."
+--------------------------------------------------------------------------------
+Cooperating Domains:
+  Domain 3 (Harmonic orders), Domain 5 (Temporal envelope), Domain 11 (Phase alignment),
+  Domain 13 (Psychoacoustics), Domain 15 (Tone matching), Domain 16 (Diagnosis).
+Educational Reasoning Pathway:
+  1. Observation: Static FFT spectrum matches reference closely, but tone sounds artificial, harsh, or dead.
+  2. Evidence Requirements: Crest factor, harmonic order breakdown (even vs odd), temporal decay.
+  3. Evidence-Supported Working Hypotheses:
+     - H1: Spectral match achieved via extreme static EQ rather than proper saturation harmonics.
+     - H2: Dynamic envelope mismatch: reference has slow blooming compression; current has fast clipping.
+     - H3: Phase smearing introduced by steep minimum-phase matching filters.
+     - H4: Time-domain decay (reverb/cabinet) differs radically despite similar average spectrum.
+  4. Discriminating Tests:
+     - Inspect harmonic distortion profile (THD and harmonic distribution).
+     - Compare spectral waterfall plots over note decay duration.
+  5. Intervention Candidates (Multiple Defensible Options):
+     - Option A: Remove artificial match EQ; recreate balance using proper saturation and mic angle.
+     - Option B: Correct temporal envelope using compressor attack/release and power amp sag.
+     - Option C: Address cabinet impulse decay and acoustic space modeling.
+  6. Trade-Off Analysis:
+     - Causal modeling avoids static filter phase smearing and produces natural dynamics.
+  7. Predicted Outcome: Tone feels dynamic and alive while matching reference spectrally and temporally.
+  8. Outcome Verification: Perceptual spectral distance, crest factor, and harmonic distribution converge.
+
+
+--------------------------------------------------------------------------------
+SECTION 10 — PROFESSIONAL REASONING METHOD (EDUCATIONAL / EVALUATION SCAFFOLD)
+--------------------------------------------------------------------------------
+
+10.1 STATUS AS EDUCATIONAL SCAFFOLD
+The seven-step reasoning method described below is an EDUCATIONAL AND COMPETENCY-
+EVALUATION SCAFFOLD. It is NOT the frozen runtime reasoning architecture.
+Runtime reasoning architecture belongs strictly to Phase 1C.5.
+
+10.2 THE SEVEN-STEP EDUCATIONAL CYCLE
+  Step 1: OBSERVATION & PERCEPTUAL CHARACTERIZATION
+    - Transcribe raw acoustic observations (spectral balance, dynamics, saturation, space).
+    - Map subjective artistic language to physical domains without distorting artist intent.
+
+  Step 2: EVIDENCE SEPARATION & VERIFICATION
+    - Ingest objective measurements where available.
+    - Segregate verified measurements from user claims, assumptions, and unknowns.
+    - Declare uncertainty and confidence limits transparently.
+
+  Step 3: EVIDENCE-SUPPORTED WORKING HYPOTHESIS FORMATION
+    - Formulate plausible working hypotheses across the electro-acoustic chain.
+    - Multiple hypotheses are expected where ambiguity or interacting causes exist;
+      underdetermined systems are acknowledged honestly.
+    - Identify discriminating physical observations that would falsify each hypothesis.
+
+  Step 4: CAUSAL DIAGNOSIS & MECHANISM ISOLATION
+    - Evaluate evidence against competing working hypotheses.
+    - Rank hypotheses by probability, evidence support, and physical parsimony.
+    - Identify primary causal mechanisms rather than superficial symptoms.
+
+  Step 5: INTERVENTION DESIGN & TRADE-OFF BALANCING
+    - Design candidate interventions targeting the causal mechanism.
+    - Apply parsimony as a reasoning principle (preferring source/capture adjustments).
+    - Explicitly articulate trade-offs, collateral acoustic consequences, and constraints.
+    - Formulate primary and alternative engineering strategies.
+
+  Step 6: PREDICTION & VERIFICATION CRITERIA
+    - Define quantitative and perceptual criteria for success before executing.
+    - Define explicit falsification conditions: what observation would prove the fix failed?
+
+  Step 7: OUTCOME EVALUATION & ITERATIVE REVISION
+    - Measure outcome audio against prediction criteria where closed loop is available.
+    - If criteria are unmet, record error delta, revise working hypotheses, and iterate.
+
+10.3 PHASE 1B CONTRACT RESPONSIBILITY BOUNDARIES
+The curriculum aligns with Phase 1B contracts while maintaining strict ownership:
+  - InputSnapshot & EvidenceRecord: Capture input provenance and objective measurements.
+  - EngineeringDecisionRecord: Captures AI Sound Engineer cognitive reasoning (hypotheses,
+    trade-offs, alternatives, decisions).
+  - SemanticToneDesign: The platform-independent engineering contract produced by the AI Sound Engineer.
+  - ValidationReport: Validates and checks semantic engineering results against physical
+    boundaries and schema rules (Check/Warn/Fail). It DOES NOT own acoustic outcome
+    reasoning and DOES NOT redesign engineering decisions.
+  - RunTrace / RunTraceRecorder: Records execution trace, lineage, sequencing, and
+    diagnostics. It DOES NOT reason about acoustic outcomes or own iterative engineering judgement.
+  - Outcome reasoning, review, and iteration belong strictly to the AI Sound Engineer
+    reasoning layer (Phase 1C.5).
+
+
+--------------------------------------------------------------------------------
+SECTION 11 — NORMALIZED KNOWLEDGE UNIT SCHEMA
+--------------------------------------------------------------------------------
+
+STATUS: ILLUSTRATIVE CANDIDATE REPRESENTATION ONLY
+This JSON schema represents an illustrative candidate structure demonstrating what
+curriculum knowledge may need to represent conceptually. It is NOT a frozen
+implementation contract, NOT a production schema, NOT a runtime storage decision,
+and DOES NOT predetermine Phase 1C.4 knowledge architecture decisions.
+
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IllustrativeCandidateKnowledgeUnit",
+  "type": "object",
+  "required": [
+    "id",
+    "domain_id",
+    "concept_name",
+    "engineering_principle",
+    "causal_model",
+    "evidence_indicators",
+    "working_hypotheses",
+    "interventions",
+    "trade_offs",
+    "anti_patterns",
+    "verification_criteria",
+    "provenance"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "domain_id": { "type": "integer", "minimum": 1, "maximum": 22 },
+    "concept_name": { "type": "string" },
+    "engineering_principle": { "type": "string" },
+    "causal_model": {
+      "type": "object",
+      "required": ["input_stimulus", "mediating_mechanism", "acoustic_manifestation"],
+      "properties": {
+        "input_stimulus": { "type": "string" },
+        "mediating_mechanism": { "type": "string" },
+        "acoustic_manifestation": { "type": "string" }
+      }
+    },
+    "evidence_indicators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["metric_name", "indicative_range", "measurement_method"],
+        "properties": {
+          "metric_name": { "type": "string" },
+          "indicative_range": { "type": "string" },
+          "measurement_method": { "type": "string" }
+        }
+      }
+    },
+    "confounders_and_limitations": { "type": "array", "items": { "type": "string" } },
+    "working_hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["hypothesis_id", "description", "discriminating_test"],
+        "properties": {
+          "hypothesis_id": { "type": "string" },
+          "description": { "type": "string" },
+          "discriminating_test": { "type": "string" }
+        }
+      }
+    },
+    "interventions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["intervention_type", "target_parameter", "expected_effect"],
+        "properties": {
+          "intervention_type": { "type": "string", "enum": ["SOURCE", "ELECTRICAL", "ACOUSTIC", "DIGITAL"] },
+          "target_parameter": { "type": "string" },
+          "expected_effect": { "type": "string" }
+        }
+      }
+    },
+    "trade_offs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["benefit", "penalty", "mitigation"],
+        "properties": {
+          "benefit": { "type": "string" },
+          "penalty": { "type": "string" },
+          "mitigation": { "type": "string" }
+        }
+      }
+    },
+    "anti_patterns": { "type": "array", "items": { "type": "string" } },
+    "verification_criteria": {
+      "type": "object",
+      "required": ["objective_metrics", "perceptual_checks", "falsification_threshold"],
+      "properties": {
+        "objective_metrics": { "type": "array", "items": { "type": "string" } },
+        "perceptual_checks": { "type": "array", "items": { "type": "string" } },
+        "falsification_threshold": { "type": "string" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source_id", "source_class", "author_or_institution", "evidence_quality_factors"],
+      "properties": {
+        "source_id": { "type": "string" },
+        "source_class": { "type": "string" },
+        "author_or_institution": { "type": "string" },
+        "evidence_quality_factors": { "type": "object" },
+        "review_status": { "type": "string" }
+      }
+    }
+  }
+}
+
+
+--------------------------------------------------------------------------------
+SECTION 12 — SOURCE QUALITY & EDUCATION MATERIAL STRATEGY
+--------------------------------------------------------------------------------
+
+12.1 MULTI-FACTOR EVIDENCE QUALITY
+No source type possesses "incontrovertible" authority. The curriculum teaches that
+evidence quality depends on multi-dimensional evaluation:
+  - Source Rigor: Methodological soundness of theoretical derivation or experimental design.
+  - Relevance to Claim: Directness of connection between source evidence and the specific claim.
+  - Subject Jurisdiction: Whether the source is publishing within its core discipline.
+  - Measurement Methodology: Precision, calibration, and control of empirical testing.
+  - Reproducibility & Corroboration: Independent verification across multiple credible sources.
+  - Operational Boundaries: Explicit documentation of where the claim holds and where it breaks down.
+  - Contextual Applicability: Appropriateness to the specific engineering scenario at hand.
+
+12.2 SOURCE TIERS (CONTEXTUAL ROLES)
+The four source tiers represent contextual engineering roles, not rigid dogmas:
+
+  TIER 1: FOUNDATIONAL PHYSICS & WAVE MECHANICS
+    - Subjects: Wave propagation, electromagnetic induction, RLC circuits, Fourier analysis.
+    - Sources: University physics/acoustics texts, AES/IEEE standard treatises.
+    - Role: Explains immutable physical boundary conditions.
+
+  TIER 2: PEER-REVIEWED RESEARCH & TECHNICAL MANUFACTURER LITERATURE
+    - Subjects: Valve transfer curves, loudspeaker Thiele-Small parameters, polar response data.
+    - Sources: AES papers, ASA journals, manufacturer engineering whitepapers (e.g. Celestion, Neumann).
+    - Role: High-rigor models of real devices; authoritative for published device specifications
+      without automatically establishing universal acoustic laws.
+
+  TIER 3: SYSTEMATIC PROFESSIONAL RECORDING PRACTICE
+    - Sources: Established studio handbooks (Huber & Runstein, Senior, Owsinski), master engineer treatises.
+    - Role: Systematic studio methodologies and workflow conventions; contextual engineering practice.
+
+  TIER 4: CONTEXTUAL ARTISTIC TECHNIQUE & GENRE PREFERENCE
+    - Sources: Practitioner interviews, historical record deconstructions, artist presets.
+    - Role: Contextual artistic aesthetics; must NEVER be taught as universal engineering laws.
+
+
+--------------------------------------------------------------------------------
+SECTION 13 — KNOWLEDGE PROVENANCE STANDARD
+--------------------------------------------------------------------------------
+
+Every educational unit must maintain an unbroken chain of custody:
+  - Source Title & Citation: Formal attribution of origin.
+  - Source Class: Contextual tier and subject authority.
+  - Extracted Claim: The literal physical or methodological assertion.
+  - Normalized Engineering Formulation: The platform-independent translation of the claim.
+  - Operational Boundary Conditions: Explicit limits of validity.
+  - Conflicting Literature & Nuance: Documented competing viewpoints or debates.
+  - Technical Review Status: Audit trail of expert verification.
+
+
+--------------------------------------------------------------------------------
+SECTION 14 — COMPETENCY EVALUATION ARCHITECTURE
+--------------------------------------------------------------------------------
+
+14.1 EIGHT CORE EVALUATION CAPABILITIES
+Competency evaluation tests eight distinct cognitive capabilities:
+  - Capability A: Knowledge Recall & Explanation (Explaining underlying physics).
+  - Capability B: Evidence Interpretation (Reading measurements without hallucinating).
+  - Capability C: Causal Diagnosis (Generating and evaluating working hypotheses).
+  - Capability D: Decision-Making & Parsimony (Selecting minimal, defensible fixes).
+  - Capability E: Outcome Reasoning & Falsification (Evaluating consequences, defining test criteria).
+  - Capability F: Cross-Domain Integration (Solving multi-domain coupled defects).
+  - Capability G: Uncertainty Discipline (Stating "insufficient evidence" when ambiguous).
+  - Capability H: Anti-Recipe Robustness (Rejecting genre tropes when evidence contradicts).
+
+14.2 REFLECTIVE FEEDBACK & DECISION-QUALITY EVALUATION
+Professional engineering development benefits from structured feedback on hypothesis
+quality, decision proportionality, predicted vs actual consequences, and counterfactual
+alternatives. The competency evaluation blueprint mandates that evaluation systems
+support learning from reviewed outcomes and decision-quality feedback. (Detailed runtime
+reasoning behavior belongs to Phase 1C.5; benchmark suite implementation belongs to Phase 1C.6).
+
+
+--------------------------------------------------------------------------------
+SECTION 15 — EVALUATION PROBLEM CLASSES
+--------------------------------------------------------------------------------
+
+The evaluation suite draws from fifteen distinct problem classes:
+  1. Foundational Knowledge Questions: Testing physical laws and circuit concepts.
+  2. Causal Explanation Questions: Explaining why an electro-acoustic phenomenon occurs.
+  3. Single-Domain Diagnostic Problems: Isolating a fault confined to one domain.
+  4. Multi-Domain Diagnostic Problems: Isolating an issue spanning coupled stages.
+  5. Ambiguous-Evidence Problems: Testing refusal to form premature diagnoses under partial data.
+  6. Conflicting-Evidence Problems: Testing evidence hierarchy when observations clash.
+  7. Insufficient-Evidence Problems: Testing explicit requests for missing data.
+  8. Alternative-Solution Problems: Demanding distinct viable architectural solutions.
+  9. Trade-Off Problems: Evaluating compromises and justifying accepted penalties.
+  10. Reference-Matching Problems: Deconstructing an audio stem into platform-independent designs.
+  11. Outcome-Evaluation Problems: Evaluating simulated intervention results against predictions.
+  12. Hypothesis-Revision Problems: Revising causal graphs after a simulated failed intervention.
+  13. Anti-Stereotype / Anti-Recipe Problems: Presenting atypical problems that break genre tropes.
+  14. Platform-Independence Problems: Demanding pure acoustic designs with zero brand names.
+  15. Full Professional Case Studies: Comprehensive end-to-end multi-track scenarios.
+
+
+--------------------------------------------------------------------------------
+SECTION 16 — COUNTERFACTUAL & ADVERSARIAL EVALUATION STRATEGY
+--------------------------------------------------------------------------------
+
+16.1 THE TRIAD DISCRIMINATION TEST
+To prove that the AI has learned causal principles rather than memorized recipes,
+adversarial triads are deployed. For example, three cases presenting identical symptoms:
+  Symptom: "Heavy rhythm palm mutes sound boomy, flubby, and muddy."
+  - Case A (Circuit Over-saturation): High-gain rhythm guitar with excessive LF entering
+    preamp. Root cause: LF intermodulation distortion.
+    Correct Fix: Pre-distortion high-pass filtering.
+  - Case B (Acoustic Cabinet Resonance): Pre-filtering is tight, but cabinet enclosure
+    has unbraced cavity resonance ringing at low frequencies.
+    Correct Fix: Adjust cabinet damping or enclosure; do NOT cut pre-distortion EQ.
+  - Case C (Player Touch / Technique): Signal chain is pristine, but player's palm
+    anchor is displaced, failing to damp fundamentals properly.
+    Correct Fix: Flag performance technique defect; do NOT alter amplifier or cab.
+
+Evaluation Metric:
+  A recipe learner applies "cut bass with Tube Screamer" to all three cases.
+  A competent Sound Engineer isolates the true causal mechanism in each case and applies
+  distinct, defensible interventions.
+
+
+--------------------------------------------------------------------------------
+SECTION 17 — COMPETENCY SCORING & PROMOTION GATES
+--------------------------------------------------------------------------------
+
+17.1 MULTI-DIMENSIONAL ASYMMETRY PRESERVATION
+Competency scores must NEVER be averaged into a single number. All five dimensions
+(Knowledge, Evidence Interpretation, Diagnosis, Decision-Making, Outcome Reasoning)
+must be evaluated and reported independently.
+
+17.2 RESTORATION OF FROZEN PHASE 1C.3a TARGET BENCHMARK
+The target professional benchmark is restored exactly as frozen in Phase 1C.3a:
+  - 18 Core Domains target L5:
+    1. Source & Performance
+    2. Signal Level, Gain Staging & Headroom
+    3. Nonlinear Processing & Distortion
+    4. Frequency & Spectral Engineering
+    5. Dynamics, Envelope & Transients
+    7. Signal Topology & Processing Order
+    8. Amplifier Behaviour
+    9. Loudspeaker & Cabinet Engineering
+    10. Microphone & Capture Engineering
+    11. Phase, Polarity & Multi-Source Interaction
+    15. Reference Analysis & Tone Matching
+    16. Diagnosis & Root-Cause Reasoning
+    17. Intervention Selection & Minimalism
+    18. Trade-Off & Constraint Reasoning
+    19. Uncertainty & Evidence Discipline
+    20. Alternative Solution Reasoning
+    21. Iterative Engineering & Outcome Evaluation
+    22. Professional Engineering Behaviour
+  - 4 Supporting Domains target L4:
+    6. Noise Engineering
+    12. Time-Based, Modulation & Spatial Processing
+    13. Psychoacoustics & Perception
+    14. Musical & Production Context
+
+17.3 INVALIDATION OF REJECTED v1 PROMOTION CONSTRUCTS
+The following constructs introduced in v1 are officially rejected and invalidated:
+  - The "Junior Sound Engineer (Tier 1)" vs "Professional Sound Engineer (Tier 2)"
+    certification tier framework.
+  - The reduced list of only 9 L5 core domains.
+  - Any replacement benchmark floor (e.g. "K >= L4 across all domains").
+  - Any single aggregate score substituting for domain/dimension evaluation.
+
+
+--------------------------------------------------------------------------------
+SECTION 18 — AUTOMATIC FAILURE CONDITIONS
+--------------------------------------------------------------------------------
+
+The occurrence of any condition below represents a fundamental failure of professional
+engineering reasoning and results in non-negotiable failure of evaluation:
+
+  1. Acoustic Evidence Fabrication: Hallucinating frequency measurements, dynamic ranges,
+     or phase metrics not present in input data.
+  2. Observation from Unavailable Channel: Claiming to perceive auditory characteristics
+     from an evidence channel that was not present or processed (e.g., claiming to have
+     "listened to" an audio clip without runtime DSP feature extraction).
+  3. Spurious Certainty: Presenting unsupported assumptions or guesses as established
+     facts without disclosing material uncertainty.
+  4. Confusing Correlation with Causation: Asserting a causal link based solely on
+     co-occurrence without demonstrating the physical mechanism.
+  5. Safety or Integrity Violation: Proposing configurations that violate physical or
+     digital system integrity (e.g., extreme levels causing severe digital clipping).
+  6. Covert Goalpost Shifting: Silently altering the stated engineering objective when
+     unable to achieve the requested target.
+  7. Recipe Dogmatism: Treating a contextual heuristic or genre stereotype as an
+     inflexible universal law despite contradictory evidence.
+  8. Material Uncertainty Concealment: Failing to disclose significant causal ambiguity
+     or conflicting hypotheses when such uncertainty directly impacts the decision.
+
+Clarifications:
+  - Closed-loop verification is required where evidence channels exist; it is NOT
+    demanded where closed-loop testing is unavailable or inappropriate.
+  - Downstream compensation is NOT an automatic failure if it is technically justified,
+    proportionate, and consistent with the engineering objective.
+
+
+--------------------------------------------------------------------------------
+SECTION 19 — HUMAN REVIEW & KNOWLEDGE GOVERNANCE
+--------------------------------------------------------------------------------
+
+19.1 THE KNOWLEDGE PROMOTION LIFECYCLE
+To ensure the integrity of the educational knowledge base, no machine-generated or
+extracted rule may be promoted autonomously. All assets follow a strict five-stage
+governance pipeline:
+  Stage 1: Source Acquisition (Documented retrieval from authoritative literature).
+  Stage 2: Extraction & Normalization (Decomposition into normalized representation).
+  Stage 3: Technical Peer Review (Verification by qualified domain experts).
+  Stage 4: Adversarial Validation (Stress testing against counterfactual triads).
+  Stage 5: Promotion to Active Knowledge Base (Formal sign-off and indexing).
+
+19.2 EXPERIENTIAL LEARNING QUARANTINE
+Runtime learnings and unexpected closed-loop outcomes are flagged as Candidate Lessons
+and held in an isolated quarantine store. No candidate lesson can be promoted to global
+knowledge without human expert review and regression testing against the benchmark suite.
+
+
+--------------------------------------------------------------------------------
+SECTION 20 — CURRENT TT ASSET MIGRATION INTO EDUCATION
+--------------------------------------------------------------------------------
+
+Current TT is a LEGACY KNOWLEDGE SOURCE TO BE DECONSTRUCTED AND RE-VALIDATED:
+
+  1. Acoustic Microphone Reasoning (/src/services/at5MicPlacementReasoning.ts):
+     - Valuable acoustic capture concepts (capsule proximity, off-axis angle dispersion,
+       dual-mic complementary pairing) are extracted as candidate engineering knowledge.
+     - The deterministic TypeScript switch/case engine is retired from reasoning.
+
+  2. Functional EQ Deduplication Taxonomy (/src/services/at5SignalChainNormalizer.ts):
+     - Pre-gain tightening, tone stack shaping, and post-capture cleanup are taught as
+     - conceptual EQ roles. Deterministic validation guards enforce legal bounds.
+
+  3. Loudspeaker & Cabinet Pairing Data (/src/services/at5CabinetKnowledge.ts):
+     - Physical acoustic properties (enclosure volume, cone resonance, dipole cancellation)
+     - are decoupled from AmpliTube 5 IDs and re-homed as platform-independent knowledge.
+
+  4. Thrash/Metal Heuristic Overrides (/src/services/geminiService.ts):
+     - Deterministic keyword overrides (OverScream, hard gate clamping) are eliminated.
+     - The underlying causal principle (pre-distortion LF filtering reduces IMD) is
+       taught with full trade-off analysis.
+
+  5. Phase 1B Contract Architecture (/src/sound-engineer/):
+     - InputSnapshot, EvidenceRecord, and EngineeringDecisionRecord remain the canonical
+       contracts expressing the professional reasoning method.
+
+
+--------------------------------------------------------------------------------
+SECTION 21 — WHAT EDUCATION CANNOT SOLVE
+--------------------------------------------------------------------------------
+
+The educational feasibility analysis confirms the frozen baseline trichotomy:
+  - YES (10 Domains): Can be solved by education and reasoning development alone
+    (Domains 8, 9, 10, 14, 16, 17, 18, 19, 20, 22).
+  - PARTIALLY (11 Domains): Requires education plus external runtime DSP tooling or
+    validation contracts (Domains 1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 15).
+  - NO (1 Domain): Cannot be solved by education alone; requires runtime closed-loop
+    audio rendering, capture, and comparison pipeline (Domain 21).
+
+Five Non-Educational System Capabilities:
+  1. Audio Signal Perception: Objective DSP feature extraction services.
+  2. Closed-Loop Iteration: Runtime rendering, audio capture, and delta comparison.
+  3. Stateful Checkpoint Lineage: Execution graph supporting rollbacks and branching.
+  4. Schema Invariant Enforcement: Deterministic validation contracts (Check/Warn/Fail).
+  5. Platform-Specific Translation: Downstream mapping to target software/hardware.
+
+
+--------------------------------------------------------------------------------
+SECTION 22 — HANDOFF & DEPENDENCY RECOMMENDATIONS
+--------------------------------------------------------------------------------
+
+This section outlines the handoffs from Phase 1C.3c-R to subsequent phases without
+redefining their independent architectural purviews:
+
+22.1 HANDOFF TO PHASE 1C.4 (SOUND ENGINEERING KNOWLEDGE ARCHITECTURE)
+  - Knowledge Requirements: Provide the 22-domain gap map, causal models, operational
+    boundaries, and provenance standards.
+  - Sourcing Strategy: Provide the multi-factor evidence quality framework.
+  - Entity Requirements: Supply the conceptual requirements for atomic claims, multi-source
+    attribution, conflict preservation, and numerical typing.
+
+22.2 HANDOFF TO PHASE 1C.5 (ENGINEERING REASONING SPECIFICATION)
+  - Cognitive Method Scaffold: Provide the seven-step educational cycle as the starting
+    point for formalizing runtime reasoning.
+  - Hypothesis & Decision Models: Supply requirements for competing working hypotheses,
+    trade-off records, and parsimony heuristics.
+  - Reflective Feedback: Supply requirements for decision-quality feedback and candidate
+    lesson quarantine.
+
+22.3 HANDOFF TO PHASE 1C.6 (COMPETENCY EVALUATION / BENCHMARK SUITE)
+  - Benchmark Targets: Provide the frozen 18 Core (L5) and 4 Supporting (L4) domain targets.
+  - Problem Classes: Provide the 15 evaluation problem classes.
+  - Adversarial Triads: Supply the counterfactual triad framework and failure conditions.
+
+
+--------------------------------------------------------------------------------
+SECTION 23 — PHASE 1C.3c-R CONCLUSIONS
+--------------------------------------------------------------------------------
+
+1. Education and Architecture are Complementary Halves:
+   True sound engineering competence requires both high-grade causal knowledge
+   and objective perceptual evidence. Providing one without the other produces either
+   a blind philosopher or a deaf technician.
+
+2. Proper Architectural Ownership Balance:
+   Engineering judgement currently misplaced in deterministic heuristics must move to
+   the AI Sound Engineer. Deterministic validation, integrity checking, platform
+   translation constraints, and deterministic execution remain authoritative within
+   their proper boundaries:
+     - AI SOUND ENGINEER: WHAT + WHY (First-principles causal reasoning, trade-offs, decisions).
+     - SEMANTIC TONE DESIGN: PLATFORM-INDEPENDENT ENGINEERING CONTRACT.
+     - DETERMINISTIC VALIDATION: CHECK / WARN / FAIL (Integrity and safety enforcement; NO silent redesign).
+     - PLATFORM TRANSLATOR: HOW THE TARGET PLATFORM REALIZES THE DESIGN.
+     - EXPORTER: DETERMINISTIC ENCODING / SERIALIZATION / WRITE.
+
+3. Preservation of Legacy Engineering Knowledge:
+   Current TT's valuable capture acoustics and cabinet pairing insights are preserved
+   by deconstruction, physical reformulating, and re-validation as platform-independent knowledge.
+
+4. Freeze Readiness:
+   With all review corrections applied, benchmarks restored, phase boundaries aligned,
+   and technical overclaims bounded, Phase 1C.3c-R is complete and ready for formal freeze.
+
+
+--------------------------------------------------------------------------------
+SECTION 24 — COMPLETION STATEMENT & CORRECTIVE COMPLIANCE AUDIT
+--------------------------------------------------------------------------------
+
+24.1 COMPLETION STATEMENT
+Phase 1C.3c-R (Curriculum & Competency Evaluation Blueprint v1.1 Corrective Freeze
+Candidate) is COMPLETE.
+
+24.2 CORRECTIVE COMPLIANCE AUDIT
+[X] Frozen 1C.3a maturity benchmark restored unchanged (18 Core L5, 4 Supporting L4).
+[X] No Current TT re-scoring performed.
+[X] Five competency dimensions preserved without aggregate collapsing.
+[X] Phase 1C.4 / 1C.5 / 1C.6 boundaries restored.
+[X] Seven-step method classified as educational/evaluation scaffold only.
+[X] Evidence-supported working-hypothesis language used.
+[X] Phase 1B ValidationReport ownership corrected (Check/Warn/Fail; no outcome redesign).
+[X] Phase 1B RunTrace ownership corrected (Observability/lineage; no outcome reasoning).
+[X] Schema marked illustrative/non-binding candidate representation.
+[X] Source hierarchy language corrected (multi-factor evidence quality).
+[X] Technical overclaims corrected and bounded (0 VU, harmonics, presence circuit, delay, proximity).
+[X] Exact scenario values classified as illustrative examples or evaluation fixtures.
+[X] Evaluation allows multiple defensible solutions.
+[X] Automatic failure conditions corrected (reasoning failures; no arbitrary 80% rule).
+[X] Learning, runtime, and certification prerequisites separated in progression.
+[X] Current TT treated as legacy material requiring deconstruction and re-validation.
+[X] Feedback/review requirement captured without designing Phase 1C.5 runtime loops.
+[X] Deterministic-vs-AI ownership conclusion corrected.
+[X] No external research performed.
+[X] No implementation performed.
+[X] No knowledge-base population performed.
+
+24.3 OPEN ITEMS BEFORE FREEZE
+None. All items pass compliance audit.
+
+================================================================================
+END OF BLUEPRINT — PHASE 1C.3c-R (v1.1 FREEZE CANDIDATE)
+================================================================================

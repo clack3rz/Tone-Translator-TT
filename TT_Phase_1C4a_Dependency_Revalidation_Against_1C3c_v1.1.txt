@@ -1,0 +1,644 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4a-DR — DEPENDENCY REVALIDATION REPORT
+Frozen Phase 1C.4a-R v1.1 Against Frozen Phase 1C.3c-R v1.1
+Date: 2026-09-26
+Mode: READ-ONLY ARCHITECTURAL DEPENDENCY REVIEW
+Deliverable: /TT_Phase_1C4a_Dependency_Revalidation_Against_1C3c_v1.1.txt
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE REVALIDATION RESULT
+--------------------------------------------------------------------------------
+
+1.1 ARCHITECTURAL PURPOSE & STATUS
+This architectural review conducts a formal dependency revalidation of the previously
+frozen knowledge architecture document:
+    /TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Phase 1C.4a-R v1.1)
+against the newly authoritative, formally frozen curriculum blueprint:
+    /TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt
+    (Phase 1C.3c-R v1.1).
+
+Phase 1C.4a-R v1.1 was originally frozen while its upstream dependency, Phase 1C.3c,
+was still undergoing corrective review. With the formal correction and freeze of
+Phase 1C.3c-R v1.1, this revalidation was executed to verify that no architectural
+incompatibilities, benchmark drift, boundary regressions, or epistemic mismatches
+were introduced between the two artifacts.
+
+1.2 REVALIDATION VERDICT
+FINAL DEPENDENCY VERDICT:
+    PASS — REVALIDATED WITH BOUNDED ADDENDUM
+
+The architecture defined in Phase 1C.4a-R v1.1 is structurally, conceptually, and
+epistemologically compatible with Phase 1C.3c-R v1.1 across all 22 domains and 15
+core review requirements. The entity model, three-axis classification taxonomy,
+declarative mathematical notation, operational boundary engine, and risk-dependent
+governance model perfectly satisfy the requirements of the corrected curriculum blueprint.
+
+No material architectural conflicts (Category C) exist.
+A total of two bounded, non-structural clarifications (Category B) are recorded in
+Section 15 as Authoritative Revalidation Addenda:
+  - Addendum 1: Clarification of Current TT legacy source classification as
+    `UNASSESSED_LEGACY_SOURCE` rather than `R4_PROFESSIONAL_TREATISE`, ensuring
+    individual claims inherit the rigor tier of their recovered primary source.
+  - Addendum 2: Explicit boundary confirmation that runtime decision-quality review
+    records (e.g. `EngineeringReviewRecord` and session traces) are owned by downstream
+    phases (Phase 1C.4d, 1C.5, and 1C.6), with Phase 1C.4a maintaining strictly the
+    `CandidateLesson` quarantined learning schema.
+
+No production code, prompts, tests, Firestore configurations, or knowledge base
+records were modified. Phase 1C.4b has NOT been started.
+
+
+--------------------------------------------------------------------------------
+2. DOCUMENTS & VERSIONS REVIEWED
+--------------------------------------------------------------------------------
+
+The following authoritative project artifacts were inspected and evaluated:
+
+1. Target Dependency Artifact:
+   - File: `/TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt`
+   - Phase: 1C.3c-R v1.1
+   - Status: FORMALLY FROZEN (Corrective Freeze Candidate v1.1)
+   - Scope: 22-domain curriculum, 7-step educational scaffold, 5-dimensional evaluation
+     model, handoffs to downstream phases.
+
+2. Target Subject Artifact Under Review:
+   - File: `/TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt`
+   - Phase: 1C.4a-R v1.1
+   - Status: PREVIOUSLY FROZEN (Freeze Candidate v1.1)
+   - Scope: Normalized knowledge entity model, 3-axis classification, source authority
+     matrix, governance lifecycle, boundary and causal model schemas.
+
+3. Authoritative Upstream Context Artifacts:
+   - File: `/TT_Professional_Sound_Engineer_Standards_v1.txt` (Phase 1C.3a)
+     * Authoritative maturity benchmark: 18 Core Domains (L5), 4 Supporting Domains (L4).
+     * 5 independent competency dimensions.
+   - File: `/TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt` (Phase 1C.2)
+     * Baseline inventory of existing TT heuristics, algorithms, and models.
+   - File: `/TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt` (Phase 1C.3b)
+     * Authoritative baseline capability assessment and gap analysis.
+   - File: `/TT_Phase_1B_2_Completion_Report.txt` (Phase 1B.2)
+     * Foundation contract architecture (`SemanticToneDesign`, `EvidenceRecord`,
+       `EngineeringDecisionRecord`).
+
+
+--------------------------------------------------------------------------------
+3. REASON FOR DEPENDENCY REVALIDATION
+--------------------------------------------------------------------------------
+
+3.1 SEQUENCING ANOMALY
+In the project lifecycle, Phase 1C.4a-R v1.1 was prepared and frozen based on Phase 1C.3c v1.
+However, Phase 1C.3c v1 contained several critical defects that required a corrective
+re-architecture (Phase 1C.3c-R v1.1), including:
+  1. An artificial two-tier "Junior vs Professional" maturity benchmark that improperly
+     reduced 9 core domains to Target L4 instead of the authoritative Phase 1C.3a L5 target.
+  2. Aggregation of independent competency dimensions into pseudo-precise composite scores.
+  3. Presentation of the seven-step educational cycle in language that could be mistaken
+     for runtime reasoning architecture.
+  4. Dogmatic single "root-cause" assertions rather than evidence-supported competing
+     working hypotheses in underdetermined systems.
+  5. Unbounded technical claims regarding 0 VU digital alignment, harmonic odd/even
+     polarities, negative-feedback presence circuits, and microphone delay calculations.
+  6. Unclear treatment of Current TT, which was previously conflated with authoritative
+     treatises rather than deconstructed legacy source material.
+
+3.2 REVALIDATION MANDATE
+Because Phase 1C.4a forms the foundational data architecture for the entire Tone Translator
+Knowledge System, it is critical to confirm that Phase 1C.4a-R v1.1:
+  - Did not adopt or bake in the defects of Phase 1C.3c v1.
+  - Fully supports the rigorous standards of the frozen Phase 1C.3c-R v1.1.
+  - Can cleanly ingest the curriculum requirements without structural refactoring.
+  - Accurately respects the boundary between knowledge storage and runtime reasoning.
+
+
+--------------------------------------------------------------------------------
+4. FROZEN BENCHMARK COMPATIBILITY
+--------------------------------------------------------------------------------
+
+4.1 PHASE 1C.3a TARGET MATURITY REAFFIRMATION
+Phase 1C.3a establishes the immutable maturity benchmark:
+  - 18 Core Domains target Level 5 (Authoritative Professional).
+  - 4 Supporting Domains target Level 4 (Comprehensive Applied):
+      * Domain 6 — Noise Engineering
+      * Domain 12 — Time-Based, Modulation & Spatial Processing
+      * Domain 13 — Psychoacoustics & Perception
+      * Domain 14 — Musical & Production Context
+
+4.2 FIVE INDEPENDENT COMPETENCY DIMENSIONS
+Evaluation requires independent tracking across five dimensions:
+  1. Knowledge (principles, physics, acoustics, electronics, boundaries)
+  2. Evidence Interpretation (objective signal metrics, acoustic symptoms)
+  3. Diagnosis (causal isolation, competing working hypotheses)
+  4. Decision-Making (trade-off balancing, intervention selection)
+  5. Outcome Reasoning (empirical verification, discrepancy analysis)
+
+4.3 AUDIT OF PHASE 1C.4a-R v1.1 COMPATIBILITY
+  - Domain Indexing: `KnowledgeClaim.domain_id` in 1C.4a-R Section 6.2 accepts integers
+    1 through 22, directly mapping to all 22 domains defined in Phase 1C.3a.
+  - No Maturity Dilution: Phase 1C.4a makes zero attempt to redefine, downgrade, or
+    alter target maturity levels. It stores knowledge units across all 22 domains
+    with equal architectural rigor.
+  - No Aggregate Scoring: Phase 1C.4a contains no aggregate competency scoring formulas,
+    no single-score student evaluation metrics, and no composite capability indicators.
+    Its governance and classification models operate strictly on individual claims,
+    sources, and operational boundaries.
+
+VERDICT: FULLY COMPATIBLE (NO CONFLICT).
+
+
+--------------------------------------------------------------------------------
+5. CURRICULUM-TO-KNOWLEDGE ARCHITECTURE COMPATIBILITY
+--------------------------------------------------------------------------------
+
+5.1 INDEPENDENT OWNERSHIP OF KNOWLEDGE ARCHITECTURE
+Phase 1C.3c-R Section 1.3, Section 5, and Section 22.1 explicitly designate the
+curriculum's example JSON schema as an "ILLUSTRATIVE CANDIDATE REPRESENTATION ONLY."
+Phase 1C.3c-R explicitly delegates production knowledge entity design, lifecycle
+management, and storage contracts to Phase 1C.4.
+
+Phase 1C.4a-R v1.1 independently establishes the production data architecture:
+  - `SourceDocument`: Persistent bibliographic provenance and document hash.
+  - `ClaimAttribution`: Specific citation link with extracted passage and support type.
+  - `KnowledgeClaim`: Normalized atomic engineering assertion.
+  - `CausalModel`: Input-stimulus to acoustic-consequence transfer network.
+  - `OperationalBoundary`: Physical operating envelope, prerequisites, and confounders.
+  - `ConflictRecord`: Multi-source divergence preservation.
+  - `ReviewRecord`: Immutable governance audit trail.
+  - `CandidateLesson`: Quarantined runtime experiential learning dossier.
+
+5.2 SATISFACTION OF CURRICULUM KNOWLEDGE REQUIREMENTS
+Every educational requirement outlined in Phase 1C.3c-R (first-principles physics,
+causal chains, operational boundaries, acoustic trade-offs, and multi-domain coupling)
+maps directly into the normalized entities of 1C.4a-R:
+  - Curriculum Causal Chains -> `CausalModel` (mediating stage, acoustic consequences,
+    trade-off vectors, coupled domains).
+  - Curriculum Operating Limits -> `OperationalBoundary` (valid envelope, prerequisites,
+    confounding variables, known exceptions, failure modes).
+  - Curriculum Cross-Domain Interactions -> `CausalModel.coupled_domain_ids` and
+    1C.4a Section 14 (Directed Causal Coupling).
+  - Curriculum Competing Perspectives -> `ConflictRecord` (divergence analysis,
+    contextual resolution notes).
+
+VERDICT: FULLY COMPATIBLE (NO CONFLICT).
+
+
+--------------------------------------------------------------------------------
+6. KNOWLEDGE / EVIDENCE / REASONING BOUNDARY REVIEW
+--------------------------------------------------------------------------------
+
+6.1 KNOWLEDGE VS CAPABILITY (EDUCATION VS TOOLING)
+Phase 1C.3c-R Section 4 and Section 21 strictly distinguish between:
+  - Knowledge / Education: Understanding acoustic physics, electrical circuits, and
+    psychoacoustic curves.
+  - Runtime Evidence & Tooling: External software services that objectively measure
+    audio signals (FFT centroid, crest factor, correlation, attack slopes) and
+    execute closed-loop delta comparisons.
+
+Phase 1C.4a-R Section 4.1 establishes an identical tri-partite architectural division:
+  1. Sound Engineering Knowledge Library: Stores durable physical principles, boundaries,
+     and causal models.
+  2. Runtime Evidence & DSP Tooling: Extracts objective signal metrics.
+  3. AI Sound Engineer Reasoning Engine: Performs cognitive diagnosis and trade-off evaluation.
+Phase 1C.4a does not pretend that knowledge provides missing DSP perception, closed-loop
+audio comparison, or stateful checkpoint lineage.
+
+6.2 KNOWLEDGE VS REASONING (SCAFFOLD VS RUNTIME ENGINE)
+Phase 1C.3c-R Section 1.3 and Section 5 explicitly classify the seven-step engineering
+method (Evidence -> Hypothesis -> Alternatives -> Trade-offs -> Decision -> Predict ->
+Verify) as an EDUCATIONAL AND COMPETENCY-EVALUATION SCAFFOLD ONLY, not the runtime
+reasoning architecture (which belongs to Phase 1C.5).
+
+Phase 1C.4a-R Section 3 (Principle 1) and Section 4.3 enforce that:
+  "Knowledge Informs Reasoning — It Never Replaces It. Knowledge provides principles,
+   causal models, boundaries, and trade-offs. The cognitive agent must diagnose,
+   evaluate competing causes, and design solutions. Knowledge never prescribes
+   fixed symptom-to-fix recipes."
+Phase 1C.4a-R does not encode the future runtime reasoning engine, execution graph,
+or inference loop into the Knowledge Library. It provides the structured declarative
+data that the future Phase 1C.5 reasoning engine will query.
+
+VERDICT: FULLY COMPATIBLE (NO CONFLICT).
+
+
+--------------------------------------------------------------------------------
+7. EPISTEMIC & PROVENANCE COMPATIBILITY
+--------------------------------------------------------------------------------
+
+7.1 MULTI-FACTOR EVIDENCE ASSESSMENT
+Phase 1C.3c-R Section 20 mandates a multi-factor evidence assessment framework where
+source category alone never determines absolute truth. Factors include source rigor,
+methodological validity, empirical reproducibility, peer review, domain jurisdiction,
+and operational context.
+
+Phase 1C.4a-R Sections 6, 8, 9, and 10 provide an exact architectural match:
+  - Source Rigor Tier: Five-tier continuum (`R1_PHYSICAL_LAW` to `R5_PRACTITIONER_ACCOUNT`).
+  - Domain Jurisdiction: Three-tier classification (`J_CORE`, `J_APPLIED`, `J_PERIPHERAL`)
+    evaluated on a per-domain basis.
+  - Elimination of Scalar Authority: Section 9.2 strictly prohibits collapsing rigor and
+    jurisdiction into a composite score (e.g. "8.7/10"). Queries filter and sort along
+    orthogonal dimensions.
+  - Epistemic Validation: Replaces arbitrary confidence floats (e.g. 0.92) with five
+    structured qualitative factors:
+      * `evidence_strength`: THEORETICAL_PROOF, SYSTEMATIC_EMPIRICAL, CORROBORATED_PRACTICE, ANECDOTAL
+      * `consensus_state`: ESTABLISHED_CONSENSUS, PREDOMINANT, DEBATED, OUTLIER
+      * `replication_state`: INDEPENDENTLY_REPLICATED, EXPERIMENTALLY_VERIFIED, OBSERVATIONAL_ONLY
+      * `conflict_status`: UNCONTESTED, ACTIVE_COMPETING_CLAIM
+      * `boundary_certainty`: TIGHTLY_BOUNDED, PARTIAL_ENVELOPE, UNEXPLORED_LIMITS
+
+7.2 PRESERVATION OF UNCERTAINTY & UNDERDETERMINATION
+Phase 1C.3c-R emphasizes that audio systems are frequently underdetermined (multiple
+circuit or acoustic faults can produce identical acoustic symptoms).
+Phase 1C.4a-R directly supports underdetermined reasoning by:
+  - Forbidding 1:1 symptom-to-cause mappings.
+  - Mandating `OperationalBoundary.confounding_variables` to list phenomena that mimic
+    the symptom.
+  - Mandating `ConflictRecord` to store coexisting competing explanations without forced
+    merging or premature resolution.
+
+VERDICT: FULLY COMPATIBLE (NO CONFLICT).
+
+
+--------------------------------------------------------------------------------
+8. TECHNICAL KNOWLEDGE BOUNDARY REVIEW
+--------------------------------------------------------------------------------
+
+Phase 1C.3c-R corrected several technical overclaims and over-generalizations present in
+earlier curriculum drafts. The review confirmed that Phase 1C.4a-R v1.1 correctly accommodates
+these bounded engineering realities:
+
+1. Digital 0 VU Calibration:
+   - 1C.3c-R Finding: 0 VU calibration is facility- and standard-dependent (-18 dBFS AES/EBU,
+     -20 dBFS SMPTE, -14 dBFS legacy/broadcast).
+   - 1C.4a-R Support: Section 12 establishes `Type 3: CALIBRATION_STANDARD`, explicitly
+     treating calibration levels as reference alignments with specified operating contexts
+     rather than universal immutable physical laws.
+
+2. Harmonic Spectra Non-Triviality:
+   - 1C.3c-R Finding: Harmonics cannot be simplified to "even = warm, odd = harsh." Perceived
+     harshness depends on harmonic order, spectral envelope, masking thresholds, and decay.
+   - 1C.4a-R Support: `CausalModel` models harmonic series as multi-order vectors across
+     the frequency domain (`HARMONIC_SERIES`) with specific observable metrics (e.g.
+     "High-Order Odd Harmonic Ratio") rather than simplistic binary warmth labels.
+
+3. Presence / Negative-Feedback Circuitry:
+   - 1C.3c-R Finding: Presence circuits function by altering global negative feedback in the
+     power amplifier; they do not function when negative feedback is absent (e.g. cathode-biased
+     Class A / VOX AC30 topologies).
+   - 1C.4a-R Support: `OperationalBoundary.prerequisites` mandates listing circuit prerequisites
+     (e.g. "Global negative feedback loop must be present in power stage topology").
+
+4. Microphone Delay Calculations:
+   - 1C.3c-R Finding: Acoustic delay calculations based on speed of sound (e.g. 1 ms per foot)
+     are approximate, temperature-dependent, and affected by room boundaries.
+   - 1C.4a-R Support: `KnowledgeClaim.formal_derivation_or_math` enforces declarative physical
+     formulas ($c = 331.3 \sqrt{1 + T/273.15}$), while `OperationalBoundary` specifies
+     atmospheric and boundary constraints.
+
+5. Proximity Effect Acoustics:
+   - 1C.3c-R Finding: Proximity effect depends strictly on pressure-gradient transducer
+     acoustics and distance to spherical wavefronts; pure pressure (true omni) mics have zero
+     proximity effect.
+   - 1C.4a-R Support: Section 21 Example A explicitly models this exact principle, its
+     formal mathematical derivation, its near-field spherical envelope, and its known
+     exception (pure pressure transducers).
+
+6. Parsimony as Heuristic, Not Physical Law:
+   - 1C.3c-R Finding: Parsimony (Occam's razor) is a cognitive heuristic for prioritizing
+     hypotheses, not a physical law that guarantees a single root cause.
+   - 1C.4a-R Support: Classified under Axis 2 as `PROFESSIONAL_CONVENTION` or reasoning
+     scaffold, barred from Axis 1 `PHYSICAL_LAW`.
+
+VERDICT: FULLY COMPATIBLE (NO CONFLICT).
+
+
+--------------------------------------------------------------------------------
+9. CURRENT TT LEGACY KNOWLEDGE REVALIDATION
+--------------------------------------------------------------------------------
+
+9.1 CURRICULUM REQUIREMENT (PHASE 1C.3c-R)
+Phase 1C.3c-R Section 3.3, Section 20, and Section 24 explicitly treat Current TT as:
+    "LEGACY MATERIAL TO BE DECONSTRUCTED AND RE-VALIDATED."
+Current TT is an unvalidated repository of heuristics, keyword overrides, hardcoded
+thresholds, and proprietary AmpliTube 5 IDs. It must NOT automatically be considered
+authoritative sound engineering knowledge.
+
+9.2 EVALUATION OF 1C.4a-R SECTION 17.1
+In Phase 1C.4a-R v1.1 Section 17.1, the document states:
+    "Knowledge embedded in Current TT's codebase is treated as source material with
+     source_rigor_tier: R4_PROFESSIONAL_TREATISE and jurisdiction: J_APPLIED.
+     It is NOT authoritative until it passes full deconstruction and governance."
+
+Architectural Evaluation:
+  - The four-stage deconstruction pipeline in Section 17.2 (Separation -> Physical
+    Formulation -> Boundary Documentation -> Governance Review) is completely sound.
+  - However, labeling Current TT itself as `R4_PROFESSIONAL_TREATISE` is an epistemic
+    overclaim. Current TT is a software codebase containing unverified heuristics, not
+    a published, peer-reviewed professional treatise (such as Huber, Rumsey, or Blencowe).
+  - Assigning R4 to Current TT risks inflating the baseline authority of unprovenanced
+    heuristics before their underlying literature roots are identified.
+
+9.3 RESOLUTION: BOUNDED REVALIDATION ADDENDUM
+In accordance with the review instruction and smallest-change principle:
+  - An architectural rewrite of Phase 1C.4a is NOT required.
+  - A formal Bounded Revalidation Addendum is established (Section 15, Addendum 1):
+    Current TT codebase is formally designated as:
+        `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`
+    When an atomic claim is extracted from Current TT:
+      a) If its underlying physical principle is traced to authoritative primary
+         literature (e.g. Blencowe, AES, Beranek), the resulting `ClaimAttribution`
+         cites that primary source and receives the primary source's true Rigor Tier
+         (R1 to R4). Current TT is recorded solely as the historical migration origin.
+      b) If no primary literature source can be verified, the claim remains at
+         `UNASSESSED_LEGACY_SOURCE` (or R5_PRACTITIONER_ACCOUNT if corroboration exists)
+         and CANNOT be promoted to `VALIDATED_ACTIVE` without empirical validation.
+
+VERDICT: COMPATIBLE WITH BOUNDED ADDENDUM (WORDING / CLARIFICATION).
+
+
+--------------------------------------------------------------------------------
+10. REFLECTIVE FEEDBACK / CANDIDATE LESSON COMPATIBILITY
+--------------------------------------------------------------------------------
+
+10.1 CURRICULUM REQUIREMENT (PHASE 1C.3c-R)
+Phase 1C.3c-R Section 22.2 introduces the requirement for structured decision-quality
+feedback, evaluating hypothesis quality, intervention selection, trade-off predictions,
+and empirical delta analysis. However, 1C.3c-R explicitly notes that runtime reasoning
+and evaluation loops belong to Phase 1C.5 (Reasoning) and Phase 1C.6 (Benchmarks).
+
+10.2 KNOWLEDGE ARCHITECTURE SCOPE (PHASE 1C.4a-R)
+Phase 1C.4a-R Section 6.2 and Section 18 define `CandidateLesson`:
+  - Quarantined runtime insights isolated from production retrieval.
+  - Evaluated against a rigorous 7-point Evidence-Sufficiency Dossier:
+      1. Independent observation count
+      2. Source diversity factors
+      3. Controlled experiment results
+      4. Causal plausibility assessment
+      5. Authoritative literature corroboration
+      6. Adversarial triad stress-test pass
+      7. Senior human expert sign-off
+  - Prevents "runtime outcome -> automatic global knowledge."
+
+10.3 DOWNSTREAM HANDOFF CONFIRMATION
+Case-specific run traces, intermediate reasoning logs, and execution graphs belong to
+Phase 1B contracts (`RunTrace`, `EngineeringDecisionRecord`) and future Phase 1C.5
+runtime engine specifications.
+If an explicit `EngineeringReviewRecord` entity is introduced to audit runtime decision
+quality, it resides downstream in Phase 1C.4d (Governance Tooling), Phase 1C.5 (Reasoning),
+or Phase 1C.6 (Benchmarks). Its absence from Phase 1C.4a-R does not invalidate the
+knowledge data architecture.
+
+VERDICT: COMPATIBLE WITH BOUNDED ADDENDUM (WORDING / CLARIFICATION).
+
+
+--------------------------------------------------------------------------------
+11. DETERMINISTIC VS AI OWNERSHIP REVIEW
+--------------------------------------------------------------------------------
+
+11.1 CORRECTED GOVERNING PRINCIPLE (PHASE 1C.3c-R SECTION 23.2)
+Engineering judgement currently misplaced in deterministic heuristics must move to
+the AI Sound Engineer. Deterministic systems remain authoritative for their proper
+responsibilities:
+  1. AI SOUND ENGINEER: WHAT + WHY (First-principles causal diagnosis, trade-off evaluation,
+     semantic tone design).
+  2. SEMANTIC TONE DESIGN: Platform-independent engineering contract.
+  3. DETERMINISTIC VALIDATION: CHECK / WARN / FAIL (Integrity and safety enforcement;
+     NO silent engineering redesign).
+  4. PLATFORM TRANSLATOR: HOW the target platform realizes the design.
+  5. EXPORTER: Deterministic encoding / serialization / file write.
+
+11.2 PHASE 1C.4a-R ALIGNMENT
+Phase 1C.4a-R Section 4.1, Section 4.3, Section 19, and Section 20 strictly align with
+this ownership division:
+  - Sound Engineering Knowledge Library: Stores physical models and boundaries; NEVER
+    prescribes fixes, never performs subjective evaluation, and never stores platform IDs.
+  - AI Sound Engineer: Forms competing hypotheses, evaluates trade-offs, and designs
+    semantic tone designs.
+  - Deterministic Guard: Enforces mathematical invariants, parameter bounds, and schema
+    contracts (Check/Warn/Fail); never alters engineering intent or performs subjective tone fixes.
+  - Platform Translation: Pure downstream mapping of semantic designs into target software/hardware;
+    firewalled from general knowledge.
+
+VERDICT: FULLY COMPATIBLE (NO CONFLICT).
+
+
+--------------------------------------------------------------------------------
+12. PHASE BOUNDARY AUDIT
+--------------------------------------------------------------------------------
+
+An exhaustive boundary audit was conducted to confirm Phase 1C.4a-R v1.1 has not
+encroached upon subsequent phases:
+
+Phase Responsibility                        Status in 1C.4a-R v1.1
+--------------------------------------------------------------------------------------
+1C.4a: Knowledge Architecture & Lifecycle   OWNED: Formally specifies entities, 3-axis
+                                            taxonomy, governance tiers, boundaries.
+1C.4b: Knowledge Source & Acquisition       RESPECTED: Sources cited only as illustrative
+                                            schema placeholders; no population performed.
+1C.4c: Retrieval & Runtime Context          RESPECTED: Metadata query vectors defined;
+                                            indexing/retrieval algorithms explicitly deferred.
+1C.4d: Conflict & Governance Tooling        RESPECTED: Conflict/Review entities defined;
+                                            tooling and interactive adjudication deferred.
+1C.4e: Current TT Migration Spec            RESPECTED: High-level deconstruction principles
+                                            defined; line-by-line asset migration deferred.
+1C.4f: Knowledge Architecture UAT           RESPECTED: Sign-off criteria outlined; testing
+                                            execution deferred to 1C.4f.
+1C.5: Runtime Engineering Reasoning Spec    RESPECTED: Declarative models stored; cognitive
+                                            reasoning loops and inference engines deferred.
+1C.6: Competency Evaluation / Benchmarks    RESPECTED: Adversarial triad criteria outlined
+                                            for ingestion; test runner and benchmarks deferred.
+
+VERDICT: FULLY COMPATIBLE (NO CONFLICT).
+
+
+--------------------------------------------------------------------------------
+13. FROZEN 1C.4a DESIGN DECISION REVALIDATION
+--------------------------------------------------------------------------------
+
+All twelve frozen design decisions from Phase 1C.4a-R v1.1 were re-evaluated against
+Phase 1C.3c-R v1.1:
+
+Decision 1: Canonical knowledge stored as human-readable, Git-tracked JSON/YAML.
+  - Status: UNCHANGED
+  - Reason: Git-tracked declarative files provide transparent diffability, auditability,
+    and version control, satisfying curriculum provenance requirements.
+
+Decision 2: Runtime indexes are generated/disposable derivatives.
+  - Status: UNCHANGED
+  - Reason: Preserves strict decoupling between immutable canonical source knowledge
+    and optimized runtime search representations.
+
+Decision 3: Runtime retrieval technology remains deferred to Phase 1C.4c.
+  - Status: UNCHANGED
+  - Reason: Retrieval algorithms (dense vector vs sparse BM25 vs relational graph)
+    depend on knowledge volume and retrieval benchmarks defined in 1C.4c.
+
+Decision 4: Review governance is risk- and evidence-dependent.
+  - Status: UNCHANGED
+  - Reason: The three-tier model (Tier A Dual Senior + Triad, Tier B Single Senior,
+    Tier C Single Technical) balances high assurance for physics with operational
+    efficiency for contextual examples.
+
+Decision 5: Current TT extraction uses atomic claim/model decomposition.
+  - Status: UNCHANGED (WITH ADDENDUM 1)
+  - Reason: Atomic decomposition is essential to separate physical acoustics from
+    heuristic code rules. Addendum 1 clarifies that Current TT is an unassessed legacy
+    source whose claims inherit primary literature rigor.
+
+Decision 6: Mathematical knowledge is declarative.
+  - Status: UNCHANGED
+  - Reason: Declarative LaTeX and AST representations ensure human auditability, cross-platform
+    stability, and absence of hidden execution side-effects.
+
+Decision 7: Executable mathematical evaluation remains outside canonical knowledge.
+  - Status: UNCHANGED
+  - Reason: Dynamic formula execution belongs to deterministic validation services or
+    runtime evidence tooling, not static knowledge storage.
+
+Decision 8: Knowledge architecture uses normalized entity model.
+  - Status: UNCHANGED (WITH ADDENDUM 2)
+  - Reason: The 8-entity model (SourceDocument, ClaimAttribution, KnowledgeClaim,
+    CausalModel, OperationalBoundary, ConflictRecord, ReviewRecord, CandidateLesson)
+    cleanly decouples provenance, boundaries, governance, and runtime quarantine.
+    Addendum 2 clarifies that session-level run reviews reside in downstream phases.
+
+Decision 9: Knowledge classification remains multi-axis rather than mutually exclusive.
+  - Status: UNCHANGED
+  - Reason: The three orthogonal axes (Epistemic Basis, Knowledge Role, Physical Scope)
+    prevent artificial classification bottlenecks.
+
+Decision 10: Device-specific physical knowledge is allowed when bounded.
+  - Status: UNCHANGED
+  - Reason: Allows legitimate engineering facts (e.g. Celestion V30 resonance) via
+    `DeviceSpecificityContext` without universalizing them into general acoustic laws.
+
+Decision 11: Platform implementation leakage is prohibited.
+  - Status: UNCHANGED
+  - Reason: Software model IDs, GUIDs, XML paths, and GUI coordinates remain strictly
+    firewalled from general sound engineering knowledge.
+
+Decision 12: Experiential learning requires evidence sufficiency and review before promotion.
+  - Status: UNCHANGED
+  - Reason: The multi-factor Evidence-Sufficiency Dossier prevents noisy runtime outcomes
+    from polluting canonical knowledge.
+
+
+--------------------------------------------------------------------------------
+14. CONFLICT MATRIX
+--------------------------------------------------------------------------------
+
+Requirement / Issue Area               1C.4a-R Construct                  Class  Explanation
+------------------------------------------------------------------------------------------------------------------------
+1. Maturity Benchmark (18 Core L5,     KnowledgeClaim.domain_id (1-22)     A     Fully compatible. All 22 domains
+   4 Supporting L4; 5 dimensions)                                                represented; no aggregate scoring.
+2. Knowledge vs Capability             Section 4.1 Tri-Partite Division    A     Fully compatible. Distinguishes
+   (Acoustic physics vs DSP tooling)                                             knowledge from DSP measurement.
+3. Knowledge vs Reasoning              Section 3 Principle 1; Sec 4.3      A     Fully compatible. Knowledge informs;
+   (Scaffold vs Runtime Engine)                                                  does not encode reasoning engine.
+4. Underdetermined Systems &           OperationalBoundary.confounders;    A     Fully compatible. Competing causes
+   Working Hypotheses                  ConflictRecord                            supported; no 1:1 forced recipes.
+5. Knowledge Representation Authority  Normalized Entity Model             A     Fully compatible. 1C.4a independently
+   (1C.3c schema is illustrative)                                                owns production data architecture.
+6. Source & Evidence Quality           SourceDocument (R1-R5, J-tiers);    A     Fully compatible. Multi-factor
+   (Rigor, jurisdiction, no scalar)    Sec 9.2 (no scalar score)                 assessment preserved without scalars.
+7. Epistemic Uncertainty Dimensions    KnowledgeClaim.epistemic_validation A     Fully compatible. 5 structured
+   (Categorical vs pseudo-precision)                                             qualitative factors; no floats.
+8. Bounded Technical Knowledge         OperationalBoundary envelopes;      A     Fully compatible. 0 VU context,
+   (Overclaim corrections)             Section 12 Numerical Typing               harmonics, presence properly bounded.
+9. Device-Specific Knowledge Boundary  OperationalBoundary.device_context; A     Fully compatible. Physical hardware
+   (Hardware physics vs software IDs)  Sec 13 Implementation Firewall            allowed; software IDs barred.
+10. Current TT Legacy Status           Section 17.1 (Source Rigor &        B     Architecture is sound, but R4
+    (Unassessed legacy vs Treatise)    Jurisdiction of Current TT)               classification was an overclaim.
+                                                                                 Resolved via Addendum 1.
+11. Current TT Asset Migration         Section 17.2 Deconstruction;        A     Fully compatible. Deconstructs into
+    (Principles over code heuristics)  Section 21 Example D                      principles, rejecting code overrides.
+12. Reflective Feedback Scope          CandidateLesson (Sec 6.2 & 18)      B     Fully compatible; Addendum 2 clarifies
+    (Session trace vs Lesson)                                                    run-level reviews belong to 1C.5/1C.6.
+13. Deterministic vs AI Ownership      Section 19 Responsibility Matrix;   A     Fully compatible. Check/Warn/Fail
+    (Check/Warn/Fail; no redesign)     Section 4.3 Boundary Allocation           enforced; silent redesign barred.
+14. Prerequisites Separation           Knowledge Lifecycle states;         A     Fully compatible. Conceptual
+    (Learning vs DSP evidence tools)   Section 16 Governance tiers               knowledge ingestion unblocked.
+15. Phase Boundaries                   Section 23 Master Roadmap           A     Fully compatible. No premature
+    (1C.4b to 1C.6 boundaries)                                                   population or reasoning execution.
+
+Summary of Classifications:
+  - Class A (No Conflict / Fully Compatible): 13 items
+  - Class B (Wording / Clarification / Bounded Addendum): 2 items
+  - Class C (Material Architectural Conflict): 0 items
+
+
+--------------------------------------------------------------------------------
+15. REQUIRED ADDENDA OR CORRECTIONS
+--------------------------------------------------------------------------------
+
+Because no Class C architectural conflicts exist, no structural rewrite of
+Phase 1C.4a-R v1.1 is required. The following two bounded addenda are formally
+adopted to govern Phase 1C.4a-R v1.1:
+
+--------------------------------------------------------------------------------
+AUTHORITATIVE REVALIDATION ADDENDUM 1:
+Classification of Current TT as UNASSESSED_LEGACY_SOURCE
+--------------------------------------------------------------------------------
+Scope: Modifies the source classification in Phase 1C.4a-R Section 17.1.
+Specification:
+  1. The Current TT codebase shall NOT be classified as `R4_PROFESSIONAL_TREATISE`.
+  2. For bibliographic and ingestion registry purposes, Current TT is formally classified as:
+         `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`
+         `domain_jurisdictions: { "1".."22": "J_APPLIED" }`
+  3. When an atomic candidate claim or causal model is extracted from Current TT during
+     migration (Phase 1C.4e):
+     - The extraction specialist must locate and cite the original primary literature
+       source establishing the underlying physical, electrical, or acoustic principle.
+     - The resulting `SourceDocument` and `ClaimAttribution` records shall cite the
+       primary literature source and inherit that source's verified Rigor Tier (R1 to R4).
+       Current TT shall be recorded solely as the extraction lineage origin.
+     - Any claim extracted from Current TT for which no authoritative primary source
+       can be identified shall remain quarantined at `UNASSESSED_LEGACY_SOURCE` and
+       cannot achieve `VALIDATED_ACTIVE` state without rigorous empirical laboratory
+       verification.
+
+--------------------------------------------------------------------------------
+AUTHORITATIVE REVALIDATION ADDENDUM 2:
+Separation of Session Run Reviews from Quarantined Candidate Lessons
+--------------------------------------------------------------------------------
+Scope: Clarifies the boundary between Phase 1C.4a `CandidateLesson` and downstream
+       Phase 1C.5 / 1C.6 execution and review tracing.
+Specification:
+  1. Individual session execution traces, intermediate decision logs, and case-specific
+     decision quality reviews (e.g. `EngineeringDecisionRecord`, `ValidationReport`,
+     `RunTrace`) belong strictly to Phase 1B contracts and Phase 1C.5 / 1C.6 runtime
+     tooling. They are NOT stored in the canonical Sound Engineering Knowledge Library.
+  2. Phase 1C.4a's `CandidateLesson` entity is reserved exclusively for generalizable,
+     recurrent empirical phenomena that have emerged across multiple sessions and meet
+     the initial threshold of the Evidence-Sufficiency Dossier.
+  3. Any tooling for human or adversarial adjudication of case-specific run traces
+     shall be specified in Phase 1C.4d, Phase 1C.5, and Phase 1C.6 without altering
+     the Phase 1C.4a entity schema.
+
+
+--------------------------------------------------------------------------------
+16. FINAL DEPENDENCY VERDICT
+--------------------------------------------------------------------------------
+
+FINAL DEPENDENCY VERDICT:
+    PASS — REVALIDATED WITH BOUNDED ADDENDUM
+
+Justification:
+Phase 1C.4a-R v1.1 is fully compatible with the newly frozen Phase 1C.3c-R v1.1.
+All 22 domains, the 18 Core (L5) and 4 Supporting (L4) maturity benchmarks, the
+independent 5-dimensional competency framework, the educational scaffold vs runtime
+reasoning distinction, the multi-factor evidence quality framework, and the deterministic
+vs AI ownership boundaries are completely satisfied.
+
+The two minor wording and classification adjustments (re-classifying Current TT as an
+unassessed legacy source, and clarifying session-trace vs candidate-lesson boundaries)
+are fully and definitively resolved by Authoritative Revalidation Addenda 1 and 2.
+No structural revision of Phase 1C.4a-R v1.1 is required.
+
+Phase 1C.4a-R v1.1 stands REVALIDATED and READY to serve as the structural foundation
+for Phase 1C.4b.
+
+================================================================================
+END OF REPORT — PHASE 1C.4a-DR DEPENDENCY REVALIDATION
+================================================================================

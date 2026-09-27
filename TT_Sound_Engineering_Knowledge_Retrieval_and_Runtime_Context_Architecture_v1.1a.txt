@@ -1,0 +1,1991 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4c-R v1.1a — SOUND ENGINEERING KNOWLEDGE RETRIEVAL & RUNTIME CONTEXT ARCHITECTURE
+FINAL FREEZE CONSISTENCY CORRECTION
+Version 1.1a — Final Freeze Candidate
+Date: 2026-09-26
+Mode: READ-ONLY ARCHITECTURAL CORRECTION / SPECIFICATION REVISION
+Deliverable: /TT_Sound_Engineering_Knowledge_Retrieval_and_Runtime_Context_Architecture_v1.1a.txt
+================================================================================
+
+================================================================================
+GLOBAL DECLARATION:
+UNVERIFIED ARCHITECTURAL / SCHEMA / WORKFLOW ILLUSTRATIONS
+All query contracts, schema definitions, context packages, mathematical formulas,
+retrieval payloads, trace records, and UAT scenarios presented in this document
+are UNVERIFIED ARCHITECTURAL, SCHEMA, AND WORKFLOW ILLUSTRATIONS.
+They serve exclusively to establish architectural contracts, retrieval mechanisms,
+data structures, validation rules, and context assembly pipelines for the future
+TT AI Sound Engineer. They possess ZERO canonical epistemic authority and are NOT
+eligible for production runtime reasoning unless independently acquired, normalized,
+and validated through the Phase 1C.4b pipeline and promoted under the frozen
+Phase 1C.4a governance lifecycle.
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 ARCHITECTURAL PURPOSE & STATUS
+Phase 1C.4c-R v1.1a establishes the authoritative, platform-independent Sound Engineering
+Knowledge Retrieval and Runtime Context Architecture for the Tone Translator (TT)
+Professional Sound Engineering System, incorporating all final consistency corrections
+and freeze verifications following architectural-direction review.
+
+Building directly upon the frozen foundations of upstream phases:
+  - Phase 1C.4a defined WHAT KNOWLEDGE IS (Atomic entity model, 3-axis taxonomy,
+    qualitative epistemic validation, and governance lifecycles).
+  - Phase 1C.4b defined HOW INFORMATION EARNS THE RIGHT TO BECOME KNOWLEDGE
+    (Source typology, provenance locators, rigorous extraction, normalization,
+    and multi-gate ingestion firewalls).
+  - Phase 1C.4c defines HOW THE RIGHT KNOWLEDGE IS FOUND AND PRESENTED TO THE
+    SOUND ENGINEER AT RUNTIME.
+
+1.2 THE GOVERNING ARCHITECTURAL PRINCIPLE
+The foundational axiom of this specification is:
+
+    RETRIEVAL SUPPLIES RELEVANT ENGINEERING KNOWLEDGE.
+    RETRIEVAL DOES NOT PERFORM THE ENGINEERING DECISION.
+
+The future AI Sound Engineer (to be specified in Phase 1C.5) will own holistic,
+contextual WHAT + WHY reasoning, hypothesis evaluation, diagnosis, trade-off
+arbitration, and intervention selection. The retrieval subsystem is strictly an
+epistemic delivery mechanism: it locates, filters, expands, validates, bounds,
+and packages canonical professional sound-engineering knowledge so that the Sound
+Engineer reasons from sound principles rather than ungrounded parametric intuition,
+simplistic genre recipes, or out-of-context facts.
+
+1.3 THE RETRIEVAL SISO PRINCIPLE
+Retrieval introduces its own distinct Garbage-In, Garbage-Out (SISO) vulnerability:
+
+    EXCELLENT LIBRARY
+          +
+    POOR RETRIEVAL
+          =
+    POOR ENGINEERING CONTEXT
+
+A retrieval engine that returns technically true propositions that are irrelevant to
+the active acoustic physics, out-of-boundary for the current signal chain, stripped
+of their critical trade-offs, biased toward single-explanation dogmatism, or disguised
+as fixed equipment presets has failed.
+
+Phase 1C.4c rejects:
+  - Naive vector-similarity RAG ("Just embed the chunks and retrieve Top-K");
+  - Pure keyword/lexical search (blind to physical causality and acoustic meaning);
+  - Source-prestige bias (assuming an R1 physics textbook comment on guitar pickups
+    outweighs an R3 manufacturer engineering schematic);
+  - Symptom-to-solution lookups (e.g. "flubby low end -> Tube Screamer");
+  - Silent consensus fabrication (averaging conflicting engineering theories).
+
+Instead, Phase 1C.4c specifies a traceable, reconstructable hybrid, graph-expanded,
+boundary-aware, conflict-preserving, and uncertainty-retaining retrieval architecture
+engineered to deliver compact, highly structured Knowledge Context Packages.
+
+
+--------------------------------------------------------------------------------
+2. SCOPE & NON-SCOPE
+--------------------------------------------------------------------------------
+
+2.1 IN-SCOPE ARCHITECTURAL RESPONSIBILITIES
+This specification formalises:
+  1. Information-Class Separation: Rigorous isolation between Case Evidence,
+     TT Professional Knowledge, and Model Parametric Knowledge.
+  2. Retrieval Responsibility Boundaries: Strict definition of what retrieval owns,
+     what it informs, and what it is forbidden from executing.
+  3. Knowledge Need & Retrieval Intent Representation: A rich, multi-faceted contract
+     expressing engineering queries without symptom->fix coupling.
+  4. Query Formation Architecture: How observed case evidence translates into
+     epistemic queries without diagnosing the signal chain.
+  5. Multi-Faceted Indexing & Hybrid Retrieval: Coordination of structured metadata
+     filtering, lexical token matching, dense semantic search, knowledge-graph traversal,
+     and causal-model expansion.
+  6. Operational-Boundary-Aware Retrieval: Enforcing physical validity envelopes
+     (transducer types, signal levels, impedances, topologies) so out-of-boundary
+     claims are flagged, quarantined, or contextualised.
+  7. Conflict-Aware & Uncertainty-Preserving Retrieval: Delivering first-class
+     ConflictRecords and qualitative EpistemicValidation metadata without forced consensus.
+  8. Alternative Mechanism & Hypothesis Diversity: Ensuring retrieval surfaces
+     competing acoustic/circuit explanations across domains.
+  9. Anti-Recipe Safeguards: Architectural firewalls preventing retrieval from
+     becoming a gear-preset recommendation engine.
+  10. Runtime Knowledge Context Assembly: Packaging principles, causal models,
+      boundaries, trade-offs, and provenance stubs within finite token budgets.
+  11. Traceability & Replayability: End-to-end auditability conforming to Phase 1B
+      observability standards, reconstructable retrieval lineage, and historical exact auditability.
+  12. Architectural Decisions A through P: Complete resolution of key design choices.
+  13. UAT Acceptance Scenarios A through O: Verifiable acceptance tests demonstrating
+      proper retrieval behavior across complex guitar audio challenges.
+
+2.2 EXPLICIT NON-SCOPE (STRICT BOUNDARIES)
+This specification strictly enforces that:
+  - NO production application code, prompt templates, tests, or Firestore rules are modified.
+  - NO production knowledge library collections, vector stores, or graph databases are populated.
+  - NO external web research, literature scraping, or book downloading is conducted.
+  - NO Current TT codebase heuristics, tables, or rules are migrated (owned by Phase 1C.4e).
+  - NO conflict adjudication, uncertainty formalization, or governance architecture
+    is implemented (owned by Phase 1C.4d — Knowledge Conflict, Uncertainty & Governance).
+  - NO runtime reasoning loops, diagnosis engines, or hypothesis evaluators are built (owned by Phase 1C.5).
+  - NO formal benchmark harnesses or competency suites are created (owned by Phase 1C.6).
+  - NO AmpliTube 5 (AT5) GUIDs, XML parameter paths, preset serialization, or slot
+    allocations are permitted in upstream knowledge retrieval.
+
+
+--------------------------------------------------------------------------------
+3. AUTHORITATIVE DEPENDENCIES
+--------------------------------------------------------------------------------
+
+Phase 1C.4c is anchored directly to the signed-off, frozen Phase 1C artifacts:
+
+3.1 FROZEN UPSTREAM ARTIFACTS
+  1. Phase 1C.1: Professional Sound Engineer Competency Model
+     - Immutable baseline defining the five independent competency assessment dimensions:
+       (1) Knowledge, (2) Evidence Interpretation, (3) Diagnosis, (4) Decision-making,
+       (5) Outcome Reasoning.
+     - Establishes the authoritative 22 professional competency domains:
+       Domain 1: Source & Performance
+       Domain 2: Signal Level, Gain Staging & Headroom
+       Domain 3: Nonlinear Processing & Distortion
+       Domain 4: Frequency & Spectral Engineering
+       Domain 5: Dynamics, Envelope & Transients
+       Domain 6: Noise Engineering
+       Domain 7: Signal Topology & Processing Order
+       Domain 8: Amplifier Behaviour
+       Domain 9: Loudspeaker & Cabinet Engineering
+       Domain 10: Microphone & Capture Engineering
+       Domain 11: Phase, Polarity & Multi-Source Interaction
+       Domain 12: Time-Based, Modulation & Spatial Processing
+       Domain 13: Psychoacoustics & Perception
+       Domain 14: Musical & Production Context
+       Domain 15: Reference Analysis & Tone Matching
+       Domain 16: Diagnosis & Root-Cause Reasoning
+       Domain 17: Intervention Selection & Minimalism
+       Domain 18: Trade-Off & Constraint Reasoning
+       Domain 19: Uncertainty & Evidence Discipline
+       Domain 20: Alternative Solution Reasoning
+       Domain 21: Iterative Engineering & Outcome Evaluation
+       Domain 22: Professional Engineering Behaviour
+     - These five assessment dimensions are orthogonal evaluation perspectives, NOT replacements
+       for the 22 domains.
+  2. Phase 1C.2: Current TT Sound Engineer Knowledge & Provenance Audit
+     - Authoritative baseline cataloging Current TT heuristics, hardcoded tables, and code logic.
+  3. Phase 1C.3a: Professional Sound Engineer Standards & Target Maturity
+     - Formally frozen target benchmark: 18 Core Domains at Target L5 (Expert/Authoritative);
+       4 Supporting Domains at Target L4 (Proficient: Domain 6 Noise Engineering, Domain 12
+       Time-Based, Modulation & Spatial Processing, Domain 13 Psychoacoustics & Perception,
+       Domain 14 Musical & Production Context). Preserves independent competency dimensions.
+  4. Phase 1C.3b: Current-to-Professional Capability Gap Matrix
+     - Authoritative audit of existing TT deficiencies, highlighting keyword-coupling,
+       lack of causal modeling, and absence of operational boundary verification.
+  5. Phase 1C.3c-R v1.1: Sound Engineer Curriculum & Competency Evaluation Blueprint
+     - Frozen 22-domain curriculum, 7-step pedagogical ladder, and competency benchmarks.
+  6. Phase 1C.4a-R v1.1: Sound Engineering Knowledge Architecture & Lifecycle
+     - Authoritative normalized 8-entity model (`SourceDocument`, `ClaimAttribution`,
+       `KnowledgeClaim`, `CausalModel`, `OperationalBoundary`, `ConflictRecord`,
+       `ReviewRecord`, `CandidateLesson`).
+     - Orthogonal 3-axis taxonomy (Epistemic Basis, Knowledge Role, Physical Scope).
+     - Qualitative `EpistemicValidation` descriptor replacing scalar confidence floats
+       (TT does not represent epistemic standing through a single scalar confidence value;
+       it preserves independent qualitative evidence, consensus, replication, conflict and
+       boundary descriptors).
+  7. Phase 1C.4a-DR: Dependency Revalidation Report
+     - Confirmed compatibility between 1C.4a-R v1.1 and 1C.3c-R v1.1.
+     - Binding Addendum 1: Current TT classified as `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`.
+     - Binding Addendum 2: Case-specific runtime traces (`RunTrace`, `EngineeringDecisionRecord`,
+       `ValidationReport`) belong strictly to Phase 1B/1C.5/1C.6.
+     - Experiential learning boundary: `CandidateLesson` is quarantined experiential evidence,
+       not canonical knowledge. It does not become canonical merely by status promotion;
+       qualifying generalisable knowledge must be evaluated, pass an Evidence-Sufficiency Dossier,
+       and be represented through canonical entities (`KnowledgeClaim`, `CausalModel`,
+       `OperationalBoundary`) undergoing standard governance before reaching `VALIDATED_ACTIVE`.
+       The original `CandidateLesson` remains part of the historical experience lineage.
+  8. Phase 1C.4b-R v1.1a: Sound Engineering Knowledge Source & Acquisition Architecture
+     - Authoritative source typology (Classes A through I), Exact Reconstructable Source Locators,
+     - Two-store copyright governance, multi-gate ingestion pipeline, and failure mitigations.
+
+3.2 IMMUTABLE CONTRACT PRESERVATION
+Phase 1C.4c introduces zero alterations to the frozen upstream taxonomy, entity structures,
+or lifecycle states. It builds purely on top of the contracts established in Phase 1C.4a and 1C.4b.
+
+
+--------------------------------------------------------------------------------
+4. RETRIEVAL DESIGN PRINCIPLES
+--------------------------------------------------------------------------------
+
+The Sound Engineering Knowledge Retrieval Architecture is governed by eight immutable
+design principles:
+
+4.1 PRINCIPLE 1: KNOWLEDGE INFORMS REASONING; IT DOES NOT REPLACE REASONING
+Retrieval must provide the foundational laws, operational models, boundaries, and
+trade-offs necessary for an engineer to think through an audio problem. Retrieval
+must never deliver a ready-made engineering verdict, preset configuration, or dogmatic
+recipe.
+
+4.2 PRINCIPLE 2: CAUSALITY OVER KEYWORD PROXIMITY
+In audio engineering, identical symptoms frequently arise from diametrically opposed
+physical causes (e.g. low-end mud caused by acoustic room boundary reflections vs.
+low-end mud caused by intermodulation distortion in an overdriven preamp vs. bass
+transducer proximity effect). Retrieval must expand across causal mechanisms, not
+simply fetch documents containing the word "mud."
+
+4.3 PRINCIPLE 3: APPLICABILITY BEFORE RELEVANCE
+A knowledge claim may match a query semantically with 99% similarity, but if its
+`OperationalBoundary` specifies a push-pull pentode power amplifier and the current
+circuit is a single-ended triode, the claim is inapplicable. Operational boundary
+validation is a primary gate, not an afterthought.
+
+4.4 PRINCIPLE 4: CONFLICT AND UNCERTAINTY PRESERVATION
+Where professional engineering literature, acoustic science, or master practitioners
+maintain legitimate, competing explanations or practices, retrieval must surface the
+competing positions and their underlying evidence. Retrieval must never homogenize,
+average, or arbitrarily pick a winner based on source prestige.
+
+4.5 PRINCIPLE 5: ORTHOGONALITY OF PROVENANCE AND EPISTEMICS
+Source rigor (`source_rigor_tier`) characterises the assessed methodological/evidential
+rigor of the source under the frozen source-evaluation framework; it does not merely
+describe publication venue or source class. Epistemic basis (`epistemic_basis`) describes
+the scientific/engineering nature of the claim. Source class, source rigor, domain
+jurisdiction/applicability, epistemic basis, knowledge role and physical scope remain distinct
+dimensions. A high-rigor source does not grant physical law status to an incidental remark,
+nor does a practitioner interview prevent a validated observation from achieving engineering
+principle status. Retrieval evaluates these dimensions independently.
+
+4.6 PRINCIPLE 6: SEPARATION OF CASE EVIDENCE FROM CANONICAL KNOWLEDGE
+Current session observations (e.g. "Input signal peaks at -2 dBFS with a high crest factor")
+belong exclusively to Case Evidence. They must never be indexed, cached, or merged into
+the canonical Knowledge Library. Canonical knowledge remains immutable and platform-independent.
+
+4.7 PRINCIPLE 7: PLATFORM INDEPENDENCE AT RUNTIME
+The knowledge retrieved by the Sound Engineer must describe the physical, electrical,
+and acoustic reality of sound systems. It must not contain AmpliTube 5 GUIDs, software
+preset names, GUI widget coordinates, or vendor-specific parameter curves. Platform
+mapping occurs strictly downstream in the translation pipeline.
+
+4.8 PRINCIPLE 8: FULL TRACEABILITY & REPLAYABILITY
+Every token delivered in a runtime Knowledge Context Package must be traceable back
+to its atomic `KnowledgeClaim`, its `ClaimAttribution`, and its cryptographic
+`SourceDocument` hash. The architecture distinguishes deterministic reproducibility,
+reconstructable retrieval lineage, and historical exact auditability across all retrieval
+modalities and runtime implementations.
+
+--------------------------------------------------------------------------------
+5. INFORMATION-CLASS SEPARATION
+--------------------------------------------------------------------------------
+
+A foundational architectural requirement is the strict separation of three distinct
+classes of information present in the engineering reasoning loop:
+
++-----------------------------------------------------------------------------------+
+|                            THE THREE INFORMATION CLASSES                          |
++-----------------------------------------------------------------------------------+
+| 1. CASE EVIDENCE                                                                  |
+|    - Dynamic, ephemeral data belonging strictly to the current audio case.        |
+|    - Source: Audio signal analysis (DSP metrics: crest factor, spectral centroid,  |
+|      LUFS, THD, phase correlation), user constraints, reference style goals,     |
+|      and active physical gear topology.                                           |
+|    - Boundary Rule: Case evidence forms the query input; it NEVER enters the      |
+|      canonical Knowledge Library.                                                 |
++-----------------------------------------------------------------------------------+
+| 2. TT PROFESSIONAL KNOWLEDGE                                                      |
+|    - Curated, atomic, provenance-backed, reviewed, governed and validated         |
+|      engineering knowledge (according to knowledge type and risk).                |
+|    - Source: Canonical Knowledge Library (normalized KnowledgeClaims,             |
+|      CausalModels, OperationalBoundaries, ConflictRecords).                       |
+|    - Boundary Rule: Primary target of retrieval; immutable, versioned,            |
+|      platform-independent, and governed by Phase 1C.4a/1C.4b standards.           |
++-----------------------------------------------------------------------------------+
+| 3. MODEL PARAMETRIC KNOWLEDGE                                                     |
+|    - Implicit statistical representations encoded in the LLM's weights.           |
+|    - Source: Pre-training corpus of the base foundation model.                    |
+|    - Boundary Rule: Serves as reasoning engine and background syntactic vehicle;  |
+|      CANNOT silently override, supersede, or masquerade as canonical TT           |
+|      knowledge or substitute for missing library knowledge. Any disagreement      |
+|      must remain explicitly tagged as unbacked/model-parametric and be handled    |
+|      by downstream reasoning/governance according to evidence.                    |
++-----------------------------------------------------------------------------------+
+
+5.1 PREVENTING EPISTEMIC CONTAMINATION
+  - Case Evidence Contamination Firewall: Intermediate session data, user preferences,
+    and specific audio measurements must never be written into the retrieval index.
+    The index is a pure derivative of the Git-tracked canonical library.
+  - Model Knowledge Masquerade Firewall: If the AI Sound Engineer formulates a
+    hypothesis based on its parametric memory that is not corroborated by retrieved
+    TT knowledge, runtime traceability must mark that proposition as `SOURCE: MODEL_PARAMETRIC`
+    rather than `SOURCE: TT_CANONICAL_LIBRARY`. Model-parametric propositions may not silently
+    override, supersede or masquerade as canonical TT knowledge; any disagreement must remain
+    explicitly tagged and arbitrated under evidential discipline.
+
+
+--------------------------------------------------------------------------------
+6. RETRIEVAL RESPONSIBILITY BOUNDARY
+--------------------------------------------------------------------------------
+
+To prevent the retrieval system from overstepping into engineering diagnosis or
+usurping the role of the Sound Engineer, the architectural boundary is defined with
+mathematical precision:
+
+6.1 WHAT RETRIEVAL OWNS (MANDATORY RESPONSIBILITIES)
+Retrieval is strictly responsible for:
+  1. Parsing and validating the structured `KnowledgeNeed` contract;
+  2. Filtering out ineligible knowledge lifecycle states (quarantined, draft, rejected);
+  3. Evaluating physical applicability envelopes against active `OperationalBoundary` entities;
+  4. Expanding graph relationships from atomic `KnowledgeClaim` to its parent `CausalModel`,
+     `OperationalBoundary`, `ClaimAttribution`, and active `ConflictRecord`;
+  5. Surfacing alternative causal pathways and plausible competing mechanisms;
+  6. Preserving active scientific disputes and conflicting evidence packages;
+  7. Assembling a compact, bounded, structured `KnowledgeContextPackage`;
+  8. Emitting a complete, immutable `RetrievalTrace` for Phase 1B auditability;
+  9. Explicitly signaling `INSUFFICIENT_VALIDATED_KNOWLEDGE` when the library lacks coverage.
+
+6.2 WHAT RETRIEVAL MUST NOT DO (STRICT PROHIBITIONS)
+Retrieval is strictly forbidden from:
+  1. Diagnosing the audio problem (e.g. asserting "The guitar tone is muddy because of 250 Hz buildup");
+  2. Selecting the final engineering intervention (e.g. deciding to apply an EQ cut or insert a pedal);
+  3. Deciding which competing hypothesis is true (e.g. choosing between transformer saturation vs. speaker cone breakup);
+  4. Silently resolving or suppressing scientific disagreements;
+  5. Translating physical sound concepts into AmpliTube 5 gear, GUIDs, or slider values;
+  6. Rewriting or summarizing canonical knowledge claims in ways that distort boundaries;
+  7. Converting descriptive symptom tags directly into deterministic prescriptive fixes;
+  8. Masking retrieval insufficiency by padding context with loosely related trivia.
+
+6.3 CONTRACTUAL HANDOFF TO PHASE 1C.5 (REASONING ENGINE)
+  - Retrieval provides: "Here are the physical laws, causal models, operational boundaries,
+    known trade-offs, and competing theories relevant to the acoustic conditions described."
+  - Phase 1C.5 Sound Engineer executes: "Based on these validated principles, the observed
+    signal measurements, and the user's aesthetic target, I hypothesize that X is occurring,
+    weigh the trade-off between Y and Z, and decide on action W."
+
+
+--------------------------------------------------------------------------------
+7. KNOWLEDGE NEED / RETRIEVAL INTENT MODEL
+--------------------------------------------------------------------------------
+
+Retrieval requests are initiated via a strongly typed `KnowledgeNeed` schema. This contract
+replaces vague natural language prompts with structured engineering intent.
+
+7.1 KNOWLEDGE NEED SCHEMA DEFINITION
+```json
+{
+  "need_id": "NEED-20260926-001",
+  "triggering_context": "DYNAMIC_AUDIO_ANALYSIS",
+  "target_domains": [2, 3, 4, 8],
+  "signal_chain_context": {
+    "stage": "PRE_AMPLIFIER_INPUT",
+    "topology": "HIGH_GAIN_MULTI_STAGE_TUBE",
+    "transducer_type": "PASSIVE_HIGH_OUTPUT_HUMBUCKER",
+    "active_circuit_elements": ["GRID_LEAK_BIAS", "CATHODE_BYPASS_CAPACITOR"]
+  },
+  "observed_phenomenon": {
+    "acoustic_symptom_tags": ["INDISTINCT_ATTACK", "LOW_FREQUENCY_SMEAR"],
+    "dsp_evidence": {
+      "spectral_energy_distribution": "HIGH_SUB_100HZ_CREST_FACTOR",
+      "intermodulation_onset": "MEASURED_PRE_CLIPPING_PUMPING"
+    }
+  },
+  "physical_mechanisms_of_interest": [
+    "INTERMODULATION_DISTORTION",
+    "GRID_BLOCKING",
+    "LOW_FREQUENCY_SLEW_LIMITING",
+    "TRANSDUCER_RESONANCE"
+  ],
+  "epistemic_requirements": {
+    "acceptable_epistemic_bases": [
+      "PHYSICAL_LAW",
+      "ESTABLISHED_ENGINEERING_PRINCIPLE",
+      "EMPIRICAL_RELATIONSHIP"
+    ],
+    "require_operational_boundaries": true,
+    "require_conflict_surfacing": true,
+    "allow_contextual_practices": true,
+    "provenance_filtering": {
+      "note": "Source rigor describes provenance, not default universal truth ranking; specific minimums apply only when explicitly necessitated by the knowledge need."
+    }
+  },
+  "retrieval_depth": "DEEP_CAUSAL_ANALYSIS",
+  "budget_constraints": {
+    "max_claims": 8,
+    "max_token_allocation": 1200,
+    "_classification": "Category B — Configurable implementation target/default"
+  }
+}
+```
+
+7.2 ANTI-RECIPE INTENT CONSTRAINTS
+  - No Solution Bias: The `KnowledgeNeed` expresses *what physical phenomena and stages
+    are under examination*, never *what tool or plugin should be used*.
+  - Multi-Domain Scope: Requests must support indexing across multiple of the 22 domains
+    simultaneously to capture upstream and downstream acoustic interactions.
+
+
+--------------------------------------------------------------------------------
+8. QUERY FORMATION ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Query formation is the translation bridge between raw Case Evidence and the structured
+`KnowledgeNeed`.
+
+8.1 THE TRANSLATION PIPELINE
+The Query Formation layer bridges raw Case Evidence and the structured `KnowledgeNeed`.
+Its ownership boundary is governed by the strict conceptual sequence:
+
+    Case Evidence
+          |
+          v
+    Observed Phenomenon Representation
+          |
+          v
+    Candidate Retrieval Concepts / Mechanisms for Investigation
+          |
+          v
+    Retrieval
+
+NOT:
+    Case Evidence -> Assumed Cause -> Retrieval Supporting That Cause
+
+Query formation MAY broaden retrieval toward plausible candidate mechanisms. It MUST NOT
+assert that any mechanism is actually active in the case. Terms such as grid blocking,
+bias excursion, intermodulation, speaker resonance, or proximity effect are candidate
+mechanisms to investigate, where justified by evidence, and must not be silently promoted
+into premature diagnoses.
+
+Raw Case Evidence consists of objective measurements and user reports:
+  - Evidence: "FFT shows heavy energy concentration below 120 Hz entering high-gain stage;
+    transient onset shows 45 ms smearing; user notes palm-muted notes lack tightness."
+
+The translation pipeline proceeds strictly under evidential discipline:
+  1. Metric Extraction: Maps DSP measurements to observed phenomena:
+     - Excess sub-120 Hz energy -> Candidate phenomenon: `LF_HEADROOM_CONSUMPTION`,
+       `INTERMODULATION_SUSCEPTIBILITY` (candidate mechanisms to investigate).
+     - 45 ms smear -> Candidate phenomenon: `TIME_DOMAIN_RECOVERY`, `BIAS_EXCURSION`
+       (candidate mechanisms to investigate).
+  2. Stage Identification: Identifies the physical stages under investigation:
+     - Domain 2 (Signal Level, Gain Staging & Headroom), Domain 3 (Nonlinear Processing & Distortion),
+       Domain 8 (Amplifier Behaviour).
+  3. Candidate Mechanism Query: Directs retrieval to fetch principles and causal models
+     governing transient recovery, low-frequency saturation, and acoustic/circuit dynamics.
+  4. Boundary Envelopes: Extracts operating conditions for physical applicability matching:
+     - Passive magnetic pickup (high inductance), high-gain triode stages (operating in Class A).
+
+8.2 SAFEGUARD AGAINST DIAGNOSTIC CREEP & CONFIRMATION BIAS
+Query formation protects against confirmation-biased retrieval:
+  - It does NOT say: "Find why we should cut 100 Hz before the amp" (prescriptive fix bias).
+  - It does NOT say: "Find evidence that grid blocking is causing this issue" (assumed cause bias).
+  - It says: "Retrieve physical and circuit interactions between pre-distortion low-frequency
+    bandwidth, tube grid conduction, intermodulation distortion, loudspeaker damping, and
+    transient attack clarity for investigation."
+
+
+--------------------------------------------------------------------------------
+9. RETRIEVAL FACET MODEL
+--------------------------------------------------------------------------------
+
+To balance precision, recall, and safety, retrieval dimensions are categorized into
+four distinct functional tiers:
+
+9.1 TIER 1: HARD ELIGIBILITY FILTERS (BOOLEAN GATES)
+Candidates failing these filters are immediately discarded:
+  - `lifecycle_state`: Must be `VALIDATED_ACTIVE` (quarantined or review drafts rejected).
+  - `operational_boundary_incompatibility`: Claims whose boundaries explicitly exclude
+    the active case physical topology are gated out.
+  - `licensing_compliance`: Unlicensed raw full-text is strictly non-retrievable.
+
+9.2 TIER 2: QUERY EXPANSION FACETS (GRAPH TRAVERSAL)
+Used to broaden search along structural and physical relationships:
+  - `causal_model_id`: Pulls all interconnected claims within an active causal network.
+  - `competing_claim_ids`: Pulls opposing viewpoints linked via `ConflictRecord`.
+  - `upstream_prerequisites`: Pulls foundational physics underlying an empirical rule.
+
+9.3 TIER 3: RELEVANCE & SCORING FEATURES (MULTI-DIMENSIONAL RETRIEVAL UTILITY)
+Used to rank candidate claims within the eligible set strictly for retrieval utility,
+NOT as an epistemic truth score or prestige hierarchy:
+  - Operational Applicability: Independent gate determining whether knowledge is physically
+    eligible for the active case.
+  - Query / Domain / Causal Match: Determines retrieval relevance to the investigated phenomenon.
+  - EpistemicValidation: Qualitative descriptor characterizing the evidential and scientific
+    status of the claim (`evidence_strength`, `consensus_state`, `replication_state`,
+    `conflict_status`, `boundary_certainty`).
+  - Source Rigor & Domain Jurisdiction: Assessed methodological/evidential rigor (`R1` through `R5`)
+    under the frozen source-evaluation framework, and assessed relationship/proximity of the source to the
+    claim's subject domain (`J_CORE`, `J_APPLIED`, `J_PERIPHERAL`). These inform retrieval where a specific
+    KnowledgeNeed legitimately requires them, but MUST NOT collapse into a universal truth/prestige score.
+  - Semantic & Lexical Match: Cosine similarity and BM25 token overlap evaluating query alignment.
+
+9.4 TIER 4: PRESENTATION & REASONING METADATA
+Carried alongside the claim into the context package for the Sound Engineer:
+  - `OperationalBoundary` constraints and known failure modes.
+  - Known trade-offs and acoustic side-effects.
+  - Compact attribution stubs and bibliographic locators.
+  - Conflict markers and divergent evidence summaries.
+
+
+--------------------------------------------------------------------------------
+10. HYBRID RETRIEVAL ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Relying on any single retrieval modality in sound engineering is fatal:
+  - Vector similarity alone retrieves superficially similar text but misses strict
+    circuit boundary conditions and mathematical invariants.
+  - Lexical keyword search alone misses synonymous acoustic concepts (e.g. "blocking distortion"
+    vs. "bias runaway under grid current").
+  - Pure knowledge graphs struggle with fuzzy, naturalistic user symptom descriptions.
+
+Phase 1C.4c establishes a coordinated Hybrid Retrieval Pipeline:
+
+                          +----------------------+
+                          |    KnowledgeNeed     |
+                          +----------+-----------+
+                                     |
+               +---------------------+---------------------+
+               |                     |                     |
+               v                     v                     v
+     +-------------------+ +-------------------+ +-------------------+
+     | Structured Filter | | Lexical Retriever | | Semantic Vector   |
+     | - Lifecycle Gate  | | - Exact terms     | | - Dense embedding |
+     | - Boundary Checks | | - BM25 score      | | - Conceptual sim  |
+     +---------+---------+ +---------+---------+ +---------+---------+
+               |                     |                     |
+               +---------------------+---------------------+
+                                     |
+                                     v
+                        +--------------------------+
+                        | Hybrid Fusion & Pruning  |
+                        +-------------+------------+
+                                      |
+                                      v
+                        +--------------------------+
+                        | Graph & Causal Expansion |
+                        | - Traverse CausalModels  |
+                        | - Fetch Boundaries       |
+                        | - Surfaced Conflicts     |
+                        +-------------+------------+
+                                      |
+                                      v
+                        +--------------------------+
+                        | Context Package Builder  |
+                        +--------------------------+
+
+
+--------------------------------------------------------------------------------
+11. STRUCTURED RETRIEVAL
+--------------------------------------------------------------------------------
+
+Structured retrieval executes deterministic SQL/NoSQL filtering against the strongly
+typed metadata schemas defined in Phase 1C.4a.
+
+11.1 DETERMINISTIC FILTER EXECUTION
+Structured retrieval evaluates:
+  1. `lifecycle_state == VALIDATED_ACTIVE`: Eliminates draft, under-review, or deprecated claims.
+  2. `domain_id IN target_domains`: Restricts candidates to relevant engineering domains
+     (e.g. Domain 2: Signal Level, Gain Staging & Headroom; Domain 8: Amplifier Behaviour).
+  3. `physical_scope == target_scope`: Ensures circuit claims match circuit needs and
+     transducer claims match acoustic capture needs.
+  4. `operational_boundary_compatibility`: Executes boolean boundary checks against
+     active circuit/acoustic conditions (e.g. checking whether signal level falls within
+     the claim's documented valid range).
+
+11.2 PERFORMANCE CHARACTERISTICS
+Structured filtering executes rapid metadata evaluation prior to vector or graph expansion:
+  - Sub-millisecond execution target: Category B — Configurable implementation target/default.
+  - Candidate elimination ratio: Category C — Unverified architectural illustration (actual
+    elimination ratio depends on library size, indexing granularity, and query specificity).
+
+
+--------------------------------------------------------------------------------
+12. LEXICAL RETRIEVAL
+--------------------------------------------------------------------------------
+
+Lexical retrieval employs BM25 scoring over specialized technical indices containing
+exact acoustic and circuit terminology.
+
+12.1 TECHNICAL VOCABULARY MATCHING
+Lexical search is essential for:
+  - Specific electronic component types: `12AX7`, `grid-leak resistor`, `bright cap`, `Alnico V`;
+  - Formal mathematical constants and units: `dBFS`, `dBu`, `0 VU`, `Hz`, `Q-factor`, `THD+N`;
+  - Exact standard identifiers: `AES17`, `EBU R128`, `IEC 60268`;
+  - Named acoustic phenomena: `Fletcher-Munson`, `comb filtering`, `Haas effect`, `proximity effect`.
+
+12.2 FAILURE MODES OF PURE LEXICAL RETRIEVAL
+Lexical search fails when practitioners use informal, colloquial, or poetic vocabulary
+(e.g. "blooming mids," "fizzy top," "sponge," "chug"). For this reason, lexical retrieval
+operates in tandem with semantic vector retrieval.
+
+--------------------------------------------------------------------------------
+13. SEMANTIC RETRIEVAL
+--------------------------------------------------------------------------------
+
+Semantic retrieval maps natural language queries, clinical listening observations,
+and symptom descriptions into dense vector representations to bridge conceptual and
+terminological vocabularies.
+
+13.1 VOCABULARY BRIDGING & SYNONYM BRIDGING
+Semantic retrieval translates practitioner idioms into professional engineering concepts:
+  - "Flubby / loose bottom end" -> Low-frequency phase lag, intermodulation distortion,
+    under-damped speaker resonance, excessive pre-distortion LF energy.
+  - "Harsh / bees in a jar fizz" -> Odd-order harmonic clustering above 4 kHz,
+    direct on-axis acoustic beaming, absence of speaker inductive roll-off.
+  - "Boxy / hollow tone" -> Mid-frequency comb filtering (300-800 Hz), acoustic boundary
+    reflection, out-of-phase summing of dual microphone capsules.
+
+13.2 STRICT SEPARATION OF SIMILARITY FROM TRUTH
+  - Mathematical Definition: Cosine similarity measures geometric alignment in embedding
+    space; it measures *topical relatedness*, NOT *epistemic truth*.
+  - Strict Prohibition: The retrieval engine is architecturally forbidden from using vector
+    similarity as a surrogate for evidence strength, replication state, or scientific consensus.
+    A high-similarity practitioner anecdote remains an anecdote. Furthermore, while physical
+    laws carry foundational epistemic weight, a retrieved claim is not an unconstrained universal
+    mandate; it remains subject to its operational boundaries, representation limitations,
+    and applicability context.
+
+
+--------------------------------------------------------------------------------
+14. GRAPH / RELATIONSHIP RETRIEVAL
+--------------------------------------------------------------------------------
+
+Retrieving an atomic `KnowledgeClaim` in isolation is an epistemic hazard. In professional
+sound engineering, a claim stripped of its causal mechanism, validity envelope, or
+provenance is dangerous.
+
+14.1 THE CANONICAL ENTITY EXPANSION CONTRACT
+Whenever an eligible `KnowledgeClaim` is retrieved, the engine executes mandatory
+graph traversal across the frozen Phase 1C.4a entity model:
+
+                      +---------------------+
+                      |   SourceDocument    |
+                      +----------+----------+
+                                 ^
+                                 | cites
+                      +----------+----------+
+                      |   ClaimAttribution  |
+                      +----------+----------+
+                                 ^
+                                 | attributes
+                      +----------+----------+       participates
+                      |    KnowledgeClaim   +--------------------+
+                      +----+-----------+----+                    |
+                           |           |                         v
+            formalizes via |           | bounded by    +-------------------+
+                           v           v               |   ConflictRecord  |
+                  +--------------+   +-----------------+(if conflict active|
+                  |  CausalModel |   |OperationalBound | +-------------------+
+                  +--------------+   +-----------------+
+
+14.2 MANDATORY GRAPH EXPANSION RULES
+  1. Claim -> CausalModel: If `causal_model_id` is populated, the parent `CausalModel`
+     (including input variables, output effects, mediating mechanisms, and trade-off vectors)
+     is retrieved.
+  2. Claim -> OperationalBoundary: If `operational_boundary_id` is populated, the boundary
+     envelope (valid ranges, prerequisites, failure modes) MUST accompany the claim.
+     Dropping the boundary while presenting the claim is a fatal architectural violation.
+  3. Claim -> ConflictRecord: If `epistemic_validation.conflict_status == ACTIVE_COMPETING_CLAIM`,
+     the associated `ConflictRecord` and the competing counterpart claim MUST be retrieved.
+  4. Claim -> Attribution Stub: The `source_id`, exact locator, and rigor tier are attached
+     for end-to-end auditability.
+
+
+--------------------------------------------------------------------------------
+15. CAUSAL EXPANSION
+--------------------------------------------------------------------------------
+
+Sound engineering diagnostics require reasoning from effect back to multiple plausible
+causes, and from proposed intervention forward to unintended side-effects.
+
+15.1 STRUCTURAL CAUSAL TRAVERSAL
+The retrieval engine traverses the `CausalModel` entities along five directional axes:
+  1. Upstream Cause Traversal: "Given effect Y (e.g. low-frequency transient smear),
+     what physical mechanisms X1, X2, X3 can generate Y?"
+  2. Downstream Consequence Traversal: "If variable A (e.g. pre-distortion bass) is altered,
+     what downstream nonlinearities and spectral shifts occur at stages B, C, and D?"
+  3. Precondition Verification: "Does mechanism M require high signal amplitude, specific
+     transducer impedance, or asymmetric clipping to manifest?"
+  4. Confounder Identification: "What extraneous variables (e.g. room modes, pick attack
+     velocity, pickup height) could produce effect Y independently of mechanism M?"
+  5. Trade-off Vector Extraction: "What acoustic or electrical property is degraded when
+     optimizing for mechanism M (e.g. cutting bass restores tightness but thins single-note body)?"
+
+15.2 SUPPORTING HYPOTHESIS FORMATION WITHOUT PERFORMING IT
+Causal expansion arms the Sound Engineer with the complete causal landscape. It does not
+declare: "X is the cause of Y in this track." It delivers: "Physical science identifies
+X1, X2, and X3 as distinct mechanisms capable of producing Y under these conditions."
+
+
+--------------------------------------------------------------------------------
+16. OPERATIONAL BOUNDARY HANDLING
+--------------------------------------------------------------------------------
+
+The most catastrophic error in automated engineering advice is applying a principle
+outside its physical domain of validity.
+
+16.1 THE FOUR-STATE APPLICABILITY ENVELOPE
+Every candidate claim's `OperationalBoundary` is evaluated against active Case Evidence:
+
++---------------------------+-------------------------------------------------------+
+| APPLICABILITY STATE       | RETRIEVAL ACTION                                      |
++---------------------------+-------------------------------------------------------+
+| 1. STRICTLY APPLICABLE    | Delivered into primary context; fully qualified for   |
+|                           | active engineering reasoning.                         |
++---------------------------+-------------------------------------------------------+
+| 2. CONDITIONALLY          | Delivered with explicit boundary warnings and missing |
+|    APPLICABLE             | prerequisite parameters flagged for the Engineer.     |
++---------------------------+-------------------------------------------------------+
+| 3. APPLICABILITY UNKNOWN  | Delivered only if query explicitly requests exploratory|
+|                           | hypotheses; marked `UNVERIFIED_BOUNDARY_STATUS`.      |
++---------------------------+-------------------------------------------------------+
+| 4. STRICTLY OUT-OF-BOUNDS | GATED OUT of primary context. Forbidden from entering |
+|                           | reasoning context as an applicable recommendation.    |
++---------------------------+-------------------------------------------------------+
+
+16.2 CONCRETE BOUNDARY EXCLUSION EXAMPLES
+  - Transducer Boundary: Proximity effect physics apply strictly to pressure-gradient
+    transducers (figure-8, cardioid). If Case Evidence specifies an omnidirectional
+    pressure transducer, proximity-based LF claims are STRICTLY OUT-OF-BOUNDS.
+  - Circuit Topology Boundary: Push-pull power amp claims (even-harmonic cancellation)
+    are STRICTLY OUT-OF-BOUNDS if the active topology is a single-ended Class-A circuit.
+  - Signal Level Boundary: Small-signal linear circuit equations are STRICTLY OUT-OF-BOUNDS
+    when the active stage is driven 20 dB into deep saturation.
+
+
+--------------------------------------------------------------------------------
+17. CONFLICT-AWARE RETRIEVAL
+--------------------------------------------------------------------------------
+
+Legitimate scientific divergence, competing circuit designs, and conflicting studio
+methodologies are permanent features of professional sound engineering.
+
+17.1 FIRST-CLASS CONFLICT DELIVERY
+When a retrieved claim is marked with `conflict_status: ACTIVE_COMPETING_CLAIM`:
+  1. The retrieval engine locates the corresponding `ConflictRecord`.
+  2. The opposing competing claim(s) are retrieved regardless of similarity ranking.
+  3. A unified `ConflictPackage` is constructed containing:
+     - The competing propositions;
+     - The divergence nature (`BOUNDARY_DIVERGENCE`, `METHODOLOGICAL_DIFFERENCE`,
+       `DIRECT_CONTRADICTION`, `TERMINOLOGICAL_AMBIGUITY`);
+     - The respective source rigor tiers and evidence profiles;
+     - The boundary conditions under which each position claims validity.
+
+17.2 ANTI-CONSENSUS ENFORCEMENT
+Retrieval is strictly prohibited from:
+  - Averaging competing numerical parameters (e.g. if Source A recommends 80 Hz high-pass
+    and Source B recommends 140 Hz high-pass, retrieval must NEVER deliver "110 Hz");
+  - Suppressing a minority view supported by rigorous empirical testing in favor of a
+    popular textbook convention;
+  - Hiding conflicts behind an opaque composite score.
+
+
+--------------------------------------------------------------------------------
+18. UNCERTAINTY PRESERVATION
+--------------------------------------------------------------------------------
+
+Professional sound engineers work under constant physical uncertainty: component
+tolerances, room variations, transducer drift, and psychoacoustic variability.
+Retrieval must expose uncertainty, not conceal it behind false precision.
+
+18.1 QUALITATIVE UNCERTAINTY DESCRIPTORS
+Every retrieved claim retains its frozen Phase 1C.4a qualitative descriptors:
+  - `evidence_strength`: THEORETICAL_PROOF, SYSTEMATIC_EMPIRICAL, CORROBORATED_PRACTICE, ANECDOTAL_OBSERVATION.
+  - `consensus_state`: ESTABLISHED_CONSENSUS, PREDOMINANT_VIEW, DEBATED_VIEW, OUTLIER_HYPOTHESIS.
+  - `replication_state`: INDEPENDENTLY_REPLICATED, LABORATORY_VERIFIED, OBSERVATIONAL_UNREPLICATED.
+  - `boundary_certainty`: TIGHTLY_BOUNDED, PARTIALLY_BOUNDED, EXPLORATORY_LIMITS.
+
+18.2 REJECTION OF SCALAR PERCENTAGES
+TT does not represent epistemic standing through a single scalar confidence value; it preserves
+independent qualitative evidence, consensus, replication, conflict and boundary descriptors.
+(This does not assert that all probability or confidence measures in estimation theory are
+scientifically meaningless, but rather that collapsing multi-dimensional epistemic validation,
+methodological rigor, and physical boundaries into an arbitrary single float obscures the
+true qualitative nature of engineering evidence).
+
+
+--------------------------------------------------------------------------------
+19. ALTERNATIVE MECHANISM RETRIEVAL
+--------------------------------------------------------------------------------
+
+A hallmark of amateur engineering is fixing on the first apparent cause of a problem.
+Professional competency requires evaluating competing hypotheses, particularly under
+Domain 16 (Diagnosis & Root-Cause Reasoning), Domain 19 (Uncertainty & Evidence Discipline),
+and Domain 20 (Alternative Solution Reasoning).
+
+19.1 ACTIVE SEARCH FOR MATERIALLY PLAUSIBLE ALTERNATIVE MECHANISMS
+When a phenomenon or acoustic symptom is investigated, retrieval must actively seek
+materially plausible alternative mechanisms across relevant domains where canonical knowledge
+supports them:
+  - Anti-Fixation Safeguard, Not Numerical Quota: Alternative-mechanism diversity is an
+    anti-fixation safeguard, not a rigid quota. The system must not invent diversity merely
+    to satisfy a predetermined domain count.
+  - Single Validated Mechanism State: If only one mechanism is genuinely supported by validated
+    applicable knowledge, retrieval must report that state rather than fabricate alternatives.
+  - Example: Investigation of "High-Frequency Harshness / Piercing Fizz":
+    - Mechanism Candidate A (Microphone & Capture Engineering, Domain 10): On-axis acoustic beaming
+      and capsule resonance.
+    - Mechanism Candidate B (Loudspeaker & Cabinet Engineering, Domain 9): Extended cone/dust-cap
+      breakup modes and dispersion narrowing.
+    - Mechanism Candidate C (Amplifier Behaviour, Domain 8): Power stage crossover distortion,
+      parasitic oscillation, or reduced negative feedback damping at high frequencies.
+    - Mechanism Candidate D (Nonlinear Processing & Distortion, Domain 3): Slew-rate limiting
+      and high-order intermodulation products in clipping stages.
+
+19.2 RETRIEVAL DIVERSITY VS. PREMATURE DIAGNOSIS
+Retrieval does not decide which of these candidate mechanisms is active in the track.
+Under Domain 16 (Diagnosis & Root-Cause Reasoning) and Domain 20 (Alternative Solution Reasoning),
+the Sound Engineer evaluates the evidence against these retrieved principles without retrieval
+prejudging the diagnosis.
+
+
+--------------------------------------------------------------------------------
+20. ANTI-RECIPE SAFEGUARDS
+--------------------------------------------------------------------------------
+
+Current TT suffered from hardcoded keyword heuristics that short-circuited engineering
+thought (e.g. "if metal guitar -> insert OverScream pedal with Drive=0, Level=10").
+
+20.1 ARCHITECTURAL FIREWALLS AGAINST RECIPES
+  1. No Direct Gear Prescriptions: Canonical claims state physical relationships
+     (e.g. "Attenuating low-frequency content prior to asymmetric triode clipping reduces
+     intermodulation distortion and sharpens transient leading edges"), NOT specific gear commands.
+  2. Bounded Contextual Practices: Where a historical studio practice is retrieved
+     (e.g. "Using a mid-hump overdrive pedal before a British high-gain amplifier"), it
+     is tagged with `knowledge_role: CONTEXT_DEPENDENT_PRACTICE` and accompanied by its
+     underlying electrical causal model (pre-filtering EQ curve + low-gain boost).
+  3. Platform Neutrality: Preset names, knob values, and plugin manufacturers are excluded
+     from the knowledge layer. The Sound Engineer reasons in frequency (Hz), level (dB),
+     time (ms), impedance (Ohms), and harmonic ratios.
+
+--------------------------------------------------------------------------------
+21. DEVICE-SPECIFIC KNOWLEDGE HANDLING
+--------------------------------------------------------------------------------
+
+Sound engineering balances universal acoustics with idiosyncratic device behaviors
+(e.g. the specific mid-frequency scoop of a Fender blackface tone stack vs. the active
+mid-boost of a Marshall JCM800).
+
+21.1 STRICT TYPING OF DEVICE-SPECIFIC BEHAVIOR
+  - Explicit Enum Marker: Any claim addressing specific commercial equipment must be
+    tagged with `physical_scope: DEVICE_SPECIFIC_BEHAVIOUR`.
+  - Upstream Physical Rigor: Documented schematics, transformer saturation thresholds,
+    and voice-coil impedance curves are valid engineering knowledge (Source Class E or F).
+  - Prohibition of Downstream AT5 Details: Downstream software artifacts (e.g. AmpliTube 5
+    gear IDs, XML preset nodes, GUI pixel coordinates, VPA engine flags) are STRICTLY
+    FORBIDDEN in the Knowledge Library.
+
+21.2 PRECEDENCE & COMPLEMENTARITY
+General physical laws establish the primary baseline of validity. Device-specific
+knowledge provides concrete parametric and topological instances of those laws.
+Neither replaces the other:
+  - An amplifier tone-stack schematic shows a specific RC filter implementation;
+  - Kirchhoff's Laws and wave filter theory govern how that RC filter operates.
+
+
+--------------------------------------------------------------------------------
+22. LIFECYCLE ELIGIBILITY RULES
+--------------------------------------------------------------------------------
+
+The frozen Phase 1C.4a lifecycle model governs which entities may enter runtime retrieval:
+
++----------------------+---------------------------+--------------------------------+
+| LIFECYCLE STATE      | PRODUCTION RUNTIME ACCESS | RESEARCH / DEBUG ACCESS        |
++----------------------+---------------------------+--------------------------------+
+| VALIDATED_ACTIVE     | PERMITTED (Standard)      | PERMITTED                      |
+| CAPTURED / EXTRACTED | FORBIDDEN                 | PERMITTED (Isolated Sandbox)   |
+| NORMALIZED           | FORBIDDEN                 | PERMITTED (Ingestion Pipeline) |
+| UNDER_REVIEW         | FORBIDDEN                 | PERMITTED (Audit Viewers)      |
+| QUARANTINED (Lesson) | STRICTLY FORBIDDEN        | PERMITTED (Phase 1C.4d Governance)|
+| DEPRECATED           | FORBIDDEN (Default)       | PERMITTED (Historical Audit)   |
+| SUPERSEDED           | FORBIDDEN (Default)       | PERMITTED (Lineage Tracking)   |
+| REJECTED             | ABSOLUTELY FORBIDDEN      | PERMITTED (Rejection Logs)     |
++----------------------+---------------------------+--------------------------------+
+
+22.1 EXPERIENTIAL LEARNING LIFECYCLE & CANDIDATELESSON QUARANTINE
+In accordance with frozen Phase 1C.4a-DR Addendum 2, runtime experiential feedback
+(`CandidateLesson`) is quarantined experiential evidence, NOT canonical knowledge.
+
+A `CandidateLesson` does NOT become canonical merely by status promotion. The required
+lifecycle architecture is:
+    CandidateLesson
+          |
+          v
+    Quarantined Experiential Evidence
+          |
+          v
+    Evaluation & Generalisation Process (Phase 1C.4d Governance)
+          |
+          v
+    Evidence Sufficiency Review (Dossier verification)
+          |
+          v
+    Qualifying generalisable knowledge is represented through appropriate canonical
+    knowledge entities (`KnowledgeClaim`, `CausalModel`, `OperationalBoundary`, etc.)
+          |
+          v
+    Standard Governance / Review Lifecycle (`UNDER_REVIEW` -> `VALIDATED_ACTIVE`)
+          |
+          v
+    Eligible canonical knowledge enters production runtime retrieval
+
+The originating `CandidateLesson` remains retained according to the applicable governance
+and evidence-retention policy as part of the historical experience lineage. Under no circumstances
+may an unpromoted or direct `CandidateLesson` enter the production retrieval index.
+
+
+--------------------------------------------------------------------------------
+23. RANKING & RELEVANCE ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Ranking in Phase 1C.4c is strictly defined as RELEVANCE TO THE KNOWLEDGE NEED,
+never as a pseudo-scientific "Truth Score."
+
+================================================================================
+CONFIGURABLE IMPLEMENTATION ILLUSTRATION — NOT FROZEN ARCHITECTURAL WEIGHTING
+The numerical scoring formulas, weighting factors, constants, and dimension multipliers
+in this section are non-authoritative implementation illustrations. They do not constitute
+frozen architectural weights, nor do they define a universal epistemic truth score.
+================================================================================
+
+23.1 RELEVANCE SCORING MECHANICS (ILLUSTRATIVE UTILITY MODEL)
+Candidate claims passing Tier 1 boolean eligibility gates are ranked purely for retrieval
+utility within finite context budgets. Epistemic standing, source rigor, and operational
+applicability remain independent dimensions:
+  - Applicability: Evaluated via `OperationalBoundary` boolean and envelope matching.
+  - Query Relevance: Evaluated via domain, stage, and causal alignment.
+  - Epistemic Validation: Preserved qualitatively without collapsing into a scalar score.
+  - Source Rigor & Jurisdiction: Evaluated in provenance context, not as a universal prestige ladder.
+
+Illustrative Mechanical Scoring Model:
+  1. Dimensional Relevance (R_dim) [Category C — Unverified architectural illustration]:
+     - Subject-domain proximity: Evaluates assessed relationship of source to target domain
+       when specifically requested by KnowledgeNeed; does NOT assign fixed universal scalar
+       weights to J_CORE/J_APPLIED/J_PERIPHERAL;
+     - Stage match (e.g. Exact signal stage match = 1.0, adjacent stage = 0.5);
+     - Evidence grounding weight (configurable utility multiplier).
+  2. Semantic / Lexical Fusion (R_text) [Category B — Configurable implementation target/default]:
+     - Reciprocal Rank Fusion (RRF) combining BM25 keyword rank and dense embedding cosine rank:
+       RRF_Score = 1 / (k + Rank_BM25) + 1 / (k + Rank_Dense), where k=60 is a configurable constant.
+  3. Causal Centrality (R_causal) [Category C — Unverified architectural illustration]:
+     - Graph distance to queried phenomenon in `CausalModel` (e.g. Direct mechanism = 1.0,
+       mediating node = 0.8, secondary side-effect = 0.5).
+
+23.2 RETRIEVAL UTILITY SEPARATED FROM EPISTEMIC AUTHORITY
+Composite sorting scores represent mechanical RETRIEVAL UTILITY ONLY. They are stripped
+from the presentation payload to prevent the Sound Engineer from confusing retrieval sorting
+with physical validity or scientific consensus.
+
+
+--------------------------------------------------------------------------------
+24. RUNTIME KNOWLEDGE CONTEXT PACKAGE
+--------------------------------------------------------------------------------
+
+The primary output of Phase 1C.4c is the `KnowledgeContextPackage`. This is the
+curated epistemic payload injected into the AI Sound Engineer's reasoning prompt.
+
+24.1 STRUCTURED PACKAGE SCHEMA
+```json
+{
+  "package_id": "KCP-20260926-001",
+  "need_id": "NEED-20260926-001",
+  "knowledge_snapshot_hash": "a1b2c3d4e5f67890...",
+  "primary_principles": [
+    {
+      "claim_id": "KC-D03-INTERMOD-004",
+      "concept_name": "Pre-Clipping Low-Frequency Intermodulation Distortion",
+      "epistemic_basis": "PHYSICAL_LAW",
+      "knowledge_role": "FUNDAMENTAL_THEORY",
+      "statement": "Large-amplitude low-frequency signal components drive nonlinear gain stages into deep saturation, modulating the amplitude and phase of higher-frequency components and generating discordant intermodulation products.",
+      "causal_model": {
+        "mediating_mechanisms": ["NONLINEAR_TRANSFER_CURVATURE", "ASYMMETRIC_GRID_CONDUCTION"],
+        "primary_consequence": "TRANSIENT_INTERMODULATION_DISTORTION",
+        "trade_off": "Retaining sub-100Hz pre-gain energy provides single-note fullness but degrades chordal separation and attack tightness."
+      },
+      "operational_boundary": {
+        "boundary_state": "STRICTLY_APPLICABLE",
+        "valid_envelopes": "High-gain multi-stage tube or solid-state clipping stages (Gain > 30 dB).",
+        "known_failure_modes": "Inapplicable to linear, clean-headroom amplification stages."
+      },
+      "attribution_stub": {
+        "source_id": "SRC-IEEE-1981-TUBE",
+        "rigor_tier": "R2_PEER_REVIEWED_RESEARCH",
+        "jurisdiction": "J_CORE"
+      }
+    }
+  ],
+  "alternative_hypotheses": [
+    {
+      "domain_id": 9,
+      "hypothesis_name": "Under-Damped Loudspeaker Cabinet Resonance",
+      "claim_id": "KC-D09-CAB-RESONANCE-002",
+      "summary": "Cabinet internal air-volume resonance and low electrical damping factor cause prolonged low-frequency ringing that mimics pre-distortion smearing."
+    }
+  ],
+  "active_conflicts": [],
+  "retrieval_status": "SUFFICIENT_VALIDATED_KNOWLEDGE"
+}
+```
+
+
+--------------------------------------------------------------------------------
+25. CONTEXT BUDGETING & COMPRESSION
+--------------------------------------------------------------------------------
+
+LLM reasoning contexts are finite. When the retrieved knowledge exceeds the configured
+token budget, the engine applies principled, non-destructive pruning.
+
+25.1 THE QUALIFIER PRESERVATION MANDATE
+Under no circumstances may an `OperationalBoundary` or critical qualifier be stripped
+from a `KnowledgeClaim` merely to save tokens while keeping the claim text.
+A claim separated from its boundary is an epistemic falsehood.
+
+25.2 GRACEFUL PRUNING STRATEGY
+When token pressure is detected:
+  1. Prune Tier 4 Presentation Verbosity: Shorten full textual derivations to LaTeX
+     formula summaries;
+  2. Prune Incidental Contextual Practices: Retain foundational physical laws and causal
+     models; prune secondary illustrative studio anecdotes;
+  3. Prune Distant Causal Nodes: Retain direct mechanisms (depth=1); prune depth=2 side-effects;
+  4. Preserve Diversity: Retain materially plausible alternative mechanisms across relevant
+     domains; never eliminate the sole representation of a plausible alternative mechanism
+     to keep redundant claims from a single domain.
+
+
+--------------------------------------------------------------------------------
+26. PROVENANCE PAYLOAD
+--------------------------------------------------------------------------------
+
+To balance token economy with full auditability, the runtime package delivers compact
+Attribution Stubs while retaining cryptographic pointers to the complete record.
+
+26.1 COMPACT ATTRIBUTION STUB
+Every claim in the context package includes:
+  - `source_id`: Canonical bibliographic identifier (e.g. `SRC-BERANEK-2012-ACOUSTICS`);
+  - `rigor_tier`: Assessed methodological/evidential rigor (`R1` through `R5`) under the frozen evaluation framework;
+  - `jurisdiction`: Assessed relationship/proximity of the source to the claim's subject domain (`J_CORE`, `J_APPLIED`, `J_PERIPHERAL`);
+  - `locator_hash`: Cryptographic hash of the Exact Reconstructable Source Locator.
+
+26.2 ON-DEMAND TRACEABILITY
+If the Sound Engineer or human auditor requires full bibliographic detail, the
+`locator_hash` resolves instantaneously to the canonical `SourceDocument` and page/paragraph
+quote in the Phase 1C.4b archive.
+
+
+--------------------------------------------------------------------------------
+27. RETRIEVAL TRACE & OBSERVABILITY
+--------------------------------------------------------------------------------
+
+Every retrieval execution emits an immutable `RetrievalTrace` conforming to Phase 1B
+and Phase 1C.4a-DR Addendum 2 observability standards.
+
+27.1 RETRIEVAL TRACE ARCHITECTURAL CONTRACT
+To satisfy Historical Exact Auditability without forcing runtime execution traces to bloat,
+the `RetrievalTrace` may either directly contain OR immutably reference sufficient historical
+retrieval artifacts to establish:
+  1. Actual Candidate Set: The precise claims/models produced by each retrieval modality
+     (structured, lexical BM25, dense semantic vector, and graph expansion);
+  2. Candidate Fusion & Ranking Result: The ordering, intermediate fusion scores, or selection
+     used during that historical run;
+  3. Eligibility & Boundary Exclusions: Every excluded candidate with its exact failure rationale
+     (e.g. out-of-boundary circuit condition, invalid lifecycle state);
+  4. Graph & Causal Expansions: The exact traversal paths executed across `CausalModel`,
+     `OperationalBoundary`, and `ConflictRecord` entities;
+  5. Context-Budget Pruning Decisions: Explicit records of which claims or secondary descriptions
+     were pruned to fit token allocations, including pruning priority rationale;
+  6. Lineage Identity: The canonical Git commit hash, runtime index version, embedding model
+     identifier, BM25 tokenizer parameters, and execution seeds;
+  7. Exact Final Package: The final `KnowledgeContextPackage` snapshot OR its immutable cryptographic
+     content hash / artifact reference sufficient to retrieve that historical package.
+
+The architecture MUST NOT require rerunning a nondeterministic, approximate, model-assisted, or
+version-sensitive retrieval component in order to discover what happened during the original run.
+
+27.2 RETRIEVAL TRACE SCHEMA
+```json
+{
+  "trace_id": "TRACE-RET-20260926-001",
+  "timestamp": "2026-09-26T17:40:00Z",
+  "knowledge_need": { "need_id": "NEED-20260926-001" },
+  "index_version": "IDX-v1.0-COMMIT-8f4b2a",
+  "configuration_lineage": {
+    "git_commit": "8f4b2a19c72e4d0b...",
+    "embedding_model_id": "text-embedding-3-large@v1",
+    "bm25_params": { "k1": 1.2, "b": 0.75 },
+    "execution_seed": 42
+  },
+  "filters_applied": {
+    "lifecycle_state": "VALIDATED_ACTIVE",
+    "domains": [2, 3, 4, 8]
+  },
+  "candidate_artifacts": {
+    "structured_filter_candidates_count": 18,
+    "lexical_candidates_count": 12,
+    "semantic_candidates_count": 15,
+    "graph_expansion_candidates_count": 8,
+    "historical_candidates_artifact_ref": "urn:tt:retrieval:artifact:candidates-TRACE-RET-20260926-001"
+  },
+  "boundary_exclusions": [
+    {
+      "claim_id": "KC-D10-PROX-009",
+      "reason": "Omnidirectional capsule excludes pressure-gradient proximity effect"
+    }
+  ],
+  "graph_expansions_performed": [
+    "EXPAND_CAUSAL_MODEL:CM-INTERMOD-001",
+    "EXPAND_CONFLICT:CONF-003"
+  ],
+  "context_budget_pruning": {
+    "initial_tokens": 1420,
+    "budget_limit": 1200,
+    "pruned_items": [
+      {
+        "claim_id": "KC-D02-SECOND-ORDER-005",
+        "action": "PRUNED_SECONDARY_TEXT",
+        "tokens_saved": 220,
+        "rationale": "Retained primary claim statement; pruned secondary descriptive example"
+      }
+    ],
+    "final_tokens": 894
+  },
+  "final_package": {
+    "package_id": "KCP-20260926-001",
+    "package_content_hash": "sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+    "package_artifact_ref": "urn:tt:retrieval:artifact:kcp-KCP-20260926-001"
+  },
+  "retrieval_status": "SUFFICIENT_VALIDATED_KNOWLEDGE"
+}
+```
+
+27.3 OBSERVABILITY VS. REASONING
+The `RetrievalTrace` records *what retrieval did*, not *what the engineer thought*.
+It provides complete forensic visibility into whether a poor engineering decision
+was caused by flawed retrieval or flawed downstream reasoning.
+
+
+--------------------------------------------------------------------------------
+28. REPLAYABILITY
+--------------------------------------------------------------------------------
+
+Engineering decisions must be defensible and reproducible across scientific reviews.
+
+28.1 THREE-CONCEPT REPLAYABILITY & AUDITABILITY FRAMEWORK
+Universal claims that hybrid retrieval will always regenerate a `KnowledgeContextPackage`
+bit-for-bit across any runtime environment are technically invalid. Dense embeddings,
+approximate nearest-neighbour (ANN/HNSW) indexes, model-assisted routing, library version
+updates, hardware floating-point differences, and runtime library changes introduce potential
+variability.
+
+The architecture formally distinguishes three independent replay concepts:
+
+  A. DETERMINISTIC REPRODUCIBILITY:
+     Components that are genuinely deterministic under a frozen implementation and configuration
+     (structured boolean filters, BM25 index lookups with fixed tie-breaking, graph traversals,
+     and deterministic pruning algorithms) guarantee identical output when executed against the
+     same canonical Git commit hash, index build, and configuration.
+
+  B. RECONSTRUCTABLE RETRIEVAL LINEAGE:
+     Every retrieval run preserves sufficient metadata to reconstruct exactly how the package
+     was produced: the canonical Git commit hash, runtime index version, structured `KnowledgeNeed`,
+     configuration parameters (BM25 parameters, embedding model identifier, pruning rules), and
+     execution seeds.
+
+  C. HISTORICAL EXACT AUDITABILITY:
+     Where any component is nondeterministic, model-assisted, or implementation-dependent,
+     the `RetrievalTrace` immutably captures the actual historical candidate IDs, scores,
+     boundary exclusions, graph traversals, and final assembled `KnowledgeContextPackage`.
+     This ensures that past engineering sessions can be audited with exact forensic fidelity
+     without requiring bit-for-bit re-generation from stochastic components.
+
+--------------------------------------------------------------------------------
+29. RETRIEVAL FAILURE & INSUFFICIENCY
+--------------------------------------------------------------------------------
+
+A fundamental failure mode in AI systems is the compulsion to return an answer even
+when no authoritative knowledge exists, leading to hallucination or trivial filler.
+
+29.1 THE EXPLICIT INSUFFICIENCY PROTOCOL
+When the canonical library lacks validated, applicable knowledge for an issued
+`KnowledgeNeed`, the retrieval engine must explicitly declare:
+
+    RETRIEVAL_STATUS: INSUFFICIENT_VALIDATED_KNOWLEDGE
+
+29.2 TYPED INSUFFICIENCY STATES
+The system emits one of five distinct insufficiency codes:
+  1. `INSUFFICIENT_DOMAIN_COVERAGE`: The library contains zero `VALIDATED_ACTIVE` claims
+     for the targeted physical domain.
+  2. `ALL_CANDIDATES_OUT_OF_BOUNDS`: Relevant claims exist topically, but all active
+     `OperationalBoundary` entities exclude the current signal-chain parameters.
+  3. `UNRESOLVED_CRITICAL_CONFLICT`: A fundamental conflict exists with zero empirical
+     boundary data, rendering automated retrieval unsafe without human expert guidance.
+  4. `MISSING_PREREQUISITE_EVIDENCE`: The query requires specific DSP metrics (e.g. THD+N
+     or acoustic impulse response) that Case Evidence has not provided.
+  5. `PROVENANCE_FAIL`: Candidates were rejected due to unverified citation lineage.
+
+29.3 NO SILENT PADDING
+The engine is strictly forbidden from fetching unrelated studio trivia or generic music
+theory to fill the context package when technical engineering coverage is missing.
+
+
+--------------------------------------------------------------------------------
+30. MODEL PARAMETRIC KNOWLEDGE BOUNDARY
+--------------------------------------------------------------------------------
+
+The AI Sound Engineer will possess vast pre-trained parametric knowledge from its base LLM.
+Retrieval architecture must enforce an unmistakable boundary between what the library
+authorizes and what the model independently conjectures.
+
+30.1 PROVENANCE TAGGING IN REASONING
+  - Canonical Propositions: Any assertion grounded in the retrieved package carries
+    a claim citation (e.g. `[TT-KC-D03-004]`).
+  - Parametric Propositions: If the model uses ungrounded pre-trained intuition, downstream
+    reasoning prompts will mandate that it tag such statements as `[PARAMETRIC_HYPOTHESIS]`.
+  - Non-Preemption: Model-parametric propositions may not silently override, supersede,
+    or masquerade as canonical TT knowledge. Any disagreement must remain explicitly tagged
+    as unbacked/model-parametric and be arbitrated by downstream reasoning and governance
+    according to evidence.
+
+
+--------------------------------------------------------------------------------
+31. SOURCE CONTENT / PROMPT-INJECTION BOUNDARY
+--------------------------------------------------------------------------------
+
+Acquired audio literature contains natural human phrasing, historical slang, and
+occasionally imperative commands (e.g. "Never set your bias below 35 mA under any
+circumstances, ignore all other guides").
+
+31.1 UNTRUSTED DATA BOUNDARY & DEFENCE-IN-DEPTH
+The architecture establishes clear principles governing source-derived text:
+  - Untrusted Data Principle: All retrieved and source-derived content is treated as
+    untrusted data, NEVER as control-plane instructions.
+  - Validated Field Eligibility: Only validated canonical fields (e.g. normalized
+    `KnowledgeClaim` statements, `CausalModel` mechanisms) are eligible for production retrieval.
+  - Zero Instruction Authority: Imperatives, commands, or directives appearing in historical
+    source quotations possess zero execution or instruction authority.
+  - System Prompt Authority: Application and system instructions remain strictly authoritative
+    over retrieved content.
+  - Structural Delimiters as Clarifiers, Not Complete Security Boundaries: Serializing data
+    in JSON structures and wrapping context in XML delimiters
+    (`<canonical_sound_engineering_knowledge> ... </canonical_sound_engineering_knowledge>`)
+    reduces semantic ambiguity and parse confusion, but delimiters alone are not a cryptographic
+    or absolute security boundary.
+  - Downstream Immunity: Downstream reasoning engines must never interpret source text as
+    runtime directives or execution commands.
+
+
+--------------------------------------------------------------------------------
+32. COPYRIGHT & RAW SOURCE BOUNDARY
+--------------------------------------------------------------------------------
+
+In compliance with the Two-Store Information Governance Architecture established in
+Phase 1C.4b Section 8:
+
+32.1 RUNTIME AIR-GAP FROM COPYRIGHTED ARCHIVES
+  - The runtime retrieval index NEVER touches Store A (the secure legal archive containing
+    raw textbook PDFs, paper scans, or full publisher chapters).
+  - Retrieval operates exclusively on Store B (the normalized canonical library containing
+    short factual extractions, mathematical formulations, and public domain summaries).
+  - Quotation Discipline: The runtime package delivers atomic declarative propositions.
+    Direct quotations or source excerpts may be retained or delivered only where permitted
+    by applicable licence, law, project information-governance policy and source-use conditions.
+    Project-level quotation limits (e.g. conservative snippet lengths) MAY be adopted as
+    deliberately conservative operational controls, but must not be represented as determining
+    legal permissibility.
+
+
+--------------------------------------------------------------------------------
+33. PERFORMANCE & LATENCY PRINCIPLES
+--------------------------------------------------------------------------------
+
+Real-time audio engineering workflows demand responsive reasoning loops without
+compromising epistemic rigor.
+
+33.1 RUNTIME PIPELINE TARGETS & CLASSIFICATION
+All performance figures below are classified under the Phase 1C.4c-R v1.1 numerical framework:
+  1. Immutable Read-Only Indexes: Runtime indexes (vector, inverted BM25, and relational)
+     are compiled offline into memory-mapped, immutable structures.
+  2. Latency Targets [Category B — Configurable implementation target/default]:
+     - Overall retrieval target: < 50ms (initial engineering goal for interactive studio responsiveness);
+     - Stage 1: Structured boolean filter (< 5ms target);
+     - Stage 2: Lexical BM25 + Vector HNSW lookup (< 20ms target);
+     - Stage 3: Graph expansion & boundary evaluation (< 15ms target);
+     - Stage 4: Package assembly & pruning (< 10ms target).
+     (These targets are subject to implementation benchmarking, hardware configuration, and corpus sizing.)
+  3. Zero Runtime Ingestion [Category A — Normative requirement]: No raw document parsing,
+     OCR, or embedding generation occurs during the live engineering reasoning loop.
+
+
+--------------------------------------------------------------------------------
+34. KNOWLEDGE UPDATE / INDEX REFRESH
+--------------------------------------------------------------------------------
+
+When the canonical Knowledge Library changes in Git (e.g. human expert signs off on a
+new claim or updates a boundary in Phase 1C.4d — Knowledge Conflict, Uncertainty & Governance), the runtime index updates cleanly
+without service interruption.
+
+34.1 DISPOSABLE DERIVATIVE ARCHITECTURE
+  - The runtime index is a 100% disposable derivative of the Git-tracked canonical library.
+  - Hot-Swap Index Compilation: A background build agent detects a new signed Git commit,
+    compiles fresh vector embeddings and relational graph tables, validates the index
+    against regression test suites, and executes an atomic pointer hot-swap.
+  - Zero Runtime Drift: A running session binds to an immutable `index_version` hash,
+    ensuring that a session never experiences mid-run knowledge shifts.
+
+
+--------------------------------------------------------------------------------
+35. RETRIEVAL TESTABILITY
+--------------------------------------------------------------------------------
+
+Retrieval quality must be evaluated and verified independently of the downstream
+AI Sound Engineer's reasoning quality.
+
+35.1 INDEPENDENT RETRIEVAL BENCHMARKS (SPECIFICATION HARNESS)
+The retrieval subsystem architecture defines five verification harnesses
+[Status: SPECIFICATION HARNESSES — RESERVED FOR EXECUTION IN PHASE 1C.4f]:
+  1. Golden Intent Recall (GIR) [Category B target]: Evaluates whether a known physical challenge
+     retrieves mandatory foundational physical laws and principles (e.g. verifying Ohm's Law and
+     Kirchhoff's Laws are retrieved for impedance mismatch inquiries).
+  2. Out-of-Bounds Rejection (OBR) [Category A requirement]: Injects queries violating boundary
+     conditions to verify that strictly out-of-bounds claims are gated out of primary context.
+  3. Conflict Surfacing Precision (CSP) [Category A requirement]: Verifies that queries touching
+     contested areas (e.g. tube rectifier sag vs. solid-state diode speed) surface competing
+     claims and the active `ConflictRecord`.
+  4. Anti-Recipe Audit (ARA) [Category A requirement]: Verifies that symptom queries return
+     physical principles and causal models rather than hardcoded gear prescriptions or plugin brands.
+  5. Lineage & Replay Verification (LRV) [Category B target]: Verifies that deterministic components
+     reproduce identical outputs and that all runs preserve complete reconstructable lineage
+     and historical audit records.
+
+
+--------------------------------------------------------------------------------
+36. 22-DOMAIN CROSS-DOMAIN SUPPORT
+--------------------------------------------------------------------------------
+
+Sound engineering is inherently multi-disciplinary. The retrieval engine supports all
+22 professional competency domains defined in Phase 1C.3a without creating isolated
+silos:
+
+36.1 AUTHORITATIVE 22-DOMAIN TRAVERSAL MATRIX
+The retrieval engine operates across the exact frozen 22-domain competency model:
+  - Acoustic & Circuit Signal Chain:
+    Domain 1: Source & Performance
+    Domain 2: Signal Level, Gain Staging & Headroom
+    Domain 3: Nonlinear Processing & Distortion
+    Domain 4: Frequency & Spectral Engineering
+    Domain 5: Dynamics, Envelope & Transients
+    Domain 6: Noise Engineering
+    Domain 7: Signal Topology & Processing Order
+    Domain 8: Amplifier Behaviour
+    Domain 9: Loudspeaker & Cabinet Engineering
+    Domain 10: Microphone & Capture Engineering
+    Domain 11: Phase, Polarity & Multi-Source Interaction
+    Domain 12: Time-Based, Modulation & Spatial Processing
+  - Contextual & Psychoacoustic Domains:
+    Domain 13: Psychoacoustics & Perception
+    Domain 14: Musical & Production Context
+    Domain 15: Reference Analysis & Tone Matching
+  - Diagnostic, Decision & Governance Domains:
+    Domain 16: Diagnosis & Root-Cause Reasoning
+    Domain 17: Intervention Selection & Minimalism
+    Domain 18: Trade-Off & Constraint Reasoning
+    Domain 19: Uncertainty & Evidence Discipline
+    Domain 20: Alternative Solution Reasoning
+    Domain 21: Iterative Engineering & Outcome Evaluation
+    Domain 22: Professional Engineering Behaviour
+
+Cross-Domain Traversal Examples:
+  - Physical Signal Path Traversal: Domain 1 (Source & Performance) -> Domain 2 (Signal Level, Gain
+    Staging & Headroom) -> Domain 3 (Nonlinear Processing & Distortion) -> Domain 4 (Frequency &
+    Spectral Engineering) -> Domain 8 (Amplifier Behaviour) -> Domain 9 (Loudspeaker & Cabinet
+    Engineering) -> Domain 10 (Microphone & Capture Engineering).
+  - Diagnostic & Decision Traversal: Domain 16 (Diagnosis & Root-Cause Reasoning) -> Domain 18
+    (Trade-Off & Constraint Reasoning) -> Domain 19 (Uncertainty & Evidence Discipline) ->
+    Domain 20 (Alternative Solution Reasoning) -> Domain 21 (Iterative Engineering & Outcome Evaluation).
+
+36.2 UNIFIED GRAPH INDEXING
+Claims across all 22 domains reside in a single relational graph. An inquiry investigating
+phenomena in Domain 16 (Diagnosis & Root-Cause Reasoning) seamlessly traverses into Domain 3
+(Nonlinear Processing & Distortion), Domain 8 (Amplifier Behaviour), and Domain 9 (Loudspeaker &
+Cabinet Engineering) via shared physical variables (e.g. harmonic distortion, intermodulation,
+cone damping factor, and bias recovery times).
+
+--------------------------------------------------------------------------------
+37. CURRENT TT & PLATFORM BOUNDARIES
+--------------------------------------------------------------------------------
+
+37.1 CURRENT TT CODEBASE BOUNDARY (HANDOFF TO PHASE 1C.4e)
+  - No Legacy Code Migration: Phase 1C.4c does NOT ingest or migrate Current TT heuristics.
+  - Future Ingestion Rule: Once Current TT code assets are deconstructed in Phase 1C.4e under
+    the `source_rigor_tier: UNASSESSED_LEGACY_SOURCE` rules established in Phase 1C.4a-DR,
+    any resulting `VALIDATED_ACTIVE` claims will be indexed through standard retrieval pipelines.
+
+37.2 DOWNSTREAM PLATFORM INDEPENDENCE (AMPLITUBE 5 BOUNDARY)
+  - Upstream Sound Engineering Knowledge must remain 100% agnostic to software platforms.
+  - No AmpliTube 5 GUIDs (e.g. `kAmpModel_CustomLead`), XML preset attributes (`<Param id="3">`),
+    or software-specific knob curves are permitted in retrieved context.
+  - Platform translation occurs strictly downstream in Phase 1C.5/1C.6 post-reasoning execution.
+
+
+--------------------------------------------------------------------------------
+38. FUTURE FEEDBACK / CANDIDATE LESSON BOUNDARY
+--------------------------------------------------------------------------------
+
+38.1 ISOLATION OF EXPERIENTIAL LEARNING & PROMOTION ARCHITECTURE
+In accordance with frozen Phase 1C.4a-DR Addendum 2:
+  - Runtime engineering experiences, user feedback, and post-session evaluations produce
+    `CandidateLesson` records.
+  - All `CandidateLesson` entities are quarantined in an isolated research/audit store.
+  - Unvetted experiential lessons are ARCHITECTURALLY PREVENTED from entering the active
+    retrieval index.
+  - A `CandidateLesson` does NOT become canonical knowledge merely by status promotion.
+    Instead, qualifying generalisable experiential insights must be evaluated, pass an
+    Evidence-Sufficiency Dossier review, and be formulated into canonical knowledge entities
+    (`KnowledgeClaim`, `CausalModel`, `OperationalBoundary`, etc.).
+  - These canonical entities then undergo the standard Phase 1C.4d governance review before
+    achieving `VALIDATED_ACTIVE` status. The originating `CandidateLesson` remains retained
+    according to the applicable governance and evidence-retention policy as part of the
+    historical experience lineage.
+
+
+--------------------------------------------------------------------------------
+39. ARCHITECTURAL DECISIONS (DECISIONS A THROUGH P)
+--------------------------------------------------------------------------------
+
+Phase 1C.4c formally resolves the sixteen core architectural decisions:
+
+--------------------------------------------------------------------------------
+DECISION A: PRIMARY RETRIEVAL ARCHITECTURE
+Classification: CLARIFIED
+Resolution: Coordinated Hybrid Pipeline (Structured, Lexical, Semantic, Graph).
+Rationale: Preserved core hybrid coordination while clarifying that structured filtering
+enforces operational boundary eligibility and lifecycle gates before lexical/semantic scoring.
+
+DECISION B: CANONICAL SOURCE VS. RUNTIME INDEX AUTHORITY
+Classification: UNCHANGED
+Resolution: Canonical Git Repository is 100% Authoritative; Runtime Indexes are Disposable Derivatives.
+Rationale: Prevents index drift, proprietary lock-in, and synchronization anomalies.
+Any index corruption is resolved by rebuilding from the signed Git commit.
+
+DECISION C: ELIGIBILITY OF LIFECYCLE STATES FOR RUNTIME RETRIEVAL
+Classification: CLARIFIED
+Resolution: `VALIDATED_ACTIVE` Canonical Entities Only; CandidateLesson Quarantined.
+Rationale: Confirmed that `CandidateLesson` entities remain quarantined experiential evidence.
+They do not become retrievable by status promotion; generalisable knowledge must be formulated
+into canonical entities (`KnowledgeClaim`, etc.) that pass governance review.
+
+DECISION D: RETRIEVAL RANKING NUMERIC SCORES
+Classification: CORRECTED
+Resolution: Mechanical Retrieval Utility Only; Strictly Separated from Epistemic Standing & Jurisdiction.
+Rationale: Corrected to remove universal epistemic and jurisdiction hierarchies (e.g. J_CORE > J_APPLIED,
+PHYSICAL_LAW > PRINCIPLE, or fixed numerical jurisdiction weights) from ranking. Ranking scores measure
+mechanical retrieval utility within context budgets. Epistemic validation, source rigor, and domain
+jurisdiction are independent qualitative, evidential, and provenance dimensions. Jurisdiction participates
+only when legitimately required by a KnowledgeNeed, without fixed prestige weights. All scoring examples
+are classified as CONFIGURABLE IMPLEMENTATION ILLUSTRATION — NOT FROZEN ARCHITECTURAL WEIGHTING.
+
+DECISION E: REQUIRED RELATIONSHIP EXPANSION FOR KNOWLEDGECLAIM
+Classification: UNCHANGED
+Resolution: Mandatory Graph Traversal to CausalModel, OperationalBoundary, Attribution, and ConflictRecord.
+Rationale: An atomic claim isolated from its causal mechanisms and valid operating envelope
+is epistemically unsafe and leads directly to incorrect studio interventions.
+
+DECISION F: OPERATIONALBOUNDARY PARTICIPATION
+Classification: UNCHANGED
+Resolution: Hard Ineligibility Filter for Strict Incompatibilities; Contextual Warning for Conditional Bounds.
+Rationale: Evaluates physical applicability before relevance. Out-of-bounds claims are gated
+out of primary context regardless of semantic similarity.
+
+DECISION G: CONFLICTRECORD SURFACING
+Classification: UNCHANGED
+Resolution: First-Class Delivery of Complete Conflict Packages Without Forced Consensus.
+Rationale: Conflicting engineering models, divergent empirical results, and competing studio
+practices must be delivered intact with their respective evidence profiles and boundary conditions.
+
+DECISION H: COMPETING MECHANISMS RETRIEVAL
+Classification: CORRECTED
+Resolution: Active Search for Materially Plausible Alternative Mechanisms Across Relevant Domains.
+Rationale: Corrected to remove rigid multi-domain diversity quotas. Retrieval actively seeks
+plausible alternative mechanisms supported by canonical knowledge, but must never fabricate
+alternatives merely to satisfy a domain quota. If only one mechanism is validated, retrieval
+reports that state.
+
+DECISION I: DEVICE-SPECIFIC VS. GENERAL KNOWLEDGE PRECEDENCE
+Classification: UNCHANGED
+Resolution: General Physical Principles Form the Baseline; Device Knowledge Provides Concrete Instances.
+Rationale: Universal physics governs what is physically possible; device-specific data specifies
+how a particular commercial circuit or component responds within that physical envelope.
+
+DECISION J: RUNTIME PROVENANCE PAYLOAD DEPTH
+Classification: CLARIFIED
+Resolution: Compact Attribution Stubs with Cryptographic Locator Hashes; Jurisdiction-Aware Quotation.
+Rationale: Retains compact attribution stubs for LLM token economy with instant hash-based
+auditability to Store B / Store A, with quotation discipline subject to applicable law and licensing.
+
+DECISION K: CONTEXT-BUDGET REDUCTION STRATEGY
+Classification: CLARIFIED
+Resolution: Non-Destructive Pruning Preserving Boundaries and Plausible Alternative Mechanisms.
+Rationale: Verbosity and secondary details are pruned first. An `OperationalBoundary` is NEVER
+pruned from its claim. Supported alternative mechanisms are not dropped to favor redundant claims.
+
+DECISION L: RETRIEVAL INSUFFICIENCY SEMANTICS
+Classification: UNCHANGED
+Resolution: Explicit `INSUFFICIENT_VALIDATED_KNOWLEDGE` Status with 5 Typed Codes.
+Rationale: Prevents hallucination and halts silent prompt padding with trivia when the library
+lacks validated applicable engineering knowledge.
+
+DECISION M: RETRIEVAL TRACE & REPLAY CONTRACT
+Classification: CORRECTED
+Resolution: Three-Concept Replay Framework (Deterministic Reproducibility, Reconstructable Lineage, Historical Exact Auditability).
+Rationale: Corrected to remove universal bit-for-bit replayability claims across stochastic,
+approximate, or model-assisted components. Deterministic components guarantee identical output under
+frozen configurations; all runs preserve reconstructable lineage; and `RetrievalTrace` either contains
+or immutably references sufficient retrieval artifacts to provide historical exact auditability without
+rerunning nondeterministic or version-sensitive components.
+
+DECISION N: MODEL PARAMETRIC KNOWLEDGE DISTINCTION
+Classification: CORRECTED
+Resolution: Provenance Tagging & Non-Preemption Principle (No Silent Override or Supersession).
+Rationale: Corrected from absolute "can NEVER contradict" language to the enforceable principle
+that model-parametric propositions may not silently override, supersede, or masquerade as canonical
+TT knowledge, and any disagreement must remain tagged and evaluated under evidence discipline.
+
+DECISION O: SOURCE-CONTENT / PROMPT-INJECTION BOUNDARY
+Classification: CORRECTED
+Resolution: Untrusted Data Principle & Defence-in-Depth (Delimiters Reduce Ambiguity, Not Absolute Security Boundary).
+Rationale: Corrected to establish that source-derived text is untrusted data with zero instruction
+authority. Structured JSON/XML reduces ambiguity but does not constitute an absolute guarantee;
+system instructions remain authoritative and downstream reasoning must never execute source directives.
+
+DECISION P: INDEX UPDATE & VERSIONING STRATEGY
+Classification: UNCHANGED
+Resolution: Deterministic Offline Index Compilation with Atomic Hot-Swapping.
+Rationale: Guarantees zero downtime, zero runtime index mutation, and session-locked version
+immutability based on signed Git commits.
+
+
+--------------------------------------------------------------------------------
+40. ARCHITECTURAL ACCEPTANCE SPECIFICATIONS (SCENARIOS A THROUGH O)
+--------------------------------------------------------------------------------
+STATUS: ARCHITECTURAL ACCEPTANCE SPECIFICATIONS — NOT YET EXECUTED
+Formal Knowledge Architecture UAT execution and sign-off is strictly owned by Phase 1C.4f.
+The scenarios below define the mandatory acceptance criteria and specifications:
+
+SCENARIO A — Loose / Flubby Palm Mutes
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: LF transient smearing under heavy overdrive (investigating Domain 2 Signal Level,
+    Gain Staging & Headroom; Domain 3 Nonlinear Processing & Distortion; Domain 5 Dynamics,
+    Envelope & Transients; Domain 8 Amplifier Behaviour; Domain 9 Loudspeaker & Cabinet Engineering).
+  - Expected Retrieval: Pre-clipping intermodulation physics, tube grid blocking / bias excursion
+    models, speaker cone low-frequency damping factors, and transient attack recovery times.
+  - Prohibited Output: Direct instruction to insert an overdrive pedal or preset fix; assuming
+    grid blocking is the active diagnosis without downstream evidential evaluation.
+  - Pass Criteria: Retrieves physical principles, candidate causal models, operational boundaries,
+    and trade-offs without diagnostic creep.
+
+SCENARIO B — Harsh / Fizzy Distortion
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Upper-frequency harshness above 4 kHz in distorted guitar tracks.
+  - Expected Retrieval: Surfaces candidate mechanisms across relevant domains: on-axis microphone
+    beaming (Domain 10 Microphone & Capture Engineering), loudspeaker dust-cap breakup modes
+    (Domain 9 Loudspeaker & Cabinet Engineering), power amp crossover distortion or negative feedback
+    damping loss (Domain 8 Amplifier Behaviour), and high-order intermodulation (Domain 3 Nonlinear
+    Processing & Distortion).
+  - Prohibited Output: Automatically assuming microphone placement is the sole cause; manufacturing
+    spurious hypotheses to meet an arbitrary quota.
+  - Pass Criteria: Actively surfaces materially plausible alternative mechanisms supported by
+    canonical knowledge.
+
+SCENARIO C — Dual-Mic Hollow / Nasal Sound
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Mid-frequency comb filtering and phase cancellation across two microphones
+    (Domain 10 Microphone & Capture Engineering; Domain 11 Phase, Polarity & Multi-Source Interaction).
+  - Expected Retrieval: Wave superposition, path-length delay equations (delta_t = delta_d / c),
+    distance rule physics, and polarity summing consequences.
+  - Pass Criteria: Cross-domain causal expansion between wave acoustics and transducer positioning.
+
+SCENARIO D — High-Gain Idle Hiss
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Background noise in high-gain signal paths (Domain 6 Noise Engineering).
+  - Expected Retrieval: Johnson-Nyquist thermal resistor noise, tube shot noise,
+    first-stage gain noise-figure scaling, and pre- vs. post-gain SNR trade-offs.
+  - Prohibited Output: Prescribing "Insert a noise gate."
+  - Pass Criteria: Separates noise-source physics from downstream mitigation interventions.
+
+SCENARIO E — Stiff / Sterile Playing Feel
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Dynamic touch-sensitivity and transient compression issues (Domain 5 Dynamics,
+    Envelope & Transients; Domain 8 Amplifier Behaviour).
+  - Expected Retrieval: Power supply sag, rectifier impedance (tube vs silicon diode),
+    dynamic bias shift, and output transformer core saturation.
+  - Pass Criteria: Explicitly preserves qualitative uncertainty; presents multiple candidate causal mechanisms.
+
+SCENARIO F — Spectrum Matches but Perception Does Not
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Steady-state FFT matches reference, but perceived timbre differs (Domain 13
+    Psychoacoustics & Perception; Domain 15 Reference Analysis & Tone Matching).
+  - Expected Retrieval: Psychoacoustic temporal masking, envelope attack slope (crest factor),
+    spatial room impulse response, and nonlinear intermodulation differences.
+  - Pass Criteria: Explains divergence using dynamic and psychoacoustic principles, not static EQ.
+
+SCENARIO G — Device-Specific Query
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Mid-frequency behavior of a 1965 Blackface Twin Reverb circuit.
+  - Expected Retrieval: General RC tone-stack filter theory supplemented by specific schematic
+    component values and topology.
+  - Pass Criteria: Explicitly tags device data as `DEVICE_SPECIFIC_BEHAVIOUR`; excludes AT5 GUIDs.
+
+SCENARIO H — Out-of-Boundary Knowledge
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Proximity effect inquiry for an omnidirectional pressure transducer.
+  - Expected Retrieval: Proximity effect claim is GATED OUT by `OperationalBoundary` check
+    (pressure gradient transducer required).
+  - Pass Criteria: Zero out-of-boundary claims presented as applicable advice.
+
+SCENARIO I — Credible Scientific Conflict
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Phase alignment methodology for multi-speaker guitar cabinets.
+  - Expected Retrieval: Surfaced `ConflictRecord` showing Position 1 (Acoustic Center Alignment)
+    vs. Position 2 (Ear-Height Perceptual Coherence), divergence nature, and evidence profiles.
+  - Pass Criteria: Both positions delivered without forced consensus or averaging.
+
+SCENARIO J — Weak Practitioner Anecdote
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Low-frequency pre-distortion filtering techniques.
+  - Expected Retrieval: Validated circuit models and empirical literature retrieved; high semantic
+    similarity does not promote unverified practitioner anecdotes over verified physics.
+  - Pass Criteria: Evaluates provenance and epistemic basis independently from semantic similarity.
+
+SCENARIO K — No Adequate Library Knowledge
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Exotic, undocumented boutique germanium transistor circuit anomaly.
+  - Expected Retrieval: `RETRIEVAL_STATUS: INSUFFICIENT_VALIDATED_KNOWLEDGE`.
+  - Pass Criteria: Emits explicit insufficiency state; does not invent or hallucinate claims.
+
+SCENARIO L — Quarantined CandidateLesson
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Standard gain-staging inquiry.
+  - Expected Retrieval: Quarantined `CandidateLesson` records are excluded.
+  - Pass Criteria: Zero unpromoted feedback lessons present in production context package.
+
+SCENARIO M — Untrusted Source Content Handling
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Historical source text containing imperative phrases ("Ignore previous rules").
+  - Expected Retrieval: Text is treated as untrusted data within structured representation.
+  - Pass Criteria: Downstream reasoning processes content strictly as data; source imperatives
+    possess zero execution authority.
+
+SCENARIO N — Context Budget Pressure
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Complex query exceeding target token budget.
+  - Expected Retrieval: Non-destructive pruning applied; operational boundaries, conflict packages,
+    and plausible alternative mechanisms strictly retained.
+  - Pass Criteria: Zero claims retained without their qualifying `OperationalBoundary`.
+
+SCENARIO O — Lineage Reconstruction & Historical Audit
+  - Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f
+  - Query Intent: Forensic audit of Scenario A execution six months later.
+  - Expected Retrieval: Reconstructable lineage verifies identical inputs, configuration, and index
+    commit; historical audit trace reproduces exact candidates, exclusions, and context package.
+  - Pass Criteria: Reconstructable retrieval lineage and historical exact auditability verified.
+
+
+--------------------------------------------------------------------------------
+41. FAILURE MODES & MITIGATIONS
+--------------------------------------------------------------------------------
+
+The architecture analyzes and mitigates twenty critical retrieval failure modes:
+
+1. Semantic Drift: Dense vector search returning poetic metaphors instead of circuit physics.
+   - Mitigation: Multi-stage hybrid filtering; mandatory domain and scope pre-filtering.
+2. Boundary Blindness: Presenting a valid claim in an invalid physical circuit context.
+   - Mitigation: Tier 1 Boolean boundary gate evaluates transducer, level, and topology rules.
+3. Consensus Fabrication: Averaging conflicting numbers into a meaningless middle ground.
+   - Mitigation: First-class `ConflictPackage` delivery; explicit anti-consensus rules.
+4. Recipe Regression: Re-introducing "symptom -> fixed gear" lookups.
+   - Mitigation: `KnowledgeNeed` schema enforces physical stage and mechanism queries, not gear requests.
+5. Prestige Bias: Treating an R1 physics textbook comment on guitar tone as an invariant law.
+   - Mitigation: Independent domain jurisdiction evaluation assesses the source's relationship/proximity to the claim's subject domain, preventing general standing from masquerading as domain-specific applicability.
+6. Vector Similarity Conflated with Truth: Mistaking 0.95 cosine similarity for scientific certainty.
+   - Mitigation: Similarity scores are restricted to candidate selection; qualitative epistemic
+     validation is displayed separately.
+7. Qualifier Stripping: Dropping boundary conditions during context compression.
+   - Mitigation: Architectural mandate: an `OperationalBoundary` can never be pruned while its claim remains.
+8. Unbounded Practitioner Anecdotes: Treating a studio trick as a universal law.
+   - Mitigation: Multi-axis classification restricts anecdotes to `CONTEXT_DEPENDENT_PRACTICE`.
+9. Silent Masquerading: Model parametric memory presented as canonical library knowledge.
+   - Mitigation: Strict provenance tagging; mandatory citation checks during Phase 1B audit.
+10. Feedback Contamination: Unvetted runtime lessons leaking into active retrieval.
+    - Mitigation: CandidateLessons quarantined in separate evidence store; promotion requires
+      dossier evaluation and formulation of new canonical entities undergoing governance.
+11. Downstream Platform Leaks: AT5 GUIDs or XML nodes appearing in retrieved context.
+    - Mitigation: Platform-independence firewall; automated schema linter rejects vendor tokens.
+12. Retrieval Insufficiency Masking: Padding context with generic music trivia when knowledge is missing.
+    - Mitigation: Explicit `INSUFFICIENT_VALIDATED_KNOWLEDGE` signaling protocol.
+13. Diagnostic Creep: Retrieval subsystem attempting to diagnose the audio problem.
+    - Mitigation: Responsibility boundary restricts retrieval to supplying principles and models.
+14. Untrusted Source Text / Prompt Injection: Imperative source text altering reasoning behavior.
+    - Mitigation: Untrusted data principle, schema-enforced field eligibility, structural delimitation,
+      and non-execution of source imperatives in downstream reasoning.
+15. Circular Lineage Masking: Multiple secondary articles presenting one study as multiple validations.
+    - Mitigation: Graph traversal identifies shared `SourceDocument` ancestry and collapses duplicates.
+16. False Precision in Search: Filtering on "3000.00 Hz" when source says "around 3 kHz."
+    - Mitigation: Numerical typing engine supports `EMPIRICALLY_MEASURED_RANGE` and nominal bands.
+17. Index Desynchronization: Runtime index diverging from canonical Git repository.
+    - Mitigation: Index treated as disposable artifact; rebuild pipeline binds to signed Git commits.
+18. Multi-Domain Siloing: Inability to traverse from microphone acoustics to preamp electronics.
+    - Mitigation: Unified relational graph schema across all 22 competency domains.
+19. Token Exhaustion: Retrieval exceeding LLM prompt window.
+    - Mitigation: Structured four-tier context budgeting and non-destructive pruning.
+20. Nondeterministic Audit Failure: Inability to reconstruct past engineering context packages.
+    - Mitigation: Three-concept replay framework: deterministic reproducibility for frozen pipelines,
+      reconstructable lineage for all runs, and historical exact auditability in `RetrievalTrace`.
+
+
+--------------------------------------------------------------------------------
+42. HANDOFF TO PHASE 1C.4d
+--------------------------------------------------------------------------------
+
+Phase 1C.4c establishes clear contracts for downstream phases:
+
+42.1 HANDOFF TO PHASE 1C.4d (KNOWLEDGE CONFLICT, UNCERTAINTY & GOVERNANCE)
+  - Delivers: The runtime requirements for `ConflictRecord` surfacing, boundary validation,
+    qualitative uncertainty representation, and lifecycle state gating.
+  - Contract: Phase 1C.4d will formalize the conflict adjudication models, uncertainty semantics,
+    and governance architecture for the canonical knowledge lifecycle.
+
+42.2 HANDOFF TO PHASE 1C.4e (CURRENT TT KNOWLEDGE MIGRATION)
+  - Delivers: The structured schema and facet requirements that migrated legacy heuristics
+    must satisfy to become retrievable once validated.
+
+42.3 HANDOFF TO PHASE 1C.5 (ENGINEERING REASONING SPECIFICATION)
+  - Delivers: The `KnowledgeContextPackage` schema and `KnowledgeNeed` query formation contract.
+  - Contract: Phase 1C.5 will design the holistic reasoning loop, hypothesis testing,
+    diagnostic evaluation, and intervention selection that consumes this context.
+
+
+--------------------------------------------------------------------------------
+43. FREEZE READINESS / OPEN ISSUES
+--------------------------------------------------------------------------------
+
+43.1 PRE-FREEZE VERIFICATION CHECKLIST
+  [X] Information-class separation strictly defined (Case Evidence vs. TT Knowledge vs. Model Knowledge).
+  [X] Retrieval responsibility boundary fully articulated; diagnostic creep eliminated.
+  [X] Frozen Phase 1C.4a entity model and 3-axis taxonomy preserved without modification.
+  [X] Frozen Phase 1C.4a-DR Addenda 1 & 2 fully honored.
+  [X] Authoritative 22-domain competency model and 5 assessment dimensions restored and verified.
+  [X] Epistemic standing and retrieval ranking rigorously separated.
+  [X] Alternative-mechanism search specified without artificial domain quotas.
+  [X] Replayability model corrected (deterministic reproducibility vs lineage vs historical audit).
+  [X] UAT Acceptance Scenarios classified as unexecuted specifications reserved for Phase 1C.4f.
+  [X] Untrusted source data principle and defence-in-depth established.
+  [X] CandidateLesson lifecycle and promotion pipeline corrected.
+  [X] Quotation and licensing terminology updated to jurisdiction/licence awareness.
+  [X] All 16 Architectural Decisions (A through P) reissued with status classifications and rationales.
+  [X] Clean handoff boundaries established for Phase 1C.4d, 1C.4e, and 1C.5.
+
+43.2 OPEN ISSUES & FUTURE DEPENDENCIES
+  - Zero open architectural blockers within Phase 1C.4c-R v1.1 scope.
+  - Concrete vector embedding model selection and HNSW index hyperparameter tuning are downstream
+    retrieval implementation and configuration concerns (not owned by Phase 1C.4d).
+  - Formal Knowledge Architecture UAT execution and sign-off is reserved for Phase 1C.4f.
+
+
+--------------------------------------------------------------------------------
+44. PHASE 1C.4c-R v1.1 CORRECTIVE COMPLIANCE AUDIT
+--------------------------------------------------------------------------------
+
+The eleven bounded corrective requirement groups mandated for Phase 1C.4c-R v1.1
+have been audited across the entire specification:
+
+1. Frozen 22-Domain Competency Model Restoration:
+   - Status: RESOLVED
+   - Audit Evidence: All 22 domains restored with exact authoritative names and numbers throughout
+     Section 3.1, 7.1, 8.1, 11.1, 19.1, 24.1, 27.1, 36.1, 36.2, 40 (Scenarios A-O), and Decision H.
+     Five independent assessment dimensions (Knowledge, Evidence Interpretation, Diagnosis,
+     Decision-making, Outcome Reasoning) preserved as orthogonal dimensions, not replacements.
+
+2. Epistemic / Retrieval Ranking Separation:
+   - Status: RESOLVED
+   - Audit Evidence: Universal quality hierarchies (J_CORE > J_APPLIED, PHYSICAL_LAW > PRINCIPLE,
+     R1-R5) eliminated from ranking in Section 9.3, 23.1, 23.2, and Decision D. Applicability,
+     relevance, epistemic validation, and provenance explicitly separated. Numerical examples labeled
+     as CONFIGURABLE IMPLEMENTATION ILLUSTRATION — NOT FROZEN ARCHITECTURAL WEIGHTING.
+
+3. Query Formation vs. Premature Diagnosis:
+   - Status: RESOLVED
+   - Audit Evidence: Conceptual sequence restored: Case Evidence -> Observed Phenomenon
+     Representation -> Candidate Retrieval Concepts / Mechanisms for Investigation -> Retrieval.
+     Terms like grid blocking, bias excursion, and intermodulation specified as candidate mechanisms
+     to investigate, not diagnoses (Section 8.1, 8.2, Decision H).
+
+4. Alternative-Mechanism Diversity:
+   - Status: RESOLVED
+   - Audit Evidence: Rigid diversity quotas removed. Replaced with active search for materially
+     plausible alternative mechanisms across relevant domains where canonical knowledge supports
+     them. If only one mechanism is supported, retrieval reports that state (Section 19.1, Decision H).
+
+5. Replayability & Determinism:
+   - Status: RESOLVED
+   - Audit Evidence: Universal bit-for-bit replay claims removed. Three-concept framework established:
+     Deterministic Reproducibility, Reconstructable Retrieval Lineage, and Historical Exact Auditability
+     (Section 4.8, 28.1, 35.1, Decision M, Scenario O).
+
+6. UAT Execution Status:
+   - Status: RESOLVED
+   - Audit Evidence: Language implying completed execution or pass results removed. Scenarios A-O
+     reclassified as ARCHITECTURAL ACCEPTANCE SPECIFICATIONS — NOT YET EXECUTED, with execution
+     formally reserved for Phase 1C.4f (Section 40).
+
+7. Prompt-Injection Boundary:
+   - Status: RESOLVED
+   - Audit Evidence: Untrusted data principle established. Delimiters clarify structure but do not
+     form an absolute security guarantee. Source imperatives possess zero execution authority;
+     system instructions remain authoritative (Section 31.1, Decision O, Scenario M).
+
+8. Operational Numerical Thresholds:
+   - Status: RESOLVED
+   - Audit Evidence: All numerical figures audited and categorized into Category A (Normative
+     requirement), Category B (Configurable implementation target/default), or Category C
+     (Unverified architectural illustration) across Section 7.1, 11.2, 23.1, 24.1, 33.1, 35.1.
+
+9. CandidateLesson Lifecycle:
+   - Status: RESOLVED
+   - Audit Evidence: Direct status promotion removed. Specified that CandidateLesson is quarantined
+     experiential evidence; generalisable knowledge must be evaluated, pass an Evidence-Sufficiency
+     Dossier, and be represented through canonical entities (`KnowledgeClaim`, etc.) that undergo
+     standard governance before reaching `VALIDATED_ACTIVE` (Section 3.1, 22.1, 38.1, Decision C).
+
+10. Copyright & Licensing Wording:
+    - Status: RESOLVED
+    - Audit Evidence: Universal "under 50 words" legal claim removed. Replaced with jurisdiction/licence-
+      aware wording and information-governance compliance in Section 32.1 and Decision J.
+
+11. Terminology & Ownership Clean-up:
+    - Status: RESOLVED
+    - Audit Evidence:
+      - 11A: TT Professional Knowledge described as curated, provenance-backed, reviewed, governed,
+        and validated according to knowledge type and risk (Section 5, Table 2).
+      - 11B: Physical laws contextualized with operational boundaries and applicability (Section 13.2).
+      - 11C: Scalar confidence text replaced with qualitative representation mandate (Section 3.1, 18.2).
+      - 11D: Model-parametric knowledge prohibited from silently overriding/superseding canonical knowledge;
+        disagreements tagged and evidence-arbitrated (Section 5, 5.1, 30.1, Decision N).
+      - 11E: Phase 1C.4d titled and bounded as Knowledge Conflict, Uncertainty & Governance (Section 2.2,
+        22.1, 34, 42.1).
+      - 11F: Embedding model selection and HNSW tuning classified as downstream implementation/configuration
+        concerns, not assigned to 1C.4d (Section 43.2).
+
+
+--------------------------------------------------------------------------------
+45. CROSS-DOCUMENT CONSISTENCY CHECK
+--------------------------------------------------------------------------------
+
+- All 22 domain names and IDs match the frozen competency model: VERIFIED
+- Five competency assessment dimensions remain independent from the domains: VERIFIED
+- No new Phase 1C.4a taxonomy enum has been invented: VERIFIED
+- No new lifecycle state has been invented: VERIFIED
+- Source rigor is not conflated with epistemic basis: VERIFIED
+- Retrieval relevance is not conflated with epistemic authority: VERIFIED
+- Operational applicability is not conflated with semantic similarity: VERIFIED
+- CandidateLesson remains quarantined experiential evidence: VERIFIED
+- Retrieval does not perform diagnosis or intervention selection: VERIFIED
+- Phase 1C.4d has NOT been started: VERIFIED
+- Phase 1C.4f remains sole owner of formal Knowledge Architecture UAT / sign-off: VERIFIED
+
+
+--------------------------------------------------------------------------------
+46. COMPLETION STATEMENT
+--------------------------------------------------------------------------------
+
+Phase 1C.4c-R v1.1a (Sound Engineering Knowledge Retrieval & Runtime Context Architecture)
+has completed final freeze consistency correction. All four residual blockers, two cleanup
+items, and twelve consistency scan categories have been rigorously verified and resolved,
+fully aligned with frozen upstream architecture (Phase 1C.1, 1C.2, 1C.3a, 1C.3b, 1C.3c-R v1.1,
+1C.4a-R v1.1, 1C.4a-DR, 1C.4b-R v1.1a).
+
+--------------------------------------------------------------------------------
+47. PHASE 1C.4c-R v1.1a FINAL CONSISTENCY AUDIT
+--------------------------------------------------------------------------------
+
+Following final human architectural review, the six bounded consistency and
+ownership corrections have been audited across the entire specification:
+
+1. Correction 1 — Domain 19 Taxonomy Drift:
+   - Status: PASS
+   - Affected Sections: Section 19 preamble, whole-document Domain audit.
+   - Exact Correction Made: Replaced errant "Phase 1C.3a Domain 19: Diagnostic Acumen"
+     with the frozen taxonomy: "Professional competency requires evaluating competing
+     hypotheses, particularly under Domain 16 (Diagnosis & Root-Cause Reasoning),
+     Domain 19 (Uncertainty & Evidence Discipline), and Domain 20 (Alternative
+     Solution Reasoning)." Audited every explicit Domain reference; all 22 domain
+     number/name pairings strictly match the frozen competency model.
+   - Confirmation: No unrelated architecture changed.
+
+2. Correction 2 — Source Rigor Disentanglement from Publication Venue:
+   - Status: PASS
+   - Affected Sections: Section 4.5 (Principle 5), Section 9.3, Section 26.1, Section 37 (Failure Mode 5).
+   - Exact Correction Made: Removed all wording conflating source rigor with publication
+     venue or "origin caliber." Explicitly defined `source_rigor_tier` as characterizing the
+     assessed methodological/evidential rigor under the frozen evaluation framework. Clarified
+     that `J_CORE`, `J_APPLIED`, and `J_PERIPHERAL` describe the assessed relationship/proximity
+     of the source to the claim's subject domain, eliminating universal authority hierarchies.
+   - Confirmation: No unrelated architecture changed.
+
+3. Correction 3 — Removal of Hidden Jurisdiction Prestige Ranking:
+   - Status: PASS
+   - Affected Sections: Section 23.1, Decision D.
+   - Exact Correction Made: Removed fixed numerical jurisdiction weights (e.g. `J_CORE = 1.0,
+     J_APPLIED = 0.7, J_PERIPHERAL = 0.3`). Established that jurisdiction participates only
+     when a specific KnowledgeNeed legitimately requires subject-domain proximity information,
+     remaining an independent query/provenance/applicability facet without collapsing into
+     a universal scalar prestige or authority score.
+   - Confirmation: No unrelated architecture changed.
+
+4. Correction 4 — RetrievalTrace Historical Exact Auditability Contract:
+   - Status: PASS
+   - Affected Sections: Section 27.1, 27.2, Decision M.
+   - Exact Correction Made: Enhanced `RetrievalTrace` contract and schema to ensure it either
+     directly contains OR immutably references sufficient historical artifacts (actual candidate
+     sets across modalities, fusion/ranking results, eligibility/boundary exclusions with reasons,
+     graph expansions, pruning decisions, configuration lineage, and exact final package content
+     hash/reference) to reconstruct historical runs without requiring rerunning nondeterministic
+     or version-sensitive components.
+   - Confirmation: No unrelated architecture changed; storage implementation details avoided.
+
+5. Cleanup 5 — Removal of Universal "Deterministic Hybrid" Wording:
+   - Status: PASS
+   - Affected Sections: Executive Summary, Section 2.1 (Item 11).
+   - Exact Correction Made: Replaced universal "deterministic, hybrid..." wording with
+     "traceable, reconstructable hybrid, graph-expanded, boundary-aware, conflict-preserving,
+     and uncertainty-retaining retrieval architecture" and "reconstructable retrieval lineage,
+     and historical exact auditability." Determinism is asserted only for individual components
+     where genuinely guaranteed under frozen configurations.
+   - Confirmation: No unrelated architecture changed.
+
+6. Cleanup 6 — CandidateLesson Retention Ownership:
+   - Status: PASS
+   - Affected Sections: Section 22.1, Section 38.1.
+   - Exact Correction Made: Replaced unconditional "permanently archived" language with
+     governance-compatible wording: "The originating `CandidateLesson` remains retained
+     according to the applicable governance and evidence-retention policy as part of the
+     historical experience lineage." Preserved quarantine and canonical promotion rules.
+   - Confirmation: No retention policy designed; left to governance architecture.
+
+--------------------------------------------------------------------------------
+47.1 WHOLE-DOCUMENT CONSISTENCY SCAN RESULTS
+--------------------------------------------------------------------------------
+
+A whole-document bounded consistency scan verified all twelve targeted categories:
+1. "Domain [1-22]" references: 100% compliant with frozen 22-domain model (0 drifts).
+2. source_rigor / source_rigor_tier: Strictly used as assessed methodological rigor.
+3. publication venue / source class vs source rigor: Fully disentangled across all sections.
+4. jurisdiction: Evaluated as assessed relationship/proximity to subject domain.
+5. J_CORE / J_APPLIED / J_PERIPHERAL: Zero universal authority hierarchies or fixed scalar weights.
+6. authority / prestige / truth ranking language: Strictly purged from mechanical scoring.
+7. deterministic / determinism: Reserved for genuinely deterministic components.
+8. RetrievalTrace: Schema and contract support complete historical exact auditability.
+9. Historical Exact Auditability: Distinguished cleanly from deterministic reproducibility.
+10. CandidateLesson: Strictly quarantined experiential evidence; direct promotion prohibited.
+11. permanent / permanently archived / retention: Replaced with governance policy retention.
+12. Compliance statements: Verified accurate against actual document content.
+
+--------------------------------------------------------------------------------
+47.2 POTENTIAL ISSUES REQUIRING HUMAN REVIEW
+--------------------------------------------------------------------------------
+- Zero open architectural blockers or inconsistencies identified.
+- Retrieval architecture is fully aligned with frozen upstream contracts and ready for freeze.
+
+================================================================================
+FINAL VERDICT: PASS — READY FOR FORMAL FREEZE
+================================================================================
+

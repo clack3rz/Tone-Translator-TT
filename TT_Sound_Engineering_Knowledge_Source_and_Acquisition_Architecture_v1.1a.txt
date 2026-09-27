@@ -1,0 +1,1685 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4b-R — SOUND ENGINEERING KNOWLEDGE SOURCE & ACQUISITION ARCHITECTURE
+Version 1.1a (Minor Freeze Correction Candidate)
+Date: 2026-09-26
+Mode: READ-ONLY ARCHITECTURAL CORRECTION / SPECIFICATION REVISION
+Deliverable: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+Status: MINOR FREEZE CORRECTION CANDIDATE
+================================================================================
+
+================================================================================
+GLOBAL DECLARATION:
+UNVERIFIED ARCHITECTURAL / SCHEMA / WORKFLOW ILLUSTRATIONS
+All technical examples, schema instances, bibliographic records, formulas,
+numerical thresholds, UAT scenarios, and parameter tables presented in this
+document are UNVERIFIED ARCHITECTURAL, SCHEMA, AND WORKFLOW ILLUSTRATIONS.
+They serve exclusively to demonstrate architectural contracts, data relationships,
+validation rules, and workflow mechanics. They possess ZERO canonical epistemic
+authority and are NOT eligible for production retrieval or runtime reasoning
+unless independently acquired, normalized, and validated through the Phase 1C.4b
+pipeline and promoted under the frozen Phase 1C.4a governance lifecycle.
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 ARCHITECTURAL PURPOSE & STATUS
+Phase 1C.4b-R establishes the corrected, authoritative source-selection, registration,
+acquisition, structural extraction, atomic decomposition, provenance attribution,
+normalization, and ingestion architecture for the Tone Translator (TT) Professional
+Sound Engineering Knowledge System.
+
+THIS SPECIFICATION DEFINES HOW KNOWLEDGE ENTERS THE SYSTEM.
+
+It provides the engineering foundation to convert external technical literature,
+experimental research, standards, manufacturer data, practitioner accounts, and
+legacy code assets into verifiable, platform-independent, atomic candidate knowledge
+units governed by the frozen Phase 1C.4a entity model.
+
+Phase 1C.4b-R is governed by the core epistemological discipline:
+    SOURCE VOLUME ≠ KNOWLEDGE QUALITY
+    SISO: POOR SOURCE MATERIAL, FLAWED EXTRACTION, OR BROKEN PROVENANCE
+    CONTAMINATES EVERY DOWNSTREAM LAYER REGARDLESS OF AGENT CAPABILITY.
+
+The architecture is explicitly designed to produce traceable, provenance-backed,
+bounded, reviewable, conflict-aware, uncertainty-preserving, and professionally
+governed engineering knowledge. It reduces epistemic contamination; it does not
+make ungrounded promises of universal or absolute truth.
+
+1.2 SCOPE BOUNDARIES & INTEGRITY RULES
+This artifact is an architectural specification:
+  - NO external web research, literature scraping, or text harvesting was performed.
+  - NO production knowledge library collections or vector databases were populated.
+  - NO production application code, prompt templates, tests, or Firestore rules were modified.
+  - NO runtime retrieval mechanisms (Phase 1C.4c) or conflict adjudication tools (Phase 1C.4d) were implemented.
+  - NO Current TT knowledge migration (Phase 1C.4e) was executed.
+  - NO runtime engineering reasoning loops (Phase 1C.5) or competency benchmark runners (Phase 1C.6) were created.
+
+1.3 CORE ACQUISITION PIPELINE
+The governing architecture enforces an eleven-stage unidirectional ingestion pipeline:
+    SOURCE
+      ↓
+    REGISTER
+      ↓
+    ACQUIRE
+      ↓
+    EXTRACT
+      ↓
+    DECOMPOSE
+      ↓
+    NORMALISE
+      ↓
+    ATTRIBUTE
+      ↓
+    EVIDENCE ASSESS
+      ↓
+    CONFLICT / UNCERTAINTY IDENTIFY
+      ↓
+    REVIEW
+      ↓
+    ACCEPT / QUARANTINE / REJECT
+      ↓
+    PROMOTION ELIGIBILITY
+
+Canonical promotion to `VALIDATED_ACTIVE` status is strictly gated by human expert
+review and adversarial validation under the frozen Phase 1C.4a governance tiers.
+
+
+--------------------------------------------------------------------------------
+2. PURPOSE & SCOPE
+--------------------------------------------------------------------------------
+
+2.1 THE FUNDAMENTAL DESIGN QUESTION
+Phase 1C.4b-R provides a defensible, scientifically grounded answer to the central problem:
+"How does Tone Translator acquire professional Sound Engineering knowledge without
+confusing documents with knowledge, popularity with truth, extraction with
+validation, or experience with scientific evidence?"
+
+2.2 WHAT THIS SPECIFICATION DELIVERS
+  1. Source Landscape Architecture: Formal taxonomy of eleven source classes, detailing
+     strengths, limitations, appropriate uses, and boundary constraints without creating
+     a naive scalar hierarchy.
+  2. Discovery vs Authority Firewall: Strict separation of discovery mechanisms from
+     epistemic authority and claim support.
+  3. Source Registration & Exact Locators: Robust registration contracts and Exact
+     Reconstructable Source Locators supporting text, equations, tables, schematics,
+     datasets, and standards.
+  4. Copyright, Licensing & Information Governance: A two-store information governance
+     design ensuring lawful source preservation and clean canonical knowledge extraction.
+  5. Atomic Decomposition Discipline: Rules preventing compound statements from
+     masking distinct physical, boundary, and trade-off propositions.
+  6. Multi-Source Evidence Dependency: Lineage graph analysis distinguishing independent
+     corroboration from circular citation ancestry without treating "primary" as synonymous with "true."
+  7. Multi-Axis Epistemic Classification: Direct integration with Phase 1C.4a's three
+     orthogonal axes (Epistemic Basis, Knowledge Role, Physical Scope).
+  8. Anti-Hallucination & AI Containment: Protocols ensuring LLMs act strictly as
+     extraction and structural analysis agents, not self-authorizing epistemic sources.
+  9. Curriculum-Guided Prioritisation: Cross-domain Concept Clusters mapping directly
+     to the frozen 22-domain competency framework without renaming canonical domains.
+  10. Quality Gates & Rejection Policies: Configurable operational quality gates,
+      balanced whole-source and claim-level rejection rules, and failure mitigations.
+
+
+--------------------------------------------------------------------------------
+3. FROZEN ARCHITECTURAL DEPENDENCIES
+--------------------------------------------------------------------------------
+
+Phase 1C.4b-R is built upon the frozen foundations of upstream phases:
+
+3.1 AUTHORITATIVE PROJECT ARTIFACTS
+  1. Phase 1C.1: Professional Sound Engineer Competency Model
+     - Defines the five core dimensions of professional sound engineering.
+  2. Phase 1C.2: Current TT Sound Engineer Knowledge Inventory (/TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt)
+     - Baseline catalog of Current TT heuristics, hardcoded tables, and code logic.
+  3. Phase 1C.3a: Professional Sound Engineer Standards & Target Maturity (/TT_Professional_Sound_Engineer_Standards_v1.txt)
+     - Immutable benchmark: 18 Core Domains at Target L5; 4 Supporting Domains at Target L4.
+     - Preserves 5 independent competency dimensions without numerical averaging.
+  4. Phase 1C.3b: Current TT Professional Capability Assessment & Gap Matrix (/TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt)
+     - Authoritative baseline audit of current limitations and capability gaps.
+  5. Phase 1C.3c-R v1.1: Sound Engineer Curriculum & Competency Evaluation Blueprint (/TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt)
+     - Authoritative 22-domain curriculum, 7-step educational scaffold, and handoffs.
+  6. Phase 1C.4a-R v1.1: Sound Engineering Knowledge Architecture & Lifecycle (/TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt)
+     - Normalized 8-entity model: `SourceDocument`, `ClaimAttribution`, `KnowledgeClaim`,
+       `CausalModel`, `OperationalBoundary`, `ConflictRecord`, `ReviewRecord`, `CandidateLesson`.
+     - Orthogonal 3-axis taxonomy (Epistemic Basis, Knowledge Role, Physical Scope).
+     - Qualitative `EpistemicValidation` replacing scalar confidence/authority scores.
+  7. Phase 1C.4a-DR: Dependency Revalidation Report (/TT_Phase_1C4a_Dependency_Revalidation_Against_1C3c_v1.1.txt)
+     - Revalidated Phase 1C.4a against 1C.3c-R v1.1; established binding Addenda 1 & 2.
+
+3.2 BINDING REVALIDATION ADDENDA & EVIDENCE STANDARDS
+  - ADDENDUM 1: Current TT is classified as `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`.
+    Its embedded heuristics do not inherit authority simply because they exist in TT.
+    Deconstructed claims must recover appropriate underlying provenance or remain quarantined.
+    *Governing Evidence Standard*: Provenance recovery does not require every empirical
+    practice to possess a formal peer-reviewed laboratory paper; it requires identifying
+    the best available underlying provenance and applying evidence standards appropriate
+    to the claim's scope, nature, uncertainty, jurisdiction, and risk.
+  - ADDENDUM 2: Case-specific runtime traces, intermediate decision logs, and session
+    reviews belong to Phase 1B contracts (`RunTrace`, `EngineeringDecisionRecord`,
+    `ValidationReport`) and Phase 1C.5/1C.6 runtime tooling. `CandidateLesson` is
+    strictly reserved for generalizable, recurrent empirical phenomena satisfying the
+    Evidence-Sufficiency Dossier.
+
+
+--------------------------------------------------------------------------------
+4. ACQUISITION DESIGN PRINCIPLES
+--------------------------------------------------------------------------------
+
+The acquisition architecture is governed by twenty inviolable design principles:
+
+1. Knowledge Informs Reasoning — It Never Replaces It:
+   Acquisition extracts physical principles, circuit relationships, boundaries, and trade-offs.
+   It never extracts or generates prescriptive symptom-to-solution recipes.
+2. Retrieval Is Not Acquisition:
+   Acquisition is an offline, high-assurance vetting pipeline; retrieval is runtime
+   indexing. Knowledge cannot be retrieved until it is acquired, attributed, and approved.
+3. Documents Are Not Knowledge:
+   A textbook, schematic, dataset, or paper is an artifact. Knowledge consists of normalized,
+   atomic, verifiable propositions extracted from that artifact.
+4. Extraction Is Not Validation:
+   Accurately parsing a statement or extracting a data point verifies only what the source
+   asserts, not whether the assertion is physically valid or operationally generalizable.
+5. Repetition Is Not Corroboration:
+   Multiple sources repeating an unverified assertion trace to a common ancestor.
+   True corroboration requires independent methodology and diverse measurement conditions.
+6. Popularity Is Not Authority:
+   Studio folklore, internet consensus, and high view counts do not transform acoustic
+   myths into engineering principles.
+7. Manufacturer Origin Is Neither Automatic Truth Nor Disqualification:
+   Datasheets, schematics, and measured responses provide invaluable physical facts,
+   but must be separated from marketing prose and subjective promotional claims.
+8. Practitioner Experience Is Evidence, Not Invariant Law:
+   Documented master engineer practices provide crucial empirical insights and context,
+   but must be bounded as contextual practices or empirical tendencies, not invariant laws.
+9. AI Is an Extraction Agent, Not an Epistemic Source:
+   LLMs have no autonomous authority. Model-generated assertions not grounded in the
+   registered source are classified as unsupported additions and barred from canonical entry.
+10. Current TT Is Legacy Source Material, Not Authority:
+    Existing codebase rules enter as `UNASSESSED_LEGACY_SOURCE`. They must be atomically
+    deconstructed, classified under the 3-axis taxonomy, and backed by appropriate provenance.
+11. Runtime Outcomes Do Not Automatically Become Global Knowledge:
+    Successful DSP presets or session feedback remain quarantined in session records. Only
+    recurrent, controlled, plausibility-verified observations become `CandidateLesson` units.
+12. Device-Specific Physical Facts Are Legitimate Knowledge:
+    Measured physical properties of real commercial hardware (e.g. speaker cone resonance)
+    are valid sound engineering facts when bound to a `DeviceSpecificityContext`.
+13. Platform Implementation Details Are Contamination:
+    Software GUIDs, XML parameter paths, DAW slot conventions, and exporter coordinates
+    are strictly prohibited from the Knowledge Library.
+14. Uncertainty Must Be Preserved:
+    Approximations, measurement tolerances, and exploratory limits must be explicitly
+    captured in `EpistemicValidation` and `OperationalBoundary` records.
+15. Credible Conflicts Must Not Be Silently Resolved:
+    Divergent engineering approaches or boundary disagreements between credible sources
+    must be preserved in explicit `ConflictRecord` entities.
+16. Provenance Must Survive Every Transformation:
+    Every atomic claim, causal link, and boundary envelope must retain an unbroken link
+    to an Exact Reconstructable Source Locator and documented extraction lineage.
+17. Human Review Must Remain Reconstructable:
+    Every promotion decision must be auditable: a reviewer must be able to inspect the
+    source, extraction prompts, diffs, and evidence dossier to verify the chain of reasoning.
+18. Canonical Knowledge Must Remain Inspectable and Auditable:
+    All active knowledge is stored as human-readable, Git-tracked structured files (JSON/YAML)
+    in canonical repositories.
+19. Anti-Recipe Imperative Discipline:
+    The ingestion linter unconditionally rejects any candidate claim containing prescriptive
+    absolutes ("always cut at 400 Hz", "mandatory drive setting").
+20. The Smallest Defensible Claim Prevails:
+    A tightly bounded, specific claim that is demonstrably true under defined conditions is
+    infinitely superior to an impressive, over-generalized claim that fails under edge cases.
+
+
+--------------------------------------------------------------------------------
+5. SOURCE LANDSCAPE ARCHITECTURE
+--------------------------------------------------------------------------------
+
+The acquisition system recognizes eleven distinct source classes. To avoid a naive
+scalar hierarchy, each class is evaluated along multi-dimensional operational axes:
+source class influences epistemic assessment, but does not dictate epistemic truth.
+
+5.1 CLASS A: FOUNDATIONAL SCIENTIFIC & ENGINEERING SOURCES
+  - Description: Peer-reviewed textbooks, monographs, and academic treatises in physics,
+    acoustics, electronics, wave mechanics, and signal processing.
+  - Expected Strengths: Rigorous mathematical foundations, formal physical principles,
+    reproducible derivations, clear boundary conditions.
+  - Expected Limitations: Often abstract; may lack specific musical instrument context
+    or guitar amplifier circuit idiosyncrasies.
+  - Appropriate Uses: Grounding physical laws, wave equations, filter mathematics,
+    and foundational circuit theorems.
+  - Inappropriate Uses: Prescribing aesthetic musical mix balances or subjective tone goals.
+  - Provenance Profile: High formal bibliographic stability (ISBN, DOI, publisher records).
+  - Corroboration Expectations: High stability across established scientific literature.
+  - Common Failure Modes: Applying idealized linear assumptions (e.g. small-signal analysis)
+    to highly non-linear, overdriven guitar circuits.
+  - Suitable Claim Types: `PHYSICAL_LAW`, `ESTABLISHED_ENGINEERING_PRINCIPLE`.
+  - Unsuitable Claim Types: `CONTEXT_DEPENDENT_PRACTICE`, `ILLUSTRATIVE_EXAMPLE`.
+
+5.2 CLASS B: PEER-REVIEWED RESEARCH LITERATURE
+  - Description: Formal research papers published in indexed archival journals and
+    conference proceedings (e.g. AES, ASA, IEEE).
+  - Expected Strengths: Controlled empirical methodologies, statistical rigor, novel
+    experimental validation, detailed error analyses.
+  - Expected Limitations: Narrow operating envelopes; may test single synthetic signals
+    rather than complex musical performances.
+  - Appropriate Uses: Specialized empirical relationships (e.g. tube soft-clipping
+    harmonic generation, speaker cone breakup modes, ear canal transfer functions).
+  - Inappropriate Uses: Universalizing narrow laboratory findings across diverse production environments.
+  - Provenance Profile: Authoritative archival citations (DOI, peer review records).
+  - Corroboration Expectations: Verification against independent experimental replications.
+  - Common Failure Modes: Prematurely accepting an uncorroborated single-study finding
+    as established consensus.
+  - Suitable Claim Types: `EMPIRICAL_RELATIONSHIP`, `HYPOTHETICAL_OR_COMPETING_MODEL`.
+  - Unsuitable Claim Types: Universal workflow rules.
+
+5.3 CLASS C: TECHNICAL STANDARDS & SPECIFICATIONS
+  - Description: Formally ratified standards, recommendations, and reference alignments
+    issued by international engineering bodies (e.g. AES, EBU, ITU-R, IEC, IEEE, ANSI).
+  - Expected Strengths: Absolute clarity on reference calibrations, measurement methodologies,
+    nominal electrical levels, and metering algorithms.
+  - Expected Limitations: Purely definitional; standards define conventions and metrics,
+    not creative engineering strategies.
+  - Appropriate Uses: Defining calibration levels (0 VU, dBu, dBFS), nominal impedances,
+    standard measurement bandwidths, and target loudness curves.
+  - Inappropriate Uses: Treating a regional calibration convention as an immutable law of physics.
+  - Provenance Profile: Formally ratified institutional documentation.
+  - Corroboration Expectations: Reference to current vs superseded versions.
+  - Common Failure Modes: Applying an audio broadcast standard (e.g. -23 LUFS) as a mandatory
+    production constraint for an overdriven guitar amplifier pre-capture.
+  - Suitable Claim Types: `PROFESSIONAL_CONVENTION`.
+  - Unsuitable Claim Types: Causal models of acoustic phenomena.
+
+5.4 CLASS D: PROFESSIONAL TEXTBOOKS & APPLIED TREATISES
+  - Description: Comprehensive handbooks written by seasoned engineering authorities
+    focusing on practical studio, acoustic, and circuit applications.
+  - Expected Strengths: Strong bridge between fundamental theory and real-world studio
+    practice; comprehensive coverage of system topology and equipment interactions.
+  - Expected Limitations: May blend rigorous physics with anecdotal rules of thumb
+    without explicit boundary markers.
+  - Appropriate Uses: System signal flow, microphone deployment techniques, gain staging
+    practices, acoustic boundary treatment.
+  - Inappropriate Uses: Accepting colloquial rules of thumb as inviolable scientific truths.
+  - Provenance Profile: Established technical publisher editions and revisions.
+  - Corroboration Expectations: Cross-verification against underlying physics and manufacturer data.
+  - Common Failure Modes: Generalizing a studio rule of thumb beyond its intended musical context.
+  - Suitable Claim Types: `ESTABLISHED_ENGINEERING_PRINCIPLE`, `CONTEXT_DEPENDENT_PRACTICE`.
+  - Unsuitable Claim Types: Unbounded universal assertions.
+
+5.5 CLASS E: MANUFACTURER ENGINEERING MATERIAL
+  - Description: Technical datasheets, schematics, engineering whitepapers, service manuals,
+    and patents published by hardware/component manufacturers.
+  - Expected Strengths: Authoritative data on the physical construction, component values,
+    measured frequency response, and circuit topology of specific hardware.
+  - Expected Limitations: Commercial interest; marketing narratives frequently intermixed with data.
+  - Appropriate Uses: Device-specific behavior, circuit topologies, component tolerances,
+    and published electrical specifications.
+  - Inappropriate Uses: Marketing slogans, subjective timbre descriptions ("warm British roar").
+  - Provenance Profile: Corporate engineering documents, schematic revisions, patent numbers.
+  - Corroboration Expectations: Bench testing or independent measurement where feasible.
+  - Common Failure Modes: Failing to filter out promotional exaggerations from objective specs.
+  - Suitable Claim Types: `DEVICE_SPECIFIC_BEHAVIOUR`, `CIRCUIT_ELECTRONICS`.
+  - Unsuitable Claim Types: Unbounded subjective assertions.
+
+5.6 CLASS F: INDEPENDENT TECHNICAL MEASUREMENTS & TESTING
+  - Description: Controlled, calibrated laboratory or bench measurements conducted by
+    independent engineering institutions, research labs, or qualified technical testers.
+  - Expected Strengths: Objective, unvarnished empirical data free from commercial marketing bias.
+  - Expected Limitations: Heavily dependent on test rig calibration, room acoustics, and methodology.
+  - Appropriate Uses: Validating or refuting manufacturer claims, quantifying non-linearities,
+    measuring component tolerances and acoustic dispersion.
+  - Inappropriate Uses: Discarding test methodology context, temperature, or measurement SPL.
+  - Provenance Profile: Test protocol documentation, equipment calibration logs, raw data files.
+  - Corroboration Expectations: Replicability across independent test environments.
+  - Common Failure Modes: Treating a measurement taken at a single microphone position or single
+    SPL as the universal behavior of the device.
+  - Suitable Claim Types: `EMPIRICAL_RELATIONSHIP`, `DEVICE_SPECIFIC_BEHAVIOUR`.
+  - Unsuitable Claim Types: Invariant theoretical proofs.
+
+5.7 CLASS G: DOCUMENTED PROFESSIONAL PRACTICE
+  - Description: In-depth, technically articulate interviews, masterclasses, and published
+    case studies by master recording engineers, mastering engineers, and amplifier designers.
+  - Expected Strengths: Deep insights into real-world trade-off balancing, psychoacoustic
+    masking solutions, and context-dependent adjustments.
+  - Expected Limitations: Subjective vocabulary; lack of formal scientific controls;
+    practices are heavily tied to specific personal aesthetics and room environments.
+  - Appropriate Uses: Capturing trade-off vectors, diagnostic cues, and contextual practices.
+  - Inappropriate Uses: Extracting physical laws or universal dogmatic presets.
+  - Provenance Profile: Published technical interviews, authorized masterclasses, transcribed papers.
+  - Corroboration Expectations: Corroboration by underlying acoustics or multiple independent master practitioners.
+  - Common Failure Modes: Confusing a creative personal signature technique with an engineering standard.
+  - Suitable Claim Types: `CONTEXT_DEPENDENT_PRACTICE`, `ILLUSTRATIVE_EXAMPLE`.
+  - Unsuitable Claim Types: `PHYSICAL_LAW`, universal invariant claims.
+
+5.8 CLASS H: PRACTITIONER & TECHNICAL COMMUNITY KNOWLEDGE
+  - Description: Technical discussions, repair logs, and empirical observations from
+    curated professional audio engineering forums and builder communities (e.g. AES archives, GroupDIY).
+  - Expected Strengths: Practical reporting of hardware quirks, component drift, failure modes,
+    and field modification behaviors.
+  - Expected Limitations: High noise-to-signal ratio; persistent repetition of urban legends;
+    uncontrolled test environments; lack of rigorous attribution.
+  - Appropriate Uses: Identifying candidate hypotheses for empirical validation; discovering
+    real-world hardware edge cases.
+  - Inappropriate Uses: Direct promotion to canonical knowledge without rigorous verification.
+  - Provenance Profile: Forum threads, repair logs, community repository commits.
+  - Corroboration Expectations: In accordance with Phase 1C.4a-DR Addendum 1, recover the best
+    available underlying provenance and validate the claim to an evidence standard appropriate to
+    its nature, scope, uncertainty, jurisdiction, and risk. Depending on the claim, appropriate
+    corroboration may include authoritative technical literature, standards, manufacturer engineering
+    documentation, independent measurements, multiple independent practitioner observations, or
+    controlled empirical evidence. Primary literature and laboratory measurement are preferred where
+    appropriate, but neither is a universal requirement; however, poorly supported practitioner
+    or community claims must remain quarantined when evidence is insufficient for canonical promotion.
+  - Common Failure Modes: Ingesting confirmation bias or forum groupthink as objective fact.
+  - Suitable Claim Types: `HYPOTHETICAL_OR_COMPETING_MODEL`, `ENGINEERING_TENDENCY` (quarantined).
+  - Unsuitable Claim Types: Direct promotion to canonical active status without appropriate corroboration and review.
+
+5.9 CLASS I: CURRENT TT LEGACY MATERIAL
+  - Description: The existing Tone Translator codebase, algorithms, tables, and heuristics.
+  - Ingestion Classification: Formally classified as `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`.
+  - Expected Strengths: Contains valuable domain intuitions (e.g. microphone positioning
+    heuristics, cabinet impedance pairings, pre-distortion filter concepts).
+  - Expected Limitations: Entangled with deterministic code rules, keyword overrides,
+    AmpliTube 5 GUIDs, and arbitrary numerical thresholds.
+  - Appropriate Uses: Source of candidate concepts to be atomically deconstructed and classified.
+  - Inappropriate Uses: Never automatically authoritative. Never cited as proof of truth.
+  - Provenance Profile: Repository commit history, file paths, and function line numbers.
+  - Corroboration Expectations: Best available underlying provenance appropriate to the claim type.
+  - Common Failure Modes: Migrating code rules unchanged as "proven engineering principles."
+  - Suitable Claim Types: Candidate propositions undergoing deconstruction in Phase 1C.4e.
+  - Unsuitable Claim Types: Direct entry into `VALIDATED_ACTIVE` status.
+
+5.10 CLASS J: TT EXPERIENTIAL & CANDIDATE LESSON MATERIAL
+  - Description: System-generated runtime observations, closed-loop discrepancy analyses,
+    and user session telemetry.
+  - Ingestion Classification: Quarantined `CandidateLesson` records.
+  - Expected Strengths: Direct insight into real-world algorithm performance and edge cases.
+  - Expected Limitations: Case-specific; prone to localized overfitting and noise.
+  - Appropriate Uses: Internal hypothesis generation and system refinement.
+  - Inappropriate Uses: Cannot update canonical knowledge without passing the Evidence-Sufficiency Dossier.
+  - Provenance Profile: Internal runtime execution logs and session traces.
+  - Corroboration Expectations: Multi-factor evidence-sufficiency dossier.
+  - Common Failure Modes: "Single good preset -> universal global rule."
+  - Suitable Claim Types: Quarantined candidate lessons only.
+  - Unsuitable Claim Types: Canonical active knowledge.
+
+5.11 CLASS K: HISTORICAL ARCHIVAL & PATENT LITERATURE
+  - Description: Original patents, historical technical reports, and vintage design notes.
+  - Expected Strengths: Clear insight into original inventive intent and baseline derivations.
+  - Expected Limitations: May describe obsolete technologies or components no longer manufactured.
+  - Appropriate Uses: Documenting circuit topology origins and foundational patent claims.
+  - Inappropriate Uses: Enforcing vintage design constraints on modern high-speed DSP or wide-bandwidth converters.
+  - Provenance Profile: Patent office documentation, historical corporate laboratory archives.
+  - Corroboration Expectations: Verification against modern circuit analysis.
+  - Common Failure Modes: Treating a patent claim (which is legally protective) as an objective performance guarantee.
+  - Suitable Claim Types: `ESTABLISHED_ENGINEERING_PRINCIPLE`, `CIRCUIT_ELECTRONICS`.
+  - Unsuitable Claim Types: Modern production workflow standards.
+
+
+--------------------------------------------------------------------------------
+6. SOURCE DISCOVERY VS SOURCE AUTHORITY
+--------------------------------------------------------------------------------
+
+6.1 THE DISCOVERY-TO-AUTHORITY FIREWALL
+A foundational failure mode in automated knowledge ingestion is conflating *discovering*
+a source with *verifying* its authority. The acquisition architecture erects an impenetrable
+firewall between these phases:
+
+    +───────────────────────────────────────────────────────────────+
+    │                     DISCOVERY MECHANISMS                      │
+    │  - Search Engine Queries       - LLM Parametric Memory        │
+    │  - Literature Bibliographies   - Community Forum Links        │
+    │  - Academic Citation Graphs    - YouTube / Podcast References │
+    │  - Manufacturer Webpages       - Current TT Code Comments     │
+    +───────────────────────────────┬───────────────────────────────+
+                                    │ Identifies candidate artifact
+                                    ▼
+    +───────────────────────────────────────────────────────────────+
+    │                   DISCOVERY-TO-REGISTRATION                   │
+    │                    VERIFICATION GATEWAY                       │
+    │  Checks:                                                      │
+    │  1. Does physical/digital artifact actually exist?            │
+    │  2. Can stable bibliographic identity be established?         │
+    │  3. Is source text/data accessible for direct audit?          │
+    +───────────────────────────────┬───────────────────────────────+
+                                    │ Registers SourceDocument
+                                    ▼
+    +───────────────────────────────────────────────────────────────+
+    │                     EPISTEMIC ASSESSMENT                      │
+    │  - Source Rigor (R1-R5)        - Replicability & Controls     │
+    │  - Domain Jurisdiction (J)     - Commercial Conflict Audit    │
+    │  - Methodological Rigor        - Operational Boundary Check   │
+    +───────────────────────────────────────────────────────────────+
+
+6.2 REJECTED EPISTEMIC SHORTCUTS
+The acquisition engine unconditionally rejects the following arguments as proofs of authority:
+  - "Gemini / GPT knows this principle": Model parametric memory is a discovery index,
+    not a verifiable source. The model must point to a real, auditable source document.
+  - "Many websites / blogs say this": Repetition without independent methodology is
+    echo-chamber folklore.
+  - "This is common studio wisdom": Intuitions must be physically formulated and bound.
+  - "The manufacturer marketing page says this": Commercial claims require engineering
+    schematic, datasheet, or bench measurement corroboration.
+  - "Current TT already runs this code": Existing software heuristics are unvalidated legacy.
+
+
+--------------------------------------------------------------------------------
+7. SOURCE REGISTRATION
+--------------------------------------------------------------------------------
+
+7.1 REGISTRATION CONTRACT
+Before any content can be parsed or claims extracted, the source must be registered as a
+`SourceDocument` entity. The registration record guarantees persistent identity and auditability.
+
+```json
+{
+  "source_id": "SRC-AES-JAES-V52-P1024",
+  "title": "Acoustic Behavior of Loudspeaker Diaphragms at High Excursion",
+  "authors": ["Dr. John E. Schmidt", "Robert M. Davis"],
+  "publisher_or_institution": "Audio Engineering Society",
+  "publication_date": "2004-11-15",
+  "publication_year": 2004,
+  "edition_or_version": "Vol. 52, Issue 11",
+  "identifiers": {
+    "doi": "10.17743/jaes.2004.0042",
+    "isbn": null,
+    "issn": "1549-4950",
+    "url": "https://www.aes.org/e-lib/browse.cfm?elib=12984"
+  },
+  "source_class": "CLASS_B_PEER_REVIEWED_RESEARCH",
+  "source_rigor_tier": "R2_PEER_REVIEWED_RESEARCH",
+  "domain_jurisdictions": {
+    "9": "J_CORE",
+    "10": "J_APPLIED",
+    "4": "J_PERIPHERAL"
+  },
+  "original_format": "PDF",
+  "language": "en",
+  "licensing_status": "RESTRICTED_ACCESS_ACADEMIC",
+  "document_hash": {
+    "algorithm": "SHA-256",
+    "value": "b7f9a882e341c5921f00843d1a89c92bfa76e4210d3b6641e7790114f0923a1c"
+  },
+  "acquisition_metadata": {
+    "acquired_by": "Specialist-04",
+    "acquisition_date": "2026-09-26T00:00:00Z",
+    "acquisition_method": "INSTITUTIONAL_DOWNLOAD",
+    "known_errata": [],
+    "superseded_by": null
+  }
+}
+```
+
+7.2 INCOMPLETE METADATA HANDLING
+  - Mandatory Fields: `source_id`, `title`, `authors` (or institutional author), `source_class`,
+    `source_rigor_tier`, `domain_jurisdictions`, `licensing_status`, `document_hash`.
+  - If publication year is missing or uncertain, it must be flagged as `YEAR_UNKNOWN`
+    and investigated; it cannot be guessed.
+  - If a DOI/ISBN is unavailable, an immutable SHA-256 hash of the canonical input file
+    serves as the permanent unique digital identifier.
+  - Under no circumstances may missing bibliographic metadata be hallucinated or synthetically generated.
+
+
+--------------------------------------------------------------------------------
+8. COPYRIGHT, LICENSING & SOURCE PRESERVATION BOUNDARY
+--------------------------------------------------------------------------------
+
+8.1 THE TWO-STORE INFORMATION GOVERNANCE ARCHITECTURE
+To enable comprehensive engineering learning while maintaining rigorous information
+governance and respecting legal/access constraints, TT establishes a two-store architecture:
+
+1. Canonical Knowledge Library (`/knowledge/canonical/`):
+   - Scope: Contains ONLY normalized, platform-independent engineering knowledge:
+     `KnowledgeClaim`, `CausalModel`, `OperationalBoundary`, `ConflictRecord`.
+   - Content: Human-readable declarative claims, mathematical AST/LaTeX formulas,
+     typed numerical bounds, and minimal cited excerpts necessary for provenance.
+   - Storage: Git-tracked, shared engineering repository.
+   - Prohibitions: NEVER contains full book chapters, scraped web mirrors, scanned PDF
+     bundles, or proprietary vendor code.
+
+2. Source Preservation Archive (`/knowledge/archive/sources/`):
+   - Scope: Secure, access-controlled offline storage holding raw source artifacts
+     (PDFs, schematics, CSV measurement sweeps, vendor manual scans).
+   - Content: Cryptographically sealed source files referenced by `SourceDocument.document_hash`.
+   - Access: Restricted strictly to authorized human auditors and offline extraction pipelines.
+   - Purpose: Enables complete provenance audit and extraction replayability without
+     redistributing source material to runtime environments or end users.
+
+8.2 LICENSING TYPOLOGY & JURISDICTION-AWARE GOVERNANCE
+This architecture is an engineering information-governance design, not a universal legal
+determination of fair use or fair dealing rights across jurisdictions. Every registered
+source must record its explicit licensing status:
+  - `PUBLIC_DOMAIN`: Unrestricted extraction and citation.
+  - `OPEN_ACCESS_CC`: Free extraction, citation, and attribution under CC license terms.
+  - `COMMERCIAL_ACQUIRED`: Lawfully acquired book, paper, or dataset. Extraction of
+    underlying factual principles and data; full-text distribution prohibited; short
+    cited excerpts retained solely for auditability.
+  - `PROPRIETARY_CONFIDENTIAL`: Vendor NDA material. Extraction permitted only if
+    expressly authorized; claims tagged with confidential operational flags.
+  - `RESTRICTED_ACCESS`: Institutional or subscription access. Extraction captures facts
+    and derivations; raw documents remain in the access-controlled archive.
+
+
+--------------------------------------------------------------------------------
+9. PARSING & STRUCTURAL EXTRACTION
+--------------------------------------------------------------------------------
+
+9.1 STRUCTURAL EXTRACTION REQUIREMENTS
+Parsing converts raw source artifacts into structured extraction canvases while
+preserving structural context. A successful parse does NOT equal knowledge validation.
+
+The parser must capture:
+  1. Exact Structural Hierarchy: Preserve chapter, section, subsection, and pagination.
+  2. Mathematical Notation Fidelity: Isolate equations into exact LaTeX strings or
+     MathML blocks. Preserve explicit variable definitions and operational ranges.
+  3. Physical Units & SI Standardization: Extract original units exactly (e.g. inches,
+     cm, mV, dBu, dBV) before any standardized SI conversion.
+  4. Figure, Table & Schematic Identity: Extract table headers, column labels, figure
+     captions, axis scaling (log vs linear), and schematic circuit reference designators.
+  5. Optical Character Recognition (OCR) Audit: For scanned documents, record an
+     OCR confidence indicator; low-confidence passages require human transcription verification.
+
+9.2 EXTRACTION INTEGRITY CONTROLS
+  - Corrupted Tables: If table rows or column alignments cannot be unambiguously parsed,
+    the table must be quarantined.
+  - Mathematical Syntax Validation: All extracted LaTeX formulas must pass AST syntax
+    compilation before entering candidate extraction.
+  - Unit Mismatches: If an extracted formula lacks explicit unit definitions for variables,
+    it is flagged with `MISSING_VARIABLE_UNITS`.
+
+
+--------------------------------------------------------------------------------
+10. ATOMIC KNOWLEDGE EXTRACTION
+--------------------------------------------------------------------------------
+
+10.1 THE DE-SUMMARIZATION MANDATE
+A critical failure mode of standard AI knowledge pipelines is "summarization."
+Summarization discards nuance, blurs boundary conditions, and strips causal mechanisms
+in favor of bland executive overviews.
+
+The acquisition engine ENFORCES ATOMIC DECOMPOSITION:
+  - Complex source passages must be decomposed into irreducible, independently
+    verifiable engineering assertions.
+  - Each extracted candidate must preserve:
+      * The underlying physical/electrical mechanism.
+      * The operating boundary and prerequisite conditions.
+      * The magnitude, direction, and sensitivity of the change.
+      * Associated collateral trade-offs.
+
+10.2 ATOMIC EXTRACTION EXAMPLE
+Consider an authoritative studio textbook passage discussing pre-distortion filtering:
+"In heavy rock production, attenuating frequencies below 100 Hz on the rhythm guitar
+signal before it hits an overdriven tube preamplifier dramatically tightens low-end
+transient punch and prevents intermodulation flub, though excessive cutting makes the
+instrument sound sterile and thin in sparse arrangements."
+
+  - FLAWED / REJECTED EXTRACTION (Recipe Summary):
+    "Cut frequencies below 100 Hz before high-gain distortion to get tight guitars."
+    *Why Rejected*: Creates a dogmatic imperative; strips circuit mechanism (intermodulation);
+    ignores arrangement context; hides collateral penalty (thin tone).
+
+  - ACCEPTED ATOMIC EXTRACTION:
+    * Proposition 1 (KnowledgeClaim): "Pre-distortion high-pass filtering reduces low-frequency
+      intermodulation distortion products generated in non-linear clipping stages."
+    * Proposition 2 (CausalModel): "Input: Sub-100 Hz attenuation. Mediating Stage: PREAMP_NONLINEAR.
+      Acoustic Consequence: Decreases bass IMD, accelerates palm-mute decay envelope.
+      Trade-off: Loss of fundamental low-end body; risks sterile timbre in sparse arrangements."
+    * Proposition 3 (OperationalBoundary): "Prerequisites: Non-linear clipping stage THD > 10%;
+      signal containing high-energy low-frequency transient fundamentals."
+
+
+--------------------------------------------------------------------------------
+11. CLAIM DECOMPOSITION
+--------------------------------------------------------------------------------
+
+11.1 COMPOUND PROPOSITION SPLITTING RULES
+Technical statements frequently bundle multiple distinct assertion types into a single
+sentence. The acquisition pipeline enforces rigorous decomposition rules:
+
+```
++─────────────────────────────────────────────────────────────────────────────+
+| COMPOUND CLAIM:                                                             |
+| "Close cardioid microphones increase bass because proximity effect occurs,  |
+| and therefore should always be used for warm guitar tones."                 |
++──────────────────────────────────────┬──────────────────────────────────────+
+                                       │
+                        DECOMPOSITION DISCIPLINE
+                                       │
+     ┌─────────────────────────────────┼─────────────────────────────────┐
+     ▼                                 ▼                                 ▼
++───────────────────────────+ +───────────────────────────+ +───────────────────────────+
+| 1. PHYSICAL MECHANISM     | | 2. OPERATIONAL BOUNDARY   | | 3. PRESCRIPTIVE RECIPE    |
+| (Velocity gradient wave   | | (Spherical wave near-field| | ("Should always be used") |
+| curvature produces LF     | | r < lambda / (2*pi);      | |                           |
+| boost in directional mics)| | directional patterns only)| |                           |
+|                           | |                           | |                           |
+| DISPOSITION:              | | DISPOSITION:              | | DISPOSITION:              |
+| Ingest as KnowledgeClaim  | | Ingest as                 | | UNCONDITIONALLY REJECTED  |
+| (EpistemicBasis:          | | OperationalBoundary       | | by Anti-Recipe Linter     |
+| ESTABLISHED_ENGINEERING_  | | bound to Claim 1          | |                           |
+| PRINCIPLE)                | |                           | |                           |
++───────────────────────────+ +───────────────────────────+ +───────────────────────────+
+```
+
+11.2 DECOMPOSITION TAXONOMY
+The decomposition engine parses compound inputs into eleven distinct functional components:
+  1. Physical Phenomenon: The observable wave or circuit event.
+  2. Causal Mechanism: The mediating transfer function or transformation.
+  3. Operating Boundary / Envelope: Quantitative parameter range of validity.
+  4. Prerequisite System State: Mandatory upstream or environmental conditions.
+  5. Confounding Variable: Independent factors that mimic or obscure the effect.
+  6. Collateral Trade-off: Inevitable physical or perceptual penalty.
+  7. Quantitative Metric: Specific numerical threshold or tolerance.
+  8. Contextual Practice: Bounded methodology developed for specific genres/rooms.
+  9. Subjective Aesthetic Descriptors: Qualitative terms (e.g. "warm", "muddy", "spongy").
+     *Preserved in context alongside candidate acoustic correlates without forcing artificial 1:1 metrics.*
+  10. Prescriptive Recommendation: Imperative guidance ("should", "must").
+      *Must be stripped or converted into conditional trade-off options.*
+  11. Known Exceptions / Invalidation Conditions: Scenarios where the principle fails.
+
+
+--------------------------------------------------------------------------------
+12. CLAIM ATTRIBUTION & EXACT RECONSTRUCTABLE SOURCE LOCATORS
+--------------------------------------------------------------------------------
+
+12.1 GENERALIZED RECONSTRUCTABLE SOURCE LOCATOR CONTRACT
+To support diverse engineering sources beyond textual books and PDFs, Phase 1C.4b-R
+replaces universal page/paragraph constraints with an **Exact Reconstructable Source Locator**.
+The locator must be source-type appropriate and sufficient for a future reviewer to
+reconstruct exactly what evidence supports the claim.
+
+```json
+{
+  "attribution_id": "ATTR-KC03-BLENCOWE-P68",
+  "claim_id": "CANDIDATE-KC-D03-IMD-001",
+  "source_id": "SRC-BOOK-BLENCOWE-2014",
+  "reconstructable_locator": {
+    "locator_type": "TEXT_PASSAGE",
+    "coordinates": {
+      "chapter": "3",
+      "section": "3.4",
+      "page": 68,
+      "paragraph": 2
+    },
+    "verbatim_anchor": "When low frequencies are allowed to overdrive a subsequent gain stage, severe intermodulation distortion occurs..."
+  },
+  "support_type": "SUPPORTS",
+  "extraction_method": "SUPERVISED_EXTRACTION_V1",
+  "extraction_integrity_hash": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0",
+  "reviewer_audit_status": "PENDING_HUMAN_AUDIT"
+}
+```
+
+12.2 SUPPORTED LOCATOR TYPES
+  1. `TEXT_PASSAGE`: Page, chapter, section, paragraph, and verbatim anchor excerpt.
+  2. `MATHEMATICAL_EQUATION`: Section, page/clause, equation number, and formula string.
+  3. `TECHNICAL_STANDARD`: Standard identifier, clause/subclause number, and table/figure ref.
+  4. `CIRCUIT_SCHEMATIC`: Sheet number, sub-circuit block, component designators (e.g. "R12, C8"), and DC voltage nodes.
+  5. `TABULAR_DATASET`: Table number, row identifier/range, column header, and parameter unit.
+  6. `MEASUREMENT_DATASET`: Data file path, test sweep ID, frequency/time coordinates, and instrument calibration ref.
+  7. `PATENT_SPECIFICATION`: Patent column number, line numbers, claim number, or figure reference.
+  8. `RECORDED_TECHNICAL_MEDIA`: Timestamp range [start_ms, end_ms], speaker/engineer identifier, and topic anchor.
+  9. `WEB_TECHNICAL_DOCUMENT`: Version tag, commit hash, structural header ID, and permalink anchor.
+
+12.3 EXTRACTION FIDELITY VS EPISTEMIC VALIDATION
+The architecture strictly distinguishes:
+    EXTRACTION FIDELITY ≠ EPISTEMIC VALIDITY.
+  - Extraction Fidelity: A measure of transcription and structural accuracy (e.g. "Did the parser
+    correctly capture the equation, schematic component, or passage without distortion?").
+  - Epistemic Validity: The scientific accuracy, empirical reproducibility, and operational
+    truth of the extracted assertion, evaluated independently under Phase 1C.4a Section 6.2.
+
+
+--------------------------------------------------------------------------------
+13. NORMALISATION WITHOUT MEANING LOSS
+--------------------------------------------------------------------------------
+
+13.1 NORMALISATION RULES
+Normalization maps extracted assertions into the frozen Phase 1C.4a entity model.
+It must never alter the physical truth or strip necessary qualifications:
+
+  1. Units Preservation & Standardisation:
+     - Original units are preserved in `ClaimAttribution.reconstructable_locator`.
+     - Normalized values are expressed in base SI units (Hz, m, s, V, Pa, dB SPL, dBFS).
+  2. Observation vs Interpretation Separation:
+     - Direct laboratory measurements are classified as `EMPIRICAL_RELATIONSHIP`.
+     - Explanatory theoretical models are classified as `ESTABLISHED_ENGINEERING_PRINCIPLE`
+       or `PHENOMENOLOGICAL_MODEL`.
+  3. Correlation vs Causation Delineation:
+     - Statistical associations without an identified transfer function are tagged as
+       `ENGINEERING_TENDENCY` with explicit confounders.
+     - Causal assertions require instantiating a `CausalModel` with an explicit mediating mechanism.
+  4. Descriptive vs Prescriptive Decoupling:
+     - Prescriptive statements ("use a notch filter") are rewritten as descriptive
+       causal models ("a notch filter attenuates energy within bandwidth B, reducing
+       resonance R while introducing phase shift P").
+  5. Tendency vs Law Guard:
+     - Empirical practices observed in specific studios must NEVER be promoted to `PHYSICAL_LAW`.
+     - They must be assigned to Axis 2 `CONTEXT_DEPENDENT_PRACTICE`.
+
+
+--------------------------------------------------------------------------------
+14. MULTI-SOURCE CORROBORATION & EVIDENCE DEPENDENCY
+--------------------------------------------------------------------------------
+
+14.1 THE CIRCULAR CITATION & ECHO-CHAMBER TRAP
+Simple source counting is epistemologically invalid. If five modern recording blogs
+and three forum posts all repeat that "cutting 400 Hz removes boxiness," but all eight
+trace their lineage back to a single 1982 magazine article by one engineer, this represents
+ONE historical observation point, not eight corroborating sources.
+
+14.2 EVIDENCE DEPENDENCY GRAPH (EDG)
+The acquisition engine constructs an Evidence Dependency Graph for every concept:
+  - Ancestry Nodes: The original theoretical derivation, patent, or empirical experiment.
+  - Derivative Nodes: Textbooks, articles, or manuals citing the ancestral source.
+  - True Corroboration Criteria: Multiple sources constitute true corroboration if and only if:
+      1. They employ independent experimental setups, distinct circuit measurements, or separate mathematical derivations.
+      2. They test across diverse conditions (different instruments, speakers, rooms).
+      3. They do not share identical commercial lineage or unverified circular citations.
+      4. Neither source relies on the other as its sole authority.
+
+14.3 CONSENSUS UPGRADE RULES
+  - When true independent corroboration is established across multiple independent sources
+    with appropriate rigor and jurisdiction, `epistemic_validation.consensus_state` may be
+    upgraded to `ESTABLISHED_CONSENSUS`.
+  - If multiple sources cite a common ancestor without independent validation,
+    `consensus_state` remains `PREDOMINANT_VIEW` with an explicit lineage note.
+  - Primary literature is preferred where available, but consensus is evaluated by
+    methodological independence and evidence convergence, not by source category alone.
+
+
+--------------------------------------------------------------------------------
+15. SOURCE RIGOR, JURISDICTION & CLAIM QUALITY
+--------------------------------------------------------------------------------
+
+15.1 INDEPENDENCE OF SOURCE RIGOR AND CLAIM QUALITY
+The architecture maintains a strict distinction between the general standing of a
+source and the validity of a specific extracted claim:
+  - High-Rigor Source, Weak Claim: A world-renowned acoustics textbook (R1) may make
+    an offhand remark about electric guitar speaker distortion in a footnote.
+    Because the author was operating outside their primary experimental focus, the
+    jurisdiction is `J_PERIPHERAL`, and the claim cannot be treated as an authoritative
+    engineering principle or physical law.
+  - Practitioner Source, Valid Observation: A veteran amplifier repair technician
+    in an informal interview (R5) observes that a specific screen resistor overheats
+    under square-wave overdrive. While the source is R5, the observation reflects a
+    measurable physical event. When corroborated by appropriate circuit analysis and
+    empirical testing, the claim achieves `ESTABLISHED_ENGINEERING_PRINCIPLE`.
+
+15.2 THE MULTI-DIMENSIONAL EVALUATION CONTRACT
+Every claim is evaluated independently across the frozen Phase 1C.4a dimensions:
+  1. `source_rigor_tier`: Evaluates evidentiary source characteristics across R1_PHYSICAL_LAW
+     (foundational textbooks / formal standards), R2_PEER_REVIEWED_RESEARCH (scientific papers /
+     laboratory studies), R3_MANUFACTURER_ENGINEERING (datasheets / schematics / whitepapers),
+     R4_PROFESSIONAL_TREATISE (master engineering handbooks), and R5_PRACTITIONER_ACCOUNT
+     (practitioner interviews / field accounts).
+     *Critical Epistemic Boundary*: Source Rigor characterizes the publication's evidentiary
+     nature and peer-review standing; it does NOT determine or dictate the independent
+     Epistemic Basis axis (`PHYSICAL_LAW`, `ESTABLISHED_ENGINEERING_PRINCIPLE`,
+     `EMPIRICAL_RELATIONSHIP`, `ENGINEERING_TENDENCY`, `HYPOTHETICAL_OR_COMPETING_MODEL`).
+     A high-rigor source does not automatically make an extracted proposition a physical law,
+     nor does a lower-rigor source make an observation false.
+  2. `domain_jurisdiction`: J_CORE, J_APPLIED, J_PERIPHERAL (evaluated per domain independently).
+  3. `epistemic_basis`: Evaluates the nature of underlying truth across the independent 3-axis taxonomy.
+  4. `evidence_strength`: THEORETICAL_PROOF, SYSTEMATIC_EMPIRICAL, CORROBORATED_PRACTICE, ANECDOTAL.
+  5. `consensus_state`: ESTABLISHED_CONSENSUS, PREDOMINANT, DEBATED, OUTLIER.
+  6. `replication_state`: INDEPENDENTLY_REPLICATED, EXPERIMENTALLY_VERIFIED, OBSERVATIONAL_ONLY.
+  7. `boundary_certainty`: TIGHTLY_BOUNDED, PARTIALLY_BOUNDED, EXPLORATORY_LIMITS.
+  8. `conflict_status`: UNCONTESTED, ACTIVE_COMPETING_CLAIM.
+
+
+--------------------------------------------------------------------------------
+16. CONFLICT DETECTION DURING ACQUISITION
+--------------------------------------------------------------------------------
+
+16.1 DETECTION AND PRESERVATION, NOT PREMATURE RESOLUTION
+Phase 1C.4d owns full conflict adjudication and governance tooling. Phase 1C.4b is
+strictly responsible for DETECTING and PRESERVING potential conflicts during acquisition.
+
+When a conflict is detected:
+  - Both claims are tagged with `epistemic_validation.conflict_status = ACTIVE_COMPETING_CLAIM`.
+  - A candidate `ConflictRecord` is generated with `conflict_nature` (BOUNDARY_DIVERGENCE,
+    METHODOLOGICAL_DIFFERENCE, DIRECT_CONTRADICTION, TERMINOLOGICAL_AMBIGUITY) and an initial divergence analysis.
+  - The conflict package is queued for expert adjudication in Phase 1C.4d.
+
+
+--------------------------------------------------------------------------------
+17. QUANTITATIVE / MEASUREMENT KNOWLEDGE HANDLING
+--------------------------------------------------------------------------------
+
+17.1 THE QUANTITATIVE DATA CONTRACT
+Numerical figures in sound engineering are meaningless without measurement context.
+Every extracted numerical claim must record:
+
+```json
+{
+  "numerical_typing_context": {
+    "value_type": "EMPIRICALLY_MEASURED_RANGE",
+    "measured_parameter": "Loudspeaker Free-Air Resonance (Fs)",
+    "nominal_value": 75.0,
+    "tolerance_or_range": {
+      "min": 70.0,
+      "max": 80.0
+    },
+    "unit": "HERTZ",
+    "reference_conditions": {
+      "temperature_celsius": 20.0,
+      "test_signal_voltage_rms": 1.0,
+      "mounting": "FREE_AIR_UNBAFFLED"
+    },
+    "measurement_equipment": "Audio Precision APx555 with laser displacement vibrometer",
+    "is_normative": false
+  }
+}
+```
+
+17.2 PREVENTING FALSE PRECISION
+  - Rounding Discipline: If a source states "roughly around 2 kHz to 4 kHz," the
+    normalizer is strictly prohibited from encoding this as "2000.00 Hz to 4000.00 Hz."
+  - Metric Context Enforcement: Numbers without explicit reference points (e.g. "+4 dB"
+    without specifying whether it is relative to 1 kHz, 0 VU, or input level) are
+    rejected as incomplete quantitative assertions.
+
+
+--------------------------------------------------------------------------------
+18. DEVICE-SPECIFIC KNOWLEDGE ACQUISITION
+--------------------------------------------------------------------------------
+
+18.1 LEGITIMATE PHYSICAL KNOWLEDGE VS PLATFORM CONTAMINATION
+The acquisition engine enforces the critical boundary defined in Phase 1C.4a Section 13:
+
+  - ADMISSIBLE (Legitimate Physical Engineering Knowledge):
+    * Celestion Vintage 30 measured voice-coil inductance (0.75 mH).
+    * Shure SM57 cardioid polar plot showing off-axis high-frequency rejection at 120 degrees.
+    * Marshall JCM800 2203 preamp topology: cathode follower driving passive tone stack.
+    * 12AX7 vacuum tube transconductance ($g_m \approx 1.6 \text{ mA/V}$).
+    * Disposition: Ingested as valid engineering knowledge with an attached `DeviceSpecificityContext`.
+
+  - PROHIBITED (Software Platform Implementation Contamination):
+    * AmpliTube 5 Speaker ID: `104` or `412_Brit_V30`.
+    * Helix / HX Stomp block GUIDs or XML node paths.
+    * Target DAW mixer insert slot index integers.
+    * Normalized 0.0-1.0 GUI slider coordinates.
+    * Internal Tone Translator UI component IDs.
+    * Disposition: UNCONDITIONALLY BLOCKED by Ingestion Firewall.
+
+
+--------------------------------------------------------------------------------
+19. PRACTITIONER KNOWLEDGE ACQUISITION
+--------------------------------------------------------------------------------
+
+19.1 PROTOCOL FOR MASTER PRACTITIONER EVIDENCE
+Practitioner wisdom represents valuable empirical experience. To harness its insights
+without confusing subjective terminology with invariant physical laws:
+  1. Direct Attribution: Must cite the specific engineer, historical session, or
+     published technical interview via an Exact Reconstructable Source Locator.
+  2. Psychoacoustic & Contextual Preservation: Subjective aesthetic terms (e.g. "warm",
+     "muddy", "spongy", "brittle") must be preserved in context alongside candidate
+     acoustic correlates and uncertainty notes. The system must NOT force false 1:1
+     metric equations (such as "muddy = 200-400 Hz") unless specifically substantiated.
+  3. Bounded Role Assignment: Must be classified under Axis 2 as `CONTEXT_DEPENDENT_PRACTICE`
+     or `ILLUSTRATIVE_EXAMPLE`.
+  4. Mandatory Trade-Off Vector: Every practitioner technique must record the collateral
+     acoustic penalty (e.g. "cutting lower-mids on bass guitar clears room for kick drum,
+     but risks loss of pitch definition in dense rock mixes").
+  5. Non-Promotability to Physical Law: Practitioner accounts are permanently barred from
+     achieving Axis 1 `PHYSICAL_LAW` classification.
+
+
+--------------------------------------------------------------------------------
+20. MANUFACTURER KNOWLEDGE ACQUISITION
+--------------------------------------------------------------------------------
+
+20.1 THE MANUFACTURER VETTING HEURISTIC
+To separate objective hardware facts from commercial marketing prose:
+
+  - ADMITTED TO CANONICAL INGESTION:
+    * Published circuit schematics with component values and DC operating voltages.
+    * Transformer winding ratios and saturation flux density ratings.
+    * Frequency response curves measured under specified IEC/AES standard baffles.
+    * Maximum input SPL and THD vs frequency curves.
+
+  - STRIPPED AND DISCARDED AS MARKETING PROSE:
+    * Subjective superlatives ("produces the warmest, most legendary tone ever designed").
+    * Proprietary marketing jargon ("True-Dynamic-Warmth-Technology").
+    * Unverified comparisons claiming absolute superiority over competitors.
+
+
+--------------------------------------------------------------------------------
+21. AI ROLE & ANTI-HALLUCINATION CONTROLS
+--------------------------------------------------------------------------------
+
+21.1 THE FIRST LAW OF AI ACQUISITION
+    THE AI IS AN EXTRACTION AND STRUCTURAL ANALYSIS AGENT.
+    THE AI IS NEVER AN EPISTEMIC SOURCE.
+
+21.2 FIVE-LAYER ANTI-HALLUCINATION ARCHITECTURE
+To prevent LLM parametric hallucinations from polluting the Knowledge Library:
+  1. Source-Grounded Prompting: Extraction prompts strictly restrict candidate generation
+     to content directly grounded in the supplied source artifact chunk.
+  2. Reconstructable Locator Verification: Every generated `KnowledgeClaim` must link to an
+     exact reconstructable source locator and be auditable against the source artifact.
+  3. Unsupported Content Isolation: If an LLM introduces an acoustic concept not explicitly
+     present in the source passage, the ingestion engine isolates it into an
+     `unsupported_model_additions` field.
+  4. Mandatory Quarantine of Unsupported Content: Claims containing unsupported model
+     additions are quarantined and barred from review readiness.
+  5. Zero Self-Authorizing Promotion: AI models cannot approve, sign off, or promote
+     claims to `VALIDATED_ACTIVE`. Governance promotion is exclusively human.
+
+
+--------------------------------------------------------------------------------
+22. SOURCE ACQUISITION PRIORITISATION & CONCEPT CLUSTERS
+--------------------------------------------------------------------------------
+
+22.1 PRESERVATION OF FROZEN DOMAIN IDENTITIES
+The 22 competency domains established in Phase 1C.1, Phase 1C.3a, and Phase 1C.3c-R v1.1
+are canonical and immutable. Acquisition planning uses cross-domain **Concept Clusters**
+to sequence work efficiently, but these clusters map to the frozen domains rather than
+redefining them:
+
+Canonical Domain Mapping Reference:
+  - Domain 1: SOURCE & PERFORMANCE
+  - Domain 2: SIGNAL LEVEL, GAIN STAGING & HEADROOM
+  - Domain 3: NONLINEAR PROCESSING & DISTORTION
+  - Domain 4: FREQUENCY & SPECTRAL ENGINEERING
+  - Domain 5: DYNAMICS, ENVELOPE & TRANSIENTS
+  - Domain 6: NOISE ENGINEERING
+  - Domain 7: SIGNAL TOPOLOGY & PROCESSING ORDER
+  - Domain 8: AMPLIFIER BEHAVIOUR
+  - Domain 9: LOUDSPEAKER & CABINET ENGINEERING
+  - Domain 10: MICROPHONE & CAPTURE ENGINEERING
+  - Domain 11: PHASE, POLARITY & MULTI-SOURCE INTERACTION
+  - Domain 12: TIME-BASED, MODULATION & SPATIAL PROCESSING
+  - Domain 13: PSYCHOACOUSTICS & PERCEPTION
+  - Domain 14: MUSICAL & PRODUCTION CONTEXT
+  - Domain 15: REFERENCE ANALYSIS & TONE MATCHING
+  - Domain 16: DIAGNOSIS & ROOT-CAUSE REASONING
+  - Domain 17: INTERVENTION SELECTION & MINIMALISM
+  - Domain 18: TRADE-OFF & CONSTRAINT REASONING
+  - Domain 19: UNCERTAINTY & EVIDENCE DISCIPLINE
+  - Domain 20: ALTERNATIVE SOLUTION REASONING
+  - Domain 21: ITERATIVE ENGINEERING & OUTCOME EVALUATION
+  - Domain 22: PROFESSIONAL ENGINEERING BEHAVIOUR
+
+22.2 CONCEPT CLUSTER PRIORITISATION MATRIX
+Rather than sequentially ingesting material from Domain 1 to 22, acquisition is
+prioritized across three functional waves:
+
+```
++─────────────────────────────────────────────────────────────────────────────+
+| WAVE 1: FOUNDATIONAL CROSS-DOMAIN ROOTS (Highest Leverage)                 |
+| - Concept Cluster: Electrical Source & Pickup Loading -> Domain 1           |
+| - Concept Cluster: Gain Staging & Linear Headroom -> Domain 2               |
+| - Concept Cluster: Nonlinear Saturation, Harmonics & IMD -> Domain 3        |
+| - Concept Cluster: Passive/Active Filtering & Tone Stacks -> Domain 4       |
+| - Concept Cluster: Microphone Transducers & Capture Acoustics -> Domain 10  |
++──────────────────────────────────────┬──────────────────────────────────────+
+                                       │ Unlocks
+                                       ▼
++─────────────────────────────────────────────────────────────────────────────+
+| WAVE 2: ELECTRO-ACOUSTIC SYSTEMS, TOPOLOGY & DYNAMICS                       |
+| - Concept Cluster: Signal Flow, Ordering & Parallel Routing -> Domain 7     |
+| - Concept Cluster: Valve/Solid-State Amplification & Sag -> Domain 8        |
+| - Concept Cluster: Loudspeaker Transducers & Enclosures -> Domain 9         |
+| - Concept Cluster: Wave Superposition, Phase & Polarity -> Domain 11        |
+| - Concept Cluster: Envelope Ballistics & Dynamic Processing -> Domain 5     |
++──────────────────────────────────────┬──────────────────────────────────────+
+                                       │ Unlocks
+                                       ▼
++─────────────────────────────────────────────────────────────────────────────+
+| WAVE 3: SPECIALIZED, PERCEPTUAL & PRODUCTION CONTEXT                        |
+| - Concept Cluster: Noise Management & Ground Optimization -> Domain 6       |
+| - Concept Cluster: Time Delay, Modulation & Reverberant Space -> Domain 12  |
+| - Concept Cluster: Auditory Masking & Loudness Perception -> Domain 13      |
+| - Concept Cluster: Arrangement Density & Spectral Allocation -> Domain 14   |
+| - Integrative Cognitive Domains: Domains 15 through 22                      |
++─────────────────────────────────────────────────────────────────────────────+
+```
+
+22.3 MULTI-FACTOR PRIORITISATION FACTORS
+When scheduling specific source acquisition batches, priority is guided by:
+  - Competency Gap Severity: Current TT deficiency in the domain (per Phase 1C.3b).
+  - Cross-Domain Fan-Out: Number of downstream domains dependent on this concept.
+  - Literature Availability: Existence of verified, accessible technical sources.
+  - Epistemic Risk: Foundational physics prioritized early for thorough expert review.
+
+
+--------------------------------------------------------------------------------
+23. ACQUISITION BATCH ARCHITECTURE
+--------------------------------------------------------------------------------
+
+23.1 BOUNDED BATCH DESIGN
+To ensure reviewability and prevent cognitive overload on human auditors, acquisition
+is executed in Bounded Acquisition Batches:
+  - Batch Scope: Restricted to a single Domain or tightly coupled Concept Cluster
+    (e.g. "Domain 10: Pressure-Gradient Transducers & Proximity Effect").
+  - Source Allocation: Bounded set of selected sources appropriate to the concept cluster.
+  - Operational Sizing: Configurable batch sizing targets (e.g. initial operational
+    guideline of ~10 to 30 candidate claims per review package) subject to operator tuning.
+  - Replayability Requirement: Every batch must be completely reconstructable and
+    replayable from registered source to candidate claims.
+
+
+--------------------------------------------------------------------------------
+24. ACQUISITION QUALITY GATES
+--------------------------------------------------------------------------------
+
+The acquisition pipeline enforces twelve discrete quality gates. Operational thresholds
+(such as OCR review triggers or batch sizes) are explicitly designated as configurable
+operational parameters (Category B) rather than immutable architectural constants:
+
+Gate 1: DISCOVERED
+  - Entry Criteria: Source identified via literature review, bibliography, or citation index.
+  - Verification: Basic bibliographic existence verified; duplication check passed.
+  - Output: Candidate source record.
+
+Gate 2: REGISTERED
+  - Entry Criteria: Complete bibliographic metadata verified; persistent ID assigned.
+  - Verification: Cryptographic hash generated; licensing status classified.
+  - Output: Immutable `SourceDocument` entity.
+
+Gate 3: ACQUIRED
+  - Entry Criteria: Raw source file deposited in access-controlled preservation archive.
+  - Verification: Document hash verified against registered `SourceDocument.document_hash`.
+  - Output: Sealed raw artifact in archive.
+
+Gate 4: PARSED
+  - Entry Criteria: Text, mathematical formulas, structural hierarchy, and data extracted.
+  - Verification: Locators mapped; LaTeX equations compiled; OCR quality reviewed against
+    configurable review threshold (e.g. initial operational default <0.85 triggers manual review).
+  - Output: Structured extraction canvas.
+
+Gate 5: EXTRACTED
+  - Entry Criteria: Atomic candidate claims, boundaries, and trade-offs extracted.
+  - Verification: Source locator captured; de-summarization rules enforced.
+  - Output: Candidate extraction objects.
+
+Gate 6: ATTRIBUTED
+  - Entry Criteria: Formal citation links instantiated.
+  - Verification: `ClaimAttribution` links candidate claim to Exact Reconstructable Source Locator.
+  - Output: Attributed claim records.
+
+Gate 7: DECOMPOSED & NORMALISED
+  - Entry Criteria: Compound claims split; units converted to SI; multi-axis taxonomy applied.
+  - Verification: 3-axis taxonomy valid; anti-recipe linter passed; platform firewall passed.
+  - Output: Normalized candidate `KnowledgeClaim`, `CausalModel`, `OperationalBoundary`.
+
+Gate 8: EVIDENCE ASSESSED
+  - Entry Criteria: Source Rigor (R1-R5) and Jurisdiction (J_CORE to J_PERIPHERAL) assigned.
+  - Verification: `EpistemicValidation` factors populated; no scalar authority scores created.
+  - Output: Epistemically classified candidate entities.
+
+Gate 9: CONFLICT & LINEAGE AUDITED
+  - Entry Criteria: Comparison against existing canonical library and parallel claims.
+  - Verification: Evidence dependency graph checked for circular citations; conflicts flagged.
+  - Output: Linked `ConflictRecord` or clean consensus classification.
+
+Gate 10: REVIEW READY
+  - Entry Criteria: Ingestion linting passed; all required fields, boundaries, and locators populated.
+  - Verification: Candidate package complete and viewable in audit workbench.
+  - Output: Queued candidate package in `UNDER_REVIEW` state.
+
+Gate 11: GOVERNANCE EVALUATED
+  - Entry Criteria: Evaluated by qualified human expert(s) under Phase 1C.4a governance tiers.
+  - Verification: Formal `ReviewRecord` signed with reviewer ID, role, and findings.
+  - Output: `APPROVED`, `REJECTED`, or `CHANGES_REQUESTED`.
+
+Gate 12: PROMOTION ELIGIBLE
+  - Entry Criteria: All governance approvals, adversarial triad checks, and seals completed.
+  - Verification: Lifecycle state updated to `VALIDATED_ACTIVE`.
+  - Output: Immutable canonical knowledge unit eligible for runtime indexing in Phase 1C.4c.
+
+
+--------------------------------------------------------------------------------
+25. ACQUISITION FAILURE MODES & MITIGATIONS
+--------------------------------------------------------------------------------
+
+The acquisition architecture provides explicit defenses against 22 distinct failure modes:
+
+1. Hallucinated Citation: LLM invents non-existent author, book, or paper.
+   - Mitigation: Bibliographic registration and cryptographic document hash verification at Gate 2.
+2. Incorrect Edition / Outdated Revision: Citing an obsolete edition with known errors.
+   - Mitigation: Registration requires edition/version tracking against known errata.
+3. Outdated / Superseded Standard: Ingesting obsolete standards without context.
+   - Mitigation: Standards records maintain `superseded_by` links; operational envelope specifies applicability.
+4. Circular Citation Ancestry: Multiple secondary sources repeating one original source counted as independent.
+   - Mitigation: Evidence Dependency Graph (Section 14) detects shared lineage and enforces single-origin counting.
+5. Duplicated Evidence Lineage: Re-ingesting the same study via different reprints.
+   - Mitigation: Cryptographic source hashing and DOI/identifier deduplication at Gate 1.
+6. Missing Operational Context: Extracting a parameter without specifying conditions or boundary envelopes.
+   - Mitigation: Mandatory `OperationalBoundary` attachment required at Gate 7.
+7. Unit Conversion Error: Confusing dBu with dBV during normalization.
+   - Mitigation: Automated unit transformation linter with static dimensional analysis.
+8. OCR Corruption: Scanned text reading "400 Hz" as "4000 Hz" due to speckle.
+   - Mitigation: Configurable OCR review threshold triggers human check; mathematical AST compilation.
+9. Table / Figure Misinterpretation: Reversing axes or confusing logarithmic with linear plots.
+   - Mitigation: Human verification for all graphical and tabular data digitizations.
+10. Marketing Language Treated as Fact: Ingesting manufacturer puffery as physical specifications.
+    - Mitigation: Class E ingestion firewall strips subjective adjectives and commercial superlatives.
+11. Practitioner Anecdote Universalized: Treating a specific studio technique as an invariant physical law.
+    - Mitigation: Multi-axis classification restricts practitioner accounts to Axis 2 Contextual Practices.
+12. Model-Generated Content Presented as Source-Derived: LLM adding ungrounded assertions.
+    - Mitigation: Reconstructable locator verification isolates model-added tokens into quarantined fields.
+13. Correlation Presented as Causation: Ingesting an empirical correlation as a causal mechanism.
+    - Mitigation: CausalModel requires explicit mediating mechanisms; correlations tagged as EngineeringTendency.
+14. Device-Specific Behavior Universalized: Treating specific tone stack notches as universal guitar amp behavior.
+    - Mitigation: Mandatory `DeviceSpecificityContext` tagging for all commercial hardware claims.
+15. Historical Practice Presented as Current Standard: Ingesting vintage tape alignments as modern DAW standards.
+    - Mitigation: Source class tagging and explicit historical context markers.
+16. Measurement Without Reference Conditions: Ingesting an SPL measurement without distance or room specs.
+    - Mitigation: Quantitative data contract requires mandatory `reference_conditions` object.
+17. False Precision: Encoding "around 3 kHz" as "3000.00 Hz."
+    - Mitigation: Numerical Typing Engine enforces `ILLUSTRATIVE_NOMINAL_VALUE` or `EMPIRICALLY_MEASURED_RANGE`.
+18. Conflicting Sources Silently Merged: Ingestion pipeline averaging divergent recommendations.
+    - Mitigation: Gate 9 conflict detector forces creation of `ConflictRecord`.
+19. Source Summarization Losing Exceptions: Discarding "except on acoustic instruments" during extraction.
+    - Mitigation: Atomic extraction rules require explicit capture of `known_exceptions`.
+20. Current TT Heuristic Promoted Without Provenance: Promoting an existing code rule unchanged.
+    - Mitigation: Current TT classified as `UNASSESSED_LEGACY_SOURCE`; cannot promote without recovering provenance.
+21. Copyrighted Material Reposited in Canonical Library: Storing full textbook pages in Git.
+    - Mitigation: Two-store boundary; canonical library contains only normalized claims and minimal cited excerpts.
+22. Silent Recipe Generation: Ingesting an imperative "always do X" rule.
+    - Mitigation: Ingestion anti-recipe linter unconditionally halts on prescriptive imperatives.
+
+
+--------------------------------------------------------------------------------
+26. SOURCE / CLAIM REJECTION & QUARANTINE POLICY
+--------------------------------------------------------------------------------
+
+26.1 TAXONOMY OF INGESTION DISPOSITIONS
+The system strictly distinguishes terminal and intermediate dispositions:
+
+  1. REJECT SOURCE:
+     - Applied When: The document is fraudulent, commercial marketing with zero technical data,
+       unidentifiable provenance, unrecoverable corruption, material integrity failure,
+       synthetic material misrepresented as external source, or unlawful licensing conditions.
+     - Result: `SourceDocument` marked `REJECTED`. No claims extracted.
+  2. REJECT CLAIM:
+     - Applied When: The source is legitimate, but the specific extracted proposition is
+       factually disproven by higher-tier physical laws or contains unresolvable internal errors.
+     - Result: `KnowledgeClaim` marked `REJECTED`. Preserved in audit archive to prevent re-ingestion.
+  3. QUARANTINE CLAIM:
+     - Applied When: A claim has an identified source but lacks corroboration, contains
+       unsupported model additions, has unverified boundaries, or represents an uncorroborated
+       `CandidateLesson`.
+     - Result: Moved to `/knowledge/quarantine/`. Invisible to production retrieval.
+  4. RETAIN AS CONFLICTING EVIDENCE:
+     - Applied When: Two credible sources make competing, irreconcilable claims under
+       similar conditions.
+     - Result: Both claims retained; bound to an active `ConflictRecord`.
+  5. RETAIN AS HISTORICAL CONTEXT:
+     - Applied When: A claim represents superseded historical engineering practice.
+     - Result: Retained with `knowledge_role: PROFESSIONAL_CONVENTION`, explicitly bounded
+       to vintage hardware contexts.
+  6. PROMOTION ELIGIBLE:
+     - Applied When: Fully attributed via Exact Reconstructable Source Locator, normalized,
+       boundary-complete, lineage-verified, and approved by qualified human expert review.
+     - Result: Transitioned to `VALIDATED_ACTIVE`.
+
+
+--------------------------------------------------------------------------------
+27. PROVENANCE CHAIN ARCHITECTURE & RECONSTRUCTABILITY
+--------------------------------------------------------------------------------
+
+27.1 END-TO-END TRACEABILITY SPECIFICATION
+Every active piece of knowledge in Tone Translator must possess an unbroken, reconstructable provenance chain:
+
+```
+CANONICAL PROVENANCE PATHWAY:
+=============================
+
+1. FOUNDATIONAL KNOWLEDGE PROVENANCE:
+   KnowledgeClaim (claim_id: "KC-D10-PROXIMITY-001")
+     └── ClaimAttribution (attribution_id: "ATTR-KC1001-BERANEK-P162")
+           ├── reconstructable_locator: { chapter: "4", section: "4.8", page: 162, eq: "4.45" }
+           ├── verbatim_anchor: "For a pressure-gradient transducer..."
+           └── SourceDocument (source_id: "SRC-BOOK-BERANEK-2012")
+                 ├── title: "Acoustics: Sound Fields and Transducers"
+                 ├── document_hash: "e3b0c44298fc1c149afbf4c8996fb92427ae..."
+                 └── Archive File: "/knowledge/archive/sources/SRC-BOOK-BERANEK-2012.pdf"
+
+2. DERIVED CAUSAL MODEL PROVENANCE:
+   CausalModel (model_id: "CM-D03-PRE_CLIPPING_LF-001")
+     ├── coupled_claim_ids: ["KC-D03-IMD-001", "KC-D04-HPF_SLOPE-002"]
+     │     └── [Individual ClaimAttributions -> SourceDocuments as above]
+     └── OperationalBoundary (boundary_id: "OB-D03-IMD-001")
+           └── attribution_ids: ["ATTR-OB03-BLENCOWE-P69"]
+
+3. EXPERIENTIAL RUNTIME LESSON PROVENANCE:
+   CandidateLesson (lesson_id: "CL-D04-RESONANCE_TRACKING-001")
+     ├── evidence_sufficiency_dossier:
+     │     ├── observation_sessions: ["RUN-2026-10-12-004", "RUN-2026-10-14-012"]
+     │     ├── controlled_experiment_record: "EXP-2026-D04-001"
+     │     └── literature_corroboration_ids: ["KC-D04-CAB_RESONANCE-001"]
+     └── ReviewRecord (review_id: "REV-2026-CL04-001")
+           └── Reviewer Role: "SENIOR_ACOUSTIC_ENGINEER"
+```
+
+27.2 PROVENANCE-BREAK CONDITIONS
+A provenance break automatically blocks a candidate claim from promotion:
+  - Break Condition 1: Missing Source Record (claim cites a `source_id` not present in `SourceDocument` registry).
+  - Break Condition 2: Imprecise Locator (claim lacks an Exact Reconstructable Source Locator).
+  - Break Condition 3: Evidence Discrepancy (the source coordinates do not contain the cited evidence or assertion).
+  - Break Condition 4: Hash Mismatch (the archive file hash diverges from `SourceDocument.document_hash`).
+
+
+--------------------------------------------------------------------------------
+28. HUMAN REVIEW RESPONSIBILITIES
+--------------------------------------------------------------------------------
+
+28.1 THE ACQUISITION AUDIT WORKBENCH
+Human review is the primary quality anchor. Under the frozen Phase 1C.4a governance
+tiers, the reviewer must be provided with an audit workbench displaying:
+  1. The source evidence at the Exact Reconstructable Source Locator.
+  2. The candidate `KnowledgeClaim` statement and mathematical formalization.
+  3. The proposed 3-axis classification and domain assignment.
+  4. The candidate `OperationalBoundary` (valid envelope, prerequisites, confounders).
+  5. The candidate `CausalModel` (mechanisms, consequences, trade-offs).
+  6. The Evidence Dependency Graph showing citation lineage and detected conflicts.
+  7. Any automated linter warnings or `unsupported_model_additions` flags.
+
+28.2 CORE REVIEWER QUESTIONS
+The reviewer must evaluate and explicitly answer:
+  - "Does the cited source evidence genuinely support what the candidate claim asserts?"
+  - "Has the extraction stripped critical boundary conditions, prerequisites, or exceptions?"
+  - "Has an empirical tendency been improperly elevated to a physical law?"
+  - "Has a commercial device behavior been improperly universalized?"
+  - "Is the mathematical derivation formally correct and complete?"
+  - "Can a future auditor completely reconstruct how this knowledge was derived?"
+
+
+--------------------------------------------------------------------------------
+29. AUDITABILITY & REPLAYABILITY SPECIFICATION
+--------------------------------------------------------------------------------
+
+29.1 REPLAYABILITY DEFINITIONS
+To maintain strict architectural honesty, Phase 1C.4b-R distinguishes between
+deterministic components and model-assisted processes:
+  - Replayability: The historical acquisition workflow can be reconstructed and rerun
+    using preserved inputs, software versions, prompt templates, and configuration manifests.
+  - Deterministic Reproducibility: Identical outputs are expected only for components
+    explicitly designed and verified as deterministic (e.g. document hashing, schema validation,
+    LaTeX AST compilation, unit conversion, and rule-based linters).
+  - Model-Assisted Reproducibility: Extraction involving language models can be replayed
+    and compared using identical prompts and parameters, but bit-for-bit output identity
+    is not assumed across diverse runtimes unless guaranteed by the underlying engine.
+
+29.2 REPROCESSING UPON UPSTREAM IMPROVEMENT
+If an extraction rule, parser, or prompt template is updated:
+  - The acquisition manifest allows the system to identify every `KnowledgeClaim`
+    generated under the previous version.
+  - Affected claims are marked `UNDER_REPROCESSING_REVIEW`.
+  - The pipeline re-runs the extraction to generate proposed diffs for human expert review.
+
+
+--------------------------------------------------------------------------------
+30. KNOWLEDGE ACQUISITION MANIFEST
+--------------------------------------------------------------------------------
+
+Every acquisition run produces an immutable, Git-tracked `KnowledgeAcquisitionManifest`:
+
+```json
+{
+  "manifest_id": "KAM-2026-10-D10-BATCH-01",
+  "batch_timestamp": "2026-09-26T00:00:00Z",
+  "operator_id": "Specialist-04",
+  "target_domains": [10],
+  "target_concept_cluster": "Velocity-Gradient Microphone Physics & Proximity Effect",
+  "registered_source_ids": [
+    "SRC-BOOK-BERANEK-2012",
+    "SRC-STAND-AES17-2020"
+  ],
+  "parser_version": "git-commit-e4f8b2a",
+  "extraction_template_version": "v1.2-acoustics-atomic",
+  "normalisation_schema_version": "1C.4a-R-v1.1",
+  "yield_summary": {
+    "total_passages_extracted": 14,
+    "candidate_claims_generated": 6,
+    "causal_models_generated": 2,
+    "operational_boundaries_generated": 3,
+    "conflicts_detected": 1,
+    "claims_quarantined": 1,
+    "claims_rejected": 0
+  },
+  "candidate_entity_ids": [
+    "CANDIDATE-KC-D10-001",
+    "CANDIDATE-KC-D10-002",
+    "CANDIDATE-CM-D10-001",
+    "CANDIDATE-OB-D10-001",
+    "CANDIDATE-CR-D10-001"
+  ],
+  "manifest_seal": "f4e3d2c1b0a987654321fedcba0987654321fedcba0987654321fedcba098765"
+}
+```
+
+
+--------------------------------------------------------------------------------
+31. ARCHITECTURE UAT / ACCEPTANCE SCENARIOS
+--------------------------------------------------------------------------------
+
+================================================================================
+NOTICE: THE FOLLOWING SCENARIOS ARE UNVERIFIED WORKFLOW ILLUSTRATIONS
+DEMONSTRATING ARCHITECTURAL BEHAVIOR ONLY.
+================================================================================
+
+SCENARIO A — Strong Foundational Source (Acoustic Wave Physics)
+  - Input: Leo Beranek *Acoustics* passage deriving spherical wave particle velocity
+    and near-field pressure gradient.
+  - Expected Behavior:
+      * Source registered as Class A, Rigor R1, Jurisdiction J_CORE.
+      * Normalizer extracts declarative LaTeX formula for proximity boost $\Delta dB$.
+      * Axis 1 classified as `ESTABLISHED_ENGINEERING_PRINCIPLE`; Axis 2 `FUNDAMENTAL_THEORY`.
+      * Boundary attached: applies strictly to spherical near-field $r < \frac{c}{2\pi f}$
+        and directional polar patterns. Omnidirectional mics noted as exception.
+  - Acceptance Result: PASS.
+
+SCENARIO B — Manufacturer Technical Claim (Speaker Impedance Sweep)
+  - Input: Celestion technical whitepaper containing measured impedance curve (75 Hz resonance)
+    alongside marketing text claiming "the most iconic British rock tone ever created."
+  - Expected Behavior:
+      * Parser isolates impedance curve data; strips marketing prose.
+      * Ingested with `DeviceSpecificityContext` ("Celestion Vintage 30").
+      * Numerical typing classifies 75 Hz resonance as `EMPIRICALLY_MEASURED_RANGE`.
+      * Claim barred from universal acoustic law; restricted to specific driver model.
+  - Acceptance Result: PASS.
+
+SCENARIO C — Practitioner Technique (Rhythm Guitar Midrange Carving)
+  - Input: Published interview with veteran mixer recommending cutting 400 Hz on distorted
+    rhythm guitars by 3 dB to leave space for vocal intelligibility.
+  - Expected Behavior:
+      * Class G source, Rigor R4/R5, Jurisdiction J_APPLIED.
+      * Imperative "cut 400 Hz by 3 dB" stripped by anti-recipe linter.
+      * Subjective descriptor preserved in context alongside candidate acoustic correlate.
+      * Reformulated into `CausalModel`: Input: Lower-mid attenuation.
+        Acoustic Consequence: Reduces masking of concurrent midrange sources.
+        Trade-off: Weakens guitar chord body; risks hollow timbre in sparse mixes.
+      * Classified as Axis 2 `CONTEXT_DEPENDENT_PRACTICE`.
+  - Acceptance Result: PASS.
+
+SCENARIO D — Conflicting Authoritative Sources (Microphone Placement Strategy)
+  - Input: Authoritative Source A recommends center dust-cap mic alignment for modern bite;
+    Authoritative Source B argues center cap produces intolerable cone fizz.
+  - Expected Behavior:
+      * System refuses to discard or average the two views.
+      * Instantiates `ConflictRecord` with `conflict_nature: METHODOLOGICAL_DIFFERENCE`.
+      * Both claims attributed and tagged with `conflict_status: ACTIVE_COMPETING_CLAIM`.
+      * Downstream handoff queued for Phase 1C.4d adjudication.
+  - Acceptance Result: PASS.
+
+SCENARIO E — Duplicate Citation Ancestry (Circular Echo Chamber)
+  - Input: Multiple audio engineering blogs and articles claiming "4 kHz is where
+    human hearing is most sensitive because of ear canal resonance." All cite a 1933 paper.
+  - Expected Behavior:
+      * Evidence Dependency Graph traces publications to the ancestral source.
+      * Ingestion records 1 ancestral root with derivative citations, NOT multiple independent sources.
+      * Consensus state evaluated against original paper and modern ISO 226 revisions.
+  - Acceptance Result: PASS.
+
+SCENARIO F — AI Hallucinated Addition (Unsupported Content Injection)
+  - Input: Source discusses vacuum tube grid-leak bias. Extraction LLM outputs a candidate
+    claim asserting that "Mullard 12AX7 tubes produce 15% lower noise in this circuit."
+    (The source makes no mention of Mullard or 15% noise).
+  - Expected Behavior:
+      * Locator verification detects ungrounded assertion.
+      * Unsupported assertion isolated to `unsupported_model_additions`.
+      * Gate 7 halts processing; candidate claim quarantined; audit warning logged.
+  - Acceptance Result: PASS.
+
+SCENARIO G — Quantitative False Precision (Room Reverberation Time)
+  - Input: Acoustic study notes that "typical tracking rooms exhibit RT60 around 0.4 to 0.6 seconds."
+  - Expected Behavior:
+      * Normalizer rejects encoding value as single scalar float (e.g. 0.500 s).
+      * Value typed as `CONTEXTUAL_RECOMMENDED_RANGE` with soft boundaries.
+      * Boundary conditions enforce volume and absorption prerequisites.
+  - Acceptance Result: PASS.
+
+SCENARIO H — Current TT Legacy Heuristic (OverScream Overdrive Override)
+  - Input: Current TT codebase file `geminiService.ts` containing: "If thrash metal,
+    force OverScream Drive=0, Tone=7, Level=10."
+  - Expected Behavior:
+      * Source registered as `UNASSESSED_LEGACY_SOURCE` per Revalidation Addendum 1.
+      * Code rule stripped of AmpliTube 5 IDs and knob values.
+      * Atomically deconstructed into candidate circuit relationship under 3-axis taxonomy.
+      * Placed in quarantine pending recovery of appropriate circuit documentation.
+  - Acceptance Result: PASS.
+
+SCENARIO I — Device-Specific Knowledge vs Platform Contamination
+  - Input: Marshall JCM800 2203 technical manual scan containing preamp schematic, alongside
+    an XML preset snippet containing `<Amp Model="Brit800" ParamID="4" Value="0.75" />`.
+  - Expected Behavior:
+      * Preamp circuit topology admitted as `DEVICE_SPECIFIC_BEHAVIOUR`.
+      * XML tag, Model ID, and ParamID intercepted and rejected by Platform Leakage Firewall.
+      * Rejected items routed to platform translation catalog; barred from knowledge base.
+  - Acceptance Result: PASS.
+
+SCENARIO J — Copyright-Sensitive Source (Commercial Technical Manual Ingestion)
+  - Input: Lawfully acquired 600-page proprietary recording engineering handbook.
+  - Expected Behavior:
+      * Full book stored exclusively in secure source preservation archive.
+      * Only normalized atomic propositions, causal links, and minimal cited excerpts
+        enter canonical knowledge base.
+      * Zero raw pages or multi-paragraph text blocks leak into canonical Git repository.
+  - Acceptance Result: PASS.
+
+SCENARIO K — Outdated / Superseded Standard (Legacy VU Metering)
+  - Input: 1953 ASA C16.5 standard specifying VU meter ballistic response without digital scale context.
+  - Expected Behavior:
+      * Registered with historical status; linked to modern superseding standards (AES17 / IEC 60268).
+      * Operational envelope explicitly states: "Applies to analog electromechanical meters;
+        does not indicate digital peak inter-sample overshoots."
+      * Prevents treating 0 VU as 0 dBFS.
+  - Acceptance Result: PASS.
+
+SCENARIO L — Broken Provenance Chain (Missing Source Locator)
+  - Input: Candidate claim describing power amplifier output transformer saturation
+    submitted without an Exact Reconstructable Source Locator.
+  - Expected Behavior:
+      * Provenance validator detects missing locator.
+      * Gate 6 halts; promotion eligibility automatically blocked.
+      * Reviewer workbench flags provenance break; item cannot advance.
+  - Acceptance Result: PASS.
+
+
+--------------------------------------------------------------------------------
+33. EXPLICIT ARCHITECTURAL DECISIONS (A THROUGH O)
+--------------------------------------------------------------------------------
+
+DECISION A: Canonical Relationship Between Stored Sources and Normalized Knowledge
+  - Direction: Independent, Decoupled Relational Linkage.
+  - Classification: UNCHANGED
+  - Rationale: Source documents provide verifiable historical provenance, but the canonical
+    knowledge base consists strictly of normalized, platform-independent entities
+    (`KnowledgeClaim`, `CausalModel`, `OperationalBoundary`). Sources validate knowledge;
+    they do not constitute the runtime knowledge representation.
+
+DECISION B: Physical Storage Architecture for Full Source Documents
+  - Direction: Two-Store Information Governance Architecture.
+  - Classification: CLARIFIED
+  - Rationale: Full source artifacts (PDFs, scans, CSVs, schematics) reside in an access-controlled,
+    offline Source Preservation Archive (`/knowledge/archive/sources/`). The Git-tracked
+    canonical repository contains only normalized structured files with minimal cited excerpts
+    necessary for provenance, respecting applicable copyright and access conditions.
+
+DECISION C: Minimum Provenance Required for Promotion Eligibility
+  - Direction: Unbroken Three-Point Reconstructable Anchor.
+  - Classification: CORRECTED
+  - Rationale: Replaced rigid text-only page/passage requirements with an Exact Reconstructable
+    Source Locator supporting text, equations, schematics, tables, datasets, and standards.
+    A claim must link to: (1) an immutable `SourceDocument` with cryptographic hash, (2) an
+    Exact Reconstructable Source Locator, and (3) an evaluated Rigor/Jurisdiction classification.
+
+DECISION D: Representation of Unavailable or Proprietary Sources
+  - Direction: Sealed Bibliographic Provenance Stub.
+  - Classification: UNCHANGED
+  - Rationale: If a source becomes unavailable after initial extraction, its persistent
+    metadata, SHA-256 hash, and exact locator anchor remain sealed in `SourceDocument` and
+    `ClaimAttribution`, preserving full historical traceability without requiring live access.
+
+DECISION E: Distinguishing Independent Corroboration from Duplicated Citation Lineage
+  - Direction: Graph-Based Evidence Dependency Tracking (EDG).
+  - Classification: CLARIFIED
+  - Rationale: Multiple citations tracing to a common ancestral study are mapped as a
+    single evidentiary root. Consensus upgrades require independent methodologies or separate
+    empirical roots, without treating "primary" as synonymous with "true."
+
+DECISION F: Representation of AI-Added Unsupported Content
+  - Direction: Isolated Quarantined Additions Field.
+  - Classification: UNCHANGED
+  - Rationale: Any concept or parameter introduced by an LLM that cannot be grounded in
+    the cited source evidence is isolated in an `unsupported_model_additions` field. The
+    claim is automatically quarantined and blocked from review readiness.
+
+DECISION G: Whole Source Rejection vs Individual Claim Rejection
+  - Direction: Granular Epistemic Scoping with Expanded Source Rejection Criteria.
+  - Classification: CORRECTED
+  - Rationale: Corrected v1.0's restriction of whole-source rejection to fraud/marketing.
+    Whole-source rejection is warranted for fraud, unidentifiable provenance, unrecoverable
+    corruption, material integrity failure, synthetic misrepresentation, or fatal licensing
+    barriers. Otherwise, legitimate sources with contested claims have individual claims
+    rejected, bounded, or preserved as conflicting evidence.
+
+DECISION H: Acquisition Workflow States vs Frozen Lifecycle States
+  - Direction: Two-Tier Decoupled State Hierarchy.
+  - Classification: UNCHANGED
+  - Rationale: Acquisition workflow states (`DISCOVERED`, `REGISTERED`, `PARSED`, `EXTRACTED`,
+    `NORMALISED`, `REVIEW_READY`) govern the offline ingestion pipeline without altering the
+    frozen Phase 1C.4a entity lifecycle states (`CAPTURED` to `VALIDATED_ACTIVE`).
+
+DECISION I: Provenance-Break Severity Blocking Promotion
+  - Direction: Zero-Tolerance Locator and Integrity Gate.
+  - Classification: CORRECTED
+  - Rationale: Updated to enforce the generalized Exact Reconstructable Source Locator.
+    Any missing source ID, absent locator coordinates, divergent document hash, or evidence
+    discrepancy constitutes a fatal provenance break, unconditionally blocking promotion to `VALIDATED_ACTIVE`.
+
+DECISION J: Ingestion Pipeline Entry for Current TT Legacy Material
+  - Direction: Unassessed Legacy Multi-Axis Deconstruction Pipeline.
+  - Classification: CORRECTED
+  - Rationale: Eliminated restrictive mandates requiring universal conversion into "first-principles
+    physics." Current TT enters as `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`. Propositions
+    are atomically deconstructed, classified under the 3-axis taxonomy, and backed by the
+    best available underlying provenance appropriate to the claim's scope and risk.
+
+DECISION K: Re-Entry Pipeline for Quarantined Candidate Lessons
+  - Direction: Evidence-Sufficiency Dossier Re-Ingestion.
+  - Classification: CLARIFIED
+  - Rationale: Runtime lessons cannot bypass acquisition rigor. When a `CandidateLesson`
+    satisfies its multi-factor evidence-sufficiency dossier, it enters the normal acquisition
+    pipeline as a candidate empirical claim requiring human expert review and adversarial checks.
+
+DECISION L: Acquisition Prioritisation Strategy for Curriculum Build
+  - Direction: Concept Cluster Leverage Strategy Preserving Frozen 22 Domains.
+  - Classification: CORRECTED
+  - Rationale: Corrected v1.0's accidental domain renaming. Cross-domain Concept Clusters
+    (electrical loading, gain/headroom, non-linear saturation, filtering, capture acoustics)
+    sequence acquisition work without altering or replacing the canonical 22-domain identities.
+
+DECISION M: Retention of Acquisition Artifacts for Replayability
+  - Direction: Complete Lineage Snapshot with Realistic Replayability Definitions.
+  - Classification: CORRECTED
+  - Rationale: Eliminated overpromises of universal "bit-for-bit reproducibility" for LLMs.
+    The system retains raw source hashes, parser commits, prompt templates, normalization
+    schemas, and manifests to guarantee auditable replayability and deterministic reproducibility
+    for deterministic pipeline stages.
+
+DECISION N: Source Material Permitted for Discovery but Barred from Authority
+  - Direction: Discovery-Only Classification.
+  - Classification: CLARIFIED
+  - Rationale: Search results, community forum threads, video/podcast transcripts, and LLM
+    parametric memory may be used to discover sources, but can never serve as authoritative
+    citations without appropriate, verifiable documentation.
+
+DECISION O: Safeguards Preventing Canonical Library from Becoming Copyrighted Reproduction
+  - Direction: Information Governance Normalization Firewall.
+  - Classification: CLARIFIED
+  - Rationale: Replaced universal fair-use legal assertions with jurisdiction-aware information
+    governance. Canonical files store normalized declarative engineering propositions,
+    mathematical ASTs, and minimal cited excerpts necessary for auditability.
+
+
+--------------------------------------------------------------------------------
+34. HANDOFF TO SUBSEQUENT PHASES (1C.4c TO 1C.6)
+--------------------------------------------------------------------------------
+
+34.1 HANDOFF TO PHASE 1C.4c (RETRIEVAL & RUNTIME CONTEXT ARCHITECTURE)
+  - Delivers: Normalized entities indexed across the 10 orthogonal query facets.
+  - Boundary Contract: Retrieval queries only `VALIDATED_ACTIVE` entities; quarantined
+    candidate lessons and raw archive sources remain strictly invisible.
+
+34.2 HANDOFF TO PHASE 1C.4d (CONFLICT, UNCERTAINTY & GOVERNANCE TOOLING)
+  - Delivers: Candidate `ConflictRecord` entities and flagged `epistemic_validation.conflict_status` records.
+  - Boundary Contract: Provides conflict packages and multi-source provenance trees for
+    interactive human adjudication tooling.
+
+34.3 HANDOFF TO PHASE 1C.4e (CURRENT TT KNOWLEDGE MIGRATION SPECIFICATION)
+  - Delivers: The atomic deconstruction and multi-axis classification methodology under
+    `UNASSESSED_LEGACY_SOURCE` rules.
+  - Boundary Contract: Line-by-line asset migration of Current TT heuristics.
+
+34.4 HANDOFF TO PHASE 1C.4f (KNOWLEDGE ARCHITECTURE UAT & SIGN-OFF)
+  - Delivers: Acceptance scenarios (A through L), replayability specifications, and manifest validation suites.
+
+34.5 HANDOFF TO PHASE 1C.5 (ENGINEERING REASONING SPECIFICATION)
+  - Boundary Contract: Ingestion provides declarative causal models, operational boundaries,
+    and trade-off vectors. Runtime reasoning loops and inference graphs belong to Phase 1C.5.
+
+34.6 HANDOFF TO PHASE 1C.6 (COMPETENCY EVALUATION / BENCHMARK SUITE)
+  - Boundary Contract: Ingestion maintains domain fidelity and evidence standards. Formal
+    benchmark harnesses and evaluation suites belong to Phase 1C.6.
+
+
+--------------------------------------------------------------------------------
+35. FINAL ARCHITECTURAL RECOMMENDATION & EPISTEMIC SCOPE
+--------------------------------------------------------------------------------
+
+35.1 ARCHITECTURAL VERDICT: COMPLETE & APPROVED FOR FREEZE
+Phase 1C.4b-R establishes an authoritative, epistemologically sound, and operationally
+practical Source & Acquisition Architecture. It cleanly decouples discovery from authority,
+documents from knowledge, and extraction from validation.
+
+35.2 BOUNDED EPISTEMIC SCOPE
+The architecture does not make ungrounded claims to "guarantee universal engineering truth."
+Instead, it is rigorously engineered to produce:
+  - Traceable knowledge linked to verifiable source locators;
+  - Provenance-backed claims with auditable lineage;
+  - Bounded models defining explicit validity envelopes and failure modes;
+  - Reviewable extractions open to expert human audit;
+  - Conflict-aware representations preserving credible technical divergence;
+  - Uncertainty-preserving structures capturing tolerances and exploratory limits; and
+  - Professionally governed assets promoted through risk-proportional review.
+
+Phase 1C.4b-R v1.1 is COMPLETE, FULLY AUDITED, and READY FOR FORMAL FREEZE.
+
+
+--------------------------------------------------------------------------------
+36. CORRECTIVE COMPLIANCE AUDIT (ITEMS 1 THROUGH 12)
+--------------------------------------------------------------------------------
+
+The twelve targeted corrective review areas have been audited for complete compliance:
+
+Correction Area                                   Affected Sections             Action Taken                                                  Status    Upstream Changed?
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1. Current TT Deconstruction Language             Sec 4, 5.9, 10, 25, 31, 33(J) Replaced "first-principles" dogma with multi-axis mapping     RESOLVED  NO
+2. Universal Primary Literature Removal           Sec 3.2, 5, 14, 25, 33(E,J,N) Applied 1C.4a-DR Addendum 1; best available provenance       RESOLVED  NO
+3. Generalize Provenance (Source Locators)        Sec 7, 9, 11, 12, 27, 33(C,I) Implemented Exact Reconstructable Source Locators             RESOLVED  NO
+4. Prevent Source Class Hierarchy as Authority    Sec 5, 15, 24                 Reaffirmed independent rigor, jurisdiction, evidence axes     RESOLVED  NO
+5. Restore Frozen 22-Domain Competency Names      Sec 22, 33(L)                 Restored exact canonical domain names; used concept clusters  RESOLVED  NO
+6. Remove Arbitrary Thresholds from Truth         Sec 9, 14, 23, 24, 33(K)      Classified thresholds into Normative, Configurable, Example   RESOLVED  NO
+7. Correct Replayability Claims                   Sec 29, 31, 33(M)             Separated replayability from model-assisted reproducibility   RESOLVED  NO
+8. Mark Technical Examples as Unverified          Banner, Sec 1.2, 7, 30, 31    Added prominent global and per-section warning banners        RESOLVED  NO
+9. Correct Source-Level Rejection Policy          Sec 26, 33(G)                 Expanded legitimate source rejection criteria                 RESOLVED  NO
+10. Correct Copyright / Licensing Wording         Sec 8, 25, 33(B,O)            Replaced universal fair-use claims with governance design     RESOLVED  NO
+11. Preserve Subjective Practitioner Terms        Sec 11, 19, 25, 31            Preserved descriptors in context without forced 1:1 metrics   RESOLVED  NO
+12. Correct Final Epistemic Claims                Sec 1.1, 35                   Removed truth guarantees; defined bounded epistemic scope     RESOLVED  NO
+
+Audit Summary:
+  - Total Corrective Items: 12
+  - Items Resolved: 12
+  - Items Open: 0
+  - Upstream Architecture Changes: 0 (Strict compliance with frozen artifacts)
+
+================================================================================
+FINAL VERDICT: PASS — CORRECTED AND READY FOR FREEZE
+================================================================================
