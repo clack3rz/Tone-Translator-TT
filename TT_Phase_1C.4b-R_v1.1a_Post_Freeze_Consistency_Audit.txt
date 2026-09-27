@@ -1,0 +1,666 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4b-R v1.1a — POST-FREEZE CONSISTENCY & DEPENDENCY REVALIDATION AUDIT
+================================================================================
+Date: 2026-09-27
+Audit Mode: READ-ONLY ARCHITECTURAL AUDIT ONLY
+Target Artifact: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+Author: AI Studio Build Engine (Lead Knowledge Architect Review)
+Status: FORMAL AUDIT COMPLETE — VERDICT: HOLD
+
+================================================================================
+1. EXECUTIVE VERDICT
+================================================================================
+
+VERDICT: HOLD — TARGETED CORRECTION REQUIRED BEFORE FORMAL FREEZE
+
+While Phase 1C.4b-R v1.1a exhibits exceptional architectural maturity across its
+core source taxonomy, two-store information governance, atomic de-summarization,
+Exact Reconstructable Source Locators, and 3-axis orthogonal classification, it
+CANNOT remain frozen unchanged in its current state.
+
+Forensic inspection of the actual artifact content identified two Class A Freeze
+Blockers and two Class B Material Corrections:
+
+1. CLASS A BLOCKER (UAT Ownership Breach):
+   Section 31 specifies twelve architectural acceptance scenarios (Scenarios A through L),
+   each terminating with "Acceptance Result: PASS." Line 1684 additionally asserts
+   "FINAL VERDICT: PASS — CORRECTED AND READY FOR FREEZE".
+   Phase 1C.4f exclusively owns the execution and sign-off of Knowledge Architecture UAT.
+   Representing future acceptance scenarios as already executed and passed directly
+   violates Phase 1C.4f ownership and contradicts the standard enforced in frozen
+   artifacts Phase 1C.4c-R v1.1b and Phase 1C.4d-R v1.1a, where all scenarios are strictly
+   marked "NOT EXECUTED — RESERVED FOR PHASE 1C.4f".
+
+2. CLASS A BLOCKER (Governance Ownership & Lifecycle Swallowing):
+   Section 24 (Quality Gates 11 and 12) and Section 26.1 (Disposition 6) improperly
+   subsume governance review and canonical activation into the offline acquisition pipeline.
+   Gate 12 asserts: "Verification: Lifecycle state updated to `VALIDATED_ACTIVE`."
+   Section 26.1 disposition 6 states: "PROMOTION ELIGIBLE ... Result: Transitioned to
+   `VALIDATED_ACTIVE`."
+   This confuses acquisition eligibility with canonical activation. Phase 1C.4b owns
+   source acquisition and normalization preparation terminating at `REVIEW_READY`
+   (`UNDER_REVIEW`). Canonical activation and transition to `VALIDATED_ACTIVE` are
+   exclusively governed by Phase 1C.4d human expert review and adversarial triad sign-off.
+
+3. CLASS B MATERIAL CORRECTION (Anti-Recipe Imperative Over-Breadth):
+   Section 4 (Principle 19) and Section 25 (Item 22) phrase the anti-recipe linter
+   as an unconditional ban on imperative phrasing ("unconditionally halts on
+   prescriptive imperatives"). This lacks an explicit architectural exemption for
+   legitimate technical procedures, calibration alignments, standards definitions,
+   safety requirements, and bench measurement protocols.
+
+4. CLASS B MATERIAL CORRECTION (Model Lineage Omission in Manifest):
+   Section 12.1 (`ClaimAttribution`) and Section 30 (`KnowledgeAcquisitionManifest`)
+   omit explicit model identifier, version, and prompt snapshot lineage fields for
+   model-assisted extraction passes, creating a gap in forensic extraction auditability.
+
+In accordance with governing instructions, NO files have been modified. A bounded
+correction docket is provided in Section 10 of this report.
+
+================================================================================
+2. ARTIFACT IDENTITY
+================================================================================
+
+- Exact Target Artifact Inspected: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+- Version Declared in Header: Version 1.1a (Minor Freeze Correction Candidate)
+- Date Declared in Header: 2026-09-26
+- Physical Line Count: 1686 lines
+- Total Character / Byte Count: 104,419 bytes
+- Physical Location: Root workspace filesystem
+- Inspection Confirmation: Direct, full-document verification of actual file text
+  via sequential file viewing and programmatic regex probes. No completion reports,
+  provisional approvals, or past audit summaries were relied upon.
+
+================================================================================
+3. AUTHORITATIVE DEPENDENCIES INSPECTED
+================================================================================
+
+The audit independently verified 1C.4b-R v1.1a against the actual frozen architecture
+artifacts present in the workspace:
+
+1. Phase 1C.4a-R v1.1: Sound Engineering Knowledge Architecture & Lifecycle
+   (/TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt)
+   - Verified: Normalized 8-entity model; orthogonal 3-axis taxonomy; qualitative
+     EpistemicValidation factors; elimination of scalar confidence/authority scores.
+
+2. Phase 1C.4a-DR: Dependency Revalidation Report
+   (/TT_Phase_1C4a_Dependency_Revalidation_Against_1C3c_v1.1.txt)
+   - Verified: Addendum 1 (Current TT as `UNASSESSED_LEGACY_SOURCE`, best available
+     provenance recovery standard without universal primary literature requirement);
+     Addendum 2 (Quarantine of experiential evidence, CandidateLesson dossier rules).
+
+3. Phase 1C.4c-R v1.1b: Knowledge Retrieval & Runtime Context Architecture
+   (/TT_Sound_Engineering_Knowledge_Retrieval_and_Runtime_Context_Architecture_v1.1b.txt)
+   - Verified: Retrieval ownership boundaries (`KnowledgeNeed`, `KnowledgeContextPackage`,
+     `RetrievalTrace`, 10 query facets, HNSW/ANN indexing, runtime context pruning);
+     UAT scenario status convention ("NOT EXECUTED — RESERVED FOR PHASE 1C.4f").
+
+4. Phase 1C.4d-R v1.1a: Knowledge Conflict, Uncertainty & Governance Architecture
+   (/TT_Sound_Engineering_Knowledge_Conflict_Uncertainty_and_Governance_Architecture_v1.1a.txt)
+   - Verified: Governance ownership of `VALIDATED_ACTIVE` transitions; dual-status
+     conflict lifecycle; human review tiers; UAT scenario reservation convention.
+
+5. Upstream Competency Standards & Curriculum Blueprint:
+   - Phase 1C.1: Professional Sound Engineer Standards (/TT_Professional_Sound_Engineer_Standards_v1.txt)
+   - Phase 1C.3a: Sound Engineer Knowledge Inventory (/TT_Current_Sound_Engineer_Knowledge_Inventory_v1.txt)
+   - Phase 1C.3b: Capability Gap Matrix (/TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt)
+   - Phase 1C.3c-R v1.1: Curriculum & Competency Blueprint (/TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt)
+   - Verified: Exact preservation of the 22 canonical competency domains and 5
+     independent competency dimensions without aggregation.
+
+================================================================================
+4. WHOLE-DOCUMENT AUDIT METHOD
+================================================================================
+
+The audit applied a four-tier investigative methodology:
+
+Tier 1 — Global Structural Reading:
+Full-file sequential review (Lines 1 to 1686) across all 36 sections of 1C.4b-R v1.1a,
+verifying entity schemas, pipeline stages, quality gates, operational policies,
+and architectural decisions.
+
+Tier 2 — Automated Regression & Vocabulary Probing:
+Comprehensive programmatic regex scans across the entire 104 KB text file for 35+
+regression probe terms, testing for:
+- Invented entities (e.g. `KnowledgeChunk`);
+- Naive scalar authority or confidence metrics;
+- Implicit source-to-truth mappings (e.g. R1 = Physical Law);
+- Absolutist primary-source or laboratory-only mandates;
+- Blanket copyright/licensing assertions (e.g. "under 50 words");
+- Phase-boundary violations (retrieval, governance, migration, UAT);
+- Unexecuted vs executed scenario claims.
+
+Tier 3 — Cross-Document Contract Reconciliation:
+Direct side-by-side comparison of 1C.4b-R v1.1a definitions against Phase 1C.4a-R v1.1,
+1C.4a-DR, 1C.4c-R v1.1b, and 1C.4d-R v1.1a to ensure schema fidelity, lifecycle
+consistency, and clean division of architectural responsibilities.
+
+Tier 4 — Epistemic & Operational Boundary Stress-Testing:
+Evaluation of failure mode mitigations, anti-recipe linter definitions, practitioner
+quarantine protocols, manufacturer marketing filters, and model-assisted extraction limits.
+
+================================================================================
+5. FINDINGS SUMMARY
+================================================================================
+
+- Class A Issues (Freeze Blockers): 2
+- Class B Issues (Material Corrections Required): 2
+- Class C Issues (Non-Blocking Editorial / Clarity): 1
+- Total Issues Discovered: 5
+
+Summary Table:
+-----------------------------------------------------------------------------------------
+ID       Class   Section                     Issue Summary
+-----------------------------------------------------------------------------------------
+ISSUE-01 Class A Sec 31 (L1361-1483), Sec 36 Acceptance Scenarios marked "PASS"; violates 1C.4f
+ISSUE-02 Class A Sec 24 (Gate 11-12), Sec 26 Acquisition Gate 12 executes VALIDATED_ACTIVE
+ISSUE-03 Class B Sec 4 (P19), Sec 25 (Item 22) Anti-recipe linter over-bans technical imperatives
+ISSUE-04 Class B Sec 12.1, Sec 30            Missing model identifier/version lineage in manifest
+ISSUE-05 Class C Sec 26.1 (Item 2)           "Higher-tier physical laws" hierarchy language
+-----------------------------------------------------------------------------------------
+
+================================================================================
+6. DETAILED FINDINGS
+================================================================================
+
+--------------------------------------------------------------------------------
+FINDING: ISSUE-01
+--------------------------------------------------------------------------------
+Classification: CLASS A — FREEZE BLOCKER
+Source Section: Section 31 (Lines 1361–1483) and Section 36 (Line 1684)
+Exact Problematic Wording:
+  Lines 1376, 1386, 1399, 1409, 1418, 1428, 1436, 1446, 1455, 1464, 1473, 1482:
+    "- Acceptance Result: PASS."
+  Line 1684:
+    "FINAL VERDICT: PASS — CORRECTED AND READY FOR FREEZE"
+Why It Conflicts:
+  Phase 1C.4f exclusively owns the formal execution, testing, and acceptance sign-off
+  of the Knowledge Architecture UAT harness.
+  In frozen artifacts Phase 1C.4c-R v1.1b (Section 40, Decision M) and Phase 1C.4d-R v1.1a
+  (Section 22, Decision O), all specified acceptance scenarios are strictly and
+  uniformly designated as:
+    "- Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f" (or
+     "- Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f").
+  Marking Scenarios A through L as "Acceptance Result: PASS." asserts pre-emptive
+  execution and acceptance, directly violating Phase 1C.4f ownership and creating false
+  certainty of completed testing.
+Frozen Dependency Affected:
+  Phase 1C.4f Knowledge Architecture UAT Mandate; Phase 1C.4c-R v1.1b Section 40;
+  Phase 1C.4d-R v1.1a Section 22.
+Required Correction:
+  Update all twelve scenario blocks in Section 31 (Scenarios A through L) by replacing
+  "- Acceptance Result: PASS." with:
+  "- Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f".
+  Update Section 36 / Line 1684 to state readiness for review rather than declaring
+  an executed pass verdict.
+Correction Scope:
+  Local to artifact (/TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt).
+
+--------------------------------------------------------------------------------
+FINDING: ISSUE-02
+--------------------------------------------------------------------------------
+Classification: CLASS A — FREEZE BLOCKER
+Source Section: Section 24 (Quality Gates, Lines 1124–1133) and Section 26.1 (Lines 1216–1220)
+Exact Problematic Wording:
+  Lines 1129–1132:
+    "Gate 12: PROMOTION ELIGIBLE
+      - Entry Criteria: All governance approvals, adversarial triad checks, and seals completed.
+      - Verification: Lifecycle state updated to `VALIDATED_ACTIVE`.
+      - Output: Immutable canonical knowledge unit eligible for runtime indexing in Phase 1C.4c."
+  Lines 1216–1219:
+    "6. PROMOTION ELIGIBLE:
+      - Applied When: Fully attributed via Exact Reconstructable Source Locator, normalized,
+        boundary-complete, lineage-verified, and approved by qualified human expert review.
+      - Result: Transitioned to `VALIDATED_ACTIVE`."
+Why It Conflicts:
+  Phase 1C.4b is the Source & Acquisition Architecture. Its functional domain encompasses
+  source discovery, registration, acquisition, extraction, decomposition, normalization,
+  attribution, and candidate packaging. Its pipeline terminates at `REVIEW_READY`
+  (`UNDER_REVIEW`).
+  Phase 1C.4d exclusively owns Knowledge Governance, Review Records, Adversarial Triads,
+  and the authoritative deployment lifecycle transition from `UNDER_REVIEW` to
+  `VALIDATED_ACTIVE`.
+  By incorporating Gate 11 ("GOVERNANCE EVALUATED") and Gate 12 ("PROMOTION ELIGIBLE")
+  into the acquisition pipeline and stating that Gate 12 updates the lifecycle state to
+  `VALIDATED_ACTIVE`, the acquisition architecture swallows Phase 1C.4d governance and
+  conflates *acquisition eligibility* with *canonical activation*.
+Frozen Dependency Affected:
+  Phase 1C.4a-R v1.1 Section 6.1 (Lifecycle States); Phase 1C.4d-R v1.1a Section 7 & 15
+  (Governance Promotion Authority & Lifecycle Transition Guards).
+Required Correction:
+  1. Scope the Phase 1C.4b acquisition quality gates to 10 stages terminating at
+     Gate 10: `REVIEW_READY` (Candidate package complete, in `UNDER_REVIEW` state,
+     queued for Phase 1C.4d governance evaluation).
+  2. Clearly demarcate subsequent evaluation and activation as external downstream handoffs:
+     Gate 11 (`GOVERNANCE_EVALUATED`) and Gate 12 (`CANONICAL_ACTIVATION`) must be
+     explicitly identified as downstream Phase 1C.4d governance milestones, NOT internal
+     acquisition pipeline gates.
+  3. In Section 26.1 Item 6, adjust "Result: Transitioned to `VALIDATED_ACTIVE`" to:
+     "Result: Formally marked `GOVERNANCE_ELIGIBLE` and submitted to Phase 1C.4d for
+     expert review; activation to `VALIDATED_ACTIVE` is exclusively performed by Phase 1C.4d."
+Correction Scope:
+  Local to artifact (/TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt).
+
+--------------------------------------------------------------------------------
+FINDING: ISSUE-03
+--------------------------------------------------------------------------------
+Classification: CLASS B — MATERIAL CORRECTION REQUIRED
+Source Section: Section 4, Principle 19 (Lines 227–229) and Section 25, Item 22 (Lines 1183–1184)
+Exact Problematic Wording:
+  Lines 228–229:
+    "19. Anti-Recipe Imperative Discipline:
+     The ingestion linter unconditionally rejects any candidate claim containing prescriptive
+     absolutes ('always cut at 400 Hz', 'mandatory drive setting')."
+  Lines 1183–1184:
+    "22. Silent Recipe Generation: Ingesting an imperative 'always do X' rule.
+     - Mitigation: Ingestion anti-recipe linter unconditionally halts on prescriptive imperatives."
+Why It Conflicts:
+  The governing prompt principle (Section 14) mandates that while ungrounded prescriptive
+  generalizations ("always set Drive to 7") must be blocked, the architecture must NOT
+  operate as a blunt grammatical ban on all imperative phrasing.
+  Legitimate engineering documents frequently use normative imperative language for
+  safety constraints, calibration alignments (e.g. "align 0 VU to +4 dBu into 600 ohms"),
+  measurement procedures, and standards compliance.
+  Stating that the linter "unconditionally rejects any candidate claim containing prescriptive
+  absolutes" or "unconditionally halts on prescriptive imperatives" without explicitly
+  protecting legitimate normative standards and bounded calibration procedures creates an
+  inappropriate hard filter that could falsely reject valid Class C and Class E technical material.
+Frozen Dependency Affected:
+  Phase 1C.4a-R v1.1 Section 8.3 (`PROFESSIONAL_CONVENTION` and calibration standards);
+  Phase 1C.4b Audit Mandate Section 14.
+Required Correction:
+  Qualify Principle 19 and Section 25 Item 22 to clarify that the anti-recipe linter
+  targets ungrounded prescriptive *workflow generalisations* (unbounded symptom-to-setting rules),
+  while explicitly exempting legitimate normative procedures, calibration protocols,
+  safety boundaries, and technical standards definitions when bound to an `OperationalBoundary`.
+Correction Scope:
+  Local to artifact (/TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt).
+
+--------------------------------------------------------------------------------
+FINDING: ISSUE-04
+--------------------------------------------------------------------------------
+Classification: CLASS B — MATERIAL CORRECTION REQUIRED
+Source Section: Section 12.1 (Claim Attribution Schema, Lines 692–712) and Section 30 (Manifest Schema, Lines 1323–1355)
+Exact Problematic Wording:
+  In Section 12.1:
+    `"extraction_method": "SUPERVISED_EXTRACTION_V1"`
+    `"extraction_integrity_hash": "..."`
+  In Section 30:
+    `"parser_version": "git-commit-e4f8b2a"`
+    `"extraction_template_version": "v1.2-acoustics-atomic"`
+    `"normalisation_schema_version": "1C.4a-R-v1.1"`
+Why It Conflicts:
+  Prompt Section 19 explicitly requires:
+  "Check whether model metadata/version lineage is captured where model-assisted
+   extraction materially affects acquisition outputs."
+  While Section 21 establishes robust anti-hallucination guardrails and Section 29
+  distinguishes deterministic replayability from model-assisted reproducibility, the
+  concrete data schemas in Section 12.1 and Section 30 omit explicit fields for recording
+  the language model identity, model version snapshot, and generation temperature/seed
+  when an LLM participates in structural extraction or candidate decomposition.
+  Without explicit model lineage fields, forensic auditability of model-assisted
+  extraction runs is incomplete.
+Frozen Dependency Affected:
+  Phase 1C.4a-R v1.1 Section 9 (Lineage & Auditability); Phase 1C.4c-R v1.1b Section 28
+  (Reconstructable Retrieval Lineage).
+Required Correction:
+  Add an explicit, optional `model_lineage` object to `ClaimAttribution.extraction_metadata`
+  and `KnowledgeAcquisitionManifest`:
+  ```json
+  "model_lineage": {
+    "model_name": "gemini-1.5-pro",
+    "model_version_snapshot": "2026-08-preview",
+    "prompt_template_hash": "c4d5e6...",
+    "sampling_temperature": 0.0
+  }
+  ```
+Correction Scope:
+  Local to artifact (/TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt).
+
+--------------------------------------------------------------------------------
+FINDING: ISSUE-05
+--------------------------------------------------------------------------------
+Classification: CLASS C — NON-BLOCKING EDITORIAL / CLARITY
+Source Section: Section 26.1, Item 2 (Lines 1200–1202)
+Exact Problematic Wording:
+  Lines 1200–1202:
+    "2. REJECT CLAIM:
+     - Applied When: The source is legitimate, but the specific extracted proposition is
+       factually disproven by higher-tier physical laws or contains unresolvable internal errors."
+Why It Conflicts:
+  The phrase "higher-tier physical laws" inadvertently introduces a hierarchical tier
+  concept into Epistemic Basis. Under Phase 1C.4a, Epistemic Basis is a categorical,
+  orthogonal taxonomy of underlying truth nature (`PHYSICAL_LAW`, `ESTABLISHED_ENGINEERING_PRINCIPLE`,
+  `EMPIRICAL_RELATIONSHIP`, `ENGINEERING_TENDENCY`, `HYPOTHETICAL_OR_COMPETING_MODEL`),
+  not a ranked tier system.
+Frozen Dependency Affected:
+  Phase 1C.4a-R v1.1 Section 8.1 (Orthogonal Epistemic Basis).
+Required Correction:
+  Replace "factually disproven by higher-tier physical laws" with:
+  "factually disproven by established physical laws or validated foundational engineering principles".
+Correction Scope:
+  Local to artifact (/TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt).
+
+================================================================================
+7. REGRESSION PROBE RESULTS
+================================================================================
+
+Comprehensive probing against all 19 mandatory audit domains yielded the following
+results:
+
+1. SOURCE CLASS / RIGOR ORTHOGONALITY: PASS
+   - The artifact establishes 11 distinct source classes (Classes A through K).
+   - Section 15.1 and 15.2 explicitly enforce orthogonality: "Source Rigor characterizes
+     the publication's evidentiary nature and peer-review standing; it does NOT
+     determine or dictate the independent Epistemic Basis axis... A high-rigor source
+     does not automatically make an extracted proposition a physical law, nor does a
+     lower-rigor source make an observation false."
+
+2. EVIDENCE PROPORTIONALITY: PASS
+   - Section 3.2, 5.8, 14.3, and 33(E) strictly adopt Phase 1C.4a-DR Addendum 1:
+     "Recover the best available underlying provenance and validate the claim to an
+     evidence standard appropriate to its nature, scope, uncertainty, jurisdiction, and risk."
+   - No universal formulas ("N sources = truth") exist.
+
+3. PRACTITIONER / COMMUNITY EVIDENCE: PASS
+   - Documented in Class G (Section 5.7), Class H (Section 5.8), and Section 19.
+   - Practitioner accounts are recognized as empirical evidence, trade-off vectors,
+     and contextual practices (`CONTEXT_DEPENDENT_PRACTICE`). They are protected from
+     unjustified discard while barred from uncorroborated elevation to invariant physical laws.
+
+4. ANTI-RECIPE ARCHITECTURE: HOLD (See ISSUE-03)
+   - Conceptually sound in Sections 10.2, 11.1, and 13.1 (decoupling recipes into
+     causal models and operational boundaries).
+   - HOLD due to overly blunt phrasing in Principle 19 and Section 25 Item 22
+     ("unconditionally halts on prescriptive imperatives") which lacks explicit
+     exemptions for normative calibration/standards procedures.
+
+5. MARKETING HANDLING: PASS
+   - Section 20.1 provides a clean vetting heuristic: circuit schematics, transformer
+     specs, and measured response curves are admitted; marketing superlatives and
+     subjective adjectives are stripped. Class E sources with zero technical data are
+     rejected at Gate 1/2.
+
+6. COPYRIGHT / LICENSING DISCIPLINE: PASS
+   - Section 8 establishes a defensible two-store information governance architecture:
+     raw source artifacts reside in an access-controlled offline archive (`/knowledge/archive/sources/`),
+     while the Git-tracked canonical library (`/knowledge/canonical/`) contains only
+     normalized claims and minimal cited excerpts.
+   - Replaced naive "under 50 words" or blanket fair-use claims with jurisdiction-aware
+     licensing statuses (`PUBLIC_DOMAIN`, `OPEN_ACCESS_CC`, `COMMERCIAL_ACQUIRED`,
+     `PROPRIETARY_CONFIDENTIAL`, `RESTRICTED_ACCESS`).
+
+7. GROUNDING VS CORRECTNESS: PASS
+   - Section 12.3 explicitly establishes: `EXTRACTION FIDELITY ≠ EPISTEMIC VALIDITY`.
+   - Section 4 Principle 4 reinforces: "Accurately parsing a statement or extracting a
+     data point verifies only what the source asserts, not whether the assertion is
+     physically valid or operationally generalizable."
+
+8. CURRENT TT LEGACY HANDLING: PASS
+   - Current TT codebase is formally classified as `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`
+     (Section 5.9, Decision J).
+   - Legacy rules cannot bypass normal evidence sufficiency and must recover appropriate
+     underlying provenance under Phase 1C.4e.
+
+9. MODEL-PARAMETRIC KNOWLEDGE: HOLD (See ISSUE-04)
+   - Principles in Section 21 are outstanding: "THE AI IS AN EXTRACTION AND STRUCTURAL
+     ANALYSIS AGENT. THE AI IS NEVER AN EPISTEMIC SOURCE."
+   - LLM unsupported additions are isolated into `unsupported_model_additions` and quarantined.
+   - HOLD solely because schema definitions in Section 12.1 and 30 omit explicit model
+     version snapshot lineage fields.
+
+10. DETERMINISTIC / REPLAY CLAIMS: PASS
+    - Section 29.1 cleanly separates Replayability from Deterministic Reproducibility
+      and Model-Assisted Reproducibility.
+    - No ungrounded bit-for-bit promises are made for LLM extraction or stochastic components.
+
+11. RETRIEVAL OWNERSHIP: PASS
+    - The artifact contains zero intrusion into Phase 1C.4c runtime retrieval mechanisms.
+    - Zero references to `KnowledgeNeed`, `KnowledgeContextPackage`, `RetrievalTrace`,
+      or ANN/HNSW runtime search tuning. Section 34.1 defines a clean handoff.
+
+12. GOVERNANCE OWNERSHIP: HOLD (See ISSUE-02)
+    - HOLD because Section 24 (Quality Gates 11 and 12) and Section 26.1 (Item 6)
+      include governance evaluation and canonical promotion to `VALIDATED_ACTIVE`
+      as internal acquisition pipeline gates.
+
+13. CANDIDATELESSON QUARANTINE: PASS
+    - Class J (Section 5.10), Section 27.1, and Decision K enforce strict quarantine
+      for `CandidateLesson` records.
+    - Runtime observations cannot bypass acquisition or governance, and must satisfy
+      the multi-factor Evidence-Sufficiency Dossier before being decomposed into candidate
+      empirical entities.
+
+14. MIGRATION OWNERSHIP: PASS
+    - Current TT migration is explicitly reserved for Phase 1C.4e (Section 1.2, 5.9, 34.3).
+    - No legacy rules are migrated in this artifact.
+
+15. UAT OWNERSHIP: HOLD (See ISSUE-01)
+    - HOLD because Section 31 Scenarios A through L are marked "Acceptance Result: PASS."
+      instead of "NOT EXECUTED — RESERVED FOR PHASE 1C.4f".
+
+16. NUMERICAL / POLICY DISCIPLINE: PASS
+    - The Global Declaration banner and Section 24 explicitly designate operational
+      thresholds (batch sizes, OCR review triggers) as configurable operational parameters
+      (Category B) rather than immutable scientific truths.
+    - No arbitrary reviewer quorums or fixed formulaic source counts are imposed.
+
+17. EXAMPLE DISCIPLINE: PASS
+    - Prominent disclaimer banners are placed globally (Lines 11–22) and preceding
+      Section 31 (Lines 1362–1365).
+    - All examples are clearly framed as unverified architectural illustrations.
+
+18. COMPETENCY MODEL CONSISTENCY: PASS
+    - The 22 canonical domains from Phase 1C.1, 1C.3a, and 1C.3c-R v1.1 are listed
+      verbatim without alteration, renumbering, or renaming (Section 22.1).
+    - Concept Clusters are utilized strictly for sequencing acquisition waves without
+      distorting domain identities.
+
+19. PHASE BOUNDARIES: HOLD (Due to Issues 01 and 02)
+    - Core boundaries to 1C.4c, 1C.4e, 1C.5, and 1C.6 are respected.
+    - Boundaries to 1C.4d (governance activation) and 1C.4f (UAT execution) are breached.
+
+================================================================================
+8. CROSS-DOCUMENT CONSISTENCY MATRIX
+================================================================================
+
+------------------------------------------------------------------------------------------------------------------------
+AREA                 1C.4b-R v1.1a             FROZEN DEPENDENCY           RESULT NOTES
+------------------------------------------------------------------------------------------------------------------------
+Entity Model         8 canonical entities       Phase 1C.4a-R v1.1 Sec 5    PASS   Zero rogue entities; KnowledgeChunk=0.
+Taxonomy Axes        3 orthogonal axes          Phase 1C.4a-R v1.1 Sec 8    PASS   Exact enum values preserved; no axis mixing.
+Epistemic Validation Multi-factor qualitative   Phase 1C.4a-R v1.1 Sec 6.2  PASS   Zero scalar authority scores.
+Source Rigor Tiers   R1–R5 + UNASSESSED_LEGACY  1C.4a-DR Addendum 1         PASS   Rigor does not dictate Epistemic Basis.
+Evidence Sufficiency Best available provenance  1C.4a-DR Addendum 1         PASS   Risk-proportional; no universal lab dogma.
+CandidateLesson      Quarantined experiential   1C.4a-DR Addendum 2         PASS   Must pass dossier; decomposes to claims.
+Conflict Handling    Detection & preservation   Phase 1C.4d-R v1.1a Sec 7   PASS   Queues ConflictRecord; no silent merging.
+Governance Ownership Gates 11 & 12 in pipeline  Phase 1C.4d-R v1.1a Sec 15  HOLD   Gate 12 executing VALIDATED_ACTIVE violates 1C.4d.
+Retrieval Ownership  Boundary handoff only      Phase 1C.4c-R v1.1b Sec 4   PASS   Zero retrieval logic swallowed.
+Storage Architecture Two-store information gov  Phase 1C.4a-R v1.1 Sec 11   PASS   Clean separation of archive vs canonical.
+Auditability/Replay  Reconstructable Lineage    Phase 1C.4c-R v1.1b Sec 28  PASS   Deterministic vs model-assisted separated.
+Model Extraction     Anti-hallucination guard   Phase 1C.4c-R v1.1b Sec 31  HOLD   Model snapshot lineage missing from schemas.
+Anti-Recipe Linter   Imperative linter rule     Phase 1C.4a-R v1.1 Sec 8.3  HOLD   Lacks explicit standard/calibration exemption.
+Current TT Status    UNASSESSED_LEGACY_SOURCE   1C.4a-DR Addendum 1         PASS   Deconstructed in 1C.4e; no auto-promotion.
+UAT Scenario Status  Acceptance Result: PASS    Phase 1C.4f Mandate         HOLD   Must be NOT EXECUTED — RESERVED FOR 1C.4f.
+Competency Framework 22 domains, 5 dimensions   Phase 1C.3c-R v1.1 Sec 4    PASS   Exact domain names & dimensions preserved.
+------------------------------------------------------------------------------------------------------------------------
+
+================================================================================
+9. FREEZE RECOMMENDATION
+================================================================================
+
+EXACT RECOMMENDATION:
+
+HOLD — TARGETED CORRECTION REQUIRED BEFORE FORMAL FREEZE
+
+Reasoning:
+Although the foundational architecture of Phase 1C.4b-R v1.1a is sound, well-conceived,
+and substantially compliant with the upstream Phase 1C standards, Tone Translator
+enforces an absolute zero-tolerance standard for pre-emptive UAT execution claims,
+phase-boundary swallowing, and ungrounded certainty.
+
+The presence of two Class A blockers (UAT scenario status claiming "PASS" and
+Gate 12 claiming direct lifecycle transition to `VALIDATED_ACTIVE`) strictly precludes
+formal freeze approval under Phase 1C governance rules.
+
+A clean, bounded revision addressing these specific findings will permit immediate
+revalidation and freeze.
+
+================================================================================
+10. BOUNDED CORRECTION DOCKET
+================================================================================
+
+The following targeted corrections constitute the complete scope of required changes.
+DO NOT modify any other sections or concepts in the artifact.
+
+--------------------------------------------------------------------------------
+CORRECTION ITEM 1: UAT Scenario Status Harmonization (Resolves ISSUE-01)
+--------------------------------------------------------------------------------
+- Target File: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+- Affected Section: Section 31 (Lines 1361–1483) and Section 36 (Line 1684)
+- Exact Issue:
+  Scenarios A through L end with "- Acceptance Result: PASS." Line 1684 contains
+  "FINAL VERDICT: PASS — CORRECTED AND READY FOR FREEZE".
+- Correction Objective:
+  Align UAT scenario status lines with the exact convention established in
+  Phase 1C.4c-R v1.1b and Phase 1C.4d-R v1.1a.
+- Specific Changes Required:
+  1. In Section 31, update each scenario (Scenarios A through L):
+     Replace:
+       "- Acceptance Result: PASS."
+     With:
+       "- Specification Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f"
+  2. In Section 36, update line 1684:
+     Replace:
+       "FINAL VERDICT: PASS — CORRECTED AND READY FOR FREEZE"
+     With:
+       "FINAL VERDICT: ARCHITECTURALLY COMPLETE — SPECIFICATION READY FOR PHASE 1C.4f UAT EXECUTION"
+- Architectural Constraint:
+  Do NOT change scenario narratives, inputs, or expected behavior descriptions.
+- What Must NOT Change:
+  All scenario technical contents (A through L) must remain intact.
+
+--------------------------------------------------------------------------------
+CORRECTION ITEM 2: Acquisition Gate Scoping & Governance Boundary (Resolves ISSUE-02)
+--------------------------------------------------------------------------------
+- Target File: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+- Affected Section: Section 1.3 (Lines 61–88), Section 24 (Lines 1066–1134), and Section 26.1 (Lines 1216–1220)
+- Exact Issue:
+  Gates 11 and 12 are included as internal acquisition pipeline gates, with Gate 12
+  and Section 26.1(6) stating that the acquisition pipeline updates lifecycle state
+  to `VALIDATED_ACTIVE`.
+- Correction Objective:
+  Strictly terminate the Phase 1C.4b acquisition quality gates at Gate 10 (`REVIEW_READY`),
+  and explicitly reframe Gates 11 & 12 as external Phase 1C.4d Governance Handoff Milestones.
+- Specific Changes Required:
+  1. In Section 24, revise the introductory text:
+     State that the acquisition pipeline enforces ten discrete internal quality gates
+     (Gates 1 through 10) producing candidate packages in `UNDER_REVIEW` state, followed
+     by handoff to Phase 1C.4d Governance milestones (Gates 11 and 12).
+  2. In Section 24, retitle and clarify Gates 11 and 12 under a clear header:
+     "DOWNSTREAM GOVERNANCE MILESTONES (OWNED BY PHASE 1C.4d):
+      Gate 11: GOVERNANCE EVALUATED (Phase 1C.4d Review)
+        - Entry Criteria: Candidate package in `UNDER_REVIEW` evaluated by qualified
+          human expert(s) under Phase 1C.4a/1C.4d governance tiers.
+        - Verification: Formal `ReviewRecord` signed.
+        - Output: Governance decision (`APPROVED`, `REJECTED`, or `CHANGES_REQUESTED`).
+      Gate 12: CANONICAL ACTIVATION (Phase 1C.4d Activation)
+        - Entry Criteria: Approved under Phase 1C.4d governance tiers and adversarial checks.
+        - Verification: Phase 1C.4d lifecycle transition guard updates state to `VALIDATED_ACTIVE`.
+        - Output: Immutable canonical knowledge unit eligible for runtime indexing in Phase 1C.4c."
+  3. In Section 26.1, update Item 6:
+     Replace:
+       "Result: Transitioned to `VALIDATED_ACTIVE`."
+     With:
+       "Result: Tagged as `GOVERNANCE_ELIGIBLE` and submitted to Phase 1C.4d; transition
+        to `VALIDATED_ACTIVE` is strictly reserved for Phase 1C.4d governance sign-off."
+- Architectural Constraint:
+  Preserve the requirement that human review and adversarial triads gate activation.
+- What Must NOT Change:
+  Gates 1 through 10 must retain their existing criteria, verifications, and outputs.
+
+--------------------------------------------------------------------------------
+CORRECTION ITEM 3: Anti-Recipe Linter Standard / Calibration Exemption (Resolves ISSUE-03)
+--------------------------------------------------------------------------------
+- Target File: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+- Affected Section: Section 4, Principle 19 (Lines 227–229) and Section 25, Item 22 (Lines 1183–1184)
+- Exact Issue:
+  The linter is described as an unconditional ban on imperative phrasing without
+  exemptions for legitimate technical procedures, standards, and calibrations.
+- Correction Objective:
+  Clarify that the anti-recipe linter targets ungrounded prescriptive generalisations
+  (recipes), while distinguishing and permitting legitimate normative calibration,
+  safety, test methodology, and standards instructions within bounded contexts.
+- Specific Changes Required:
+  1. In Section 4, Principle 19:
+     Update line 228 to read:
+     "The ingestion linter unconditionally halts on ungrounded prescriptive generalisations
+      and workflow recipes ('always cut at 400 Hz', 'mandatory drive setting'). Legitimate
+      normative procedural requirements (such as equipment calibration protocols, reference
+      alignment standards, test methodologies, and safety limits) are preserved when explicitly
+      bound to an `OperationalBoundary` and categorized as `PROFESSIONAL_CONVENTION`."
+  2. In Section 25, Item 22:
+     Update line 1184 to read:
+     "- Mitigation: Ingestion anti-recipe linter detects and rejects prescriptive workflow
+        recipes while permitting bounded normative calibration and standards procedures."
+- Architectural Constraint:
+  Do NOT weaken the prohibition against dogmatic workflow recipes.
+- What Must NOT Change:
+  The decoupling of compound claims into causal models and operational boundaries
+  (Sections 10.2 and 11.1) must remain untouched.
+
+--------------------------------------------------------------------------------
+CORRECTION ITEM 4: Model Lineage Metadata Fields in Schemas (Resolves ISSUE-04)
+--------------------------------------------------------------------------------
+- Target File: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+- Affected Section: Section 12.1 (Claim Attribution Schema) and Section 30 (Manifest Schema)
+- Exact Issue:
+  Concrete schemas omit explicit metadata fields for recording model identity and version
+  snapshots when model-assisted extraction is utilized.
+- Correction Objective:
+  Incorporate optional `model_lineage` structures into `ClaimAttribution` and
+  `KnowledgeAcquisitionManifest` to ensure complete auditability of model-assisted steps.
+- Specific Changes Required:
+  1. In Section 12.1, update the JSON schema to include inside attribution metadata:
+     `"model_lineage": {`
+     `  "model_name": "gemini-1.5-pro",`
+     `  "model_version_snapshot": "2026-08-preview",`
+     `  "prompt_template_hash": "c4d5e6f7...",`
+     `  "sampling_temperature": 0.0`
+     `}`
+  2. In Section 30, update `KnowledgeAcquisitionManifest` to include:
+     `"model_lineage": {`
+     `  "model_name": "gemini-1.5-pro",`
+     `  "model_version_snapshot": "2026-08-preview"`
+     `}`
+- Architectural Constraint:
+  Model lineage fields must be optional (null when manual/rule-based extraction is used)
+  and must reinforce that the model is strictly an extraction agent, not an authority.
+- What Must NOT Change:
+  Existing fields (`source_id`, `reconstructable_locator`, `extraction_integrity_hash`)
+  must remain intact.
+
+--------------------------------------------------------------------------------
+CORRECTION ITEM 5: Epistemic Hierarchy Terminology Clarification (Resolves ISSUE-05)
+--------------------------------------------------------------------------------
+- Target File: /TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1a.txt
+- Affected Section: Section 26.1, Item 2 (Lines 1200–1202)
+- Exact Issue:
+  "factually disproven by higher-tier physical laws" implies an epistemic hierarchy.
+- Correction Objective:
+  Use orthogonal taxonomy phrasing.
+- Specific Changes Required:
+  In Section 26.1 Item 2, replace:
+    "factually disproven by higher-tier physical laws or contains unresolvable internal errors."
+  With:
+    "factually disproven by validated physical laws or foundational engineering principles,
+     or contains unresolvable internal errors."
+- Architectural Constraint:
+  Preserve claim-level rejection authority.
+- What Must NOT Change:
+  The six ingestion dispositions must remain intact.
+
+================================================================================
+END OF AUDIT REPORT
+================================================================================

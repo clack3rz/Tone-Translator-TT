@@ -1,0 +1,1804 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4d-R v1.1a
+SOUND ENGINEERING KNOWLEDGE CONFLICT, UNCERTAINTY & GOVERNANCE ARCHITECTURE
+FINAL FREEZE CONSISTENCY CORRECTION
+
+Version: 1.1a — Final Freeze Candidate
+Date: 2026-09-26
+Mode: BOUNDED ARCHITECTURAL CORRECTION ONLY
+Deliverable: /TT_Sound_Engineering_Knowledge_Conflict_Uncertainty_and_Governance_Architecture_v1.1a.txt
+================================================================================
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+1.1 ARCHITECTURAL PURPOSE & SCOPE
+Phase 1C.4d-R v1.1 establishes the authoritative, platform-independent Sound Engineering
+Knowledge Conflict, Uncertainty, and Governance Architecture for the Tone Translator
+(TT) Professional Sound Engineering System, incorporating all bounded governance
+consistency, evidence discipline, and retention corrections.
+
+The fundamental purpose of this phase is to define how Tone Translator's Professional
+Sound Engineering Knowledge System remains rigorous, trustworthy, and epistemically
+disciplined when domain knowledge is incomplete, uncertain, weakly evidenced, context-
+dependent, disputed, contradicted by competing evidence, superseded by superior
+measurement or physics, applicable only within tightly bounded operational domains,
+derived from practitioner experience, challenged by new findings, or affected by
+empirical feedback from TT's own engineering practice.
+
+1.2 FOUR GOVERNING AXIOMS
+The architecture is anchored by four governing axioms established across Phases
+1C.1 through 1C.4c:
+
+1. KNOWLEDGE GOVERNANCE DETERMINES WHAT TT IS JUSTIFIED IN TREATING AS CANONICAL
+   PROFESSIONAL KNOWLEDGE. IT DOES NOT DETERMINE THE ENGINEERING DECISION FOR A
+   PARTICULAR CASE.
+   Governance adjudicates the epistemic validity, operational boundaries, and
+   consensus standing of declarative entities. Case-specific diagnosis and
+   intervention design belong strictly to the downstream AI Sound Engineer
+   Reasoning Engine (Phase 1C.5).
+
+2. UNCERTAINTY MUST BE REPRESENTED, NOT HIDDEN.
+   Uncertainty is an inherent, inescapable physical and perceptual reality of sound
+   engineering. Systems that collapse epistemic doubt into pseudo-precise numerical
+   scalar confidences (e.g. "confidence: 0.84") deceive downstream reasoning. TT
+   represents uncertainty qualitatively through explicit operational envelopes,
+   epistemic basis classifications, consensus descriptors, and known confounding
+   variables.
+
+3. CONFLICT MUST BE PRESERVED UNTIL THERE IS SUFFICIENT JUSTIFICATION TO RESOLVE,
+   BOUND, SUPERSEDE, OR OTHERWISE GOVERN IT.
+   True scientific and engineering divergence is not an error state to be scrubbed,
+   averaged, or voted away. When authoritative sources disagree, retrieval and
+   governance must preserve competing positions within explicit `ConflictRecord`
+   structures, providing full visibility to downstream cognitive reasoning.
+
+4. EXPERIENCE IS EVIDENCE. EXPERIENCE IS NOT AUTOMATICALLY TRUTH.
+   Runtime observations, unexpected acoustic outcomes, and user preferences are
+   empirical evidence. However, correlation is not causation, and local studio success
+   does not constitute an invariant physical law. Experiential learning enters
+   quarantine as `CandidateLesson` records and must pass rigorous evidence-sufficiency
+   dossiers and standard governance before any generalisable insight can achieve
+   canonical `VALIDATED_ACTIVE` status.
+
+1.3 ARCHITECTURAL INTEGRATION
+Phase 1C.4d consumes the normalized 8-entity model and 3-axis taxonomy established
+in Phase 1C.4a-R v1.1 and revalidated in Phase 1C.4a-DR, the multi-gate source acquisition
+framework defined in Phase 1C.4b-R v1.1a, and the runtime retrieval and lineage
+contracts frozen in Phase 1C.4c-R v1.1b. It prepares the authoritative governance,
+review, change control, and evidence-sufficiency infrastructure required before
+knowledge corpus acquisition (Phase 1C.4e) and formal Knowledge Architecture UAT
+(Phase 1C.4f) can commence.
+
+
+--------------------------------------------------------------------------------
+2. SCOPE & STRICT NON-SCOPE
+--------------------------------------------------------------------------------
+
+2.1 IN-SCOPE ARCHITECTURAL MANDATES
+Phase 1C.4d strictly governs declarative sound engineering knowledge and evidence:
+  1. Conflict Taxonomy: Defining meaningful divergence across factual, measurement,
+     methodological, boundary, causal, terminological, and practice dimensions.
+  2. Conflict Lifecycle: State transitions, triggers, and reconciliation rules for
+     `ConflictRecord` entities.
+  3. Qualitative Uncertainty Architecture: Representation of physical, empirical,
+     methodological, and psychoacoustic uncertainty without scalar truth scores.
+  4. Evidence Sufficiency Framework: Standards for claim acceptance, boundary
+     validation, model corroboration, conflict resolution, and supersession.
+  5. Risk-Based Governance: Proportional review pipelines across Tier A (Foundational),
+     Tier B (Empirical/Device), and Tier C (Contextual/Illustrative).
+  6. ReviewRecord & Audit Trail: Immutable logging of review findings, dissent,
+     and approval signatures.
+  7. Canonical Change Control: Versioning, amendment, boundary modification,
+     deprecation, and supersession lineage.
+  8. CandidateLesson Governance: Quarantine isolation, experiential evaluation,
+     evidence dossier auditing, and promotion pathways into canonical entities.
+  9. Engineering Review & Feedback Boundary: Defining how downstream runtime
+     outcomes may challenge or contribute to canonical knowledge without designing
+     runtime reasoning.
+  10. Knowledge Challenge & Reopening: Formal mechanisms for questioning active
+      canonical knowledge when confronted by new evidence or failed replication.
+  11. Human Oversight Architecture: Proportional allocation of automated checks
+      versus mandatory human expert review.
+  12. Deterministic Enforcement: Schema validation, lineage immutability, and
+      quarantine guards executed by deterministic software.
+
+2.2 STRICT NON-SCOPE
+To protect architectural boundaries and prevent cross-phase contamination:
+  1. NO Production Code Modification: Zero edits to runtime engines, audio DSP,
+     database drivers, or UI controllers.
+  2. NO Knowledge Corpus Population: Zero ingestion of actual production claims,
+     treatises, or textbook extracts.
+  3. NO External Harvesting or Web Research: Zero scraping or bibliographic querying.
+  4. NO Current TT Migration: Deconstruction of legacy heuristics remains reserved
+     for Phase 1C.4e.
+  5. NO Runtime Sound Engineer Reasoning: The cognitive loop (Evidence -> Hypothesis ->
+     Trade-Off -> Intervention -> Predict -> Verify) belongs exclusively to Phase 1C.5.
+  6. NO Runtime DSP Extraction / Audio Metric Tooling: Signal measurement (FFT centroid,
+     crest factor, attack slope, phase correlation) belongs to Phase 1B/1C.5 tooling.
+  7. NO UAT Execution: Acceptance scenarios specified herein remain unexecuted; formal
+     UAT execution is owned exclusively by Phase 1C.4f.
+  8. NO Phase 1C.5 or 1C.6 Implementation: Downstream cognitive reasoning and full-stack
+     integration are strictly barred.
+
+
+--------------------------------------------------------------------------------
+3. AUTHORITATIVE UPSTREAM DEPENDENCIES & CONTRACT PRESERVATION
+--------------------------------------------------------------------------------
+
+Phase 1C.4d directly inherits, respects, and enforces contracts established across
+frozen upstream specifications:
+
+3.1 UPSTREAM ARTIFACT AUDIT
+  1. Phase 1C.1 — Professional Sound Engineer Competency Model:
+     - 22 Competency Domains: Exactly preserved (Domain 1 through Domain 22).
+     - 5 Independent Assessment Dimensions: Knowledge, Evidence Interpretation,
+       Diagnosis, Decision-Making, Outcome Reasoning.
+  2. Phase 1C.2 — Current TT Sound Engineer Knowledge & Provenance Audit:
+     - Baseline catalog of legacy heuristics, hardcoded tables, and DSP mappings.
+  3. Phase 1C.3a — Professional Sound Engineer Standards & Target Maturity:
+     - 18 Core Domains at Target Level 5 (Authoritative Professional).
+     - 4 Supporting Domains at Target Level 4 (Proficient: Domain 6 Noise Engineering,
+       Domain 12 Time-Based/Spatial Processing, Domain 13 Psychoacoustics, Domain 14
+       Musical Context).
+  4. Phase 1C.3b — Current-to-Professional Capability Gap Matrix:
+     - Audit of architectural deficits: keyword coupling, lack of causal modeling,
+       and ungrounded prescriptive overrides.
+  5. Phase 1C.3c-R v1.1 — Sound Engineer Curriculum & Competency Blueprint:
+     - 7-step pedagogical cycle recognized as an educational scaffold, NOT runtime
+     - Multi-factor evidence assessment principles.
+  6. Phase 1C.4a-R v1.1 — Knowledge Architecture & Lifecycle:
+     - Normalized 8-entity model (`SourceDocument`, `ClaimAttribution`, `KnowledgeClaim`,
+       `CausalModel`, `OperationalBoundary`, `ConflictRecord`, `ReviewRecord`,
+       `CandidateLesson`).
+     - 3-axis taxonomy (Epistemic Basis, Knowledge Role, Physical Scope).
+     - Qualitative `EpistemicValidation` descriptor replacing scalar floats.
+  7. Phase 1C.4a-DR — Dependency Revalidation Report:
+     - Addendum 1: Current TT classified as `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`.
+     - Addendum 2: Session execution traces (`RunTrace`, `EngineeringDecisionRecord`)
+       belong strictly to Phase 1B/1C.5/1C.6 runtime contracts; `CandidateLesson`
+       reserved for recurrent, generalisable insights.
+  8. Phase 1C.4b-R v1.1a — Knowledge Source & Acquisition Architecture:
+     - Source Classes A through I, Exact Reconstructable Source Locators, two-store
+       copyright model, multi-gate ingestion.
+  9. Phase 1C.4c-R v1.1b — Knowledge Retrieval & Runtime Context Architecture:
+     - `KnowledgeNeed` driven retrieval, `KnowledgeContextPackage`, `RetrievalTrace`
+       historical exact auditability contract, and three-concept replay framework
+       (deterministic reproducibility, reconstructable lineage, historical auditability).
+
+3.2 UPSTREAM CONTRACT COMPATIBILITY CONFIRMATION
+Zero structural incompatibilities or contract violations exist between Phase 1C.4d
+and the upstream artifacts. Phase 1C.4d operationalizes the governance and review
+stubs defined in 1C.4a without altering their fundamental entity relationships.
+
+
+--------------------------------------------------------------------------------
+4. GOVERNING PRINCIPLES OF KNOWLEDGE GOVERNANCE
+--------------------------------------------------------------------------------
+
+The Knowledge Conflict, Uncertainty, and Governance Architecture is governed by
+ten binding principles:
+
+4.1 PRINCIPLE 1: KNOWLEDGE GOVERNANCE VS. CASE-SPECIFIC REASONING
+Governance evaluates claims, models, boundaries, and evidence. It determines what
+the system is justified in believing as sound engineering science. It never determines
+what is happening in a user's specific DAW project or audio track. Governance decides
+whether "Proximity effect increases low-frequency energy in directional capsules"
+is validated; the Sound Engineer decides whether a specific vocal track is boomy
+due to proximity effect or room modes.
+
+4.2 PRINCIPLE 2: QUALITATIVE EPISTEMICS OVER SCALAR PSEUDO-PRECISION
+True engineering knowledge cannot be ranked by a universal scalar float (e.g.
+"Claim Authority: 0.87"). Such scores homogenize orthogonal dimensions. In TT,
+epistemic standing is represented qualitatively by preserving evidence type,
+methodological rigor, replication status, operational boundaries, and consensus.
+
+4.3 PRINCIPLE 3: PERMANENT ORTHOGONALITY OF PROVENANCE, JURISDICTION, AND EPISTEMIC BASIS
+Source class/type describes what the source is (e.g. academic textbook, peer-reviewed paper,
+standards document, manufacturer engineering documentation, practitioner interview).
+Source rigor describes assessed methodological and evidential caliber under the source evaluation
+framework. Jurisdiction and applicability describe the source's assessed relationship and proximity
+to the subject matter and claim. Epistemic basis describes the scientific/engineering nature
+of the assertion. None of these dimensions automatically determines the others. A high-rigor
+source does not confer physical law status onto an offhand contextual opinion. Conversely, a
+practitioner source may provide an empirical observation that subsequent controlled measurement
+validates as an established principle.
+
+4.4 PRINCIPLE 4: BOUNDARY-AWARE DIVERGENCE (CONFLICT CONSERVATION)
+When two credible sources make seemingly contradictory assertions, governance must
+first interrogate their physical and operational boundaries. Most engineering disputes
+are boundary divergence in disguise. If boundary reconciliation is impossible, the
+conflict must be preserved as an active `ConflictRecord`.
+
+4.5 PRINCIPLE 5: ASYMMETRIC BURDEN OF PROOF FOR FOUNDATIONAL REVISION
+Extending, narrowing, or superseding an established physical law or foundational
+engineering principle requires a vastly higher evidentiary threshold than modifying
+a contextual studio practice. The burden of proof scales with foundational generality
+and systemic risk.
+
+4.6 PRINCIPLE 6: EXPERIENTIAL LEARNING QUARANTINE INTEGRITY
+No empirical observation from runtime sessions may enter the production retrieval
+index directly. Experiential learning is quarantined evidence until it is formulated
+into canonical candidate entities, corroborated across diverse conditions, and
+approved through standard governance.
+
+4.7 PRINCIPLE 7: AUDITABLE INTEGRITY OF SCIENTIFIC DISSENT
+Governance systems that force consensus produce epistemic blindness. When qualified
+reviewers disagree, their dissent, technical rationale, and counter-evidence must be
+recorded in append-only `ReviewRecord` entities and retained according to applicable
+governance and audit retention policy. Consensus is recorded only when genuinely achieved.
+
+4.8 PRINCIPLE 8: EVIDENCE STANDARDS PROPORTIONAL TO NATURE AND RISK
+Per Phase 1C.4a-DR: "Recover the best available underlying provenance and validate
+the claim to an evidence standard appropriate to its nature and risk." No single
+source class holds a monopoly on truth or epistemic standing. A manufacturer schematic
+may provide highly direct evidence for the documented topology of the specific device,
+subject to provenance, version, completeness, and applicability assessment; relevant
+peer-reviewed acoustic literature may provide strong evidence for wave diffraction behaviour
+when its methodology, boundaries, and applicability match the claim under review; controlled
+perceptual testing may provide primary empirical evidence for perceptual masking thresholds
+under defined acoustic conditions. Evidence sufficiency is always evaluated contextually
+and proportionally against claim scope and consequence.
+
+4.9 PRINCIPLE 9: RETENTION ACCORDING TO GOVERNANCE POLICY
+The lifecycle of evidence, candidate lessons, review records, and superseded claims
+is governed by explicit historical lineage, legal, and compliance policies, not ungrounded,
+dogmatic claims of infinite retention. Records required for lineage, governance, auditability,
+or historical reconstruction must be retained according to applicable governance,
+evidence-retention, and audit policy.
+
+4.10 PRINCIPLE 10: DETERMINISTIC ENFORCEMENT, HUMAN SCIENTIFIC JUDGEMENT
+Deterministic software enforces schemas, reference integrity, content hashes,
+quarantine isolation, and lifecycle guards. Human engineering experts (or verified
+independent review panels) evaluate physical plausibility, methodological validity,
+and causal soundness. Software guards the rules; engineers adjudicate the science.
+
+
+--------------------------------------------------------------------------------
+5. CONFLICT TAXONOMY
+--------------------------------------------------------------------------------
+
+A central failure of naive knowledge systems is treating all disagreement as binary
+contradiction. In professional audio engineering, disagreement spans ten distinct
+taxonomical categories, each requiring different governance treatment:
+
+5.1 CATEGORY 1: DIRECT FACTUAL CONTRADICTION
+- Definition: Two claims assert mutually exclusive, irreconcilable factual states
+  for identical physical parameters under identical physical conditions.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Claim A asserts that the speed of sound in dry air at 20°C is 343 m/s; Claim B
+  asserts it is 310 m/s under identical temperature and humidity.
+- Governance Treatment: High-priority factual adjudication. The claim contradicted
+  by empirical physics standards is marked `REJECTED` or `SUPERSEDED`. Both claims
+  cannot remain active.
+
+5.2 CATEGORY 2: MEASUREMENT & INSTRUMENTATION DISAGREEMENT
+- Definition: Disagreement arising from differences in measurement apparatus,
+  calibration standards, test signals, weighting filters, or measurement geometry.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Loudspeaker sensitivity measured using pink noise 1W/1m in an anechoic chamber
+  versus swept sine wave in a half-space baffle.
+- Governance Treatment: Preserved as measurement divergence. Reconciled by attaching
+  explicit measurement methodology and test condition specifications to the
+  respective `OperationalBoundary` records.
+
+5.3 CATEGORY 3: METHODOLOGICAL & MODELING DISAGREEMENT
+- Definition: Disagreement arising from competing mathematical simplifications,
+  lumped-element vs. finite-element simulations, or linear vs. nonlinear models.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Modeling vacuum tube grid current using simple diode approximations versus
+  extended phenomenological space-charge differential equations.
+- Governance Treatment: Both models remain valid within their respective domains
+  of approximation. Governed via `CausalModel` links and boundary limits.
+
+5.4 CATEGORY 4: COMPETING CAUSAL MECHANISMS
+- Definition: Agreement on the observed acoustic symptom, but disagreement regarding
+  the underlying physical or circuit mechanism generating it.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Agreement that an overdriven tube amplifier exhibits low-frequency compression,
+  but Model A attributes it to power supply rail sag, while Model B attributes it
+  to control-grid bias drift (grid blocking).
+- Governance Treatment: `ConflictRecord` linked to multiple `CausalModel` entities.
+  Downstream retrieval must present both competing mechanisms so reasoning can
+  evaluate which mechanism is active in a given circuit.
+
+5.5 CATEGORY 5: OPERATIONAL BOUNDARY DIVERGENCE (APPARENT CONFLICT)
+- Definition: Two claims appear to contradict, but closer physical examination
+  reveals they describe phenomena operating under different boundary conditions.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Source A states: "High-pass filtering at 80 Hz tightens low-end punch without
+  loss of bass energy." Source B states: "High-pass filtering at 80 Hz thins out
+  low-end foundation and introduces significant group delay smear."
+  Resolution: Source A assumes a standard electric bass with significant sub-bass
+  rumble and a ported cabinet; Source B assumes an 8-string drop-tuned guitar where
+  the fundamental lies at 55 Hz.
+- Governance Treatment: Reconciled by refining both `OperationalBoundary` entities.
+  The conflict is marked `CONTEXTUALLY_RESOLVED`.
+
+5.6 CATEGORY 6: TERMINOLOGICAL & SEMANTIC AMBIGUITY
+- Definition: Apparent disagreement caused by loose, conflicting, or colloquial
+  sound engineering jargon (e.g. "warmth", "air", "headroom", "transparency", "bite").
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Author A defines "headroom" as peak voltage swing before clipping; Author B
+  defines "headroom" as RMS margin below a nominal operating level.
+- Governance Treatment: Reconciled by decomposing colloquial terms into rigorous
+  DSP/physical metrics (e.g. dBFS peak margin vs. dBu continuous RMS margin).
+
+5.7 CATEGORY 7: CONTEXT-DEPENDENT PRACTICE DIFFERENCES
+- Definition: Disagreement between master practitioners regarding workflow, order of
+  processing, or mixing strategy, where both methods achieve professional outcomes.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Compressing before equalization versus equalizing before compression.
+- Governance Treatment: Preserved as legitimate competing professional practices
+  (`knowledge_role: CONTEXT_DEPENDENT_PRACTICE`). Explicitly forbidden to force a
+  single dogmatic choice.
+
+5.8 CATEGORY 8: HISTORICAL CONVENTION VS. CONTEMPORARY EVIDENCE
+- Definition: Longstanding audio lore or studio rules-of-thumb that are challenged
+  or refuted by contemporary high-resolution measurement or digital DSP science.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  Historical rule: "Never boost high frequencies with digital EQ because digital
+  EQ introduces harshness." Modern measurement reveals that minimum-phase digital EQ
+  is mathematically identical to analog minimum-phase EQ curves, and perceived
+  harshness was caused by poor early anti-aliasing filters or clipping downstream.
+- Governance Treatment: Historical rule is marked `SUPERSEDED` or narrowed to
+  antiquated converters, linked to modern peer-reviewed research.
+
+5.9 CATEGORY 9: DEVICE-SPECIFIC VS. GENERALISED CLAIMS
+- Definition: A claim true for a specific piece of commercial hardware falsely
+  asserted as a general acoustic or electronic principle.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  "Turning the tone knob to 0 produces a sharp mid-boost resonance." True for a
+  passive guitar circuit with a specific inductor-capacitor load, but false for
+  an active Baxandall tone stack.
+- Governance Treatment: Bound to device-specific scope via `DeviceSpecificityContext`
+  within `OperationalBoundary`.
+
+5.10 CATEGORY 10: UNRESOLVED SCIENTIFIC & PSYCHOACOUSTIC UNCERTAINTY
+- Definition: Legitimate, ongoing scientific disputes within acoustics and
+  psychoacoustics where current empirical data is inconclusive.
+- Example [UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+  The perceptual audibility of ultrasonic frequencies (>20 kHz) via intermodulation
+  distortion at the cochlea or bone conduction.
+- Governance Treatment: Maintained as an active, unresolved conflict (`ACTIVE_UNRESOLVED`)
+  while available evidence remains insufficient for justified resolution, with balanced
+  attribution to relevant literature and empirical data. If future evidence becomes
+  sufficient, normal governance may reconcile through operational boundaries, resolve,
+  supersede, deprecate, or otherwise update the conflict state. Resolution is strictly
+  evidence-driven, without automatic expiry or premature artificial forced closure.
+
+
+--------------------------------------------------------------------------------
+6. CONFLICTRECORD ARCHITECTURE & ENTITY RELATIONSHIPS
+--------------------------------------------------------------------------------
+
+6.1 ENHANCED CONFLICTRECORD SPECIFICATION
+Phase 1C.4d builds upon the normalized `ConflictRecord` established in Phase 1C.4a-R
+Section 6.2, maintaining full backward compatibility while introducing comprehensive
+governance and audit fields:
+
+```json
+{
+  "$schema": "https://tonetranslator.org/schemas/v1/conflict_record.json",
+  "conflict_id": "CR-D08-BIAS_HEADROOM-001",
+  "conflict_title": "Class AB Output Stage Bias Current and Crossover vs Thermal Headroom",
+  "primary_domain_id": 8,
+  "affected_domain_ids": [2, 3, 8],
+  "conflict_nature": "BOUNDARY_DIVERGENCE",
+  "competing_claim_ids": [
+    "KC-D08-BIAS-001",
+    "KC-D08-BIAS-002"
+  ],
+  "associated_causal_model_ids": [
+    "CM-D08-BIAS_DISTORTION-001"
+  ],
+  "associated_boundary_ids": [
+    "OB-D08-BIAS_HOT-001",
+    "OB-D08-BIAS_COLD-001"
+  ],
+  "divergence_analysis": "Claim 1 asserts that hotter quiescent bias maximizes dynamic headroom by eliminating crossover notch distortion; Claim 2 asserts that hotter bias reduces dynamic voltage swing headroom due to power supply transformer current saturation and thermal tube sag.",
+  "workflow_state": "ACTIVE_UNRESOLVED",
+  "reconciliation_status": "UNRESOLVED_COMPETING",
+  "reconciliation_rationale": "Pending comprehensive thermal-dissipation boundary modeling across push-pull pentode configurations.",
+  "governance_tier": "TIER_A_FOUNDATIONAL",
+  "created_timestamp": "2026-09-26T12:00:00Z",
+  "last_updated_timestamp": "2026-09-26T14:30:00Z",
+  "governance_history": [
+    {
+      "review_id": "REV-2026-CR-001",
+      "action": "CONFLICT_REGISTERED",
+      "timestamp": "2026-09-26T12:00:00Z",
+      "actor_id": "REVIEWER-EXP-001"
+    }
+  ]
+}
+```
+
+6.2 NORMALIZED ENTITY RELATIONSHIP GRAPH
+The `ConflictRecord` sits at the center of multi-entity epistemic tension:
+
+                +--------------------+
+                |   SourceDocument   |
+                +--------------------+
+                          ^
+                          | (1:N)
+                +--------------------+
+                |  ClaimAttribution  |
+                +--------------------+
+                          ^
+                          | (1:N)
+                +--------------------+
+                |   KnowledgeClaim   | <---+
+                +--------------------+     |
+                    |            ^         |
+              (1:N) |            | (1:N)   |
+                    v            |         |
+         +--------------------+  |         | (competing_claim_ids >= 2)
+         |OperationalBoundary |  |         |
+         +--------------------+  |         |
+                    ^            |         |
+                    |            v         |
+                    |   +--------------------+
+                    |   |   ConflictRecord   |
+                    |   +--------------------+
+                    |            |
+                    | (N:M)      | (1:N)
+                    v            v
+         +--------------------+ +--------------------+
+         |    CausalModel     | |    ReviewRecord    |
+         +--------------------+ +--------------------+
+
+Relational Rules:
+1. Every `ConflictRecord` MUST link to at least two distinct `KnowledgeClaim` records
+   (`competing_claim_ids.length >= 2`).
+2. Competing claims MUST share either the same `concept_name`, target physical parameter,
+   or coupled acoustic phenomenon.
+3. When claims are reconciled through boundary definition, the `associated_boundary_ids`
+   MUST point to the updated or newly created `OperationalBoundary` entities.
+4. All status transitions of a `ConflictRecord` MUST generate an immutable `ReviewRecord`.
+
+--------------------------------------------------------------------------------
+7. CONFLICT LIFECYCLE & RECONCILIATION
+--------------------------------------------------------------------------------
+
+7.1 CONFLICT LIFECYCLE WORKFLOW STATES & DUAL-STATUS ALIGNMENT
+To preserve the distinction between an entity's deployment lifecycle (e.g. `VALIDATED_ACTIVE`,
+`DEPRECATED`) and the ongoing state of a scientific dispute, `ConflictRecord` operates under a
+governance `workflow_state` machine while explicitly maintaining the frozen Phase 1C.4a-R
+canonical schema field `reconciliation_status`:
+
+  - `workflow_state`: Represents the operational governance lifecycle state of the dispute:
+    `DETECTED`, `UNDER_EVALUATION`, `ACTIVE_UNRESOLVED`, `CONTEXTUALLY_RESOLVED`,
+    `RESOLVED_SUPERSEDED`, `REOPENED`.
+  - `reconciliation_status`: Represents the canonical Phase 1C.4a-R schema enum:
+    `UNRESOLVED_COMPETING`, `CONTEXTUALLY_RESOLVED`, `RECONCILED_SUPERSEDED`.
+
+1. `DETECTED`:
+   - Trigger: Ingestion linting, candidate claim submission, or reviewer identification
+     detects competing assertions between two or more claims.
+   - Initial State: Claims remain in their pre-existing states (`NORMALIZED` or `UNDER_REVIEW`).
+     If an active claim is newly challenged, it remains `VALIDATED_ACTIVE` but is tagged
+     with `epistemic_validation.conflict_status = ACTIVE_COMPETING_CLAIM`.
+     `ConflictRecord.workflow_state` = `DETECTED`; `reconciliation_status` = `UNRESOLVED_COMPETING`.
+
+2. `UNDER_EVALUATION`:
+   - An assigned technical reviewer or review panel conducts divergence analysis.
+   - Objectives: Determine whether divergence is real contradiction or boundary difference.
+     `ConflictRecord.workflow_state` = `UNDER_EVALUATION`; `reconciliation_status` = `UNRESOLVED_COMPETING`.
+
+3. `ACTIVE_UNRESOLVED`:
+   - Analysis confirms that competing claims represent a genuine, unresolved disagreement
+     (competing causal mechanisms, conflicting empirical data, or master practitioner disputes).
+   - Governance Rule: BOTH competing claims may achieve or maintain `VALIDATED_ACTIVE` status
+     if each independently meets the evidence-sufficiency standards for its stated epistemic
+     basis. They MUST NOT be forced into synthetic consensus. Retrieval MUST deliver both
+     claims with their parent `ConflictRecord`.
+     `ConflictRecord.workflow_state` = `ACTIVE_UNRESOLVED`; `reconciliation_status` = `UNRESOLVED_COMPETING`.
+
+4. `CONTEXTUALLY_RESOLVED` (BOUNDARY RECONCILED):
+   - Analysis determines that both claims are physically true within distinct, non-overlapping
+     operational envelopes.
+   - Action: Both claims are amended to point to tightened `OperationalBoundary` records.
+     The `ConflictRecord.workflow_state` transitions to `CONTEXTUALLY_RESOLVED`, and its
+     canonical `reconciliation_status` transitions to `CONTEXTUALLY_RESOLVED`.
+     The conflict record is retained to prevent future confusion.
+
+5. `RESOLVED_SUPERSEDED`:
+   - Competing evidence conclusively demonstrates that one position was based on faulty
+     measurement, disproven assumptions, or obsolete apparatus.
+   - Action: The invalid claim transitions to `SUPERSEDED` (pointing to the superior claim);
+     the validated claim achieves `VALIDATED_ACTIVE`. The `ConflictRecord.workflow_state`
+     transitions to `RESOLVED_SUPERSEDED`, and its canonical `reconciliation_status` (per the
+     Phase 1C.4a-R schema) transitions to `RECONCILED_SUPERSEDED`.
+
+6. `REOPENED`:
+   - New empirical data, improved measurement technology, or field observations challenge
+     a previously resolved or superseded conflict.
+   - Action: The `ConflictRecord.workflow_state` transitions from `CONTEXTUALLY_RESOLVED` or
+     `RESOLVED_SUPERSEDED` back to `UNDER_EVALUATION` or `ACTIVE_UNRESOLVED`, and its canonical
+     `reconciliation_status` returns to `UNRESOLVED_COMPETING`.
+
+7.2 RECONCILIATION VS. SUPERSESSION MATRIX & THE DUAL-PATH GOVERNANCE RULE (CORRECTION 3)
+When two or more knowledge claims conflict, Tone Translator enforces an explicit Dual-Path
+Resolution Architecture governed by boundary divergence investigation:
+
+1. THE DUAL-PATH RULE:
+   - PATH A — RECONCILIATION (Boundary Definition & Scoping):
+     If competing claims can be reconciled through operational boundary definition (i.e. both
+     claims are physically or empirically valid under distinct operating conditions, circuit
+     topologies, transducer types, acoustic environments, or signal levels), the system MUST
+     create or refine `OperationalBoundary` records and preserve BOTH claims with explicit scoping.
+     Neither claim is discarded; both achieve or retain `VALIDATED_ACTIVE` status within their
+     respective envelopes.
+   - PATH B — SUPERSESSION (Evidentiary Replacement or Deprecation):
+     If one claim is demonstrably false, superseded by superior evidence, methodologically
+     flawed, mathematically refuted, or empirically disproven, the system MUST NOT force
+     artificial boundary reconciliation. The invalidated claim must be transitioned to
+     `SUPERSEDED` (with an explicit pointer to the replacement claim) or `DEPRECATED` (with
+     documented deprecation justification).
+   - BOUNDARY DIVERGENCE INVESTIGATION FIRST:
+     Boundary divergence must be investigated BEFORE supersession or winner selection where the
+     evidence supports that possibility. However, boundary refinement MUST NOT be used to preserve
+     genuinely incorrect, ungrounded, or refuted claims.
+   - RETENTION WITHOUT RUNTIME POLLUTION:
+     Superseded or deprecated claims are NEVER deleted; they are retained in the historical
+     audit and version lineage store for historical session replayability, but strictly
+     excluded from active runtime retrieval indices.
+
+2. RESOLUTION DECISION MATRIX:
+Conflict Nature             Primary Evidence Available           Resolution Pathway & Governed Action
+----------------------------------------------------------------------------------------------------------------
+Direct Factual              Conclusive Physics / Standards       `RESOLVED_SUPERSEDED` (Path B: superseded)
+Measurement Disagreement    Differing test apparatus/methods     `CONTEXTUALLY_RESOLVED` (Path A: OB updated)
+Competing Causal Models     Plausible alternative mechanisms     `ACTIVE_UNRESOLVED` (Preserve both with CR)
+Boundary Divergence         Distinct operational domains        `CONTEXTUALLY_RESOLVED` (Path A: OB updated)
+Terminological Ambiguity    Jargon vs DSP definitions            `CONTEXTUALLY_RESOLVED` (Path A: re-worded)
+Context-Dependent Practice  Competing valid studio workflows     `ACTIVE_UNRESOLVED` (Preserve both with CR)
+Historical vs Contemporary  Modern high-res DSP refutation       `RESOLVED_SUPERSEDED` (Path B: superseded)
+Device vs Generalised       Hardware-specific behavior           `CONTEXTUALLY_RESOLVED` (Path A: OB updated)
+Unresolved Scientific       Inconclusive empirical data          `ACTIVE_UNRESOLVED` (Preserve both with CR)
+----------------------------------------------------------------------------------------------------------------
+8. QUALITATIVE UNCERTAINTY ARCHITECTURE
+--------------------------------------------------------------------------------
+
+8.1 THE FALLACY OF SCALAR TRUTH SCORES
+A fatal pathology in automated knowledge management is reducing epistemic uncertainty
+to a single scalar floating-point value (e.g. `confidence: 0.88`, `truth_score: 0.73`).
+In physical sound engineering, such numbers are mathematically meaningless:
+  - Does 0.88 mean an 88% chance the speaker cone resonates, or that it resonates 88%
+    of the time, or that 88% of engineers agree, or that the measurement has 12% error?
+  - A scalar float obscures the nature of the uncertainty, making it impossible for
+    a downstream reasoning engine to apply appropriate safeguards.
+
+8.2 THE FIVE-DIMENSIONAL QUALITATIVE EPISTEMIC VALIDATION MODEL
+Phase 1C.4d reinforces the qualitative `epistemic_validation` descriptor frozen in
+Phase 1C.4a-R Section 6.2:
+
+1. Evidence Strength (`evidence_strength`):
+   - `THEORETICAL_PROOF`: Derived rigorously from established laws of electromagnetism,
+     mechanics, or wave equations (e.g. Maxwell's equations, wave reflection).
+   - `SYSTEMATIC_EMPIRICAL`: Corroborated by controlled, calibrated laboratory measurements
+     with isolated independent variables (e.g. anechoic polar measurements).
+   - `CORROBORATED_PRACTICE`: Documented across multiple independent master engineering
+     accounts and published professional treatises.
+   - `ANECDOTAL_OBSERVATION`: Unreplicated practitioner account or exploratory studio note.
+
+2. Consensus State (`consensus_state`):
+   - `ESTABLISHED_CONSENSUS`: Strong convergence across relevant qualified evidence and
+     professional/scientific assessment, with no currently material unresolved challenge
+     that alters the claim's stated boundary.
+   - `PREDOMINANT_VIEW`: The currently dominant interpretation among relevant qualified evidence
+     and professional practice, while credible alternative perspectives or unresolved
+     qualifications remain documented.
+   - `DEBATED_VIEW`: Material disagreement exists among relevant qualified evidence or expert
+     interpretation, with multiple active competing positions.
+   - `OUTLIER_HYPOTHESIS`: A minority or novel interpretation with limited independent corroboration,
+     retained and evaluated according to its evidence and applicability rather than dismissed by label.
+
+3. Replication State (`replication_state`):
+   - `INDEPENDENTLY_REPLICATED`: Verified across distinct laboratories, measurement teams,
+     or unrelated production environments.
+   - `LABORATORY_VERIFIED`: Verified by a single controlled experimental run or manufacturer test.
+   - `OBSERVATIONAL_UNREPLICATED`: Derived from naturalistic observations without controlled controls.
+
+4. Conflict Status (`conflict_status`):
+   - `UNCONTESTED`: No competing contradictory or qualifying claim exists in the library.
+   - `ACTIVE_COMPETING_CLAIM`: Linked to one or more active `ConflictRecord` entities.
+
+5. Boundary Certainty (`boundary_certainty`):
+   - `TIGHTLY_BOUNDED`: Quantitative mathematical limits fully specified (e.g. frequencies,
+     voltages, distances).
+   - `PARTIALLY_BOUNDED`: Qualitative limits described, but quantitative edges require caution.
+   - `EXPLORATORY_LIMITS`: Operational limits unknown or unmapped outside a narrow test point.
+
+8.3 UNCERTAINTY ABOUT KNOWLEDGE VS. UNCERTAINTY IN CASE DIAGNOSIS
+To preserve the Phase 1C.4d / Phase 1C.5 boundary:
+  - UNCERTAINTY ABOUT KNOWLEDGE (Governance Concern):
+    "Do we know whether odd-order harmonic distortion is perceptually harsher than even-order
+    distortion at equal THD percentages?"
+    Answer: Qualitatively bounded as `ESTABLISHED_ENGINEERING_PRINCIPLE`, `PSYCHOACOUSTICS`,
+    `PREDOMINANT_VIEW`, `PARTIALLY_BOUNDED` (depends on spectral distribution and masking).
+  - UNCERTAINTY IN CASE DIAGNOSIS (Phase 1C.5 Concern):
+    "Is the harshness in this specific user's guitar track caused by preamp clipping,
+    speaker cone breakup, or excessive 3 kHz EQ?"
+    Answer: Evaluated by the reasoning engine using runtime DSP metrics, competing working
+    hypotheses, and intervention trials.
+
+
+--------------------------------------------------------------------------------
+9. EVIDENCE SUFFICIENCY ARCHITECTURE
+--------------------------------------------------------------------------------
+
+9.1 THE PROPORTIONAL EVIDENCE-SUFFICIENCY MANDATE
+Per Phase 1C.4a-DR: "Recover the best available underlying provenance and validate the claim
+to an evidence standard appropriate to its nature and risk."
+
+Evidence sufficiency is NOT an arbitrary fixed checklist (e.g. "N sources = valid" or
+"N replications = valid"), nor does any source class automatically mandate or guarantee
+acceptance. Evidence sufficiency is an asymmetric, contextual evaluation assessed against
+the nature, scope, consequence, and systemic risk of the claim.
+
+Governance evaluates evidence sufficiency across seven core evidential dimensions:
+  1. Epistemic Nature & Scope: The scientific or practical character of the assertion
+     (derivation, physical law, empirical measurement, tendency, or contextual practice).
+  2. Systemic Consequence & Risk: The potential for erroneous engineering reasoning,
+     transducer damage, circuit safety hazards, or acoustic degradation if the claim is false.
+  3. Evidential Independence: Genuine divergence of supporting provenance, actively
+     audited to eliminate circular citation and correlated measurement errors.
+  4. Methodological Caliber: Appropriateness and calibration of test apparatus, mathematical
+     rigor, listening test controls, or documented observational methodology.
+  5. Boundary Completeness: Clarity and explicitness of prerequisites, operational limits,
+     confounding variables, and known boundary exceptions.
+  6. Contradictory Evidence & Dissent: Thoroughness of examination of competing findings
+     or counter-examples in relevant literature and practice.
+  7. Directness & Applicability: Proximity of the evidence to the specific physical
+     or signal phenomenon being asserted.
+
+9.2 EVIDENCE-SUFFICIENCY EVALUATION FRAMEWORK BY KNOWLEDGE TYPE
+
+A. PHYSICAL LAW (`epistemic_basis: PHYSICAL_LAW`):
+   - Typical Supporting Evidence: Derivation from fundamental physics (classical mechanics,
+     thermodynamics, electrodynamics, wave equations) and rigorous corroborating experimental data.
+   - Core Governance Questions: Is the mathematical formulation physically valid? Are the
+     idealized assumptions (e.g. linear medium, point source, lossless boundary) explicitly stated?
+     Are operational limits (temperature, medium, frequency range) formally defined?
+   - Weaknesses Increasing Uncertainty: Omission of operational boundaries; asserting idealized
+     approximations as unconditional universal truths without boundary context.
+   - Rigor vs. Dogma: Physical laws have defined operational domains and boundary approximations.
+     They do not require "zero unmodeled exceptions" across all conceivable extremes; rather,
+     their validity envelopes must be clearly bounded and mathematically explicit.
+
+B. ESTABLISHED ENGINEERING PRINCIPLE (`epistemic_basis: ESTABLISHED_ENGINEERING_PRINCIPLE`):
+   - Typical Supporting Evidence: Systematic empirical validation, established engineering
+     treatises, standardized circuit topologies, and reproducible bench measurements.
+   - Core Governance Questions: Has the principle been corroborated across diverse, independent
+     designs or implementations? Are the underlying causal models and signal transfer functions
+     fully explained? Are known operational failure modes documented?
+   - Weaknesses Increasing Uncertainty: Reliance on a single equipment manufacturer's marketing claims;
+     extrapolation beyond the documented circuit or acoustic conditions.
+
+C. EMPIRICAL RELATIONSHIP (`epistemic_basis: EMPIRICAL_RELATIONSHIP`):
+   - Typical Supporting Evidence: Calibrated laboratory measurements, controlled acoustic test
+     runs, or formal parameter sweeps with clear instrumentation documentation.
+   - Core Governance Questions: Are the measurement apparatus, calibration procedures, test signals,
+     and environmental conditions adequately specified? Have confounding variables (e.g. ambient
+     reflections, line impedance, thermal drift) been isolated or modeled?
+   - Weaknesses Increasing Uncertainty: Uncalibrated test apparatus; single-instance measurements;
+     uncontrolled acoustic spaces; unverified source provenance. Corroboration requirements
+     scale with the claim's scope and technical risk.
+
+D. ENGINEERING TENDENCY (`epistemic_basis: ENGINEERING_TENDENCY`):
+   - Typical Supporting Evidence: Corroborated observations across multiple experienced engineers,
+     documented studio bench notes, and qualitative engineering analyses.
+   - Core Governance Questions: Is there a plausible physical or psychoacoustic mechanism
+     supporting the tendency? Are trade-off vectors (benefits vs. collateral acoustic penalties)
+     explicitly articulated? Are common conditions identified where the tendency reverses?
+   - Weaknesses Increasing Uncertainty: Presenting a tendency as an invariant universal rule;
+     failing to identify trade-offs or operational exceptions.
+
+E. CONTEXT-DEPENDENT PRACTICE (`knowledge_role: CONTEXT_DEPENDENT_PRACTICE`):
+   - Typical Supporting Evidence: Documented production manuals, master engineer accounts,
+     and curriculum materials articulating workflow methodologies.
+   - Core Governance Questions: Are the musical, stylistic, acoustic, and arrangement prerequisites
+     clearly defined? Are competing alternative practices recognized and cross-referenced?
+   - Weaknesses Increasing Uncertainty: Prescriptive imperative dogmatism ("always", "never");
+     treating personal aesthetic workflow preference as objective technical necessity.
+
+9.3 CITATION CIRCULARITY FIREWALL
+A critical threat to evidence sufficiency is circular citation: multiple secondary articles
+or forum threads quoting a single unverified claim.
+  - Deterministic Check: Tracing `ClaimAttribution` links back to the originating
+    `SourceDocument`. If five articles all derive from one 1978 manufacturer application note,
+    the claim has ONE evidence point, not five.
+  - Governance Rule: Corroboration requires independent experimental or observation origins.
+
+
+--------------------------------------------------------------------------------
+10. RISK-BASED GOVERNANCE & REVIEW TIERS
+--------------------------------------------------------------------------------
+
+10.1 THE THREE-TIER RISK FRAMEWORK
+Phase 1C.4d-R v1.1 establishes a proportional governance framework that concentrates expert
+scrutiny on high-consequence, foundational assertions while providing streamlined review
+for lower-risk contextual notes:
+
++-------------------+----------------------------+------------------------------------------+
+| Governance Tier   | Epistemic Scope & Consequence| Governance Principles & Objectives     |
++-------------------+----------------------------+------------------------------------------+
+| Tier A:           | High Systemic Consequence, | - Verifiable Provenance & Content Hash   |
+| High-Risk /       | Physical Laws, Circuit     | - Enhanced Independent Scrutiny          |
+| Foundational      | Safety, Foundational Causal| - Rigorous Counterfactual Validation     |
+|                   | Models                     | - Documented Competency Sign-Off         |
++-------------------+----------------------------+------------------------------------------+
+| Tier B:           | Moderate-Risk Empirical    | - Verifiable Provenance & Content Hash   |
+| Moderate-Risk /   | Relationships, Device      | - Qualified Specialist Assessment        |
+| Empirical/Device  | Specifics, Engineering     | - Boundary & Parameter Linting           |
+|                   | Tendencies                 | - Contextual Trade-Off Review            |
++-------------------+----------------------------+------------------------------------------+
+| Tier C:           | Low-Risk Contextual Notes, | - Bibliographic & Source Attribution     |
+| Low-Risk /        | Professional Conventions,  | - Technical Editorial Review             |
+| Contextual        | Illustrative Examples      | - Anti-Recipe Imperative Linting         |
++-------------------+----------------------------+------------------------------------------+
+
+[CONFIGURABLE GOVERNANCE POLICY / DEFAULT]:
+Specific reviewer counts (e.g. dual independent reviewers for Tier A vs single specialist
+for Tier B/C), voting quorums, formal panel compositions, and adversarial review formats
+are configurable organizational policies rather than universal scientific laws. The normative
+architectural requirement is that Tier A mandates substantially higher independent scrutiny
+and counterfactual examination than Tier C, proportional to systemic risk.
+
+10.2 REVIEWER ROLES & COMPETENCY PREREQUISITES
+[UNVERIFIED ARCHITECTURAL ILLUSTRATION]:
+Governance review is conducted by certified specialists mapped to required competency domains:
+  - `ACOUSTIC_ENGINEERING_SPECIALIST`: Evaluates Wave Acoustics (Domains 9, 10, 11) and
+    Psychoacoustics (Domain 13). Aligned with Target Level 5 domain competency.
+  - `ELECTRONICS_CIRCUIT_SPECIALIST`: Evaluates Circuit Electronics, Gain Staging, and Amplifiers
+    (Domains 2, 3, 7, 8). Aligned with Target Level 5 domain competency.
+  - `STUDIO_PRODUCTION_SPECIALIST`: Evaluates Context-Dependent Practices, Signal Topology, and
+    Reference Matching (Domains 1, 4, 5, 12, 14, 15). Aligned with Target Level 5 competency.
+  - `KNOWLEDGE_SYSTEM_ARCHITECT`: Evaluates atomicity, schema conformance, circularity,
+    epistemic taxonomy alignment, and boundary completeness.
+
+
+--------------------------------------------------------------------------------
+11. REVIEWRECORD ARCHITECTURE & AUDIT LOGGING
+--------------------------------------------------------------------------------
+
+11.1 AUDIT TRAIL INTEGRITY CONTRACT
+Every action taken within the governance lifecycle MUST generate an append-only `ReviewRecord`.
+While retained under applicable governance and audit retention policy, ReviewRecords possess
+immutable semantics to guarantee forensic auditability and prevent unauthorized historical modification.
+
+11.2 CANDIDATE REVIEWRECORD SCHEMA SPECIFICATION
+[UNVERIFIED ARCHITECTURAL / SCHEMA ILLUSTRATION]:
+```json
+{
+  "$schema": "https://tonetranslator.org/schemas/v1/review_record.json",
+  "review_id": "REV-2026-D08-0042",
+  "target_entity_type": "KNOWLEDGE_CLAIM",
+  "target_entity_id": "KC-D08-BIAS-001",
+  "target_entity_version": 2,
+  "governance_tier": "TIER_A_FOUNDATIONAL",
+  "review_stage": "TECHNICAL_REVIEW",
+  "reviewer_id": "REV-ENG-SPEC-08",
+  "reviewer_role": "ELECTRONICS_CIRCUIT_SPECIALIST",
+  "reviewer_domain_qualifications": [2, 3, 8],
+  "decision": "APPROVED",
+  "epistemic_standing_assigned": {
+    "evidence_strength": "SYSTEMATIC_EMPIRICAL",
+    "consensus_state": "ESTABLISHED_CONSENSUS",
+    "replication_state": "LABORATORY_VERIFIED",
+    "conflict_status": "ACTIVE_COMPETING_CLAIM",
+    "boundary_certainty": "TIGHTLY_BOUNDED"
+  },
+  "dissenting_opinions": [],
+  "findings_summary": "Push-pull transfer characteristics verified against documented circuit topology. Operational boundary accurately isolates Class AB operation between 50% and 70% plate dissipation.",
+  "required_actions": [],
+  "review_timestamp": "2026-09-26T15:20:00Z",
+  "audit_integrity_metadata": {
+    "verification_method": "CONTENT_HASH_AUDIT_LOG",
+    "record_hash": "sha256:8fbc73d9e4a2...sealed"
+  }
+}
+```
+Note on Implementation: The specific verification mechanism (content hashing, digital signatures,
+or centralized append-only datastore) is an implementation detail deferred to downstream engineering.
+The normative architectural requirement is verifiable integrity and attributable review history.
+
+11.3 AUDITABILITY OF SCIENTIFIC DISSENT
+If a multi-reviewer evaluation reveals substantive disagreement:
+  - The dissenting reviewer MUST record a formal `DissentRecord` within `dissenting_opinions`.
+  - The dissent must state: (a) physical grounds for disagreement, (b) conflicting evidence
+    or counter-examples, (c) proposed boundary corrections.
+  - Governance promotion to `VALIDATED_ACTIVE` CANNOT proceed under Tier A if an unresolved
+    dissent on physical fact or circuit safety exists. The entity must either be amended,
+    bounded, or transitioned to `UNDER_REVIEW` / `ACTIVE_COMPETING_CLAIM`.
+
+--------------------------------------------------------------------------------
+12. CANONICAL KNOWLEDGE CHANGE CONTROL & VERSIONING
+--------------------------------------------------------------------------------
+
+12.1 IMMUTABLE LINEAGE & ENTITY VERSIONING
+Canonical knowledge evolves under strict Git-tracked, append-only version control.
+Every canonical entity possesses an integer `version` field. When an entity is modified:
+  1. The existing version is frozen in the historical archive.
+  2. A new version increment (e.g. `version: 2`) is instantiated in the editing workspace.
+  3. All historical citations, prior `RetrievalTrace` records, and past session lineage
+     continue to point to the exact version active at the time of execution.
+  4. The runtime index hot-swap mechanism (Phase 1C.4c Decision P) points new sessions
+     to the updated version upon formal release.
+
+12.2 TAXONOMY OF KNOWLEDGE MUTATIONS
+
+A. MINOR AMENDMENT (Non-Breaking / Additive):
+   - Scope: Editorial clarification, addition of supplementary illustrative citations,
+     or expansion of non-critical descriptive examples.
+   - Version Impact: Version increment (e.g. v1 -> v2). Prior claims remain valid.
+   - Governance Pathway: Tier C or Tier B depending on claim scope.
+
+B. BOUNDARY REFINEMENT (Tightening or Narrowing):
+   - Scope: New empirical findings reveal that a principle fails under specific extreme
+     temperatures, impedances, or frequencies.
+   - Version Impact: New version of `KnowledgeClaim` and associated `OperationalBoundary`.
+   - Governance Pathway: Tier B review; mandatory verification that existing causal
+     models do not break.
+
+C. BOUNDARY EXPANSION (Broader Applicability):
+   - Scope: Experimental testing proves that an empirical relationship holds across a wider
+     range of transducer categories than previously documented.
+   - Version Impact: Requires Tier B or Tier A evidence-sufficiency review.
+
+D. SOURCE REPLACEMENT / ENHANCEMENT:
+   - Scope: Upgrading an existing claim's provenance from secondary synthesis to higher-rigor
+     empirical documentation, peer-reviewed study, or primary manufacturer technical documentation
+     (replacing an existing attribution with an assessed higher-rigor source).
+   - Version Impact: `ClaimAttribution` update without altering core physical assertion.
+
+E. CONFLICT RECORDING:
+   - Scope: Attachment of a newly discovered competing claim or counter-evidence.
+   - Version Impact: Claim status updated to `ACTIVE_COMPETING_CLAIM`; `ConflictRecord` created.
+
+F. SUPERSESSION:
+   - Scope: An existing claim is proven obsolete, physically incorrect, or superseded by a
+     superior theoretical model.
+   - Version Impact: Originating claim transitions to `SUPERSEDED`; points to `superseded_by`.
+
+G. DEPRECATION:
+   - Scope: A claim is retired due to withdrawal of underlying standards or irrecoverable
+     provenance errors without a direct one-to-one replacement.
+   - Version Impact: State transitions to `DEPRECATED`. Immediate exclusion from retrieval.
+
+12.3 HISTORICAL AUDIT RECONSTRUCTION GUARANTEE
+Under no circumstances may a knowledge update rewrite historical files or alter past
+session replayability. If a past tone engineering session ran against `KC-D04-EQ-001@v1`,
+an audit query MUST be able to retrieve the exact text, boundaries, and evidence of v1,
+even if v3 is the current production standard.
+
+
+--------------------------------------------------------------------------------
+13. KNOWLEDGE CHALLENGE & REOPENING ARCHITECTURE
+--------------------------------------------------------------------------------
+
+13.1 THE EPISTEMIC INTEGRITY PRINCIPLE: NO UNQUESTIONABLE CANON
+In Tone Translator, `VALIDATED_ACTIVE` status denotes high current justification under
+rigorous governance. It NEVER denotes dogmatic, infallible truth. All canonical knowledge
+remains permanently open to legitimate, evidence-based challenge.
+
+13.2 FORMAL CHALLENGE MECHANISMS & TWO-LAYER INTAKE TRIAGE
+Tone Translator enforces strict challenge intake governance to protect canonical knowledge
+from spurious, frivolous, or speculative disruption, strictly separating mechanical admissibility
+from substantive epistemic evaluation:
+
+  LAYER 1 — DETERMINISTIC / AUTOMATED ADMISSIBILITY:
+  Deterministic automation strictly evaluates mechanical submission requirements with zero
+  adjudication of scientific merit:
+  - Required fields present and non-empty (target entity ID, submitter identity, challenge rationale);
+  - Valid schema structure and recognized entity identifiers;
+  - Valid source locators (e.g. DOI, document URI, or session dossier ID) supplied where required;
+  - Structural integrity (no malformed payload, unsupported file format, or broken references);
+  - Duplicate submission detection against open challenges;
+  - Lifecycle eligibility check (target entity is currently in an active or contested state);
+  - Obvious mechanical policy-format violations.
+  Automation MAY reject or return submissions that fail these deterministic mechanical checks.
+  Automation MUST NOT dismiss challenges on epistemic, scientific, or evidential grounds.
+
+  LAYER 2 — SUBSTANTIVE EPISTEMIC TRIAGE:
+  Qualified human governance review (Governance Lead or designated Domain Review Panel) conducts
+  substantive epistemic evaluation:
+  - Assesses whether counter-evidence is technically credible and methodologically sound;
+  - Evaluates whether engineering reasoning is physically plausible;
+  - Determines whether the challenge is scientifically substantive versus anecdotal or frivolous;
+  - Verifies that cited evidence is materially relevant to the scoped claim;
+  - Decides whether a causal or boundary objection warrants formal reopening or review panel assignment;
+  - Dismisses trivial, speculative, or ungrounded challenges at intake with concise documented rationale.
+
+  GOVERNANCE PROTECTIONS DURING CHALLENGE:
+  - Active Claims Remain Active: Filing a challenge does NOT automatically suspend, deprecate, or
+    modify active canonical claims. Active claims remain fully active in production retrieval during
+    challenge review.
+  - Exception for Safety Hazards: Temporary suspension pending investigation is permitted ONLY if
+    explicitly authorized by a human Governance Lead due to severe circuit safety, electrical shock, or
+    physical transducer destruction hazards.
+  - High-Risk Governance Integrity: High-risk foundational claims require full Tier A/B review
+    regardless of challenger identity or frequency.
+
+A formal challenge meeting the substantive intake threshold can be initiated via five triggers:
+1. Primary Literature Retraction / Correction:
+   - An underlying source document is formally retracted or amended by its publisher/institution.
+   - Action: Immediate impact and dependency analysis; review pipeline triggered.
+2. Empirical Laboratory Replication Failure:
+   - A controlled measurement experiment conducted by qualified research directly contradicts
+     a canonical claim.
+   - Action: Creation of a high-priority `ConflictRecord`; entity queued for Tier A/B re-review.
+3. Discovered Provenance / Extraction Error:
+   - An audit reveals that the original extractor misquoted, misinterpreted, or cherry-picked
+     a source out of context.
+   - Action: Expedited Tier B review; entity reassessed against primary source.
+4. Recurrent Field Contradiction via CandidateLessons:
+   - Multiple independent engineering sessions report consistent, corroborated acoustic
+     outcomes that contradict a canonical `OperationalBoundary` or `CausalModel`.
+   - Action: Experiential evidence dossier assembled and submitted through formal promotion pathway.
+5. Contemporary Scientific Breakthrough:
+   - New acoustic, electronic, or psychoacoustic research supersedes classical approximations.
+   - Action: Standard Tier A/B revision proposal.
+
+13.3 INTERIM GOVERNANCE STATES DURING CHALLENGE
+When an active entity enters formal challenge review after passing the intake threshold:
+  - Default Status: The entity remains `VALIDATED_ACTIVE` and continues serving active runtime sessions.
+  - Contested Metadata: The entity is tagged with `UNDER_ACTIVE_CHALLENGE` metadata. Downstream
+    retrieval packages may include an Epistemic Warning banner informing reasoning of the contested status.
+  - Emergency Suspension: If and only if the challenge demonstrates an immediate physical hazard
+    (e.g., tube bias runaway, high-voltage shock hazard, speaker voice-coil burnout), the entity is
+    temporarily set to `SUSPENDED_PENDING_INVESTIGATION` upon explicit Governance Lead sign-off.
+--------------------------------------------------------------------------------
+14. SUPERSESSION & DEPRECATION WORKFLOWS
+--------------------------------------------------------------------------------
+
+14.1 THE DISTINCTION BETWEEN SUPERSESSION AND DEPRECATION (RETENTION VS. OPERATIONAL REASONING)
+Tone Translator strictly decouples historical audit retention from active operational reasoning (Correction 5):
+  - Canonical Immutability: Canonical knowledge entities are version-controlled and immutable upon release.
+  - Historical Retention: Superseded and deprecated knowledge entities are retained in the historical
+    audit / version lineage store for complete auditability, session replay, and historical reconstruction.
+  - Active Index Exclusion: Superseded and deprecated entities are strictly EXCLUDED from active runtime
+    retrieval indices. Runtime reasoning never retrieves deprecated or superseded claims as active knowledge.
+  - Policy-Governed Retention: "Retention" applies to historical auditability and lineage, NOT to active
+    reasoning. Retention duration is governed by explicit organizational, legal, and storage governance policy,
+    rather than blanket ungrounded claims of infinite storage.
+
+Lifecycle Distinction:
+  - `SUPERSEDED`: Used when KnowledgeClaim A is replaced by KnowledgeClaim B. Claim B provides
+    a more accurate physical model, tighter boundaries, or superior empirical validity.
+    Claim A retains its identity and historical lineage, but explicitly points to Claim B via `superseded_by`.
+    Claim A is excluded from active retrieval.
+  - `DEPRECATED`: Used when a claim is withdrawn without a direct replacement (e.g. invalid
+    methodology, non-reproducible artifact, or vendor retraction). Deprecated claims are
+    quarantined from active runtime retrieval while retained in the historical audit store.
+
+14.2 SUPERSESSION WORKFLOW SPECIFICATION
+1. Proposal: Reviewer submits a supersession package linking the existing claim (`KC-OLD`)
+   to the candidate replacement (`KC-NEW`).
+2. Impact Analysis: The governance system executes an automated dependency audit to identify
+   all `CausalModel`, `OperationalBoundary`, and `ConflictRecord` entities referencing `KC-OLD`.
+3. Evidential Demonstration: The review panel verifies that `KC-NEW` accounts for all valid
+   phenomena explained by `KC-OLD` while eliminating its errors or boundary failures.
+4. Atomic Transition: Upon Governance Lead sign-off:
+   - `KC-OLD.lifecycle_state` -> `SUPERSEDED`
+   - `KC-OLD.superseded_by` -> `KC-NEW`
+   - `KC-NEW.lifecycle_state` -> `VALIDATED_ACTIVE`
+   - An immutable `ReviewRecord` documents the supersession rationale.
+
+14.3 DEPRECATION WORKFLOW SPECIFICATION
+1. Proposal: Submitter demonstrates that a claim possesses fatal methodological flaws or
+   unresolvable circularity.
+2. Immediate Quarantine: Claim transitions to `UNDER_DEPRECATION_REVIEW`.
+3. Archival Sealing: Upon approval, state transitions to `DEPRECATED`. The claim is permanently
+   suppressed from production retrieval indices while retained in the historical audit store.
+
+
+--------------------------------------------------------------------------------
+15. CANDIDATELESSON & EXPERIENTIAL EVIDENCE GOVERNANCE
+--------------------------------------------------------------------------------
+
+15.1 THE BINDING EXPERIENTIAL FIREWALL (PHASE 1C.4a-DR REVALIDATION)
+Per Phase 1C.4a-DR Section 15 (Addendum 2):
+  "CandidateLesson is quarantined experiential evidence, not canonical knowledge.
+   It does not become canonical merely by changing a status field."
+
+Runtime engineering sessions, unexpected DSP outcomes, and empirical trial-and-error
+constitute invaluable empirical evidence. However, raw experience is vulnerable to:
+  - Local confounding factors (specific guitar pickups, room modes, player touch);
+  - Confirmation bias and post-hoc rationalization;
+  - Confusing acoustic symptoms with universal electrical laws.
+
+Therefore, `CandidateLesson` records MUST remain quarantined in an isolated evidence
+store (`/knowledge/quarantine/candidate_lessons/`), strictly invisible to runtime retrieval.
+
+15.2 THE CANDIDATELESSON SCHEMA & EVIDENCE-SUFFICIENCY DOSSIER
+```json
+{
+  "$schema": "https://tonetranslator.org/schemas/v1/candidate_lesson.json",
+  "lesson_id": "CL-D03-ASYM_CLIPPING-001",
+  "originating_session_refs": [
+    "SESSION-20260920-A01",
+    "SESSION-20260922-B14",
+    "SESSION-20260925-C09"
+  ],
+  "observed_phenomenon": "Odd-order harmonic fizz on high-register solo lines was eliminated by introducing 15% asymmetrical bias into the second gain stage, while preserving pick attack transients.",
+  "initial_hypothesis": "Even-order harmonic generation via asymmetrical clipping psychoacoustically masks upper odd-order harmonic harshness without dulling attack.",
+  "primary_domain_id": 3,
+  "affected_domain_ids": [2, 3, 13],
+  "quarantine_status": "UNDER_EVALUATION",
+  "evidence_sufficiency_dossier": {
+    "independent_observation_count": 8,
+    "source_diversity_factors": [
+      "Different guitars (single-coil vs humbucker)",
+      "Varied pickup output voltages (120 mV to 450 mV RMS)",
+      "Different players and tempo contexts"
+    ],
+    "controlled_experiment_conducted": true,
+    "experiment_summary": "Laboratory circuit simulation comparing FFT harmonic series at 1 kHz and 4 kHz across symmetrical vs 15% asymmetrical diode clipping.",
+    "causal_plausibility_assessment": "Plausible: Fourier analysis confirms asymmetrical clipping introduces a prominent 2nd harmonic (f0*2) which psychoacoustically masks the 5th and 7th harmonics via upward spread of masking.",
+    "authoritative_literature_corroboration": [
+      "SRC-BOOK-BLENCOWE-2014 (p. 82-84: Asymmetrical triode transfer curves)",
+      "SRC-AES-FASTL-2007 (Psychoacoustic masking curves)"
+    ],
+    "counterfactual_review_result": "PASSED"
+  },
+  "governance_history": [
+    {
+      "review_id": "REV-2026-CL-001",
+      "action": "PROMOTED_TO_EVALUATION",
+      "reviewer_id": "REV-ENG-LEAD-01",
+      "timestamp": "2026-09-26T16:00:00Z"
+    }
+  ]
+}
+```
+
+15.3 THE EXPERIENTIAL PROMOTION LIFECYCLE
+To exit quarantine and contribute to canonical sound engineering knowledge, an
+experience-derived insight MUST follow this rigorous six-stage pipeline:
+
+  [ Runtime Engineering Experience ]
+                 |
+                 v
+  [ Quarantined CandidateLesson ]  (Isolated evidence repository)
+                 |
+                 v
+  [ Evidence-Sufficiency Dossier ] (Multi-session corroboration, controlled testing)
+                 |
+                 v
+  [ Extraction into Canonical Candidates ]
+    - Candidate KnowledgeClaim
+    - Candidate CausalModel
+    - Candidate OperationalBoundary
+                 |
+                 v
+  [ Standard Governance Pipeline ] (Tier A or Tier B independent expert review)
+                 |
+                 v
+  [ VALIDATED_ACTIVE Production Knowledge ]
+
+Relational Rule: The originating `CandidateLesson` is NEVER "promoted" into an active claim.
+It remains retained in the historical experience lineage as immutable evidence. The new
+canonical entities cite the `CandidateLesson` as one of their empirical attributions.
+
+
+--------------------------------------------------------------------------------
+16. ENGINEERING FEEDBACK & RUNTIME LEARNING BOUNDARY
+--------------------------------------------------------------------------------
+
+16.1 THE FUTURE RUNTIME FEEDBACK LOOP
+Phase 1C.5 will execute the cognitive engineering reasoning loop:
+    Evidence -> Hypotheses -> Decision -> Intervention -> Predicted Outcome -> Actual Outcome
+
+Phase 1C.4d governs how outcomes from this loop interact with canonical knowledge:
+  - Good Acoustic Outcome != Valid Causal Reasoning: An engineer may turn a knob for
+    the wrong reason and stumble onto a pleasing tone. Success does not validate a
+    false physical law.
+  - Bad Acoustic Outcome != False Knowledge: An accurate physical principle applied
+    outside its operational boundary or with a broken cable produces a bad outcome.
+    Failure does not invalidate a true physical law.
+  - User Aesthetic Preference != Physical Ground Truth: A user preferring an ultra-scooped,
+    phase-cancelled guitar tone is an artistic choice; it does not disprove acoustic
+    comb-filtering physics.
+
+16.2 RUNTIME FEEDBACK TRIAGE MATRIX & DECOUPLED APPEND-ONLY GOVERNANCE (CORRECTION 6)
+Tone Translator enforces an absolute structural firewall between runtime reasoning (Phase 1C.5)
+and canonical knowledge governance (Phase 1C.4d):
+  - CandidateLessons Only: Runtime outcomes generate `CandidateLesson` records only.
+  - Quarantined Isolation: `CandidateLessons` remain strictly quarantined and cannot self-promote.
+  - Non-Destructive Invariant: Runtime feedback NEVER directly mutates canonical `KnowledgeClaim`,
+    `OperationalBoundary`, `CausalModel`, or `ConflictRecord` entities.
+  - Decoupled Append-Only Channel: The feedback channel is purely decoupled, asynchronous, and
+    append-only. Observations accumulate in the quarantined observation store for scheduled batch triage.
+  - Risk-Based Review: High-risk claims require full Tier A/B review regardless of runtime frequency.
+
+When runtime feedback occurs, it enters the governance evaluation pipeline strictly as
+reviewable experiential evidence:
+
+    RUNTIME OBSERVATION (Phase 1C.5 Runtime Reasoning)
+            |
+            v  (Decoupled Append-Only Channel)
+    REVIEWABLE EXPERIENTIAL EVIDENCE (Quarantined Observation Store)
+            |
+            v  (Batch Triage & Threshold Verification)
+    CandidateLesson / Challenge Evidence / Review Trigger
+            |
+            v  (Independent Methodological Evaluation)
+    Independent Evaluation & Evidence-Sufficiency Review
+            |
+            v  (Decomposition into Normalized Entities)
+    Canonical Candidate Entities (if justified)
+            |
+            v  (Governance Risk Classification)
+    Standard Governance Review (Tier A / B / C)
+            |
+            v  (Formal Sign-Off & Verification)
+    Canonical Change (only if formally approved)
+
+Feedback Triage Pathways:
+Feedback Type               Physical Interpretation              Governed Triage Action (Quarantined)
+------------------------------------------------------------------------------------------------------------------
+Predicted Outcome Verified  Intervention behaved as modeled      Appends to observation store; candidate dossier.
+Unexpected Side-Effect      Collateral penalty unmodeled         Emits quarantined `CandidateLesson` for triage.
+Boundary Failure            Principle failed under valid state   Emits quarantined `CandidateLesson` for boundary audit.
+Conflicting Field Data      Opposing outcomes in similar cases   Emits quarantined `CandidateLesson`; queues conflict check.
+Novel Causal Relationship   Previously undocumented behavior     Instantiates quarantined `CandidateLesson`; Tier A/B pathway.
+------------------------------------------------------------------------------------------------------------------
+17. HUMAN OVERSIGHT & PROPORTIONAL GOVERNANCE ARCHITECTURE
+--------------------------------------------------------------------------------
+
+17.1 THE PRINCIPLE OF PROPORTIONAL HUMAN INTERVENTION
+A fully autonomous knowledge governance system invites catastrophic hallucination,
+drift, and circular confirmation bias. Conversely, requiring a full human committee
+for minor spelling edits or bibliographic formatting creates paralysis.
+
+Phase 1C.4d implements a proportional, multi-tiered human oversight architecture:
+
+1. MANDATORY HUMAN EXPERT SIGN-OFF:
+   - Any Tier A foundational claim, physical law, or circuit safety boundary.
+   - Promotion of any insight originating from `CandidateLesson` experiential evidence.
+   - Any formal supersession or deprecation of an active canonical claim.
+   - Adjudication of active scientific conflicts with high systemic risk.
+   - Any modification to the core 22-domain competency mappings.
+
+2. SINGLE HUMAN SPECIALIST REVIEW (LIGHTWEIGHT):
+   - Tier B empirical relationships and device-specific hardware measurements.
+   - Tightening of existing operational boundaries based on verified measurement papers.
+   - Ingestion of manufacturer engineering schematics and published datasheets.
+
+3. AUTOMATED / DETERMINISTIC WITH HUMAN EXCEPTION TRIAGE:
+   - Bibliographic metadata validation and DOI/ISBN resolution.
+   - Exact source locator hash verification.
+   - Schema validation, required field checks, and type linters.
+   - Platform implementation leakage detection (firewall against software GUIDs/XML paths).
+   - Citation circularity graph checking.
+
+
+--------------------------------------------------------------------------------
+18. DETERMINISTIC GOVERNANCE ENFORCEMENT
+--------------------------------------------------------------------------------
+
+18.1 ENFORCEMENT RESPONSIBILITY ALLOCATION
+In accordance with TT architectural principles:
+  - DETERMINISTIC ENFORCEMENT GUARDS: Enforce schemas, detect illegal lifecycle
+    transitions, verify cryptographic signatures, ensure required review fields exist,
+    enforce quarantine isolation, and verify that no unpromoted `CandidateLesson` enters
+    the runtime index.
+  - HUMAN / VERIFIED COGNITIVE PANELS: Adjudicate physical truth, methodological validity,
+    causal soundness, and contextual trade-offs.
+
+18.2 THE EIGHT DETERMINISTIC INTEGRITY GUARDS
+1. Lifecycle Transition Guard: Blocks unauthorized state jumps (e.g. `CAPTURED` directly
+   to `VALIDATED_ACTIVE`).
+2. CandidateLesson Quarantine Firewall: Deterministically excludes all records in the
+   quarantine store from runtime retrieval indexes.
+3. Multi-Axis Classification Enforcer: Rejects any `KnowledgeClaim` lacking valid values
+   across Epistemic Basis, Knowledge Role, and Physical Scope.
+4. OperationalBoundary Mandatory Linkage Guard: Rejects any active claim lacking at least
+   one linked `OperationalBoundary` entity.
+5. ReviewRecord Integrity Checker: Verifies that required reviewer roles and signature
+   hashes exist before a state transition can be committed.
+6. Citation Lineage & Circularity Guard: Traverses attribution graphs to detect self-
+   referential loops or single-source dependency masking.
+7. Platform Contamination Filter: Blocks proprietary software GUIDs, XML tree paths,
+   DAW slot positions, and UI coordinate floats from entering canonical claims.
+8. Anti-Recipe Imperative Linter: Rejects claims containing prescriptive commands
+   ("always set drive to 7", "never use compression on bass").
+
+
+--------------------------------------------------------------------------------
+19. VERSIONING, HISTORICAL LINEAGE & AUDITABILITY
+--------------------------------------------------------------------------------
+
+19.1 THREE-CONCEPT REPLAY FRAMEWORK INTEGRATION
+Phase 1C.4d aligns with the three-concept replay framework frozen in Phase 1C.4c:
+  1. Deterministic Reproducibility: Deterministic validation scripts, linters, and
+     schema checkers produce identical boolean results on identical input commits.
+  2. Reconstructable Lineage: Every change to an entity records its exact parent commit,
+     prior version, modifying author, and associated `ReviewRecord`.
+  3. Historical Exact Auditability: An audit query can reconstruct the complete knowledge
+     package and governance status of any entity at any timestamp in the past.
+
+19.2 RETENTION & GOVERNANCE POLICIES
+In accordance with Phase 1C.4c and governance principles, retention is defined by explicit
+governance policy rather than ungrounded claims of infinite retention:
+  - Governance Principle: Records required for lineage, governance, auditability, or historical
+    reconstruction must be retained according to applicable governance, evidence-retention,
+    legal, storage, and audit policy.
+  - Active Canonical Entities: Retained while `VALIDATED_ACTIVE` and governed under release lifecycle policy.
+  - Superseded / Deprecated Entities: Retained in the historical version archive according to
+    applicable governance and historical replay policies, accessible for historical audit
+    and session reconstruction.
+  - Quarantined CandidateLessons: Retained during active evaluation; uncorroborated or rejected
+    lessons are governed according to applicable evidence-retention policies.
+  - ReviewRecords: Retained with immutable append-only semantics for the duration required by
+    audit and compliance policies.
+
+
+--------------------------------------------------------------------------------
+20. GOVERNANCE FAILURE MODES & ARCHITECTURAL MITIGATIONS
+--------------------------------------------------------------------------------
+
+The architecture establishes active structural protections against fifteen critical
+governance failure modes:
+
+1. Popularity Masquerading as Consensus:
+   - Failure: A widespread studio myth or forum meme is mistaken for established consensus.
+   - Mitigation: Consensus is evaluated strictly across assessed high-rigor sources (such as
+     rigorous peer-reviewed literature, calibrated laboratory measurements, and authoritative
+     engineering treatises), NOT internet citation frequency or social popularity.
+
+2. Source Prestige Masquerading as Invariant Truth:
+   - Failure: An offhand remark by an eminent physicist or legendary producer is treated
+     as an inviolable physical law.
+   - Mitigation: Permanent orthogonality of Provenance and Epistemic Basis (Principle 3).
+     A remark in a high-rigor or prestigious publication receives `ENGINEERING_TENDENCY` or
+     `ILLUSTRATIVE_EXAMPLE` status if it lacks empirical proof or formal derivation.
+
+3. Reviewer Authority Bias:
+   - Failure: A senior engineer's personal workflow preference is codified as universal doctrine.
+   - Mitigation: Mandatory adversarial counterfactual testing; requirement that all practices
+     document competing alternatives and explicit trade-offs.
+
+4. Circular Citation Masking:
+   - Failure: Five secondary books cite each other, creating an illusion of multi-source replication.
+   - Mitigation: Deterministic Lineage Guard traces claims back to primary empirical data or
+     original manufacturer test documentation.
+
+5. Correlated Evidence Presented as Independent Replication:
+   - Failure: Multiple tests using the identical microphone capsule model or identical room
+     geometry are counted as diverse replication.
+   - Mitigation: Evidence-sufficiency dossier requires explicit `source_diversity_factors`
+     (varied transducers, environments, impedances).
+
+6. Survivorship Bias in Practitioner Reports:
+   - Failure: Successful mixes created with a particular technique are celebrated while
+     hundreds of failed mixes using the same technique are forgotten.
+   - Mitigation: Mandatory documentation of `OperationalBoundary.known_exceptions` and
+     collateral penalties before a practice can be validated.
+
+7. Confirmation Bias in Experiential Learning:
+   - Failure: An engineer assumes that turning a mid-range EQ fixed a mix, ignoring the
+     fact that the bassist changed their playing technique at the same moment.
+   - Mitigation: Mandatory controlled variable isolation within the `CandidateLesson`
+     Evidence-Sufficiency Dossier.
+
+8. Feedback Contamination:
+   - Failure: Subjective user praise ("Sounds great!") is treated as physical validation
+     of an unproven acoustic, causal, or psychoacoustic hypothesis.
+   - Mitigation: Separation of aesthetic preference from physical/causal/psychoacoustic ground truth.
+     User preference or subjective praise alone cannot validate a physical, causal, or
+     psychoacoustic claim. Validation requires evidence appropriate to the claim's nature and
+     scope, which may include calibrated physical measurement, controlled perceptual testing
+     (e.g., formal double-blind ABX listener trials for psychoacoustic audibility claims),
+     reproducible empirical evidence, or rigorous causal analysis, rather than DSP metrics alone.
+
+9. Premature Conflict Resolution:
+   - Failure: Reviewers artificially average two competing models to present a clean,
+     unified answer.
+   - Mitigation: Strict Conflict Conservation Mandate; competing models must remain
+     active in a `ConflictRecord` until genuine boundary or physical resolution is proven.
+
+10. Permanent Unresolved-Conflict Paralysis:
+    - Failure: A minor terminological difference causes a system-wide block on useful knowledge.
+    - Mitigation: Formal categorization of conflict types; boundary divergence and
+      terminological ambiguity are rapidly reconciled via operational envelopes.
+
+11. Stale Canonical Knowledge:
+    - Failure: Outdated 1960s vacuum-tube approximations persist unchallenged despite
+      superior modern finite-element simulation.
+    - Mitigation: Formal Knowledge Challenge Architecture with automated triggers on
+      primary literature updates.
+
+12. Silent Historical Rewriting:
+    - Failure: Correcting a bug silently modifies the knowledge database, making it
+      impossible to diagnose why a past session behaved as it did.
+    - Mitigation: Immutable, Git-tracked entity versioning with cryptographic SHA-256 seals.
+
+13. Uncontrolled CandidateLesson Promotion:
+    - Failure: An automated routine promotes frequently observed runtime correlations
+      directly into active knowledge claims.
+    - Mitigation: The Experiential Firewall: CandidateLesson is quarantined evidence;
+      promotion requires complete canonical entity decomposition and human Tier A/B review.
+
+14. Over-Governance Paralysis:
+    - Failure: High governance overhead prevents the ingestion of basic descriptive facts.
+    - Mitigation: Three-tier risk-based governance; Tier C allows rapid single-specialist
+      approval for low-risk contextual notes.
+
+15. Platform-Specific Contamination:
+    - Failure: Commercial DAW plugin IDs or vendor-specific parameter curves leak into
+      canonical claims.
+    - Mitigation: Deterministic Platform Leakage Firewall automatically rejects proprietary
+      identifiers and non-physical parameter scales.
+
+
+--------------------------------------------------------------------------------
+21. ARCHITECTURAL DECISIONS (DECISIONS A THROUGH R)
+--------------------------------------------------------------------------------
+
+DECISION A: CONFLICT DETECTION ARCHITECTURE
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Hybrid Ingestion Linting and Reviewer Registration.
+Rationale: Potential conflicts are identified mechanically during ingestion via concept-tag
+and parameter overlap checks, but must be formally registered and analyzed by human specialists.
+Alternatives Considered: Fully automated LLM conflict detection (rejected due to hallucinations
+and inability to distinguish boundary differences from true contradiction).
+
+DECISION B: CONFLICT CLASSIFICATION TAXONOMY
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Ten-Category Conflict Taxonomy (Section 5).
+Rationale: Accurately reflects physical and professional reality. Prevents treating boundary
+divergence or terminology confusion as binary scientific contradiction.
+Alternatives Considered: Binary Contradiction vs Non-Contradiction (rejected as inadequate).
+
+DECISION C: CONFLICT LIFECYCLE WORKFLOW
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Six-State Workflow Machine (`DETECTED`, `UNDER_EVALUATION`, `ACTIVE_UNRESOLVED`,
+`CONTEXTUALLY_RESOLVED`, `RESOLVED_SUPERSEDED`, `REOPENED`) decoupled from entity deployment lifecycle.
+Rationale: Allows competing claims to remain `VALIDATED_ACTIVE` while their conflict is tracked.
+
+DECISION D: GIT-TRACKED CANONICAL KNOWLEDGE REPOSITORY WITH RECONSTRUCTABLE DERIVATIVE ARTIFACTS
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Git-Tracked Canonical Knowledge Repository with Reconstructable Derivative Artifacts & Contextual Conflict Resolution.
+Rationale:
+1. CANONICAL STATE GOVERNANCE POLICY: All canonical knowledge entities (KnowledgeClaim, OperationalBoundary, CausalModel, ConflictRecord, ReviewRecord, CandidateLesson) are version-controlled, immutable upon publication, fully auditable, and require explicit governance action to modify.
+2. STORAGE MECHANISM AGNOSTICISM: While Git is the primary reference implementation and recommended canonical storage mechanism for Phase 1C, the governance architecture defines the normative requirements (content-addressability, commit lineage, cryptographic integrity, review provenance), NOT a hard coupling to a specific filesystem layout or command-line tool.
+3. RECONSTRUCTABLE DERIVATIVE ARTIFACTS: Runtime indexes, caches, and retrieval bundles are disposable, reconstructable derivatives of the canonical version-controlled state (aligned with Phase 1C.4c-R Decision P: Version-Bound Offline Index Compilation with Atomic Hot-Swapping). They are NOT the canonical store. Running sessions bind to an immutable index_version, and atomic hot-swapping prevents mid-session drift.
+4. OBJECTIVE CONFLICT RESOLUTION: Boundary divergence must be investigated before supersession or winner selection where the evidence supports that possibility. Boundary refinement is preferred when the apparent contradiction is actually explained by different valid operating conditions. It is not an a priori presumption that both claims must be true; where evidence demonstrates that one claim is factually incorrect or ungrounded, supersession or deprecation is enforced.
+
+DECISION E: QUALITATIVE UNCERTAINTY REPRESENTATION
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Multi-Factor Qualitative `EpistemicValidation` Model (Section 8.2); Zero Scalar Truth Floats.
+Rationale: Prevents pseudo-precise distortion of epistemic doubt. Preserves orthogonal facets.
+
+DECISION F: EVIDENCE-SUFFICIENCY ASSESSMENT
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Asymmetric, Multi-Factor Standards Proportional to Claim Nature and Risk (Section 9).
+Rationale: Enforces Phase 1C.4a-DR binding mandate. Eliminates arbitrary source counts.
+
+DECISION G: RISK-BASED GOVERNANCE TIERS
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Three Risk-Based Governance Classes (Tier A Foundational, Tier B Empirical/Device, Tier C Contextual).
+Rationale: Allocates expert review effort proportionally to systemic epistemic risk. Specific reviewer
+counts, quorums, and panel formats are classified as Configurable Governance Policy rather than
+universal architectural requirements.
+
+DECISION H: REVIEWRECORD OWNERSHIP AND AUDITABILITY
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Append-Only Audit Integrity Log with Immutable Semantics and Mandatory Dissent Preservation.
+Rationale: Guarantees full forensic visibility into who approved what claim and preserves minority dissent.
+Records are retained according to applicable governance and audit retention policy.
+
+DECISION I: CANONICAL KNOWLEDGE CHANGE CONTROL
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Git-Tracked Canonical Knowledge Repository with Reconstructable Derivative Artifacts (Semantic Versioning with Historical Snapshot Immutability).
+Rationale: Ensures historical sessions remain 100% reconstructable and auditable. Canonical state governance defines reviewed immutable commits, storage mechanism defines content-addressability requirements, and runtime derivative indexes remain disposable and reconstructable per Phase 1C.4c-R Decision P.
+
+DECISION J: SUPERSESSION & DEPRECATION WORKFLOWS
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Formal Lineage Pointers (`superseded_by`) and Immediate Retrieval Quarantine for Deprecated Claims.
+Rationale: Preserves scientific lineage while protecting runtime reasoning from obsolete data.
+
+DECISION K: KNOWLEDGE CHALLENGE & REOPENING
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Five Formal Challenge Triggers with Interim Warning Badges.
+Rationale: Eliminates dogmatic canonical immutability; ensures the system evolves with empirical science.
+
+DECISION L: CANDIDATELESSON QUARANTINE FIREWALL
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Complete Isolation of Runtime Experience from Production Retrieval Indices.
+Rationale: Enforces Phase 1C.4a-DR Addendum 2. Prevents runtime experience from masquerading as canonical truth.
+
+DECISION M: EXPERIENTIAL EVIDENCE PROMOTION PATHWAY
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Six-Stage Pipeline: Dossier -> Decomposition into Canonical Entities -> Standard Tier A/B Review.
+Rationale: Ensures experiential insights meet identical standards as textbook knowledge before production use.
+
+DECISION N: HUMAN OVERSIGHT PROPORTIONALITY
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Mandatory Human Expert Sign-Off for High-Risk / Foundational / Promoted Entities;
+Automated Linters for Formatting / Schemas.
+Rationale: Balances rigorous scientific validation with operational viability.
+
+DECISION O: DETERMINISTIC GOVERNANCE ENFORCEMENT
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Deterministic Guards Enforce Rules and Isolation; Humans Adjudicate Physics and Truth.
+Rationale: Preserves clear separation between mechanical software checks and scientific reasoning.
+
+DECISION P: HISTORICAL AUDIT / VERSION RECONSTRUCTION
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Complete Exact Auditability of Past Session Retrieval Packages and Lineage.
+Rationale: Ensures compliance with Phase 1C.4c Decision M and forensic engineering requirements.
+
+DECISION Q: GOVERNANCE FAILURE RECOVERY
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Formal Rollback to Prior Validated Git Commit with Automatic Invalidation of Derivative Indexes.
+Rationale: Provides instant recovery if an erroneous or contaminated claim penetrates production.
+
+DECISION R: BOUNDARY BETWEEN GOVERNANCE AND PHASE 1C.5 CASE REASONING
+Classification: NORMATIVE ARCHITECTURAL REQUIREMENT
+Resolution: Governance Adjudicates General Knowledge; Phase 1C.5 Diagnoses Specific Audio Cases.
+Rationale: Fundamental TT architectural division; prevents governance from becoming a case diagnostic engine.
+
+--------------------------------------------------------------------------------
+22. ARCHITECTURAL ACCEPTANCE SPECIFICATIONS (SCENARIOS 1 THROUGH 18)
+--------------------------------------------------------------------------------
+
+STATUS: ARCHITECTURAL ACCEPTANCE SPECIFICATIONS — NOT YET EXECUTED
+Formal Knowledge Architecture UAT execution and sign-off is strictly owned by Phase 1C.4f.
+The scenarios below define the mandatory acceptance criteria and specifications:
+
+SCENARIO 1 — Two Credible Sources Directly Contradict One Another:
+  - Scenario: Source A (an engineering textbook assessed at high methodological rigor) and
+    Source B (a peer-reviewed paper assessed at high methodological rigor) make mutually
+    exclusive assertions regarding diaphragm mass effect on capsule resonant frequency.
+  - Governance Concern: Preventing arbitrary winner selection or synthetic averaging.
+  - Expected Behavior: Ingestion triggers a `ConflictRecord` (Direct Factual Contradiction).
+    Both claims enter `UNDER_EVALUATION`. If unresolved, both claims are preserved with
+    `conflict_status: ACTIVE_COMPETING_CLAIM`. Retrieval surfaces both claims and the conflict record.
+  - Prohibited Behavior: System must not average the formulas, discard Source B due to lower
+    rigor, or suppress the conflict from runtime context.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 2 — Apparent Contradiction Disappears After OperationalBoundary Analysis:
+  - Scenario: Studio manual A claims high-pass filtering at 80 Hz tightens low end; manual B
+    claims it destroys punch.
+  - Governance Concern: Resolving apparent conflict through operational boundary refinement.
+  - Expected Behavior: Divergence analysis reveals differing boundary conditions (4-string standard
+    bass vs 8-string drop-F# guitar). `OperationalBoundary` records are updated. ConflictRecord
+    transitions to `CONTEXTUALLY_RESOLVED`.
+  - Prohibited Behavior: Declaring one manual "amateur" or "wrong" without boundary evaluation.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 3 — Strongly Repeated Practitioner Observation Lacks Controlled Measurement:
+  - Scenario: Ten prominent mixing engineers state that transformer saturation adds "forward depth."
+  - Governance Concern: Epistemic categorization of unmeasured practitioner lore.
+  - Expected Behavior: Classified as `epistemic_basis: ENGINEERING_TENDENCY`, `knowledge_role:
+    CONTEXT_DEPENDENT_PRACTICE`, `source_rigor_tier: R5_PRACTITIONER_ACCOUNT`. Epistemic validation
+    assigned: `evidence_strength: CORROBORATED_PRACTICE`, `replication_state: OBSERVATIONAL_UNREPLICATED`.
+  - Prohibited Behavior: System must not promote this to a physical law or claim physical proof.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 4 — Peer-Reviewed Evidence Conflicts with Manufacturer Measurement:
+  - Scenario: Academic acoustics paper claims all 12-inch guitar speakers beam above 1.8 kHz;
+    manufacturer engineering datasheet shows a curved cone model beaming at 2.4 kHz.
+  - Governance Concern: General academic model vs. specific physical transducer construction.
+  - Expected Behavior: Reconciled via `OperationalBoundary`: academic model assigned standard
+    straight cone boundary; manufacturer measurement bound to curved-cone geometry via
+    `device_specificity_context`.
+  - Prohibited Behavior: Rejecting the manufacturer datasheet because academic papers have higher general standing.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 5 — New Evidence Narrows the Valid Boundary of an Active Claim:
+  - Scenario: Modern laser vibrometer measurements show that a speaker breakup model fails at high SPL (>110 dB).
+  - Governance Concern: Bounding an active claim without breaking historical lineage.
+  - Expected Behavior: Claim version incremented; `OperationalBoundary.valid_physical_envelope`
+    narrowed to SPL < 110 dB. Historical version preserved for past session audit.
+  - Prohibited Behavior: Silently editing the original claim record without version increment.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 6 — Proportionate Evidence Sufficiency for Low-Risk Operational Guidance:
+  - Scenario: A practical workflow recommendation (e.g., track color-coding or bus naming convention prior to mixdown) is proposed as a canonical low-risk operational guideline. The claim is supported by credible practitioner consensus and professional studio practice, but lacks peer-reviewed acoustic literature or controlled laboratory replication.
+  - Governance Concern: Preventing epistemic over-governance, inappropriate evidentiary burdens, and bureaucratic blockage of benign, practical operational advice.
+  - Expected Behavior: Evaluated under Tier C (Lightweight / Operational) governance. Proportionate evidence sufficiency recognizes that practical workflow guidelines do not require laboratory replication or peer-reviewed literature. The guidance is validated and approved with minimal overhead, bounded to its operational context, confirming that low-risk guidance is NOT rejected merely because it lacks academic citation or laboratory replication.
+  - Prohibited Behavior: Rejecting practical low-risk operational guidance solely for lack of peer-reviewed literature or laboratory replication, or subjecting it to burdensome Tier A scientific validation standards.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 7 — CandidateLesson Repeatedly Appears Across Engineering Sessions:
+  - Scenario: Twenty distinct sessions record that a specific preamp setting causes unmodeled intermodulation fizz.
+  - Governance Concern: Experience-driven learning without quarantine breach.
+  - Expected Behavior: `CandidateLesson` dossier accumulates observations across diverse sources.
+    Passes controlled experiment. Candidate entities created and submitted to Tier B review.
+  - Prohibited Behavior: Direct promotion of `CandidateLesson` into production retrieval without decomposition and review.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 8 — Successful Intervention Produces an Incorrect Causal Lesson:
+  - Scenario: User tone problem solved by a boost at 4 kHz; runtime agent generates candidate
+    lesson asserting "All dull guitars require 4 kHz boost."
+  - Governance Concern: Post-hoc rationalization and recipe generation.
+  - Expected Behavior: Governance review panel rejects the candidate lesson during dossier
+    evaluation for lack of causal plausibility and presence of prescriptive imperatives.
+  - Prohibited Behavior: Accepting an intervention recipe because it worked in one session.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 9 — User Preference Conflicts with Conventional Engineering Practice:
+  - Scenario: User insists on extreme bass boost causing severe clipping distortion, rating the tone 5/5.
+  - Governance Concern: User preference contaminating physical truth.
+  - Expected Behavior: User preference logged in session telemetry (Phase 1B); rejected from
+    knowledge governance ingestion. Physical laws of clipping and intermodulation distortion remain unchanged.
+  - Prohibited Behavior: Modifying amplifier headroom boundaries to accommodate user preference.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 10 — Reviewer Disagreement Cannot Be Resolved:
+  - Scenario: Two Tier A reviewers deadlock on whether a tube saturation mechanism is primary thermal or electrical.
+  - Governance Concern: Preserving minority dissent without workflow lockup.
+  - Expected Behavior: Claim cannot achieve uncontested `VALIDATED_ACTIVE`. Both mechanisms
+    instantiated as competing claims linked by an active `ConflictRecord`. Dissenting opinions
+    recorded in `ReviewRecord`.
+  - Prohibited Behavior: System admin overriding reviewer dissent without technical refutation.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 11 — Historical Claim is Superseded but Must Remain Auditable:
+  - Scenario: Classical 1950s lumped-parameter transformer model superseded by finite-element model.
+  - Governance Concern: Session replayability vs modern accuracy.
+  - Expected Behavior: Old model marked `SUPERSEDED`, pointing to new model. Historical session
+    audit query against 2025 project returns the exact 1950s model active at the time.
+  - Prohibited Behavior: Deleting or corrupting the old record in the database.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 12 — Low-Risk Editorial / Provenance Correction:
+  - Scenario: Typo discovered in a bibliographic author name or page reference.
+  - Governance Concern: Operational efficiency for minor maintenance.
+  - Expected Behavior: Tier C fast-track. Technical reviewer signs off under streamlined process.
+    Version incremented without requiring Tier A foundational review panels.
+  - Prohibited Behavior: Requiring Tier A enhanced multi-specialist panels for a page number typo.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 13 — High-Risk Foundational Claim Change:
+  - Scenario: Proposal to modify the mathematical formula for acoustic wave reflection at a boundary.
+  - Governance Concern: Protecting core physical invariants.
+  - Expected Behavior: Tier A review pipeline enforced: enhanced independent expert scrutiny,
+    formal mathematical derivation proof, and counterfactual validation.
+  - Prohibited Behavior: Allowing an unreviewed or automated pipeline to modify physical laws without enhanced independent scrutiny.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 14 — Circular Citations Masquerade as Independent Corroboration:
+  - Scenario: Ingestion receives six articles asserting that tape saturation adds "sub-harmonics."
+  - Governance Concern: Illusory consensus via citation ring.
+  - Expected Behavior: Deterministic Citation Lineage Guard traces all six articles to a single
+    unverified 1982 magazine interview. The claim is downgraded to single-source unverified anecdote.
+  - Prohibited Behavior: Setting `consensus_state: ESTABLISHED_CONSENSUS` based on six circular links.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 15 — Retrieval Encounters an Unresolved Active ConflictRecord:
+  - Scenario: Downstream query requests knowledge on microphone placement for high-SPL guitar cabinets.
+  - Governance Concern: Delivering complete, un-sanitized context.
+  - Expected Behavior: Retrieval context package includes Claim A (center-cap), Claim B (edge-cone),
+    and the parent `ConflictRecord` highlighting the divergence rationale.
+  - Prohibited Behavior: Arbitrarily suppressing Claim B or picking Claim A based on prompt keywords.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 16 — Model-Parametric Knowledge Challenges Canonical TT Knowledge:
+  - Scenario: Future LLM reasoning engine claims an amplifier feedback circuit behaves in a manner
+    contradicted by canonical TT knowledge.
+  - Governance Concern: LLM hallucination contaminating authoritative knowledge.
+  - Expected Behavior: Canonical knowledge remains authoritative in runtime prompts; LLM parametric
+    memory is overridden by retrieved `KnowledgeContextPackage`. If user challenges, a formal
+    challenge dossier must provide substantive evidence and/or engineering reasoning sufficient
+    to meet the applicable challenge-intake and governance standard (such as relevant primary
+    literature, authoritative manufacturer documentation, calibrated bench measurements, or
+    controlled empirical testing appropriate to the claim's nature and risk).
+  - Prohibited Behavior: Allowing LLM parametric assertions to silently update the knowledge base.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 17 — Canonical Knowledge Lacks Sufficient Evidence for Resolution:
+  - Scenario: Inquiry regarding whether cryogenic cable treatment alters audio frequencies.
+  - Governance Concern: Epistemic honesty in the presence of unscientific claims.
+  - Expected Behavior: Classified as unverified claim or rejected for lack of empirical proof.
+    Retrieval surfaces an Epistemic Warning: "Insufficient validated scientific evidence;
+    controlled double-blind listening tests show no audibility."
+  - Prohibited Behavior: Fabricating a pseudo-scientific explanation to satisfy a prompt.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+SCENARIO 18 — New Evidence Reopens a Previously Resolved Conflict:
+  - Scenario: New high-speed interferometry reveals that a 1990 boundary resolution for cone breakup
+    overlooked voice-coil former flex.
+  - Governance Concern: Adaptability to genuine scientific advancement.
+  - Expected Behavior: `ConflictRecord` transitions from `CONTEXTUALLY_RESOLVED` back to `REOPENED`
+    and `UNDER_EVALUATION`. Review panel convened to evaluate former flex parameters.
+  - Prohibited Behavior: Locking resolved conflicts so they can never be reopened.
+  - Status: NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+
+
+--------------------------------------------------------------------------------
+23. CROSS-PHASE OWNERSHIP BOUNDARIES
+--------------------------------------------------------------------------------
+
+Phase 1C.4d strictly maintains upstream and downstream division of responsibility:
+
+Phase           Subsystem / Responsibility              Prohibited Cross-Phase Intrusion
+--------------------------------------------------------------------------------------
+Phase 1C.1      Competency Model & 22 Domains           Never rename, renumber, or drop domains.
+Phase 1C.3a     Target Maturity Standards (L5/L4)       Never dilute maturity benchmarks.
+Phase 1C.4a-R   Normalized Knowledge Entities (8)       Never delete or replace entity types.
+Phase 1C.4b-R   Source Acquisition & Two-Store Model    Never bypass copyright or provenance gates.
+Phase 1C.4c-R   Retrieval & Context Packaging           Never perform runtime query ranking in 1C.4d.
+Phase 1C.4d     Knowledge Governance & Conflict         Adjudicate KNOWLEDGE; NEVER diagnose audio cases.
+Phase 1C.4e     Corpus Acquisition & Deconstruction     Never ingest production text during 1C.4d.
+Phase 1C.4f     Knowledge Architecture UAT              Never execute UAT or claim PASS during 1C.4d.
+Phase 1C.5      Sound Engineer Reasoning Engine         Never execute audio diagnosis in governance.
+Phase 1C.6      Full-Stack Verification & Integration   Never execute end-to-end DAW workflows in 1C.4d.
+
+
+--------------------------------------------------------------------------------
+24. OPEN ISSUES & DEFERRED DECISIONS
+--------------------------------------------------------------------------------
+
+1. Audit Integrity Verification Mechanism:
+   - Status: Deferred to Phase 1C.4e implementation.
+   - Classification: Implementation Detail / Downstream Choice.
+   - Architectural Guarantee: Audit records must support verifiable integrity and attributable
+     review history. Downstream implementation may select digital signatures (e.g. Ed25519/ECDSA),
+     merkle trees, or database-level append-only ledgers.
+
+2. Review Panel Voting Quorums & Formats:
+   - Status: Deferred to organizational governance policy in Phase 1C.4e.
+   - Classification: Configurable Governance Policy / Default.
+   - Policy Options: Tier A consensus vs. supermajority rules; counterfactual challenge formats;
+     panel size. Normative requirement is proportional scrutiny scaling with systemic risk.
+
+3. Automated DOI / CrossRef Ingestion Hook Integration:
+   - Status: Deferred to Phase 1C.4e ingestion pipeline tooling.
+   - Classification: Implementation Detail.
+
+
+--------------------------------------------------------------------------------
+25. FREEZE READINESS CHECKLIST
+--------------------------------------------------------------------------------
+
+[X] 22 Competency Domains preserved without name or numbering drift.
+[X] Five independent assessment dimensions preserved without composite scoring.
+[X] Normalized 8-entity model preserved from Phase 1C.4a-R.
+[X] Qualitative EpistemicValidation preserved; zero scalar truth scores.
+[X] Ten-category conflict taxonomy established.
+[X] ConflictRecord lifecycle decoupled from entity deployment lifecycle.
+[X] CandidateLesson quarantined experiential firewall strictly maintained.
+[X] Proportional three-tier risk governance defined.
+[X] Immutable ReviewRecord audit logging with dissent preservation specified.
+[X] Knowledge vs. Case-Specific Diagnosis boundary strictly enforced.
+[X] Eighteen acceptance scenarios specified and marked NOT EXECUTED.
+[X] No production code, prompts, test suites, or Firestore records modified.
+[X] No production knowledge corpus ingested.
+[X] Phase 1C.4e, 1C.4f, 1C.5, and 1C.6 NOT commenced.
+
+
+--------------------------------------------------------------------------------
+26. COMPLETION STATEMENT
+--------------------------------------------------------------------------------
+
+Phase 1C.4d (Sound Engineering Knowledge Conflict, Uncertainty & Governance Architecture)
+has completed architectural specification. The governance framework provides complete,
+rigorous, platform-independent mechanisms to adjudicate sound engineering knowledge,
+preserve legitimate conflict, represent qualitative uncertainty, enforce proportional
+review, isolate experiential candidate lessons, and maintain auditable historical lineage.
+
+================================================================================
+FINAL VERDICT: PASS — READY FOR FORMAL FREEZE REVIEW
+================================================================================
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+27. PHASE 1C.4d-R v1.1a — FINAL FREEZE CONSISTENCY AUDIT
+--------------------------------------------------------------------------------
+Following comprehensive architectural review and human audit of Phase 1C.4d-R v1.1,
+exactly seven residual consistency corrections were applied to produce Phase 1C.4d-R v1.1a:
+
+Correction 1 — Source Class / Rigor Orthogonality
+  - Locations Inspected: Section 12 (Source Replacement/Enhancement), Section 20.1
+    (Popularity Masquerading as Consensus), Section 20.2 (Source Prestige Masquerading
+    as Invariant Truth), Section 22 (Scenario 1), and whole-document R1-R5 references.
+  - Changes Made: Removed all shorthand coupling of source types/venues to rigor tiers
+    (e.g. replaced "R4 treatise" / "R1/R2 peer-reviewed paper" with assessed evidential
+    caliber; replaced literature "(R1, R2)" with assessed high-rigor sources; replaced
+    "Source A (R1 textbook)" with assessed methodological rigor). Source Class, Source
+    Rigor, Jurisdiction/Applicability, and Epistemic Basis remain strictly orthogonal.
+  - Whole-Document Result: 100% decoupled. Zero prestige hierarchies or automatic mappings.
+  - Status: PASS
+
+Correction 2 — Frozen Canonical Entity Terminology
+  - All `KnowledgeChunk` Occurrences Inspected: Section 16.2 (Runtime Feedback Invariant)
+    and Section 21 / Decision D (Canonical Entities).
+  - Changes Made: Replaced canonical references to `KnowledgeChunk` with frozen canonical
+    entities (`KnowledgeClaim` and the complete 8-entity normalized set: `SourceDocument`,
+    `ClaimAttribution`, `KnowledgeClaim`, `CausalModel`, `OperationalBoundary`,
+    `ConflictRecord`, `ReviewRecord`, `CandidateLesson`). Zero ninth entities invented.
+  - Whole-Document Result: 100% compliant with frozen Phase 1C.4a-R entity model.
+  - Status: PASS
+
+Correction 3 — Automated vs Substantive Challenge Triage
+  - Locations Inspected: Section 13.2 (Formal Challenge Mechanisms & Triage).
+  - Changes Made: Separated challenge intake into two strictly partitioned layers:
+    * Layer 1 (Deterministic / Automated Admissibility): Evaluates purely mechanical
+      submission requirements (required fields, schema, source locators, malformed payload,
+      duplicate submissions, lifecycle eligibility). Automation cannot dismiss on scientific merit.
+    * Layer 2 (Substantive Epistemic Triage): Human Governance Lead / Domain Review Panel
+      evaluates technical credibility, physical plausibility, material relevance, and substantive
+      scientific merit. Frivolous/ungrounded challenges dismissed with documented rationale.
+  - Boundary Integrity: Software enforces the rules; qualified engineers adjudicate the science.
+  - Status: PASS
+
+Correction 4 — Scenario 16 Evidence Requirement
+  - Locations Inspected: Section 22 (Scenario 16).
+  - Changes Made: Removed the rigid "with primary literature citations" mandate. Replaced with
+    proportional standard requiring substantive evidence and/or engineering reasoning sufficient
+    to meet the applicable challenge-intake and governance standard (including primary literature,
+    authoritative manufacturer documentation, calibrated bench measurements, or controlled testing).
+  - Core Invariant Preserved: Model-parametric LLM assertions cannot silently override canonical TT knowledge.
+  - Status: PASS
+
+Correction 5 — Feedback Validation Evidence
+  - Locations Inspected: Section 20.8 (Governance Failure Mode 8: Feedback Contamination).
+  - Changes Made: Removed DSP-only validation restriction. Replaced with evidence-appropriate
+    validation framework recognizing that physical, causal, and psychoacoustic claims require
+    appropriate evidential support (calibrated physical measurement, controlled perceptual
+    testing such as double-blind ABX listener trials, reproducible empirical data, or rigorous
+    causal analysis, rather than DSP metrics alone).
+  - Boundary Preserved: Subjective user preference cannot validate physical/causal/perceptual truth.
+  - Status: PASS
+
+Correction 6 — Unresolved Conflict Duration
+  - Locations Inspected: Section 5.10 (Category 10: Unresolved Scientific & Psychoacoustic Uncertainty).
+  - Changes Made: Replaced "Maintained permanently as an active, unresolved conflict" with
+    evidence-contingent lifecycle rule: maintained as `ACTIVE_UNRESOLVED` while available evidence
+    remains insufficient for justified resolution. If future evidence becomes sufficient, normal
+    governance may reconcile through boundaries, resolve, supersede, or deprecate.
+  - Principle Preserved: Conflict resolution is strictly evidence-driven, without infinite lock-in
+    or artificial forced closure.
+  - Status: PASS
+
+Correction 7 — Conflict State Terminology
+  - Locations Inspected: Section 6.1 (ConflictRecord Schema), Section 7.1 (Workflow State Machine),
+    Section 7.2 (Resolution Matrix).
+  - Changes Made: Clarified the intentional architectural relationship between the governance
+    process state (`workflow_state`: `DETECTED`, `UNDER_EVALUATION`, `ACTIVE_UNRESOLVED`,
+    `CONTEXTUALLY_RESOLVED`, `RESOLVED_SUPERSEDED`, `REOPENED`) and the frozen Phase 1C.4a-R
+    schema status (`reconciliation_status`: `UNRESOLVED_COMPETING`, `CONTEXTUALLY_RESOLVED`,
+    `RECONCILED_SUPERSEDED`). In State 5, `workflow_state` transitions to `RESOLVED_SUPERSEDED`
+    and `reconciliation_status` transitions to `RECONCILED_SUPERSEDED`.
+  - Ambiguity Removed: Zero terminology drift; 100% backward and forward compatibility.
+  - Status: PASS
+
+--------------------------------------------------------------------------------
+CROSS-DOCUMENT / WHOLE-DOCUMENT CONSISTENCY CHECK
+--------------------------------------------------------------------------------
+Explicitly confirmed across the entire specification:
+- Source type != truth.
+- Source venue != rigor.
+- No source-class-to-rigor automatic mapping remains.
+- Frozen eight canonical entities remain unchanged.
+- No canonical `KnowledgeChunk` leakage remains.
+- Deterministic systems do not adjudicate contested scientific truth.
+- Evidence sufficiency remains proportional to nature and risk.
+- No universal primary-literature requirement exists.
+- No universal laboratory requirement exists.
+- No universal DSP-validation requirement exists.
+- CandidateLesson remains quarantined.
+- Runtime feedback cannot directly mutate canonical knowledge.
+- Conflict resolution remains evidence-driven.
+- No conflict is forced to remain unresolved forever.
+- Retention remains policy-governed.
+- Governance does not perform case diagnosis.
+- All 18 UAT scenarios remain NOT EXECUTED — RESERVED FOR PHASE 1C.4f.
+- Phase 1C.4e has NOT commenced.
+- Phase 1C.4f has NOT commenced.
+- Phase 1C.5 has NOT commenced.
+- Phase 1C.6 has NOT commenced.
+
+================================================================================
+FINAL VERDICT: PASS — READY FOR FORMAL FREEZE REVIEW
+================================================================================
