@@ -1,0 +1,3121 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.5a: ENGINEERING REASONING ARCHITECTURE & DECISION LIFECYCLE
+SPECIFICATION v0.1 — DRAFT ARCHITECTURE FOR INDEPENDENT REVIEW
+PROFESSIONAL SOUND ENGINEER FOUNDATION
+================================================================================
+DOCUMENT IDENTIFIER: TT_Engineering_Reasoning_Architecture_and_Decision_Lifecycle_v0.1.txt
+VERSION: v0.1 (Initial Architectural Specification)
+DATE: 2026-09-29
+MODE: ARCHITECTURAL SPECIFICATION ONLY
+STATUS: DRAFT ARCHITECTURE FOR INDEPENDENT REVIEW
+AUTHORITATIVE UPSTREAM INPUTS:
+  - TT_Professional_Sound_Engineer_Standards_v1.txt (Phase 1C.3a)
+  - TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt (Phase 1C.3b)
+  - TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt (Phase 1C.3c)
+  - TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Phase 1C.4a-R)
+  - TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1g.txt (Phase 1C.4b-R)
+  - TT_Sound_Engineering_Knowledge_Conflict_Uncertainty_and_Governance_Architecture_v1.1a.txt (Phase 1C.4c-R)
+  - TT_Sound_Engineering_Knowledge_Retrieval_and_Runtime_Context_Architecture_v1.1b.txt (Phase 1C.4d-R)
+  - TT_Current_TT_Knowledge_Migration_Specification_v0.4c.txt (Phase 1C.4e-R)
+  - TT_Phase_1C4f_R_Knowledge_Architecture_UAT_and_Signoff_v1.1.txt (Phase 1C.4f-R)
+GOVERNANCE MANDATE:
+  - THIS IS NOT AN IMPLEMENTATION PHASE (No production code, tests, or DB schemas).
+  - THIS IS NOT A PROMPT-ENGINEERING EXERCISE (No prompt templates or LLM prompts).
+  - THIS IS NOT A CURRENT-TT MIGRATION PHASE (No migration execution or legacy deprecation).
+  - THIS IS NOT AN AT5 DESIGN PHASE (No AmpliTube 5 gear IDs, presets, or XML mappings).
+  - FROZEN CONSTITUTION: 21 Principles are authoritative, unalterable requirements.
+  - FROZEN PROFESSIONAL JUDGEMENT BOUNDARY: Authoritative and unalterable.
+================================================================================
+
+TABLE OF CONTENTS
+================================================================================
+1. EXECUTIVE SUMMARY
+2. SCOPE & ARCHITECTURAL BOUNDARIES
+3. FROZEN CONSTITUTIONAL REQUIREMENTS
+4. PROFESSIONAL ENGINEERING JUDGEMENT BOUNDARY
+5. REASONING ARCHITECTURE OVERVIEW
+6. PROPOSED REASONING RECORDS / CONTRACTS
+7. ENGINEERING DECISION LIFECYCLE
+8. EVIDENCE-TO-OBSERVATION BOUNDARY
+9. OBSERVATION-TO-HYPOTHESIS BOUNDARY
+10. HYPOTHESIS MANAGEMENT
+11. EVIDENCE DISCRIMINATION & ADDITIONAL EVIDENCE
+12. CAUSAL DIAGNOSIS
+13. ENGINEERING REQUIREMENT FORMATION
+14. CANDIDATE INTERVENTION ARCHITECTURE
+15. CONSTRAINT & TRADE-OFF REASONING
+16. ENGINEERING DECISION
+17. PREDICTED OUTCOME
+18. SEMANTIC TONE DESIGN HANDOFF
+19. OUTCOME EVIDENCE & ENGINEERING REVIEW
+20. ITERATION & REPLAY
+21. AI JUDGEMENT VS DETERMINISTIC OWNERSHIP
+22. REASONING TRACE & EXPLAINABILITY
+23. FAILURE / ABSTENTION BEHAVIOUR
+24. CHALLENGE SCENARIO WALKTHROUGHS A–J
+   - Scenario A: Flubby Palm Mutes
+   - Scenario B: Harsh / Fizzy Guitar
+   - Scenario C: Weak Pick Attack
+   - Scenario D: Dual-Mic Hollow / Nasal Sound
+   - Scenario E: High-Gain Idle Hiss
+   - Scenario F: Stiff / Sterile Response
+   - Scenario G: Reference Spectrum Matches But Sound Still Feels Wrong
+   - Scenario H: Intentionally Unconventional Signal Chain
+   - Scenario I: Insufficient Evidence
+   - Scenario J: Multiple Defensible Solutions
+25. ADVERSARIAL SELF-REVIEW
+26. OPEN QUESTIONS / DEFERRED DECISIONS
+27. PHASE 1C.5a ACCEPTANCE CRITERIA
+28. FINAL RECOMMENDATION
+================================================================================
+
+
+================================================================================
+SECTION 1 — EXECUTIVE SUMMARY
+================================================================================
+
+1.1 ARCHITECTURAL PURPOSE & PARADIGM SHIFT
+Tone Translator (TT) is fundamentally evolving from a platform-specific guitar
+preset generator into a platform-independent AI Sound Engineer.
+
+Phase 1C.4 established and froze the Sound Engineering Knowledge Architecture,
+codifying what TT knows regarding acoustical, electrical, psychoacoustical, and
+signal-processing phenomena, with rigorous epistemic validation, governance,
+and retrieval boundaries.
+
+Phase 1C.5 defines how the AI Sound Engineer REASONS. Specifically, Phase 1C.5a
+establishes the platform-independent Engineering Reasoning Architecture and
+Decision Lifecycle within which professional sound engineering judgement occurs.
+
+The foundational paradigm of Phase 1C.5a is:
+    EVIDENCE PRECEDES DIAGNOSIS.
+    OBSERVATION IS NOT INTERPRETATION.
+    A SYMPTOM DOES NOT IDENTIFY ITS CAUSE.
+    DIAGNOSIS IS CAUSAL, NOT LOOKUP-BASED.
+    PROFESSIONAL JUDGEMENT BEGINS WHERE EVIDENCE PERMITS MULTIPLE DEFENSIBLE SOLUTIONS.
+    UNCERTAINTY SURVIVES THE DECISION.
+
+1.2 REJECTION OF RECIPE-BASED PRESET GENERATION
+Legacy tone systems and naive AI assistants operate as deterministic lookup
+tables or associative pattern matchers:
+    Perceptual Complaint ("muddy", "fizzy", "thin")
+    + Genre / Artist Tag ("thrash", "djent", "blues")
+    --> Pre-baked Parameter Recipe ("high-pass at 80 Hz", "boost 1.5 kHz", "add TS9")
+
+Phase 1C.5a explicitly and irreversibly repudiates this paradigm. In professional
+audio engineering:
+  - Perceptual symptoms are non-specific acoustic manifestations that can stem
+    from multiple distinct physical, electrical, or psychoacoustic mechanisms.
+  - Interventions applied at the wrong causal locus in the signal chain create
+    unintended secondary degradation (e.g., carving EQ post-distortion to fix
+    flub caused by pre-distortion low-frequency overload destroys body while
+    leaving intermodulation distortion untouched).
+  - Engineering intent, acoustic constraints, and material trade-offs govern the
+    choice among competing interventions.
+
+1.3 DRAFT STATUS & ROADMAP POSITION
+This document represents Phase 1C.5a Specification v0.1. It is a DRAFT
+ARCHITECTURE FOR INDEPENDENT REVIEW.
+In accordance with strict project governance:
+  - Phase 1C.5a defines architecture, contracts, lifecycle state machine, and
+    epistemic boundaries.
+  - Phase 1C.5a does NOT implement code, prompts, database schemas, or DSP tools.
+  - Phase 1C.5a does NOT authorize Phase 1C.5b (Schema Implementation), 1C.5c
+    (Diagnostic Engines), 1C.5d (Trade-off Evaluators), 1C.5h (Reasoning UAT), or
+    Phase 1C.6 (Competency Certification).
+  - The only permitted recommendations at the conclusion of this specification
+    are "READY FOR INDEPENDENT ARCHITECTURAL REVIEW" or "HOLD — MATERIAL
+    ARCHITECTURAL ISSUE IDENTIFIED".
+
+
+================================================================================
+SECTION 2 — SCOPE & ARCHITECTURAL BOUNDARIES
+================================================================================
+
+2.1 IN-SCOPE ARCHITECTURAL RESPONSIBILITIES
+The Engineering Reasoning Architecture owns:
+  1. Evidence Assessment: Ingesting multi-modal case inputs (audio waveforms,
+     feature vectors, user verbal descriptions, equipment manifests, reference
+     targets) and recording their lineage, modality, and objective characteristics.
+  2. Observation Formulation: Converting raw evidence into descriptive,
+     non-diagnostic factual observations.
+  3. Hypothesis Lifecycle: Generating, maintaining, supporting, contradicting,
+     weakening, strengthening, retiring, or leaving unresolved multiple
+     simultaneous competing hypotheses regarding causal mechanisms.
+  4. Discriminating Evidence Identification: Recognizing epistemic ambiguity and
+     specifying diagnostic tests or targeted evidence acquisitions that can
+     definitively disambiguate competing hypotheses before intervening.
+  5. Causal Diagnosis: Synthesizing supported hypotheses into an epistemically
+     bounded explanation of why the sound behaves as observed.
+  6. Engineering Requirement Formation: Formulating abstract, gear-agnostic
+     engineering requirements based on the causal diagnosis and Engineering Intent.
+  7. Candidate Intervention Architecture: Formulating materially distinct
+     technical interventions to fulfill the engineering requirements.
+  8. Constraint & Trade-off Reasoning: Systematically evaluating acoustic,
+     electrical, musical, and user-specified constraints against primary and
+     secondary consequences.
+  9. Engineering Decision: Selecting a defensible primary course of action while
+     explicitly preserving unselected alternatives, trade-offs, and residual
+     uncertainty.
+  10. Predicted Outcome: Formulating falsifiable primary and secondary
+      predictions to enable future verification.
+  11. Semantic Tone Design Handoff: Translating the engineering decision into
+      abstract, platform-independent semantic signal specifications.
+  12. Outcome Evidence & Engineering Review: Evaluating post-intervention
+      evidence against predictions, assessing hypothesis validity, and closing
+      the iterative learning loop without rewriting historical records.
+  13. Historical Immutability & Replay: Guaranteeing that every reasoning run is
+      fully auditable, reproducible, and permanently sealed.
+
+2.2 OUT-OF-SCOPE BOUNDARIES (THE STRICT FIREWALLS)
+To maintain architectural purity, strict firewalls separate Reasoning from
+adjacent lifecycle layers:
+
+  FIREWALL A: SOUND ENGINEERING KNOWLEDGE (Phase 1C.4)
+    - Sound Engineering Knowledge represents what TT knows about general
+      acoustical and electrical phenomena, physical laws, and governed practices.
+    - Engineering Reasoning represents what TT infers and decides about THIS
+      SPECIFIC CASE.
+    - Governed Knowledge claims inform reasoning hypotheses; they NEVER dictate
+      case facts or replace case evidence.
+    - Reference Cases from the Knowledge Architecture are illustrative precedent,
+      NOT binding engineering law.
+
+  FIREWALL B: SEMANTIC TONE DESIGN
+    - Semantic Tone Design specifies the platform-independent target transfer
+      functions, block topologies, and processing requirements.
+    - Engineering Reasoning produces the rationale, causal diagnosis, trade-off
+      analysis, and engineering decision that SELECTS the semantic design.
+    - Internal reasoning deliberation, discarded hypotheses, and uncertainty
+      deliberations do NOT pollute the downstream Semantic Tone Design contract.
+
+  FIREWALL C: PLATFORM TRANSLATION & EXPORT (Downstream)
+    - The Platform Translator maps semantic designs to specific software/hardware
+      targets (e.g., AmpliTube 5, Helix, Quad Cortex, Kemper).
+    - Exporters serialize configurations to proprietary file formats (e.g., AT5 XML).
+    - Engineering Reasoning is 100% platform-independent. Platform limitations
+      (e.g., lack of a specific compressor model or routing slot) must NEVER
+      reach upstream to alter the causal diagnosis.
+
+  FIREWALL D: DETERMINISTIC VALIDATION & RUNTIME OBSERVABILITY
+    - Deterministic code validates syntactic schemas, mathematical ranges, and
+      structural integrity.
+    - Observability infrastructure (RunTrace) captures execution metrics and logs.
+    - Neither subsystem makes sound engineering judgements or overrides AI
+      engineering decisions.
+
+2.3 TABULAR SUMMARY OF LAYER RESPONSIBILITIES
++-----------------------+-----------------------------+-------------------------------+
+| Architecture Layer    | Primary Responsibility      | Prohibited Intrusion          |
++-----------------------+-----------------------------+-------------------------------+
+| Sound Engineering KB  | Governed theoretical,       | Must not inject case evidence |
+| (Phase 1C.4)          | empirical, and practical    | or mandate case decisions     |
+|                       | engineering knowledge.      | automatically.                |
++-----------------------+-----------------------------+-------------------------------+
+| Case Evidence Intake  | Capturing raw, uninterpreted| Must not classify symptoms as |
+|                       | case inputs with provenance.| diagnoses or fixes.           |
++-----------------------+-----------------------------+-------------------------------+
+| Engineering Reasoning | Causal diagnosis, hypothesis| Must not emit platform-       |
+| (Phase 1C.5 - THIS)   | generation, trade-off study,| specific IDs or alter         |
+|                       | decision, and prediction.   | diagnosis to fit gear limits. |
++-----------------------+-----------------------------+-------------------------------+
+| Semantic Tone Design  | Abstract, platform-agnostic | Must not contain discarded    |
+|                       | processing topology and     | hypotheses or reasoning trace |
+|                       | target behavior.            | internals.                    |
++-----------------------+-----------------------------+-------------------------------+
+| Platform Translator   | Mapping semantic blocks to  | Must not rewrite upstream     |
+| & Exporters           | target hardware/software.   | diagnosis or semantic intent. |
++-----------------------+-----------------------------+-------------------------------+
+| Deterministic Systems | Invariant checking, schema  | Must not make qualitative     |
+| & RunTrace            | validation, execution trace.| sound engineering judgements. |
++-----------------------+-----------------------------+-------------------------------+
+
+
+============================================================
+SECTION 3 — FROZEN CONSTITUTIONAL REQUIREMENTS
+============================================================
+
+The 21 principles of the Engineering Reasoning Constitution are authoritative,
+unalterable, and frozen. The architectural specification enforces each principle
+through specific structural mechanisms, record contracts, and lifecycle gates:
+
+--------------------------------------------------------------------------------
+Principle 1: EVIDENCE PRECEDES DIAGNOSIS
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The Decision Lifecycle enforces a strict chronological dependency:
+    `CaseEvidenceAssessmentRecord` MUST be sealed before the `ObservationEngine`
+    or `HypothesisWorkspace` can be initialized.
+  - Multi-modal evidence types (audio measurements, user text, equipment lists,
+    acoustic environment telemetry) are segregated into distinct typed fields
+    within `CaseEvidenceAssessmentRecord`. Conflation of subjective user claims
+    with objective physical measurements is structurally impossible.
+
+--------------------------------------------------------------------------------
+Principle 2: OBSERVATION IS NOT INTERPRETATION
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The architecture introduces `ObservationRecord` as an explicit boundary layer
+    between evidence and hypotheses.
+  - An observation states ONLY what is measured or directly observed (e.g.,
+    "Energy between 100 Hz and 250 Hz exceeds target curve by 6.2 dB during
+    palm-muted low-E passages; decay time constant is 320 ms").
+  - An observation is forbidden from containing causal attribution, fault
+    assignment, or equipment references. Causal attribution is restricted to
+    `HypothesisRecord`.
+
+--------------------------------------------------------------------------------
+Principle 3: MISSING EVIDENCE IS NOT NEGATIVE EVIDENCE
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - Every `ObservationRecord` and `CaseEvidenceAssessmentRecord` maintains an
+    explicit `evidence_completeness_state` and an `unobserved_domains` registry.
+  - The reasoning engine treats unobserved physical parameters as UNKNOWN,
+    prohibiting the diagnostic engine from inferring absence of a fault from the
+    absence of a measurement.
+
+--------------------------------------------------------------------------------
+Principle 4: A SYMPTOM DOES NOT IDENTIFY ITS CAUSE
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The schema explicitly bans perceptual descriptor lookup tables.
+  - Perceptual terms ("harsh", "muddy", "flubby", "fizzy", "sterile", "weak")
+    are classified as `PerceptualSymptomDescriptor` within evidence, requiring
+    decomposition into multiple candidate physical mechanisms in the
+    `HypothesisWorkspace`. No direct edge exists in the ontology between a
+    symptom descriptor and an intervention.
+
+--------------------------------------------------------------------------------
+Principle 5: DIAGNOSIS SHOULD BE CAUSAL WHERE EVIDENCE PERMITS
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - `CausalDiagnosisRecord` requires explicit specification of the `primary_causal_mechanism`,
+    `causal_chain_locus` (e.g., PRE_NONLINEAR_FILTERING, NONLINEAR_HARMONIC_GENERATION,
+    TRANSIENT_DYNAMICS, ACOUSTIC_BOUNDARY_INTERFERENCE), and `physical_phenomenon`.
+  - Where evidence is insufficient to isolate a single mechanism, the diagnosis
+    is explicitly bounded as `MULTI_CAUSAL_DISJUNCTIVE`.
+
+--------------------------------------------------------------------------------
+Principle 6: COMPETING HYPOTHESES SURVIVE UNTIL EVIDENCE JUSTIFIES NARROWING THEM
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The `HypothesisWorkspaceRecord` is an n-ary collection that preserves multiple
+    active hypotheses simultaneously.
+  - A hypothesis cannot be pruned or retired without recording an explicit
+    `FalsificationEvidenceRef` or `ContradictionFinding`.
+  - Downstream intervention planning accommodates disjunctive hypotheses when
+    evidence fails to narrow them.
+
+--------------------------------------------------------------------------------
+Principle 7: CONTEXT INFORMS REASONING BUT DOES NOT PROVE CAUSATION
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - Production context (genre, artist, era, standard rig conventions) is isolated
+    in `ContextualPriors` within `CaseEvidenceAssessmentRecord`.
+  - Contextual priors are restricted to informing prior plausibility during
+    hypothesis generation; they are strictly prohibited from serving as
+    `SupportingEvidence` for a causal diagnosis.
+
+--------------------------------------------------------------------------------
+Principle 8: ENGINEERING INTENT CONSTRAINS THE SOLUTION
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - `EngineeringIntentRecord` is an immutable input contract defining the artistic,
+    aesthetic, dynamic, and spectral goals of the production.
+  - The `ConstraintAndTradeOffEvaluationRecord` tests all candidate interventions
+    against intent goals. A technically effective corrective action (e.g., heavy
+    gating to eliminate idle noise) is rejected if it violates intent (e.g.,
+    preserving natural musical sustain).
+
+--------------------------------------------------------------------------------
+Principle 9: GENERATE ALTERNATIVES WHEN THE PROBLEM ADMITS ALTERNATIVES
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - `CandidateInterventionRecord` enforces an architectural invariant: where
+    multiple physical mechanisms or signal-chain positions can satisfy the
+    engineering requirement, at least two materially distinct intervention
+    pathways must be generated and compared.
+
+--------------------------------------------------------------------------------
+Principle 10: INTERVENTION SELECTION FOLLOWS DIAGNOSIS
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The lifecycle state machine enforces the invariant:
+    EVIDENCE -> DIAGNOSIS -> ENGINEERING REQUIREMENT -> INTERVENTION CLASS ->
+    SEMANTIC DESIGN -> PLATFORM IMPLEMENTATION.
+  - No intervention can be created without a parent `EngineeringRequirementRecord`,
+    which in turn requires a parent `CausalDiagnosisRecord`.
+
+--------------------------------------------------------------------------------
+Principle 11: INTERVENTION SHOULD OCCUR AT THE CAUSALLY APPROPRIATE POINT
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - Every `CandidateInterventionRecord` specifies its `signal_chain_target_stage`
+    (e.g., INSTRUMENT_OUTPUT, PRE_CLIPPING_VOICING, CLIPPING_STAGE, POWER_AMP_SAG,
+    TRANSDUCER_COUPLING, ACOUSTIC_RADIATION, MICROPHONE_TRANSDUCTION, POST_CAPTURE_CONSOLE).
+  - Interventions attempting to fix pre-distortion frequency imbalances via
+    post-distortion equalization must explicitly record a trade-off penalty for
+    failing to address intermodulation distortion.
+
+--------------------------------------------------------------------------------
+Principle 12: PREDICT CONSEQUENCES BEFORE ACTING
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - An `EngineeringDecisionRecord` is structurally invalid unless bound to an
+    accompanying `PredictedOutcomeRecord`.
+  - The prediction must define expected quantitative/qualitative primary sonic
+    changes, secondary trade-offs, and explicit falsification criteria.
+
+--------------------------------------------------------------------------------
+Principle 13: EVERY INTERVENTION HAS POTENTIAL TRADE-OFFS
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - `ConstraintAndTradeOffEvaluationRecord` requires explicit population of
+    `secondary_effects` and `acoustic_trade_offs` (e.g., phase distortion,
+    transient softening, noise floor increase, loss of low-end authority) for
+    every candidate intervention.
+
+--------------------------------------------------------------------------------
+Principle 14: PREFER THE LEAST UNNECESSARY INTERVENTION
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The decision logic evaluates the `complexity_cost` and `signal_path_intrusion`
+    of candidate interventions. Additional processing blocks lacking a verified
+    engineering requirement are disqualified under parsimony evaluation.
+
+--------------------------------------------------------------------------------
+Principle 15: UNCERTAINTY MUST SURVIVE THE DECISION
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The `EngineeringDecisionRecord` includes an explicit, mandatory
+    `ResidualUncertaintyDescriptor`.
+  - Making a decision does NOT collapse unresolved ambiguities; unverified
+    assumptions are propagated forward to inform review and future iterations.
+
+--------------------------------------------------------------------------------
+Principle 16: PLATFORM CAPABILITY MUST NOT REWRITE THE DIAGNOSIS
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - Upstream reasoning records (`CausalDiagnosisRecord`, `EngineeringRequirementRecord`,
+    `CandidateInterventionRecord`) have zero knowledge of downstream platform
+    limitations (e.g., AmpliTube 5 routing slot counts).
+  - Downstream translation bottlenecks produce translation compromise reports,
+    never retroactively altering the diagnostic record.
+
+--------------------------------------------------------------------------------
+Principle 17: DETERMINISTIC SYSTEMS MAY VERIFY ONLY TRUTH THEY GENUINELY OWN
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - Deterministic validators evaluate ONLY structural invariants: schema
+    completeness, acyclic graph structure, data type ranges, and formal logic
+    constraints.
+  - Deterministic rules are barred from evaluating aesthetic quality, musical
+    correctness, or causal validity.
+
+--------------------------------------------------------------------------------
+Principle 18: REASONING QUALITY AND OUTCOME QUALITY ARE INDEPENDENT
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The `EngineeringReviewRecord` independently evaluates:
+    (a) Evidence Completeness & Quality;
+    (b) Hypothesis Validity at decision time;
+    (c) Decision Defensibility given available information;
+    (d) Execution Fidelity;
+    (e) Actual Outcome Quality.
+  - A lucky guess with flawed reasoning is formally logged as a defective
+    reasoning event. A sound decision that yielded a poor outcome due to latent
+    unobserved variables is logged as valid reasoning facing hidden variables.
+
+--------------------------------------------------------------------------------
+Principle 19: OUTCOME EVIDENCE UPDATES REASONING; IT DOES NOT REWRITE HISTORY
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - All decision records are cryptographically hashed and immutable upon sealing.
+  - New evidence or post-intervention captures initiate a new lifecycle iteration
+    with a distinct `RunID`, referencing prior records by immutable ID without
+    modifying them.
+
+--------------------------------------------------------------------------------
+Principle 20: ENGINEERING RATIONALE MUST BE AUDITABLE WITHOUT EXPOSING HIDDEN MODEL REASONING
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The architecture mandates structured reasoning records as formal data
+    contracts. Auditability is achieved via structured relations:
+    `evidence_refs`, `hypothesis_refs`, `causal_links`, `trade_off_evaluations`.
+  - No access to raw LLM hidden states or private chain-of-thought scratchpads
+    is required or permitted.
+
+--------------------------------------------------------------------------------
+Principle 21: TT MUST RECOGNISE WHEN ADDITIONAL DISCRIMINATING EVIDENCE IS MORE
+VALUABLE THAN ANOTHER INTERVENTION
+--------------------------------------------------------------------------------
+Architectural Enforcement:
+  - The lifecycle state machine includes a first-class state: `DISCRIMINATING_EVIDENCE_SEEKING`.
+  - When competing hypotheses cannot be narrowed and intervention risk is high,
+    the engine emits a `DiscriminatingEvidenceRequestRecord` (e.g., requesting a
+    dry DI track, bypass test, or mic solo) instead of guessing an intervention.
+
+
+================================================================================
+SECTION 4 — PROFESSIONAL ENGINEERING JUDGEMENT BOUNDARY
+================================================================================
+
+4.1 AUTHORITATIVE DEFINITION
+The authoritative project boundary governing Phase 1C.5 is:
+    "Professional engineering judgement begins where available evidence and
+     established knowledge permit more than one defensible interpretation or
+     intervention."
+
+4.2 THE THREE DOMAINS OF TRUTH
+To implement this boundary, the architecture partitions sound engineering
+problem-solving into three distinct domains:
+
+1. THE DETERMINISTIC DOMAIN (Absolute Truth Owned by Code)
+   - Physical and mathematical laws that admit no discretion:
+     * Nyquist theorem, Ohm's law, wave speed in air, inverse square law.
+     * Digital signal representation: bit depth dynamic range, sample rate limits.
+     * Graph topology invariants: acyclic signal flow, port connectivity.
+     * Serialization and platform limits: parameter bounds [0.0, 1.0], block counts.
+   - Mechanism: Strict deterministic validation, type checkers, hard assertions.
+
+2. THE GOVERNED KNOWLEDGE DOMAIN (Empirical & Physical Truth Owned by Phase 1C.4)
+   - Codified, peer-reviewed sound engineering principles, measured transducer
+     behaviors, component operating limits, psychoacoustic curves.
+   - Mechanism: Governed knowledge claims with explicit EpistemicValidation,
+     OperationalBoundaries, and conflict states.
+
+3. THE PROFESSIONAL JUDGEMENT DOMAIN (AI Sound Engineer Ownership)
+   - Areas where evidence and physics permit multiple valid, defensible choices:
+     * Causal attribution when evidence is partial or symptoms overlap.
+     * Balancing conflicting musical objectives (e.g., aggression vs warmth,
+       density vs clarity, punch vs sustain).
+     * Selecting between materially different intervention pathways (e.g.,
+       fixing low-end resonance at the instrument, pre-gain EQ, speaker, or mic).
+     * Establishing aesthetic boundaries appropriate to genre, artist intent,
+       and mix arrangement.
+   - Mechanism: Structured reasoning records, hypothesis competition, trade-off
+     analysis, and auditable justification.
+
+4.3 NO ARTIFICIAL CERTAINTY OR COMPULSORY CONSENSUS
+Where multiple engineering pathways are professionally defensible:
+  - The architecture explicitly forbids manufacturing a single "objectively
+    correct" score or forcing artificial convergence.
+  - The AI Sound Engineer selects one primary defensible path, records its
+    professional justification, and explicitly preserves the unselected credible
+    alternatives in the `EngineeringDecisionRecord`.
+
+
+================================================================================
+SECTION 5 — REASONING ARCHITECTURE OVERVIEW
+================================================================================
+
+5.1 COMPONENT TOPOLOGY
+The Engineering Reasoning Architecture is organized into modular functional
+engines that process immutable data records across the decision lifecycle:
+
+       +-------------------------------------------------------------+
+       |                  CASE EVIDENCE ASSESSMENT                   |
+       |  - Multi-Modal Evidence Intake (Audio, Settings, Text)      |
+       |  - Lineage & Calibration Tracking                           |
+       |  - Contextual Priors (Genre/Era/Rig)                        |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |                     OBSERVATION ENGINE                      |
+       |  - Objective Phenomenological Feature Extraction            |
+       |  - Strict Separation of Observation from Diagnosis          |
+       |  - Evidence Completeness & Unobserved Registry              |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |               HYPOTHESIS GENERATION & WORKSPACE             |
+       |  - Multi-Hypothesis Generation (Causal Mechanisms)          |
+       |  - Epistemic Grounding in Phase 1C.4 Knowledge Claims       |
+       |  - Evidence Linking: Supported / Contradicted / Unexplained |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |            DISCRIMINATING EVIDENCE EVALUATOR                |
+       |  - Is evidence sufficient to isolate causal mechanism?      |
+       |  - If Ambiguous: Emit DiscriminatingEvidenceRequestRecord   |
+       |  - If Sufficient or Bounded: Proceed to Causal Diagnosis    |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |                  CAUSAL DIAGNOSTIC ENGINE                   |
+       |  - Synthesize Supported Hypotheses into Causal Explanation  |
+       |  - Map Causal Mechanism to Signal-Chain Locus               |
+       |  - Epistemically Bounded Diagnosis (Single or Disjunctive)  |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |             ENGINEERING REQUIREMENT FORMULATOR              |
+       |  - Reconcile Causal Diagnosis with Engineering Intent       |
+       |  - Formulate Abstract, Gear-Agnostic Causal Target          |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |              CANDIDATE INTERVENTION GENERATOR               |
+       |  - Generate Materially Distinct Technical Pathways          |
+       |  - Locate Interventions at Appropriate Signal-Chain Stages  |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |            CONSTRAINT & TRADE-OFF EVALUATOR                 |
+       |  - Multi-Dimensional Trade-Off Matrix (Qualitative)         |
+       |  - Acoustic, Electrical, and Intent Constraint Checking     |
+       |  - Parsimony & Signal Intrusion Assessment                  |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |                 DECISION & PREDICTION ENGINE                |
+       |  - Select Primary Defensible Intervention                   |
+       |  - Retain Credible Alternatives & Rejection Rationale       |
+       |  - Preserve Residual Uncertainty                            |
+       |  - Formulate Falsifiable Predicted Outcome                  |
+       +------------------------------+------------------------------+
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |             SEMANTIC TONE DESIGN HANDOFF                    |
+       |  - Abstract Signal Topology & Transfer Functions            |
+       |  - Strict Firewall: No Reasoning Internals Leakage          |
+       +-------------------------------------------------------------+
+                                      |
+                                      v
+                         [Downstream Platform & Run]
+                                      |
+                                      v
+       +-------------------------------------------------------------+
+       |             ENGINEERING REVIEW & ITERATION ENGINE           |
+       |  - Actual Outcome Evidence Ingestion                        |
+       |  - Independent Evaluation: Reasoning Quality vs Outcome     |
+       |  - Immutable Historical Decision Preservation               |
+       |  - Trigger Next Iteration (New RunID)                       |
+       +-------------------------------------------------------------+
+
+5.2 CORE STRUCTURAL PRINCIPLES
+  1. Immutability: Every record generated in the lifecycle is sealed with an
+     immutable identifier (`RecordID`), cryptographic payload checksum, and
+     timestamp. Records are never updated in place.
+  2. Referential Integrity: Downstream records cite upstream records by explicit
+     typed references (`evidence_refs`, `hypothesis_refs`, `diagnosis_ref`, etc.).
+  3. Replayability: Given the same input snapshots and governed knowledge state,
+     the reasoning path is 100% reconstructable and auditable.
+
+
+================================================================================
+SECTION 6 — PROPOSED REASONING RECORDS / CONTRACTS
+================================================================================
+
+6.1 THE CORE CONTRACT TAXONOMY
+The Engineering Reasoning Architecture defines thirteen authoritative data
+contracts. Each contract has a single, strictly delineated responsibility,
+a defined mutability lifecycle, and formal epistemic boundaries.
+
+The contracts are divided into four functional tiers:
+  Tier 1: Ground Truth & Evidence Ingestion
+    1. EngineeringIntentRecord (Immutable Intent Specification)
+    2. CaseEvidenceAssessmentRecord (Multi-Modal Ground Truth & Lineage)
+  Tier 2: Phenomenological & Diagnostic Synthesis
+    3. ObservationRecord (Factual Observed Phenomena, Free of Causal Claims)
+    4. HypothesisRecord & HypothesisWorkspaceRecord (Competing Causal Explanations)
+    5. DiscriminatingEvidenceRequestRecord (Formal Diagnostics / Test Invocations)
+    6. CausalDiagnosisRecord (Bounded Causal Synthesis)
+  Tier 3: Solution Design & Decision
+    7. EngineeringRequirementRecord (Abstract Causal Transformation Target)
+    8. CandidateInterventionRecord (Materially Distinct Technical Pathways)
+    9. ConstraintAndTradeOffEvaluationRecord (Multi-Dimensional Impact Analysis)
+    10. EngineeringDecisionRecord (Selected Action, Alternatives, Uncertainty)
+    11. PredictedOutcomeRecord (Falsifiable Primary/Secondary Forecasts)
+  Tier 4: Verification, Review & Audit
+    12. ActualOutcomeEvidenceRecord (Post-Intervention Captured Evidence)
+    13. EngineeringReviewRecord (Dual-Track Quality Evaluation & Feedback)
+    14. EngineeringReasoningTrace (Composite Audit Container)
+
+6.2 FORMAL SCHEMA SPECIFICATIONS
+
+Below are the formal structural schemas defining each record contract.
+
+--------------------------------------------------------------------------------
+CONTRACT 1: EngineeringIntentRecord
+--------------------------------------------------------------------------------
+Responsibility: Captures the user's artistic, musical, sonic, and production
+objectives, along with non-negotiable constraints and aesthetic priorities.
+
+```typescript
+export interface EngineeringIntentRecord {
+  record_id: string; // "eir_<hash>"
+  schema_version: "1.0.0";
+  timestamp: string; // ISO-8601 UTC
+  session_id: string;
+  
+  musical_context: {
+    genre?: string;
+    subgenre?: string;
+    era_aesthetic?: string; // e.g., "Late 1970s Hard Rock", "Modern Progressive Metal"
+    mix_role: "SOLO_LEAD" | "RHYTHM_DOUBLE_LEFT" | "RHYTHM_DOUBLE_RIGHT" | "WALL_OF_SOUND" | "PERCUSSIVE_ACCENT" | "CLEAN_TEXTURE";
+    arrangement_density: "SPARSE" | "MEDIUM" | "DENSE" | "EXTREME";
+    complementary_elements: string[]; // e.g., ["Heavy sub-bass synth", "Aggressive double-kick", "Dark vocal"]
+  };
+
+  sonic_objectives: {
+    spectral_profile: {
+      low_end_character: "TIGHT_CONTROLLED" | "WARM_FULL" | "LOOSE_RESONANT" | "LEAN_FILTERED";
+      midrange_focus: "SCOOPED" | "FORWARD_PUNCHY" | "BARK_CRUNCH" | "FLAT_TRANSPARENT";
+      top_end_air: "DARK_SMOOTH" | "OPEN_NATURAL" | "BRIGHT_CUTTING" | "AGGRESSIVE_SIZZLE";
+    };
+    dynamic_character: "HIGHLY_DYNAMIC" | "CONTROLLED_PUNCH" | "COMPACT_SUSTAINED" | "HYPER_COMPRESSED";
+    transient_response: "SHARP_CLICKY" | "PUNCHY_ORGANIC" | "SOFT_ROUNDED" | "HEAVILY_SMOOTHED";
+    harmonic_density: "PRISTINE_CLEAN" | "EDGE_OF_BREAKUP" | "DYNAMIC_CRUNCH" | "DENSE_SATURATION" | "EXTREME_FUZZ";
+    spatial_environment: "DIRECT_BONE_DRY" | "STUDIO_TIGHT_ROOM" | "REFLECTIVE_LIVE_ROOM" | "EXPANSIVE_AMBIENT";
+  };
+
+  non_negotiable_constraints: {
+    preserve_core_instrument_character: boolean;
+    prohibited_processing_classes?: string[]; // e.g., ["CHORUS", "PITCH_SHIFTER"]
+    max_latency_tolerance_ms?: number;
+    fixed_hardware_commitments?: string[]; // e.g., "Must keep physical tube preamp"
+  };
+
+  intent_priority_weighting: {
+    primary_objective: string;
+    secondary_objective: string;
+    acceptable_compromise_areas: string[];
+  };
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 2: CaseEvidenceAssessmentRecord
+--------------------------------------------------------------------------------
+Responsibility: Documents all available case inputs, their modalities, provenance,
+capture chains, and objective properties, without interpretation.
+
+```typescript
+export interface CaseEvidenceAssessmentRecord {
+  record_id: string; // "cear_<hash>"
+  schema_version: "1.0.0";
+  timestamp: string;
+  run_id: string;
+  intent_ref: string; // references EngineeringIntentRecord.record_id
+
+  evidence_modalities_present: Array<
+    "RAW_AUDIO_WAVEFORM" |
+    "FEATURE_EXTRACTION_VECTOR" |
+    "SPECTRAL_ANALYSIS_MAP" |
+    "USER_VERBAL_DESCRIPTOR" |
+    "EQUIPMENT_MANIFEST" |
+    "TARGET_AUDIO_REFERENCE" |
+    "CALIBRATION_TELEMETRY"
+  >;
+
+  evidence_items: Array<{
+    item_id: string;
+    modality: string;
+    source_origin: "USER_DIRECT_UPLOAD" | "DAW_SESSION_CAPTURE" | "USER_TEXT_INPUT" | "EXTRACTED_DSP_FEATURE" | "CURATED_REFERENCE_CASE";
+    lineage: {
+      capture_device?: string;
+      sample_rate_hz?: number;
+      bit_depth?: number;
+      transducer_lineage?: string; // e.g., "Guitar Output -> Passive DI -> Focusrite 2i2 -> DAW"
+      calibration_status: "CALIBRATED_LEVELS" | "UNCALIBRATED_CONSUMER_CAPTURE" | "UNKNOWN";
+    };
+    raw_payload_ref?: string; // artifact reference or URI
+    objective_properties: Record<string, unknown>; // e.g., peak_dbfs, rms_dbfs, crest_factor, spectral_centroid
+  }>;
+
+  perceptual_symptoms_reported: Array<{
+    symptom_id: string;
+    raw_term: string; // e.g., "flubby", "fizzy", "hollow", "harsh"
+    source: "USER_TEXT" | "AUTOMATED_RULE_FLAG";
+    reported_context: string; // e.g., "Occurs only during fast palm-muted runs on low B string"
+  }>;
+
+  contextual_priors: {
+    genre?: string;
+    artist_reference?: string;
+    target_production_era?: string;
+    known_rig_elements?: string[];
+  };
+
+  evidence_completeness: {
+    completeness_status: "COMPREHENSIVE" | "PARTIAL" | "SPARSE" | "MINIMAL";
+    unobserved_domains: Array<
+      "DRY_DIRECT_INPUT_UNAVAILABLE" |
+      "ROOM_ACOUSTICS_UNKNOWN" |
+      "PICKUP_SPECIFICATIONS_UNKNOWN" |
+      "CABINET_IMPEDANCE_CURVE_UNKNOWN" |
+      "MIC_POLAR_RESPONSE_UNMEASURED"
+    >;
+  };
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 3: ObservationRecord
+--------------------------------------------------------------------------------
+Responsibility: Records verified, factual, non-causal descriptions of physical or
+perceptual phenomena observed in the evidence.
+
+```typescript
+export interface ObservationRecord {
+  record_id: string; // "obs_<hash>"
+  schema_version: "1.0.0";
+  timestamp: string;
+  run_id: string;
+  evidence_ref: string; // references CaseEvidenceAssessmentRecord.record_id
+
+  observations: Array<{
+    observation_id: string;
+    domain: "SPECTRAL_BALANCE" | "TEMPORAL_DYNAMICS" | "HARMONIC_STRUCTURE" | "SPATIAL_IMAGING" | "NOISE_FLOOR";
+    description: string; // STRICT RULE: Must be descriptive, NOT explanatory or diagnostic
+    metric_evidence?: {
+      measurement_name: string;
+      measured_value: number | string;
+      unit: string;
+      frequency_band_hz?: [number, number];
+      time_window_ms?: [number, number];
+      reference_baseline_value?: number | string;
+    };
+    signal_state: "STEADY_STATE" | "ATTACK_TRANSIENT" | "DECAY_RESONANCE" | "IDLE_REST" | "INTERMUTED_PASSAGE";
+    associated_symptom_refs: string[]; // references symptom_id from CaseEvidenceAssessmentRecord
+  }>;
+
+  negative_observations: Array<{
+    checked_domain: string;
+    finding: string; // e.g., "No DC offset detected; THD under clean conditions is below 0.05%"
+  }>;
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 4: HypothesisRecord & HypothesisWorkspaceRecord
+--------------------------------------------------------------------------------
+Responsibility: Formulates, evaluates, and maintains multiple simultaneous,
+competing hypotheses regarding the underlying causal mechanisms producing the
+observations.
+
+```typescript
+export interface HypothesisRecord {
+  hypothesis_id: string; // "hyp_<hash>"
+  title: string;
+  causal_mechanism_family: 
+    "PRE_DISTORTION_FREQUENCY_CONGESTION" |
+    "POST_DISTORTION_SPECTRAL_EXCESS" |
+    "AMPLIFIER_POWER_STAGE_SAG" |
+    "ASYMMETRIC_WAVEFORM_COLLAPSE" |
+    "TRANSDUCER_CONE_BREAKUP" |
+    "MICROPHONE_OFF_AXIS_PHASE_CANCELLATION" |
+    "COMB_FILTERING_MULTI_TRANSDUCTION" |
+    "EXCESSIVE_BROADBAND_COMPRESSION" |
+    "GROUND_LOOP_ELECTRICAL_INDUCTION" |
+    "INSTRUMENT_TRANSDUCER_OVERLOAD";
+
+  causal_chain_locus: 
+    "SOURCE_INSTRUMENT" |
+    "PRE_NONLINEAR_FILTER" |
+    "NONLINEAR_CLIPPING_STAGE" |
+    "POWER_SUPPLY_AND_SAG" |
+    "ELECTROACOUSTIC_TRANSDUCER" |
+    "ACOUSTIC_WAVE_PROPAGATION" |
+    "MICROPHONE_CAPSULE_TRANSDUCTION" |
+    "POST_CAPTURE_PROCESSING";
+
+  detailed_mechanism_description: string;
+
+  grounding_knowledge_claims: Array<{
+    claim_id: string; // references Phase 1C.4 KnowledgeClaim.claim_id
+    epistemic_basis: string;
+    relevance_rationale: string;
+  }>;
+
+  supporting_observations: Array<{
+    observation_id: string;
+    causal_explanatory_power: "DIRECT_MATCH" | "STRONGLY_CONSISTENT" | "PARTIALLY_CONSISTENT";
+    explanation: string;
+  }>;
+
+  contradicting_observations: Array<{
+    observation_id: string;
+    anomaly_severity: "MILD_TENSION" | "SUBSTANTIAL_CONTRADICTION" | "DIRECT_FALSIFICATION";
+    falsification_reasoning: string;
+  }>;
+
+  unexplained_observations: string[]; // observation_ids not accounted for by this mechanism
+
+  epistemic_state: 
+    "ACTIVE_STRONG" |
+    "ACTIVE_CREDIBLE" |
+    "ACTIVE_MARGINAL" |
+    "WEAKENED_BY_CONTRADICTION" |
+    "FALSIFIED_AND_RETIRED" |
+    "UNRESOLVED_DUE_TO_DATA_LIMITATION";
+
+  qualitative_evaluation_summary: string; // No scalar probabilities! Qualitative balance of evidence.
+}
+
+export interface HypothesisWorkspaceRecord {
+  workspace_id: string;
+  run_id: string;
+  timestamp: string;
+  hypotheses: HypothesisRecord[];
+  competing_clusters: Array<{
+    cluster_name: string;
+    observation_target: string;
+    competing_hypothesis_ids: string[];
+    is_disambiguated: boolean;
+  }>;
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 5: DiscriminatingEvidenceRequestRecord
+--------------------------------------------------------------------------------
+Responsibility: Emitted when available evidence is ambiguous and cannot
+distinguish between competing hypotheses. Specifies actionable diagnostic tests
+or targeted evidence acquisitions.
+
+```typescript
+export interface DiscriminatingEvidenceRequestRecord {
+  request_id: string; // "derr_<hash>"
+  run_id: string;
+  timestamp: string;
+  competing_hypothesis_ids: [string, string, ...string[]];
+
+  ambiguity_diagnosis: string; // Why the current evidence is incapable of resolving the dispute
+
+  requested_diagnostic_actions: Array<{
+    action_type: 
+      "CAPTURE_DRY_DIRECT_INPUT" |
+      "SOLO_INDIVIDUAL_MICROPHONES" |
+      "BYPASS_SUSPECTED_NONLINEAR_BLOCK" |
+      "APPLY_CONTROLLED_SWEEP_TONE" |
+      "ADJUST_PRE_GAIN_LOW_CUT_TEST" |
+      "INVERT_MICROPHONE_POLARITY_TEST" |
+      "CAPTURE_ISOLATED_PICKUP_BURST";
+    test_protocol: string;
+    expected_discriminating_criterion: {
+      if_outcome_observed: string;
+      then_favors_hypothesis_id: string;
+      else_favors_hypothesis_id: string;
+    };
+    operational_effort: "TRIVIAL" | "MODERATE" | "HIGH_INTERVENTION_REQUIRED";
+  }>;
+
+  lifecycle_action: "PAUSE_FOR_DISCRIMINATING_EVIDENCE" | "PROCEED_WITH_BOUNDED_DISJUNCTION";
+  justification_for_lifecycle_action: string;
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 6: CausalDiagnosisRecord
+--------------------------------------------------------------------------------
+Responsibility: Synthesizes validated hypotheses into a bounded, definitive or
+disjunctive explanation of the sonic problem.
+
+```typescript
+export interface CausalDiagnosisRecord {
+  diagnosis_id: string; // "diag_<hash>"
+  run_id: string;
+  timestamp: string;
+  workspace_ref: string; // references HypothesisWorkspaceRecord.workspace_id
+
+  diagnostic_structure: "SINGLE_ISOLATED_CAUSE" | "PRIMARY_AND_CONTRIBUTING_FACTORS" | "DISJUNCTIVE_COMPETING_CAUSES";
+
+  primary_mechanism: {
+    hypothesis_id: string;
+    causal_mechanism_family: string;
+    causal_locus: string;
+    physical_summary: string;
+    evidential_sufficiency: "DEFINITIVE" | "WELL_SUPPORTED" | "PLAUSIBLE_BOUNDED";
+  };
+
+  contributing_mechanisms?: Array<{
+    hypothesis_id: string;
+    interaction_type: "AMPLIFIES_PRIMARY" | "CONCURRENT_SECONDARY_DEFECT" | "PERCEPTUAL_MASKING";
+    contribution_summary: string;
+  }>;
+
+  surviving_unresolved_alternatives?: Array<{
+    hypothesis_id: string;
+    retention_justification: string;
+  }>;
+
+  epistemic_bounds_and_uncertainty: {
+    unverified_assumptions: string[];
+    what_this_diagnosis_does_not_claim: string[];
+  };
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 7: EngineeringRequirementRecord
+--------------------------------------------------------------------------------
+Responsibility: Formulates the abstract, gear-agnostic transformation required to
+rectify the diagnosed causal mechanism while advancing Engineering Intent.
+
+```typescript
+export interface EngineeringRequirementRecord {
+  requirement_id: string; // "req_<hash>"
+  run_id: string;
+  timestamp: string;
+  diagnosis_ref: string; // references CausalDiagnosisRecord.diagnosis_id
+  intent_ref: string; // references EngineeringIntentRecord.record_id
+
+  causal_target_stage: 
+    "PRE_CLIPPING_INPUT_CONDITIONING" |
+    "DYNAMIC_HARMONIC_SATURATION" |
+    "POWER_AMP_DYNAMIC_DAMPING" |
+    "ACOUSTIC_RESONANCE_MANAGEMENT" |
+    "TRANSDUCER_COUPLING_AND_PLACEMENT" |
+    "POST_CAPTURE_SURGICAL_EQ" |
+    "SYSTEM_NOISE_ATTENUATION";
+
+  functional_objective: string; // e.g., "Attenuate excessive sub-120Hz fundamental energy prior to high-gain clipping to eliminate intermodulation blocking while preserving low-end body post-saturation."
+
+  acoustic_transfer_requirements: {
+    frequency_band_focus?: [number, number];
+    required_dynamic_behavior: "STATIC_LINEAR" | "DYNAMIC_COMPRESSION" | "FREQUENCY_DEPENDENT_SATURATION" | "ENVELOPE_ATTACK_SHAPING";
+    directional_shift: "ATTENUATE" | "BOOST" | "NARROW_BAND_NOTCH" | "DYNAMIC_SUPPRESS" | "HARMONICALLY_ENRICH";
+    magnitude_envelope: "SURGICAL_MILD" | "MODERATE_CORRECTION" | "AGGRESSIVE_TRANSFORMATION";
+  };
+
+  musical_intent_preservation_boundary: string; // e.g., "Must not thin palm-mute chug punch below 150 Hz in steady state."
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 8: CandidateInterventionRecord
+--------------------------------------------------------------------------------
+Responsibility: Specifies a materially distinct technical pathway capable of
+satisfying the engineering requirement.
+
+```typescript
+export interface CandidateInterventionRecord {
+  intervention_id: string; // "cint_<hash>"
+  requirement_ref: string; // references EngineeringRequirementRecord.requirement_id
+  pathway_title: string;
+
+  material_differentiation_class: 
+    "SOURCE_INSTRUMENT_MODIFICATION" |
+    "PRE_GAIN_ANALOG_VOICING" |
+    "AMPLIFIER_OPERATING_POINT_ADJUSTMENT" |
+    "SPEAKER_CABINET_SUBSTITUTION" |
+    "MICROPHONE_SELECTION_AND_PLACEMENT" |
+    "POST_PROCESSING_SURGICAL_INTERVENTION" |
+    "MULTI_BLOCK_DISTRIBUTED_SOLUTION";
+
+  target_signal_stage: string;
+
+  processing_architecture: {
+    primary_functional_role: "HIGH_PASS_FILTER" | "PARAMETRIC_DYNAMIC_EQ" | "OVERDRIVE_MID_HUMP" | "MIC_DISTANCE_PROXIMITY_REDUCTION" | "POWER_AMP_SAG_STIFFENING" | "BAND_SPLIT_SATURATION";
+    operational_parameters: Record<string, string | number>; // Platform-agnostic units (Hz, dB, Q, ms)
+  };
+
+  causal_alignment_explanation: string; // Why this intervention addresses the diagnosed root cause
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 9: ConstraintAndTradeOffEvaluationRecord
+--------------------------------------------------------------------------------
+Responsibility: Evaluates candidates against physical, musical, and platform-agnostic
+constraints, explicitly mapping secondary acoustic trade-offs.
+
+```typescript
+export interface ConstraintAndTradeOffEvaluationRecord {
+  evaluation_id: string; // "ctoe_<hash>"
+  run_id: string;
+  candidate_evaluations: Array<{
+    intervention_id: string;
+    
+    constraint_compliance: {
+      satisfies_intent_priorities: boolean;
+      violates_non_negotiables: boolean;
+      violation_details?: string[];
+    };
+
+    primary_engineering_efficacy: {
+      effectiveness_assessment: "HIGHLY_EFFECTIVE" | "MODERATELY_EFFECTIVE" | "PARTIALLY_EFFECTIVE";
+      causal_locus_correctness: "OPTIMAL_CAUSAL_LOCUS" | "SUBOPTIMAL_BUT_VIABLE" | "INCORRECT_CAUSAL_LOCUS";
+    };
+
+    secondary_acoustic_trade_offs: Array<{
+      affected_domain: "PHASE_COHERENCE" | "TRANSIENT_PUNCH" | "NOISE_FLOOR" | "TONAL_BODY" | "DYNAMIC_FEEL" | "HARMONIC_RICHNESS";
+      impact_description: string;
+      severity: "NEGLIGIBLE" | "ACCEPTABLE_COLLATERAL" | "SIGNIFICANT_DEGRADATION" | "INTENT_BREAKING";
+      mitigation_strategy?: string;
+    }>;
+
+    signal_path_parsimony: {
+      added_complexity: "MINIMAL_INLINE" | "MODERATE_STAGE" | "HIGH_MULTIBLOCK";
+      unnecessary_processing_risk: "LOW" | "ELEVATED" | "UNJUSTIFIED";
+    };
+
+    overall_professional_verdict: "RECOMMENDED_PRIMARY" | "CREDIBLE_ALTERNATIVE" | "REJECTED_ON_CONSTRAINTS" | "REJECTED_ON_TRADE_OFFS";
+    deliberation_notes: string;
+  }>;
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 10: EngineeringDecisionRecord
+--------------------------------------------------------------------------------
+Responsibility: Documents the selected primary intervention, justifies the choice
+over alternatives, explicitly lists preserved alternatives, and documents
+residual uncertainty.
+
+```typescript
+export interface EngineeringDecisionRecord {
+  decision_id: string; // "edec_<hash>"
+  run_id: string;
+  timestamp: string;
+  requirement_ref: string;
+  evaluation_ref: string;
+
+  selected_primary_intervention: {
+    intervention_id: string;
+    summary: string;
+    selection_justification: string;
+  };
+
+  retained_credible_alternatives: Array<{
+    intervention_id: string;
+    summary: string;
+    contingency_application_condition: string; // When to switch to this alternative if primary fails
+  }>;
+
+  rejected_interventions: Array<{
+    intervention_id: string;
+    rejection_reason: string;
+  }>;
+
+  residual_uncertainty: {
+    unresolved_questions: string[];
+    unobserved_variable_risks: string[];
+    confidence_envelope: "TIGHTLY_CONSTRAINED" | "MODERATELY_BOUNDED" | "EXPLORATORY_PROVISIONAL";
+  };
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 11: PredictedOutcomeRecord
+--------------------------------------------------------------------------------
+Responsibility: Establishes falsifiable, concrete predictions of primary sonic
+changes and secondary trade-offs resulting from the decision.
+
+```typescript
+export interface PredictedOutcomeRecord {
+  prediction_id: string; // "pred_<hash>"
+  decision_ref: string; // references EngineeringDecisionRecord.decision_id
+  timestamp: string;
+
+  predicted_primary_effects: Array<{
+    domain: "SPECTRAL" | "DYNAMIC" | "HARMONIC" | "TRANSIENT";
+    predicted_change: string; // e.g., "Attenuation of 100-200 Hz mud by ~4 dB during low-end palm mutes; elimination of low-frequency intermodulation fuzz."
+    verifiable_metric_target?: {
+      target_metric: string;
+      expected_range: [number, number];
+      unit: string;
+    };
+  }>;
+
+  predicted_secondary_effects: Array<{
+    domain: string;
+    predicted_impact: string; // e.g., "Slight thinning of single-note lead lines if played on low strings without neck pickup."
+    acceptability_threshold: string;
+  }>;
+
+  explicit_falsification_criteria: Array<{
+    observation_condition: string;
+    indicates: "PRE_GAIN_DIAGNOSIS_WAS_INCORRECT" | "INTERVENTION_TOO_AGGRESSIVE" | "SECONDARY_RESONANCE_UNMASKED";
+  }>;
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 12: ActualOutcomeEvidenceRecord
+--------------------------------------------------------------------------------
+Responsibility: Ingests post-intervention audio, measurements, and user evaluation
+following downstream implementation and execution.
+
+```typescript
+export interface ActualOutcomeEvidenceRecord {
+  outcome_evidence_id: string; // "aoer_<hash>"
+  decision_ref: string;
+  prediction_ref: string;
+  timestamp: string;
+
+  captured_audio_items: Array<{
+    item_id: string;
+    capture_type: "POST_INTERVENTION_RENDER" | "RE_RECORDED_PERFORMANCE";
+    objective_properties: Record<string, unknown>;
+  }>;
+
+  measured_deltas: Array<{
+    domain: string;
+    metric_name: string;
+    pre_intervention_value: number | string;
+    post_intervention_value: number | string;
+    measured_delta: number | string;
+    unit: string;
+  }>;
+
+  user_perceptual_feedback?: {
+    raw_user_response: string;
+    perceived_problem_resolved: boolean;
+    new_symptoms_reported: string[];
+  };
+}
+```
+
+--------------------------------------------------------------------------------
+CONTRACT 13: EngineeringReviewRecord
+--------------------------------------------------------------------------------
+Responsibility: Conducts dual-track retrospective evaluation of Reasoning Quality
+and Outcome Quality, closing the learning loop without rewriting historical records.
+
+```typescript
+export interface EngineeringReviewRecord {
+  review_id: string; // "erev_<hash>"
+  run_id: string;
+  timestamp: string;
+  decision_ref: string;
+  outcome_ref: string;
+
+  dual_track_evaluation: {
+    reasoning_quality: {
+      evidence_adequacy: "EXCELLENT" | "ADEQUATE" | "POOR_LACKING_CRUCIAL_DATA";
+      hypothesis_soundness: "FLAWLESS_RIGOR" | "DEFENSIBLE_UNDER_UNCERTAINTY" | "FLAWED_PREMATURE_NARROWING";
+      causal_logic_integrity: "STRICTLY_CAUSAL" | "MOSTLY_CAUSAL" | "LEAKED_SYMPTOM_HEURISTIC";
+      overall_reasoning_verdict: "SOUND_ENGINEERING" | "VALID_UNDER_CONSTRAINTS" | "DEFECTIVE_REASONING";
+    };
+
+    outcome_quality: {
+      primary_intent_achieved: "FULLY_ACHIEVED" | "PARTIALLY_ACHIEVED" | "FAILED" | "DEGRADED";
+      prediction_accuracy: "PREDICTIONS_ACCURATELY_MATCHED" | "SURPRISES_OBSERVED" | "PREDICTIONS_FALSIFIED";
+      trade_off_severity_actual: "WITHIN_PREDICTED_BOUNDS" | "WORSE_THAN_EXPECTED" | "NEGLIGIBLE";
+    };
+  };
+
+  independence_finding: {
+    quadrant: 
+      "GOOD_REASONING_GOOD_OUTCOME" | // Ideal engineering
+      "GOOD_REASONING_POOR_OUTCOME" | // Latent unobserved variables or uncooperative physics
+      "POOR_REASONING_GOOD_OUTCOME" | // Lucky guess; must not be canonized!
+      "POOR_REASONING_POOR_OUTCOME";  // Flawed analysis and failed tone
+    explanation: string;
+  };
+
+  iteration_recommendation: 
+    "SATISFIED_CLOSE_CYCLE" |
+    "ITERATE_EXECUTE_CONTINGENT_ALTERNATIVE" |
+    "ITERATE_GATHER_DISCRIMINATING_EVIDENCE" |
+    "ITERATE_REVISE_DIAGNOSIS" |
+    "ABSTAIN_UNSOLVABLE_UNDER_CONSTRAINTS";
+
+  knowledge_architecture_candidate_lesson_ref?: string; // Eligible for CandidateLesson quarantine if generalizable
+}
+```
+
+--------------------------------------------------------------------------------
+COMPOSITE RUN CONTAINER: EngineeringReasoningTrace
+--------------------------------------------------------------------------------
+Responsibility: Aggregates all records generated within a single reasoning run,
+guaranteeing complete provenance, causal traceability, and cryptographic integrity.
+
+```typescript
+export interface EngineeringReasoningTrace {
+  trace_id: string; // "ert_<hash>"
+  run_id: string;
+  session_id: string;
+  timestamp_start: string;
+  timestamp_completed: string;
+  reasoning_architecture_version: "0.1.0";
+  knowledge_retrieval_snapshot_id: string;
+
+  // Ordered execution lineage
+  intent_record: EngineeringIntentRecord;
+  evidence_record: CaseEvidenceAssessmentRecord;
+  observation_record: ObservationRecord;
+  hypothesis_workspace: HypothesisWorkspaceRecord;
+  discriminating_evidence_request?: DiscriminatingEvidenceRequestRecord;
+  causal_diagnosis: CausalDiagnosisRecord;
+  engineering_requirement: EngineeringRequirementRecord;
+  candidate_interventions: CandidateInterventionRecord[];
+  trade_off_evaluation: ConstraintAndTradeOffEvaluationRecord;
+  engineering_decision: EngineeringDecisionRecord;
+  predicted_outcome: PredictedOutcomeRecord;
+
+  // Post-Execution (Appended upon iteration/review)
+  actual_outcome_evidence?: ActualOutcomeEvidenceRecord;
+  engineering_review?: EngineeringReviewRecord;
+
+  cryptographic_hash: string; // SHA-256 over entire record payload
+}
+```
+
+
+================================================================================
+SECTION 7 — ENGINEERING DECISION LIFECYCLE
+================================================================================
+
+7.1 THE 14-STAGE DECISION STATE MACHINE
+The Engineering Decision Lifecycle executes as a formal state machine comprising
+14 ordered stages. While conceptually linear, the architecture provides explicit
+branching, pausing, backtracking, and iteration loops.
+
+  Stage 01: INTENT_INTAKE
+    - Action: Ingest user goals, mix role, sonic target, non-negotiable constraints.
+    - Emits: EngineeringIntentRecord.
+    - Gate: Intent completeness and consistency validation.
+
+  Stage 02: CASE_EVIDENCE_ASSESSMENT
+    - Action: Ingest audio, descriptors, settings, calibration status. Registry
+      of unobserved parameters.
+    - Emits: CaseEvidenceAssessmentRecord.
+    - Gate: Multi-modal lineage verification; no symptom lookup.
+
+  Stage 03: OBSERVATION_FORMATION
+    - Action: Extract objective physical and perceptual facts from evidence.
+    - Emits: ObservationRecord.
+    - Invariant: Zero causal explanations permitted in observation descriptions.
+
+  Stage 04: HYPOTHESIS_GENERATION
+    - Action: Generate multiple competing causal mechanisms grounded in Phase 1C.4
+      knowledge claims.
+    - Emits: Initial HypothesisWorkspaceRecord.
+    - Invariant: Minimum 2 competing hypotheses where symptom is multi-causal.
+
+  Stage 05: HYPOTHESIS_EVALUATION_AND_COMPETITION
+    - Action: Link observations as supporting, contradicting, or unexplained.
+      Qualitative balance of evidence.
+    - Updates: HypothesisWorkspaceRecord (epistemic states).
+
+  Stage 06: DISCRIMINATING_EVIDENCE_CHECK
+    - Decision Branch:
+      * IF competing credible hypotheses cannot be narrowed AND diagnostic test
+        is viable: TRANSITION to Stage 06A (DISCRIMINATING_EVIDENCE_SEEKING).
+      * ELSE IF evidence is sufficient OR uncertainty is acceptable:
+        TRANSITION to Stage 07 (CAUSAL_DIAGNOSIS).
+
+  Stage 06A: DISCRIMINATING_EVIDENCE_SEEKING (Conditional Pause)
+    - Action: Emit DiscriminatingEvidenceRequestRecord (request DI, solo mic, sweep).
+    - Status: PAUSED awaiting new evidence, OR execute bounded fallback if user declines.
+    - Loopback: When new evidence arrives, loops back to Stage 02.
+
+  Stage 07: CAUSAL_DIAGNOSIS
+    - Action: Formulate bounded causal explanation (Single, Primary+Contributing,
+      or Disjunctive).
+    - Emits: CausalDiagnosisRecord.
+    - Invariant: Explicitly records unverified assumptions and epistemic limits.
+
+  Stage 08: ENGINEERING_REQUIREMENT_FORMATION
+    - Action: Bridge Causal Diagnosis and Engineering Intent into abstract transformation.
+    - Emits: EngineeringRequirementRecord.
+    - Invariant: Purely functional and gear-agnostic.
+
+  Stage 09: CANDIDATE_INTERVENTION_GENERATION
+    - Action: Generate materially distinct engineering pathways at causally
+      appropriate signal stages.
+    - Emits: CandidateInterventionRecord[].
+    - Invariant: Minimum 2 distinct pathways generated for complex problems.
+
+  Stage 10: CONSTRAINT_AND_TRADE_OFF_ANALYSIS
+    - Action: Evaluate candidates against acoustic trade-offs, constraints, and
+      signal parsimony.
+    - Emits: ConstraintAndTradeOffEvaluationRecord.
+    - Invariant: No arbitrary scalar arithmetic; qualitative impact analysis.
+
+  Stage 11: ENGINEERING_DECISION_AND_PREDICTION
+    - Action: Select primary intervention, preserve credible alternatives,
+      document residual uncertainty, formulate falsifiable predictions.
+    - Emits: EngineeringDecisionRecord and PredictedOutcomeRecord.
+    - Gate: Both records sealed together.
+
+  Stage 12: SEMANTIC_TONE_DESIGN_HANDOFF
+    - Action: Convert selected intervention into abstract semantic signal
+      processing topology.
+    - Emits: SemanticToneDesign payload (Firewall: NO reasoning internals).
+
+  [DOWNSTREAM EXECUTION: Platform Translation, Exporter, Hardware/Software Execution]
+
+  Stage 13: OUTCOME_EVIDENCE_INGESTION
+    - Action: Ingest re-recorded audio, post-render measurements, user evaluation.
+    - Emits: ActualOutcomeEvidenceRecord.
+
+  Stage 14: ENGINEERING_REVIEW_AND_ITERATION
+    - Action: Dual-track retrospective evaluation (Reasoning Quality vs Outcome Quality).
+    - Emits: EngineeringReviewRecord.
+    - Decision:
+      * IF Intent satisfied: COMPLETE.
+      * IF Unmet: TRIGGER ITERATION (Creates new RunID, referencing previous trace).
+
+7.2 NON-LINEAR PATHWAYS & BACKTRACK TRIGGERS
+The lifecycle is not an inflexible waterfall. The following formal transitions
+are built into the state machine:
+
+  1. The Discriminating Evidence Branch (Stage 06 -> 06A -> 02):
+     Recognizes ambiguity before making risky irreversible choices.
+  2. The Constraint Deadlock Backtrack (Stage 10 -> 08):
+     If all candidate interventions are disqualified by non-negotiable intent
+     constraints, the engine backtracks to Stage 08 to reconsider whether a
+     different engineering requirement can be formulated.
+  3. The Disproved Causal Mechanism Loop (Stage 14 -> 04):
+     If outcome evidence proves the diagnosed causal mechanism was false,
+     the review engine launches a new run, retiring the disproved hypothesis and
+     elevating the surviving alternative.
+
+
+================================================================================
+SECTION 8 — EVIDENCE-TO-OBSERVATION BOUNDARY
+================================================================================
+
+8.1 EPISTEMIC SEPARATION: RAW EVIDENCE VS FACTUAL OBSERVATION
+The first critical boundary in the reasoning lifecycle separates raw incoming
+case evidence from factual observations:
+    RAW CASE EVIDENCE (What was supplied, recorded, or captured)
+    != FACTUAL OBSERVATION (What is objectively detectable or measured)
+
+Case evidence arrives as heterogeneous, unvetted data:
+  - Digital audio files (WAV, FLAC, AIFF) of uncertain calibration and gain staging.
+  - User verbal text ("it sounds super muddy and hollow on palm mutes").
+  - Gear lists ("Gibson Les Paul into Marshall JCM800 into 4x12").
+  - Target reference audio tracks ("Master of Puppets rhythm guitar stem").
+
+The `ObservationEngine` ingests this raw evidence and derives an `ObservationRecord`.
+The invariant governing this transition is:
+    AN OBSERVATION MUST BE PHENOMENOLOGICAL AND DESCRIPTIVE.
+    AN OBSERVATION MUST NEVER BE DIAGNOSTIC OR CAUSAL.
+
+8.2 THE MULTI-MODAL EVIDENCE DIGESTION RULES
+To avoid bias and premature conclusions, the ingestion process adheres to four
+strict rules:
+  1. Multi-Modal Segregation: Objective measurements (e.g., FFT spectra, crest
+     factor, envelope decay times) are maintained in distinct data structures
+     from subjective user descriptors. Subjective complaints are treated as
+     perceptual symptom reports, not physical facts.
+  2. Lineage Accounting: Every measurement records its capture lineage. An FFT
+     spectrum computed from an uncalibrated smartphone microphone recording in
+     an untreated room is marked `UNCALIBRATED_CONSUMER_CAPTURE`, restricting its
+     evidentiary weight compared to a direct DAW bounce.
+  3. The Negative Evidence Rule (Principle 3): The absence of an observation in a
+     domain (e.g., no data on pickup height or room acoustics) is formally
+     logged in `unobserved_domains`. The engine is strictly barred from assuming
+     that an unobserved parameter is optimal or absent.
+  4. Context Isolation (Principle 7): Genre, artist names, and production eras
+     are placed in `contextual_priors`. They do not constitute observations of
+     the current audio signal.
+
+8.3 CONTRAST TABLE: EVIDENCE VS OBSERVATION VS PREMATURE DIAGNOSIS
++-----------------------+-------------------------+---------------------------+
+| Raw Evidence Input    | Factual Observation     | Forbidden Premature       |
+|                       | (ObservationRecord)     | Diagnosis (LEAKAGE)       |
++-----------------------+-------------------------+---------------------------+
+| User text: "The palm  | "During low-register    | "Amp low-cut filter is    |
+| mutes sound completely| palm-muted passages,    | set too low; bass knob is |
+| flubby and boomy."    | 120-220 Hz energy is    | too high."                |
+|                       | +7 dB relative to lead; | [FORBIDDEN: Causal        |
+|                       | decay time is 380 ms."  | attribution in observation|
++-----------------------+-------------------------+---------------------------+
+| Dual-mic capture WAV  | "Comb filtering notch   | "The SM57 and R121 are    |
+| file with 2 channels  | at 1.8 kHz and 3.6 kHz; | out of phase; invert phase|
+| summed to mono.       | hollow midrange balance.| on mic 2."                |
+|                       | High-frequency phase    | [FORBIDDEN: Assumes phase |
+|                       | cancellation observed." | flip is the sole fix]     |
++-----------------------+-------------------------+---------------------------+
+| High-gain guitar track| "Broadband high-freq    | "Cheap single-coil pickups|
+| idle audio buffer.    | noise floor at -42 dBFS | or bad patch cable."      |
+|                       | concentrated around     | [FORBIDDEN: Physical root |
+|                       | 6 kHz - 12 kHz."        | cause unproven]           |
++-----------------------+-------------------------+---------------------------+
+
+
+================================================================================
+SECTION 9 — OBSERVATION-TO-HYPOTHESIS BOUNDARY
+================================================================================
+
+9.1 DECOUPLING PHENOMENON FROM EXPLANATION
+The second boundary separates what is observed from why it occurred:
+    OBSERVATION (The phenomenon: "Midrange notch at 1.8 kHz")
+    != HYPOTHESIS (The mechanism: "Acoustic arrival time offset of 0.28 ms
+                   between two capsules transducing the same acoustic wave")
+
+In legacy systems, symptoms directly triggered hardcoded fixes:
+    "fizzy" --> "reduce 4 kHz on post-EQ"
+    "flubby" --> "turn down bass control"
+
+Phase 1C.5a enforces Principle 4 (A symptom does not identify its cause) by
+requiring that every observation family maps to MULTIPLE candidate physical,
+electrical, or acoustical hypotheses.
+
+9.2 GROUNDING IN GOVERNED KNOWLEDGE (PHASE 1C.4)
+Hypotheses are not generated as arbitrary creative guesses. Every `HypothesisRecord`
+must cite one or more governed `KnowledgeClaim` records from the Phase 1C.4
+Knowledge Base (e.g., Claims regarding transformer core saturation, dynamic
+pickup loading, room boundary reflection, or psychoacoustic masking).
+
+However, governed knowledge does NOT prove the hypothesis is true for this case.
+It merely proves that the proposed physical mechanism is a scientifically
+established phenomenon that COULD produce the observed effect.
+
+9.3 THE FOUR-PHASE HYPOTHESIS GENERATION PIPELINE
+When an observation is processed:
+  1. Mechanism Identification: Identify all physical/electrical stages in the
+     sound generation chain capable of altering this domain (Source Instrument,
+     Pre-Clipping, Clipping Stage, Power Amp, Transducer, Room, Mic, Console).
+  2. Multi-Hypothesis Seeding: Formulate distinct hypotheses for each viable
+     locus (e.g., Hypothesis 1 at Pre-Gain; Hypothesis 2 at Speaker; Hypothesis 3
+     at Mic).
+  3. Grounding Verification: Verify that each hypothesis references an active,
+     non-falsified Phase 1C.4 KnowledgeClaim.
+  4. Epistemic Initialization: Set initial epistemic state to `ACTIVE_CREDIBLE`
+     prior to evidential evaluation.
+
+
+================================================================================
+SECTION 10 — HYPOTHESIS MANAGEMENT
+================================================================================
+
+10.1 THE HYPOTHESIS WORKSPACE
+The `HypothesisWorkspaceRecord` manages the active pool of hypotheses. It is
+fundamentally an n-ary concurrent workspace where multiple explanations for
+the same phenomenon co-exist.
+
+10.2 THE NON-SCALAR BALANCE OF EVIDENCE (NO SCOREBOARD)
+In strict compliance with Section 8 of the project brief ("DO NOT TURN REASONING
+INTO A SCOREBOARD"), the reasoning engine is prohibited from calculating pseudo-
+precise scalar probabilities (e.g., "Hypothesis A = 73.4%").
+
+Instead, hypothesis evaluation is based on a Qualitative Balance of Evidence:
+  1. Direct Explanatory Power: Does the mechanism explain ALL aspects of the
+     observation (e.g., both the spectral peak AND the dynamic envelope behavior),
+     or only an isolated slice?
+  2. Absence of Direct Contradiction: Are there observations in the record that
+     actively falsify this mechanism?
+  3. Physical Chain Plausibility: Given known elements in the rig manifest, is
+     this mechanism physically operative?
+  4. Parsimony: Does this mechanism explain multiple disparate observations
+     simultaneously (Occam's engineering razor)?
+
+10.3 HYPOTHESIS LIFECYCLE STATES
+A hypothesis transitions through six formal epistemic states:
+  - `ACTIVE_STRONG`: Supported by multiple independent observations with zero
+    contradictions.
+  - `ACTIVE_CREDIBLE`: Mechanistically sound and consistent with observations, but
+    lacking definitive discriminating proof.
+  - `ACTIVE_MARGINAL`: Accounts for some observations but exhibits mild tension
+    with others.
+  - `WEAKENED_BY_CONTRADICTION`: Observed phenomena directly conflict with the
+    necessary consequences of this mechanism.
+  - `FALSIFIED_AND_RETIRED`: Disproved by definitive evidence or diagnostic test.
+    Preserved in history with `falsification_reasoning`.
+  - `UNRESOLVED_DUE_TO_DATA_LIMITATION`: Credible, but missing evidence prevents
+    testing. Preserved into the decision record.
+
+10.4 RETIRING HYPOTHESES WITH AUDITABLE RATIONALE
+A hypothesis CANNOT be silently pruned or deleted. If an engineer or the AI
+concludes that a hypothesis is invalid, a `contradicting_observations` link
+with explicit `falsification_reasoning` must be recorded. Downstream reviewers
+must be able to inspect why an explanation was dismissed.
+
+
+================================================================================
+SECTION 11 — EVIDENCE DISCRIMINATION & ADDITIONAL EVIDENCE
+================================================================================
+
+11.1 AMBIGUITY RECOGNITION (PRINCIPLE 21)
+A core mark of professional engineering competence is recognizing when
+available evidence is insufficient to distinguish between competing causes:
+    "REASON -> RECOGNISE AMBIGUITY -> SEEK DISCRIMINATING EVIDENCE ->
+     UPDATE DIAGNOSIS -> INTERVENE"
+    RATHER THAN:
+    "GUESS -> TWEAK -> GUESS AGAIN"
+
+When two or more hypotheses remain `ACTIVE_CREDIBLE` and point to conflicting
+interventions, jumping directly to an intervention is a professional failure.
+
+11.2 DISCRIMINATING EVIDENCE REQUEST RECORD
+When ambiguity is detected, the engine emits a `DiscriminatingEvidenceRequestRecord`.
+This contract specifies:
+  - The exact competing hypotheses under dispute.
+  - Why the existing evidence cannot resolve them.
+  - A concrete, targeted diagnostic action (e.g., soloing one mic, capturing a
+    dry DI signal, bypassing an overdrive pedal, or recording a 1-second pick scrape).
+  - The precise falsification criterion: what result will confirm Hypothesis A vs B.
+
+11.3 LIFECYCLE ACTION: PAUSE VS BOUNDED DISJUNCTION
+The engine evaluates the operational context to determine whether to PAUSE:
+  - In an interactive session: Transition to `DISCRIMINATING_EVIDENCE_SEEKING`
+    and pause execution, presenting the diagnostic request to the user.
+  - In an automated or batch run: If additional evidence cannot be obtained, the
+    engine does NOT guess. It transitions to `PROCEED_WITH_BOUNDED_DISJUNCTION`,
+    propagating the ambiguity into the `CausalDiagnosisRecord` and designing an
+    intervention that remains safe or reversible under both hypotheses.
+
+
+================================================================================
+SECTION 12 — CAUSAL DIAGNOSIS
+================================================================================
+
+12.1 CAUSAL SYNTHESIS WITHOUT FALSE PRECISION
+The `CausalDiagnosisRecord` represents the culmination of the diagnostic phase.
+It synthesizes the validated findings of the `HypothesisWorkspaceRecord` into a
+coherent structural diagnosis.
+
+The diagnosis is explicitly classified into one of three structural types:
+  1. `SINGLE_ISOLATED_CAUSE`: A single causal mechanism is conclusively isolated
+     by unambiguous evidence (e.g., a massive 2 ms time delay between two mics).
+  2. `PRIMARY_AND_CONTRIBUTING_FACTORS`: A dominant causal mechanism is identified,
+     interacting with secondary aggravating factors (e.g., excessive low-frequency
+     pickup output overloading an already-sagging tube rectifier).
+  3. `DISJUNCTIVE_COMPETING_CAUSES`: Evidence is insufficient to eliminate all
+     rivals; the diagnosis formally preserves the disjunction (e.g., "Either
+     transducer cone breakup above 4 kHz OR asymmetric clipping in preamp stage 2").
+
+12.2 STRUCTURAL BOUNDS: WHAT THIS DIAGNOSIS DOES NOT CLAIM
+To prevent diagnostic over-reach (Principle 5 and 15), every `CausalDiagnosisRecord`
+includes a mandatory `epistemic_bounds_and_uncertainty` section.
+This section explicitly lists:
+  - `unverified_assumptions`: Latent parameters assumed based on typical rig
+    behavior but not directly measured.
+  - `what_this_diagnosis_does_not_claim`: Explicit statements preventing false
+    extrapolation (e.g., "This diagnosis attributes the harshness to microphone
+    axis alignment; it does NOT claim the speaker driver itself is defective").
+
+
+================================================================================
+SECTION 13 — ENGINEERING REQUIREMENT FORMATION
+================================================================================
+
+13.1 THE BRIDGE FROM DIAGNOSIS TO SOLUTION
+An engineering diagnosis explains what is wrong. An engineering requirement
+specifies what must be achieved to fix it.
+    CAUSAL DIAGNOSIS ("Why it happens")
+    + ENGINEERING INTENT ("What we want musically")
+    --> ENGINEERING REQUIREMENT ("What physical transformation must occur")
+
+A common architectural flaw in tone systems is jumping directly from diagnosis
+to a specific piece of equipment (e.g., "The low end is flubby, therefore add an
+Ibanez TS9 pedal").
+Phase 1C.5a inserts `EngineeringRequirementRecord` as an abstract, gear-agnostic
+firewall.
+
+13.2 ANATOMY OF AN ENGINEERING REQUIREMENT
+The `EngineeringRequirementRecord` defines:
+  1. Causal Target Stage: Where in the signal flow the correction must occur
+     (e.g., `PRE_CLIPPING_INPUT_CONDITIONING`).
+  2. Functional Objective: A clear statement of the required acoustic/electrical
+     transformation (e.g., "Attenuate fundamental bass energy below 130 Hz by
+     4-6 dB prior to the first nonlinear saturation stage").
+  3. Acoustic Transfer Requirements: Frequency bands, dynamic dependencies, and
+     magnitude envelopes.
+  4. Musical Intent Preservation Boundary: Guardrails derived from Engineering
+     Intent that must NOT be violated (e.g., "Must preserve heavy punch between
+     140 Hz and 200 Hz; must not introduce phase ringing that dulls palm-mute attack").
+
+
+================================================================================
+SECTION 14 — CANDIDATE INTERVENTION ARCHITECTURE
+================================================================================
+
+14.1 MATERIALLY DISTINCT INTERVENTIONS VS COSMETIC VARIATIONS
+Principle 9 mandates:
+    "TT must be capable of considering materially different engineering
+     approaches rather than cosmetic variations of one predetermined solution."
+
+In sound engineering, tweaking a high-pass frequency from 80 Hz to 85 Hz is NOT
+a candidate intervention. Swapping an Ibanez TS9 for a Maxon OD808 is NOT a
+materially different intervention—both represent the same technical approach:
+analog mid-boost pre-gain clipping.
+
+A Candidate Intervention is materially distinct ONLY when it alters:
+  - The Signal-Chain Locus: Intervening at the source (guitar pickup height/tone pot),
+    the input stage (pre-gain HPF/boost), the amplifier circuit (negative feedback/damping),
+    the transducer (speaker model/cone type), the acoustic capture (mic placement/angle),
+    or post-capture processing (parametric dynamic EQ).
+  - The Physical Operating Principle: Dynamic attenuation vs static linear filtering vs
+    phase cancellation management vs harmonic saturation reshaping.
+
+14.2 THE SEVEN MATERIAL DIFFERENTIATION CLASSES
+Every `CandidateInterventionRecord` must be categorized into one of seven formal
+differentiation classes:
+  1. `SOURCE_INSTRUMENT_MODIFICATION`: Modifying the electrical signal generated
+     at the guitar (e.g., pickup selection, volume/tone potentiometer impedance loading,
+     pickup height adjustment, string gauge).
+  2. `PRE_GAIN_ANALOG_VOICING`: Linear or dynamic frequency conditioning prior
+     to the first nonlinear clipping stage (e.g., tight high-pass filter, mid-hump overdrive).
+  3. `AMPLIFIER_OPERATING_POINT_ADJUSTMENT`: Modifying the bias, gain structure,
+     sag behavior, or negative feedback loop of the amplifier circuit.
+  4. `SPEAKER_CABINET_SUBSTITUTION`: Selecting a different physical enclosure,
+     baffle construction, or driver with distinct resonant frequency and cone breakup.
+  5. `MICROPHONE_SELECTION_AND_PLACEMENT`: Moving a transducer off-axis, changing
+     distance to exploit proximity effect, or swapping capsule type (dynamic vs ribbon vs condenser).
+  6. `POST_PROCESSING_SURGICAL_INTERVENTION`: Surgical equalization, multiband
+     compression, or dynamic resonance suppression applied post-transduction.
+  7. `MULTI_BLOCK_DISTRIBUTED_SOLUTION`: A coordinated solution sharing the
+     work across multiple stages (e.g., mild pre-gain cut combined with slight mic repositioning).
+
+14.3 STRUCTURAL ATTRIBUTES OF CANDIDATE INTERVENTIONS
+Each candidate record documents:
+  - Target Signal Stage: Exactly where in the signal flow this intervention acts.
+  - Functional Processing Role: The abstract engineering operation (e.g., `PARAMETRIC_DYNAMIC_EQ`).
+  - Operational Parameters: Platform-agnostic units (Hz, dB, Q, ms, ratio).
+  - Causal Alignment Explanation: A professional rationale explaining why this
+    specific action resolves the diagnosed root cause.
+
+
+================================================================================
+SECTION 15 — CONSTRAINT & TRADE-OFF REASONING
+================================================================================
+
+15.1 THE REALITY OF ACOUSTIC COMPROMISE
+Principle 13 establishes:
+    "EVERY INTERVENTION HAS POTENTIAL TRADE-OFFS."
+In audio engineering, no processing is completely transparent. Interventions
+applied to cure one sonic defect inevitably affect other dimensions:
+  - High-pass filtering attenuates mud, but alters low-end transient punch and
+    introduces phase rotation near the cutoff.
+  - Adding pre-gain overdrive tightens bass, but increases background hiss and
+    compresses dynamic touch sensitivity.
+  - Moving a microphone off-axis eliminates high-end fizz, but introduces phase
+    smearing and dulls pick attack bite.
+  - Post-gain dynamic EQ cleans resonances, but can produce audible breathing or
+    transient smearing under heavy pumping.
+
+15.2 THE CONSTRAINT & TRADE-OFF EVALUATION RECORD
+The `ConstraintAndTradeOffEvaluationRecord` conducts a multi-dimensional impact
+assessment for every candidate intervention across four critical axes:
+
+  Axis 1: Constraint Compliance
+    - Checks candidate against non-negotiable intent constraints (e.g., user
+      insists on keeping a specific vintage cabinet or demands zero added pedals).
+    - If a non-negotiable constraint is violated, the candidate is marked
+      `REJECTED_ON_CONSTRAINTS`.
+
+  Axis 2: Causal Locus Correctness
+    - Evaluates whether the intervention acts at the true physical root cause or
+      merely masks symptoms downstream. Interventions acting at suboptimal loci
+      (e.g., post-EQ trying to fix pre-distortion intermodulation) receive a
+      downgrade in efficacy.
+
+  Axis 3: Secondary Acoustic Trade-offs
+    - Systematically analyzes collateral impacts on Phase Coherence, Transient Punch,
+      Noise Floor, Tonal Body, Dynamic Feel, and Harmonic Richness.
+    - Each trade-off is assigned a severity: `NEGLIGIBLE`, `ACCEPTABLE_COLLATERAL`,
+      `SIGNIFICANT_DEGRADATION`, or `INTENT_BREAKING`.
+
+  Axis 4: Signal Path Parsimony (Principle 14)
+    - "Prefer the least unnecessary intervention."
+    - Disqualifies complex multi-processor chains when a simple single-stage
+      adjustment achieves the same causal outcome.
+
+
+================================================================================
+SECTION 16 — ENGINEERING DECISION
+================================================================================
+
+16.1 SELECTION OF THE PRIMARY INTERVENTION
+The `EngineeringDecisionRecord` captures the definitive sound engineering choice.
+Selection is NOT based on arbitrary mathematical weighting. It represents a
+substantiated professional judgement that balances:
+  - Direct causal effectiveness;
+  - Minimum collateral trade-off impact against Engineering Intent;
+  - Signal path parsimony.
+
+16.2 PRESERVATION OF UNSELECTED ALTERNATIVES
+In strict accordance with the Professional Judgement Boundary and Principle 6:
+  - TT does NOT discard rejected or unselected alternatives into a black box.
+  - Credible alternatives that were viable but not selected as primary are formally
+    preserved in `retained_credible_alternatives`.
+  - For each preserved alternative, the record defines a `contingency_application_condition`
+    (e.g., "If post-intervention review indicates that the pre-gain filter thinned
+    the palm mute too severely, switch to Candidate 2: Microphone Proximity Reduction").
+
+16.3 FORMAL RETENTION OF RESIDUAL UNCERTAINTY (PRINCIPLE 15)
+An engineering decision never erases unresolved ambiguity.
+The `EngineeringDecisionRecord` mandates an explicit `ResidualUncertaintyDescriptor`:
+  - `unresolved_questions`: Variables that could not be determined from the evidence.
+  - `unobserved_variable_risks`: Risks that unmeasured room modes or pickup
+    impedance curves may alter real-world behavior.
+  - `confidence_envelope`: Categorical classification (`TIGHTLY_CONSTRAINED`,
+    `MODERATELY_BOUNDED`, or `EXPLORATORY_PROVISIONAL`).
+
+
+================================================================================
+SECTION 17 — PREDICTED OUTCOME
+================================================================================
+
+17.1 FALSIFIABLE PREDICTIONS BEFORE EXECUTION (PRINCIPLE 12)
+Principle 12 mandates:
+    "An EngineeringDecision must state the expected engineering consequence of
+     the selected intervention. The prediction must be sufficiently meaningful
+     to permit later evaluation."
+
+If an AI system cannot predict what will happen when it turns a knob or inserts
+a filter, it is not engineering; it is blindly guessing.
+
+17.2 THE THREE COMPONENTS OF PREDICTED OUTCOME
+The `PredictedOutcomeRecord` defines:
+  1. Predicted Primary Effects: Concrete, verifiable changes in the sound
+     (e.g., "120-220 Hz acoustic energy attenuated by 4.5 dB during palm-muted
+     chugs; low-frequency intermodulation distortion eliminated in the clipping stage").
+  2. Predicted Secondary Effects: Expected collateral consequences (e.g.,
+     "Overall perceived loudness reduced by ~1.2 dB; attack transient peak
+     increased by 1.8 dB due to reduced low-end limiter/clipping clamping").
+  3. Explicit Falsification Criteria: Objective conditions that, if observed in
+     the post-intervention evidence, definitively prove that the upstream diagnosis
+     or intervention was flawed (e.g., "If 150 Hz boom persists despite 6 dB cut,
+     the resonance is located in the cabinet/room transducer stage, NOT the
+     pre-clipping electric signal").
+
+
+================================================================================
+SECTION 18 — SEMANTIC TONE DESIGN HANDOFF
+================================================================================
+
+18.1 WHAT CROSSES INTO SEMANTIC TONE DESIGN
+Once the `EngineeringDecisionRecord` is sealed, the decision must be executed.
+It is handed off to the Semantic Tone Design layer.
+The information that CROSSES this boundary includes:
+  - Processing Block Topology: The abstract, platform-independent ordering of
+    functional blocks (e.g., `INPUT -> DYNAMIC_FILTER -> NONLINEAR_DRIVE ->
+    AMPLIFIER_CORE -> TRANSDUCER_EMULATION -> CAPTURE_BUS`).
+  - Functional Block Roles & Specifications: Target transfer functions, filter
+    slopes (dB/octave), center frequencies, Q values, dynamic compression ratios,
+    and attack/release envelopes.
+  - Acoustic & Electrical Targets: Target impedance, gain staging levels, and
+    acoustic dispersion characteristics.
+
+18.2 WHAT MUST NEVER CROSS (THE STRICT FIREWALL)
+To protect downstream layers from architectural pollution and ensure clean separation:
+  - NO reasoning internals: Rejected hypotheses, competing candidate debates,
+    and deliberative logs are strictly barred from Semantic Tone Design.
+  - NO raw evidence: Audio buffers, user chat histories, and raw FFT bins stay
+    in the Reasoning layer.
+  - NO platform-specific identifiers: Semantic Tone Design knows nothing of
+    AmpliTube 5 XML node IDs, Kemper profile tags, or Line 6 Helix block codes.
+
+
+================================================================================
+SECTION 19 — OUTCOME EVIDENCE & ENGINEERING REVIEW
+================================================================================
+
+19.1 THE RETURN OF POST-EXECUTION EVIDENCE
+After the Semantic Tone Design is translated and executed on the target platform,
+actual sound is produced. This post-intervention sound generates new empirical data,
+ingested via the `ActualOutcomeEvidenceRecord`.
+This evidence contains:
+  - Captured audio stems and renders of the resulting guitar tone.
+  - Objective measured deltas comparing pre-intervention baseline against
+    post-intervention results (e.g., changes in frequency response, THD, crest factor).
+  - User perceptual evaluation ("the low end is much tighter now, but the lead notes
+    feel slightly thin").
+
+19.2 INDEPENDENCE OF REASONING QUALITY AND OUTCOME QUALITY (PRINCIPLE 18)
+Principle 18 is a cornerstone of professional engineering ethics:
+    "REASONING QUALITY AND OUTCOME QUALITY ARE INDEPENDENT.
+     A successful outcome does not prove the reasoning was good.
+     A poor outcome does not automatically prove the original decision was unreasonable."
+
+The `EngineeringReviewRecord` implements this principle through a 2x2 Orthogonal
+Evaluation Matrix:
+
+                       +-----------------------------+-----------------------------+
+                       | OUTCOME: SATISFACTORY /     | OUTCOME: DEFECTIVE /        |
+                       | INTENT ACHIEVED             | INTENT FAILED               |
++----------------------+-----------------------------+-----------------------------+
+| REASONING QUALITY:   | QUADRANT 1:                 | QUADRANT 2:                 |
+| SOUND & RIGOROUS     | EXEMPLARY ENGINEERING       | SOUND REASONING FACING      |
+| (Evidence respected, | Rigorous causal analysis    | HIDDEN LATENT VARIABLES     |
+| hypotheses tested,   | produced the intended       | Analysis was methodologically|
+| trade-offs weighed)  | acoustic result. Eligible   | sound, but unmeasured real- |
+|                      | for CandidateLesson review. | world variables interfered. |
++----------------------+-----------------------------+-----------------------------+
+| REASONING QUALITY:   | QUADRANT 3:                 | QUADRANT 4:                 |
+| DEFECTIVE / FLAWED   | LUCKY GUESS / FALSE SUCCESS | COMPOUNDED FAILURE          |
+| (Premature narrowing,| The tone improved by fluke, | Flawed symptom-lookup or    |
+| symptom-lookup,      | but the causal attribution  | broken causal logic         |
+| ignored trade-offs)  | was wrong. CANONIZATION IS  | resulted in a broken,       |
+|                      | STRICTLY FORBIDDEN!         | unusable guitar sound.      |
++----------------------+-----------------------------+-----------------------------+
+
+In Quadrant 3, a legacy or naive system would pat itself on the back and create a
+rule: "Formula worked!" In TT Phase 1C.5a, Quadrant 3 is flagged as a DEFECTIVE
+REASONING EVENT. The success was accidental, and trusting the underlying flawed
+rationale in future sessions would cause unpredictable failures.
+
+
+================================================================================
+SECTION 20 — ITERATION & REPLAY
+================================================================================
+
+20.1 HISTORICAL IMMUTABILITY (PRINCIPLE 19)
+Principle 19 mandates:
+    "OUTCOME EVIDENCE UPDATES REASONING; IT DOES NOT REWRITE HISTORY."
+In the TT architecture, all sealed records (`CaseEvidenceAssessmentRecord`,
+`HypothesisWorkspaceRecord`, `CausalDiagnosisRecord`, `EngineeringDecisionRecord`, etc.)
+are strictly write-once, append-only, and cryptographically hashed.
+
+When an intervention fails or yields partial success:
+  - TT NEVER modifies, overwrites, or deletes past reasoning records.
+  - TT initiates a NEW lifecycle iteration, assigning a fresh `RunID` (e.g., `run_002`).
+  - The new iteration cites the previous run's `EngineeringDecisionRecord` and
+    `ActualOutcomeEvidenceRecord` as part of its baseline historical evidence.
+  - This guarantees a complete, unbroken, auditable chain of professional discovery.
+
+20.2 DETERMINISTIC REPLAYABILITY
+A fundamental requirement of the architecture is that any historical engineering
+run must be 100% reconstructable and replayable.
+A reasoning run can be re-executed in an isolated sandbox by supplying:
+  1. The exact `EngineeringIntentRecord` snapshot;
+  2. The exact `CaseEvidenceAssessmentRecord` snapshot;
+  3. The cryptographic identifier of the Phase 1C.4 Knowledge Base snapshot;
+  4. The version identifier of the Engineering Reasoning Architecture.
+
+If a replay produces a different outcome during a future software release, the
+system immediately detects the delta and pinpoints whether the change was
+caused by:
+  - Updated governed knowledge in Phase 1C.4;
+  - Refined diagnostic rules in the reasoning engine;
+  - Changes in trade-off sensitivity algorithms.
+
+
+================================================================================
+SECTION 21 — AI JUDGEMENT VS DETERMINISTIC OWNERSHIP
+================================================================================
+
+21.1 THE FIREWALL OF JURISDICTION (PRINCIPLE 17)
+Principle 17 establishes:
+    "DETERMINISTIC SYSTEMS MAY VERIFY ONLY TRUTH THEY GENUINELY OWN."
+Deterministic software code excels at verifying objective invariants, mathematical
+boundaries, and graph consistency. However, deterministic code possesses zero
+capacity for musical context, aesthetic nuance, or holistic sonic balancing.
+
+The architecture enforces a strict division of labor between AI Judgement and
+Deterministic Systems:
+
++-------------------------------------+---------------------------------------+
+| OWNED BY DETERMINISTIC CODE         | OWNED BY AI PROFESSIONAL JUDGEMENT    |
++-------------------------------------+---------------------------------------+
+| 1. Syntactic Schema Compliance:     | 1. Causal Attribution Under Ambiguity:|
+|    Validating that all required     |    Deciding which physical mechanism  |
+|    record fields and types exist.   |    most plausibly explains the sonic  |
+|                                     |    symptom given the musical context. |
+| 2. Graph & Topological Invariants:  | 2. Engineering Intent Interpretation: |
+|    Ensuring signal chain routing is |    Balancing conflicting musical goals|
+|    strictly acyclic and connected.  |    (e.g., "heavy chug" vs "cut").     |
+|                                     |                                       |
+| 3. Mathematical Constraints:        | 3. Trade-off Acceptability:           |
+|    Verifying frequency bounds       |    Judging whether a 1 dB loss of low |
+|    (20 Hz - 20 kHz), Q factors,     |    end is worth a massive gain in pick|
+|    and gain limits [-inf to +24 dB].|    articulation for this specific mix.|
+|                                     |                                       |
+| 4. Lineage & Checksum Verification: | 4. Musical Suitability:               |
+|    Validating cryptographic hashes  |    Judging whether a tone fits the era|
+|    and immutable record references. |    and artistic aesthetic of the song.|
+|                                     |                                       |
+| 5. Hardware/Platform Limits:        | 5. Candidate Differentiation:         |
+|    Checking block counts, available |    Formulating materially distinct    |
+|    routing slots, and parameter types|   engineering intervention pathways. |
++-------------------------------------+---------------------------------------+
+
+21.2 STRICT PROHIBITIONS ON DETERMINISTIC OVERREACH
+  - Deterministic validators are PROHIBITED from rejecting a tone decision
+    because "guitar amps must always have mid frequencies between 400 Hz and 1 kHz."
+  - Deterministic validators are PROHIBITED from "auto-correcting" an unusual
+    EQ curve or unconventional signal routing (e.g., fuzz after reverb) chosen
+    deliberately by the AI Sound Engineer to satisfy an avant-garde Engineering Intent.
+
+
+================================================================================
+SECTION 22 — REASONING TRACE & EXPLAINABILITY
+================================================================================
+
+22.1 THE STRUCTURED AUDIT TRACE (PRINCIPLE 20)
+Principle 20 mandates:
+    "ENGINEERING RATIONALE MUST BE AUDITABLE WITHOUT EXPOSING HIDDEN MODEL REASONING."
+
+The AI industry frequently conflates explainability with dumping raw LLM
+chain-of-thought (CoT) tokens. This practice is completely rejected in TT:
+  - Raw CoT is verbose, unstructured, non-deterministic, and prone to post-hoc
+    rationalization.
+  - Raw CoT exposes internal model prompts and system internals, violating security
+    and encapsulation.
+  - Professional human engineers do not hand clients an MRI scan of their brain
+    synapses; they deliver a structured Engineering Decision Record detailing
+    findings, hypotheses, trade-offs, and justifications.
+
+22.2 THE ENGINEERING REASONING TRACE CONTAINER
+The `EngineeringReasoningTrace` serves as the complete, self-contained audit
+artifact for every session. It packages the 13 formal records into an immutable,
+cryptographically signed JSON container.
+
+This trace permits full inspection of:
+  1. What evidence was available at the exact millisecond of diagnosis;
+  2. What observations were extracted and which domains remained unobserved;
+  3. What competing hypotheses were generated and what knowledge claims grounded them;
+  4. Why alternative hypotheses were weakened, retired, or preserved;
+  5. What engineering requirement was established;
+  6. What candidate interventions were designed and what trade-offs were weighed;
+  7. Why the primary decision was selected over the preserved alternatives;
+  8. What falsifiable predictions were registered prior to platform rendering;
+  9. How actual outcome evidence was reviewed and scored.
+
+
+================================================================================
+SECTION 23 — FAILURE / ABSTENTION BEHAVIOUR
+================================================================================
+
+23.1 THE NINE MANDATORY FAILURE MODES
+A professional engineer knows when NOT to act. In naive systems, when inputs are
+garbled, conflicting, or missing, the system hallucinates a plausible-looking
+answer. In Phase 1C.5a, the architecture explicitly defines nine formal failure
+and abstention behaviors:
+
+--------------------------------------------------------------------------------
+Failure Mode 1: INSUFFICIENT EVIDENCE
+--------------------------------------------------------------------------------
+Condition: The evidence completeness state is `MINIMAL` or critical diagnostic
+domains are missing (e.g., only a 1-second noisy audio clip of a guitar tuning).
+Architectural Action:
+  - Emit `DiscriminatingEvidenceRequestRecord` specifying exactly what audio
+    capture or session data is required.
+  - If additional evidence cannot be obtained: ABSTAIN from intervention. Emit
+    formal notice: `ABSTAIN_INSUFFICIENT_EVIDENCE`. Do not guess.
+
+--------------------------------------------------------------------------------
+Failure Mode 2: MATERIALLY CONFLICTING EVIDENCE
+--------------------------------------------------------------------------------
+Condition: User text describes the tone as "thin and shrill with zero bass,"
+while calibrated FFT measurements reveal massive low-end boom (+9 dB at 100 Hz)
+and rolled-off highs.
+Architectural Action:
+  - Do NOT silently average or reconcile the conflict.
+  - Log an explicit `EVIDENTIAL_CONFLICT_ANOMALY` in the ObservationRecord.
+  - Formulate competing hypotheses exploring monitoring distortion, user acoustic
+    environment standing waves, or mislabeled audio files.
+  - Request diagnostic clarification from the user.
+
+--------------------------------------------------------------------------------
+Failure Mode 3: NO HYPOTHESIS ADEQUATELY SUPPORTED
+--------------------------------------------------------------------------------
+Condition: All generated hypotheses are contradicted or falsified by the
+observational evidence.
+Architectural Action:
+  - Transition workspace to `DIAGNOSTIC_DEADLOCK`.
+  - Do NOT force selection of the "least bad" hypothesis.
+  - Report an unmodeled acoustic or electrical phenomenon. Seek unobserved variables
+    (e.g., defective guitar cable, blown speaker voice coil, DAW routing loop).
+
+--------------------------------------------------------------------------------
+Failure Mode 4: SEVERAL HYPOTHESES REMAIN SIMILARLY DEFENSIBLE
+--------------------------------------------------------------------------------
+Condition: Evidence is consistent with two distinct causal mechanisms (e.g.,
+cabinet room resonance vs guitar pickup bass boost), and diagnostic tests are
+declined or unavailable.
+Architectural Action:
+  - Formulate a `DISJUNCTIVE_COMPETING_CAUSES` CausalDiagnosisRecord.
+  - Select an intervention that is non-destructive, reversible, or effective across
+    both mechanisms (e.g., an easily adjustable pre-gain cut).
+  - Explicitly log high residual uncertainty and record the rival mechanism as a
+    primary contingency alternative.
+
+--------------------------------------------------------------------------------
+Failure Mode 5: NO AVAILABLE INTERVENTION ADEQUATELY SATISFIES INTENT
+--------------------------------------------------------------------------------
+Condition: Every candidate intervention violates non-negotiable intent constraints
+or incurs intent-breaking collateral trade-offs.
+Architectural Action:
+  - Backtrack to Stage 08 (Requirement Formation). If no viable requirement can
+    be formulated, emit `INTENT_CONSTRAINT_DEADLOCK`.
+  - Present the trade-off dilemma to the user: explaining why physics prevents
+    achieving extreme high-gain saturation without either gating, pre-filtering,
+    or accepting background noise.
+
+--------------------------------------------------------------------------------
+Failure Mode 6: REQUIRED OBSERVATION CANNOT BE OBTAINED
+--------------------------------------------------------------------------------
+Condition: Diagnostic engine requires a pickup DC resistance measurement or
+speaker impedance curve that cannot be captured in a software environment.
+Architectural Action:
+  - Formally record the parameter in `unobserved_domains`.
+  - Bound the hypothesis space to observable acoustic behavior. Mark the diagnosis
+    as `PLAUSIBLE_BOUNDED`.
+
+--------------------------------------------------------------------------------
+Failure Mode 7: REQUESTED INTENT CONTAINS CONFLICTING OBJECTIVES
+--------------------------------------------------------------------------------
+Condition: User requests: "Pristine acoustic-like dynamic chime with extreme
+death-metal hyper-compressed saturation, zero noise, and 100% natural touch dynamics."
+Architectural Action:
+  - The Intent Validator flags `ACOUSTIC_PHYSICS_CONTRADICTION`.
+  - Decompose intent into primary and secondary priorities.
+  - Explain the physical trade-off to the user and request priority arbitration.
+
+--------------------------------------------------------------------------------
+Failure Mode 8: TARGET OUTCOME CANNOT BE PREDICTED MEANINGFULLY
+--------------------------------------------------------------------------------
+Condition: High nonlinearity or chaotic feedback makes deterministic prediction
+of secondary effects impossible.
+Architectural Action:
+  - Restrict the prediction envelope to qualitative directional bounds.
+  - Widen the `confidence_envelope` to `EXPLORATORY_PROVISIONAL`.
+  - Mandate small, incremental intervention steps rather than drastic transformations.
+
+--------------------------------------------------------------------------------
+Failure Mode 9: PLATFORM CAPABILITY LATER PROVES INADEQUATE
+--------------------------------------------------------------------------------
+Condition: Downstream Platform Translator reports that target hardware/software
+lacks the routing topology or processor blocks required by the Semantic Tone Design.
+Architectural Action:
+  - Downstream Platform Translator emits `PLATFORM_TRANSLATION_COMPROMISE`.
+  - The upstream `CausalDiagnosisRecord` and `EngineeringRequirementRecord` REMAIN
+    FROZEN AND UNCHANGED.
+  - The translator creates the closest feasible approximation, explicitly logging
+    the translation deficit without rewriting engineering truth.
+
+
+================================================================================
+SECTION 24 — CHALLENGE SCENARIO WALKTHROUGHS A–J (PART 1: SCENARIOS A–E)
+================================================================================
+
+To validate the architectural integrity of the Engineering Reasoning Architecture
+and verify that all 21 Constitutional Principles are fully satisfied without
+regressing into recipe lookup or scoreboard scoring, the architecture is
+subjected to ten rigorous real-world sound engineering challenge scenarios.
+
+--------------------------------------------------------------------------------
+SCENARIO A: FLUBBY PALM MUTES
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "My palm-muted rhythm chugs sound muddy, loose, and flubby.
+     It's falling apart and farting out when I dig in on the low B string."
+   - Rig Manifest: 7-string guitar with high-output passive humbuckers into a
+     high-gain tube amplifier model (5150-style lead channel) into a 4x12 cabinet.
+   - Captured Audio: 24-bit/48kHz direct DAW recording of heavy palm-muted riffs.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1 (Spectral/Dynamic): During low B string palm mutes (fundamentals
+     60-125 Hz, harmonics 125-250 Hz), energy in the 80-180 Hz region swells by
+     +8 dB relative to unmuted chordal passages.
+   - Observation 2 (Temporal Envelope): Low-frequency decay time constant is
+     prolonged (380 ms), lacking steep transient clamping.
+   - Observation 3 (Harmonic Intermodulation): Pronounced intermodulation distortion
+     manifesting as non-harmonic low-frequency "farting" / motorboating sidebands
+     during initial pick transient.
+   - Unobserved Domains: Pickup height distance from strings unmeasured; direct DI
+     pre-amp signal not isolated in initial capture.
+
+3. Hypotheses Considered & Grounded (HypothesisWorkspaceRecord):
+   - Hypothesis A.1 (Pre-Clipping Bass Overload):
+     * Locus: PRE_NONLINEAR_FILTER (Guitar output / amp input stage).
+     * Mechanism: High-output pickups deliver excessive 60-150 Hz energy into the
+       first high-gain tube clipping stage, driving the tube grid into deep saturation
+       and bias excursion (blocking distortion), causing the power supply and coupling
+       capacitors to sag and create low-frequency intermodulation flub.
+     * Grounding: Phase 1C.4 Knowledge Claims on Tube Grid Current, Bias Excursion,
+       and Pre-Distortion Equalization.
+     * Evidential State: ACTIVE_STRONG. Explains both the intermodulation farting
+       and the dynamic swelling.
+   - Hypothesis A.2 (Post-Distortion Power Amp Sag & Damping):
+     * Locus: POWER_SUPPLY_AND_SAG (Power amplifier section).
+     * Mechanism: Heavy power amp tube conduction depletes filter capacitance,
+       reducing the damping factor and allowing the speaker cone to oscillate
+       loosely at cabinet resonance (~100 Hz).
+     * Evidential State: ACTIVE_CREDIBLE. Explains prolonged decay, but less
+       consistent with the specific harsh intermodulation sidebands.
+   - Hypothesis A.3 (Acoustic Proximity Effect & Cabinet Resonance):
+     * Locus: MICROPHONE_CAPSULE_TRANSDUCTION / TRANSDUCER.
+     * Mechanism: Directional cardioid microphone placed 0.5 inches from the grille
+     exhibits extreme proximity effect bass boost; 4x12 cabinet internal volume
+     resonates at 115 Hz.
+     * Evidential State: ACTIVE_CREDIBLE. Explains 80-180 Hz swell, but does NOT
+       explain why intermodulation distortion is occurring inside the amplifier circuit.
+
+4. Evidence Discrimination & Additional Evidence:
+   - Ambiguity: A.1 (Pre-gain) vs A.3 (Mic proximity).
+   - Discriminating Diagnostic Test: Apply a temporary pre-gain high-pass cut at
+     150 Hz.
+     * IF the intermodulation "farting" disappears entirely: Proves A.1 (pre-clipping).
+     * IF the sound remains distorted and boomy: Indicates A.2 or A.3.
+   - Execution: In this session, user supplies dry DI stem, confirming excessive
+     sub-100Hz pickup output causing pre-gain clipping overload.
+
+5. Causal Diagnosis (CausalDiagnosisRecord):
+   - Diagnostic Structure: PRIMARY_AND_CONTRIBUTING_FACTORS.
+   - Primary Mechanism: Pre-clipping low-frequency overload driving the high-gain
+     preamp stages into asymmetrical bias excursion and blocking distortion.
+   - Contributing Factor: Microphone proximity effect (+3 dB at 100 Hz) amplifying
+     the low-end swell post-transduction.
+   - Epistemic Bounds: Cabinet mechanical looseness not ruled out, but primary
+     electrical cause is conclusively isolated.
+
+6. Engineering Requirement (EngineeringRequirementRecord):
+   - Causal Target Stage: PRE_CLIPPING_INPUT_CONDITIONING.
+   - Functional Objective: Attenuate fundamental guitar energy below 130 Hz prior
+     to nonlinear saturation by 4 to 6 dB with a smooth 6-12 dB/octave slope,
+     preventing grid current blocking while preserving harmonic body.
+   - Intent Boundary: Must NOT thin steady-state palm-mute punch in the 150-220 Hz
+     zone; must retain heavy perceived weight.
+
+7. Candidate Interventions (CandidateInterventionRecord):
+   - Candidate 1 (Material Class: PRE_GAIN_ANALOG_VOICING):
+     * Insert a pre-gain high-pass filter / mid-voicing overdrive block (drive at
+       minimum, level boosted, tone shaping low-cut engaged at 120 Hz).
+     * Locus: Directly before amplifier input.
+   - Candidate 2 (Material Class: SOURCE_INSTRUMENT_MODIFICATION):
+     * Lower the bass side of the guitar bridge pickup by 2 mm and engage an onboard
+       bass-contour high-pass capacitor.
+     * Locus: Source instrument.
+   - Candidate 3 (Material Class: POST_PROCESSING_SURGICAL_INTERVENTION):
+     * Insert a post-cabinet parametric dynamic EQ carving out 100-180 Hz with
+       fast attack.
+     * Locus: Post-capture DAW bus.
+
+8. Constraint & Trade-off Evaluation (ConstraintAndTradeOffEvaluationRecord):
+   - Candidate 1:
+     * Causal Locus: Optimal (pre-clipping).
+     * Efficacy: Highly effective. Eliminates intermodulation at the root.
+     * Trade-off: Introduces slight pre-gain phase shift; slight elevation of input
+       noise floor if drive circuit is active. Severity: ACCEPTABLE_COLLATERAL.
+   - Candidate 2:
+     * Causal Locus: Optimal.
+     * Trade-off: Violates user convenience constraint (requires physical screwdriver
+       and guitar setup alteration). Verdict: REJECTED_ON_CONSTRAINTS.
+   - Candidate 3:
+     * Causal Locus: INCORRECT_CAUSAL_LOCUS. Post-EQ cuts 150 Hz energy, but the
+       nasty non-harmonic intermodulation distortion generated inside the preamp
+       is already permanently baked into the upper midrange harmonics.
+     * Trade-off: Carves out guitar body without fixing the dirty "farting" distortion.
+     * Verdict: REJECTED_ON_TRADE_OFFS.
+
+9. Engineering Decision & Prediction:
+   - Selected Primary: Candidate 1 (Pre-Gain High-Pass / Analog Voicing).
+   - Retained Credible Alternative: Candidate 2 (as a physical setup recommendation
+     if pedal additions are undesired).
+   - Residual Uncertainty: Exact guitar pickup resonant peak unmeasured; fine-tuning
+     of cutoff frequency required during render.
+   - Predicted Outcome:
+     * Primary: 100-180 Hz palm-mute swell reduced by 5.5 dB; intermodulation
+       farting completely eliminated; pick transient attack sharpened by 2.2 dB.
+     * Secondary: Overall perceived gain may feel slightly leaner, requiring a
+       0.5 dB increase in main preamp drive.
+
+10. Outcome Evidence & Engineering Review (Post-Execution):
+    - Actual Outcome: Post-render audio confirms tight, punchy palm mutes. FFT shows
+      clean harmonic alignment without intermodulation sidebands.
+    - Independence Review: Reasoning Quality = SOUND_ENGINEERING; Outcome =
+      FULLY_ACHIEVED.
+    - Quadrant: QUADRANT 1 (Exemplary Engineering).
+
+
+--------------------------------------------------------------------------------
+SCENARIO B: HARSH / FIZZY GUITAR
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "The top end of this lead tone is like icepicks in my ears.
+     It's shrill, buzzy, and fizzy above 4 kHz, but if I turn down the presence,
+     the sound goes completely dark and lifeless."
+   - Rig Manifest: British 800-style master volume amp into a 4x12 Greenback cabinet.
+     Single dynamic microphone (SM57) centered directly on the dust cap cone center.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Severe spectral energy concentration between 3.5 kHz and 6.5 kHz
+     (+9 dB relative to 1 kHz reference).
+   - Observation 2: Narrowband resonance peaks at 4.2 kHz and 5.8 kHz with Q > 6.
+   - Observation 3: High-frequency decay exhibits harsh, buzzy fizz lingering after
+     the fundamental string vibration ceases.
+   - Observation 4: Presence control attenuation drops the entire 2 kHz - 10 kHz
+     shelf, causing loss of clarity in the 2.5 kHz articulation band.
+
+3. Hypotheses Considered & Grounded (HypothesisWorkspaceRecord):
+   - Hypothesis B.1 (On-Axis Microphone Transduction & Acoustic Radiation):
+     * Locus: MICROPHONE_CAPSULE_TRANSDUCTION / ACOUSTIC_WAVE_PROPAGATION.
+     * Mechanism: Transducer dust cap center emits intense, beam-like high-frequency
+       acoustic radiation. Direct on-axis capsule placement aligns with maximum
+       acoustic beaming and diaphragm breakup modes of the microphone.
+     * Grounding: Phase 1C.4 Knowledge Claims on Loudspeaker Directivity Beaming,
+       Dust Cap Phase Cancellation, and Dynamic Microphone Off-Axis Roll-off.
+     * Evidential State: ACTIVE_STRONG.
+   - Hypothesis B.2 (Power Amp Negative Feedback & Presence Phase Inversion):
+     * Locus: AMPLIFIER_OPERATING_POINT_ADJUSTMENT.
+     * Mechanism: Excessive Presence control reduces negative feedback at high
+       frequencies, allowing power amp crossover distortion and high-order harmonics
+       to enter uninhibited.
+     * Evidential State: ACTIVE_CREDIBLE. Explains why turning down presence alters
+       the character, but does not explain the extreme 4.2 kHz/5.8 kHz narrow spikes.
+   - Hypothesis B.3 (Preamp Cold Clipper Harmonic Spikes):
+     * Locus: NONLINEAR_CLIPPING_STAGE.
+     * Mechanism: 800-circuit asymmetric cold-clipper generates unmusical high-order
+       odd harmonics (11th, 13th, 15th) that are not being rolled off by subsequent
+       filtering.
+     * Evidential State: ACTIVE_CREDIBLE.
+
+4. Evidence Discrimination & Additional Evidence:
+   - Diagnostic Test: Compare frequency spectrum of an off-axis microphone position
+     vs adjusting amplifier treble/presence knobs.
+   - Result: Microphone capsule repositioned 1.5 inches toward the speaker cone edge.
+     The 4.2 kHz and 5.8 kHz spikes drop by 7 dB while the 2 kHz - 3 kHz articulation
+     shelf remains completely intact.
+
+5. Causal Diagnosis (CausalDiagnosisRecord):
+   - Diagnostic Structure: PRIMARY_AND_CONTRIBUTING_FACTORS.
+   - Primary Mechanism: Severe high-frequency acoustic directivity beaming transduced
+     by direct on-axis dust-cap microphone placement.
+   - Contributing Factor: Upper-order harmonic generation from the master-volume
+     clipping stage radiating through an un-damped speaker dust cap.
+
+6. Engineering Requirement (EngineeringRequirementRecord):
+   - Causal Target Stage: TRANSDUCER_COUPLING_AND_PLACEMENT.
+   - Functional Objective: Reduce high-frequency transducer directivity capture
+     above 3.8 kHz by 6-8 dB while preserving 2.0 - 3.2 kHz core attack presence.
+   - Intent Boundary: Must NOT darken the sound globally; must maintain cutting
+     solo presence in a dense mix.
+
+7. Candidate Interventions (CandidateInterventionRecord):
+   - Candidate 1 (Material Class: MICROPHONE_SELECTION_AND_PLACEMENT):
+     * Shift microphone capsule 45 degrees off-axis and 1.5 inches outward toward
+       the speaker cone sweet spot.
+   - Candidate 2 (Material Class: POST_PROCESSING_SURGICAL_INTERVENTION):
+     * Apply post-capture multi-notch surgical dynamic filtering at 4.2 kHz and 5.8 kHz.
+   - Candidate 3 (Material Class: AMPLIFIER_OPERATING_POINT_ADJUSTMENT):
+     * Reduce amp Presence control to zero and boost Treble to 10.
+
+8. Constraint & Trade-off Evaluation (ConstraintAndTradeOffEvaluationRecord):
+   - Candidate 1:
+     * Causal Locus: Optimal. Solves acoustic beaming acoustically at the capture stage.
+     * Trade-off: Slight reduction in extreme top-end "air" (>10 kHz). Severity: NEGLIGIBLE.
+     * Verdict: RECOMMENDED_PRIMARY.
+   - Candidate 2:
+     * Causal Locus: Suboptimal post-capture fix. Introduces phase smearing across
+     the high-mid transient region. Verdict: CREDIBLE_ALTERNATIVE.
+   - Candidate 3:
+     * Causal Locus: Flawed. Alters power amp feedback dynamics, creating a sterile,
+       congested midrange. Verdict: REJECTED_ON_TRADE_OFFS.
+
+9. Engineering Decision & Prediction:
+   - Selected Primary: Candidate 1 (Microphone Off-Axis Cone Repositioning).
+   - Retained Alternative: Candidate 2 (Surgical Dynamic EQ, if mic repositioning
+     is constrained by fixed hardware).
+   - Predicted Outcome: Harsh fizz at 4-6 kHz attenuated by 6.5 dB; smooth, singing
+     lead tone achieved without losing 2.5 kHz cut.
+
+10. Outcome Evidence & Engineering Review:
+    - Post-render audio demonstrates creamy, singing top end with crisp pick attack.
+    - Reasoning Quality: SOUND_ENGINEERING; Outcome: FULLY_ACHIEVED. Quadrant 1.
+
+
+--------------------------------------------------------------------------------
+SCENARIO C: WEAK PICK ATTACK
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "The notes have no punch or snap when I pick fast. Every note
+     turns into mush, and the front of the note gets swallowed."
+   - Rig Manifest: Modern high-gain multi-stage amplifier with an inline studio
+     compressor pedal placed before the amp.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Initial transient crest factor is exceptionally low (5.2 dB
+     compared to expected 12-14 dB on isolated guitar plucks).
+   - Observation 2: Transient onset time is smeared over 45 ms rather than a sharp
+     2-5 ms initial transient spike.
+   - Observation 3: High sustained harmonic density with zero dynamic range
+     between light pick strokes and heavy attacks.
+
+3. Hypotheses Considered & Grounded:
+   - Hypothesis C.1 (Excessive Pre-Gain Compression & Fast Attack Clamping):
+     * Locus: PRE_NONLINEAR_FILTER / DYNAMICS.
+     * Mechanism: Compressor pedal attack time is set too fast (<5 ms), immediately
+       squashing the initial transient pluck before it reaches the amplifier.
+     * Evidential State: ACTIVE_STRONG.
+   - Hypothesis C.2 (Preamp Saturation Saturation Clamping):
+     * Locus: NONLINEAR_CLIPPING_STAGE.
+     * Mechanism: Preamp gain stages are driven so deep into hard clipping that the
+       signal is continuously limited, eliminating dynamic crest factor.
+     * Evidential State: ACTIVE_CREDIBLE.
+   - Hypothesis C.3 (Pickup Inductive Loading / Dull Cable):
+     * Locus: SOURCE_INSTRUMENT.
+     * Mechanism: High cable capacitance (>1000 pF) rolling off transient attack
+       frequencies above 2 kHz.
+     * Evidential State: ACTIVE_MARGINAL. Explains dullness, but does not explain
+       complete destruction of dynamic envelope.
+
+4. Evidence Discrimination & Additional Evidence:
+   - Diagnostic Test: Bypass the inline compressor pedal.
+   - Result: Crest factor immediately jumps from 5.2 dB to 11.4 dB; transient snap
+     is restored, proving Hypothesis C.1 is the primary culprit.
+
+5. Causal Diagnosis:
+   - Diagnostic Structure: SINGLE_ISOLATED_CAUSE.
+   - Primary Mechanism: Pre-gain compressor with ultra-fast attack clamping
+     natural transient attack envelopes prior to amplifier clipping.
+
+6. Engineering Requirement:
+   - Causal Target Stage: PRE_CLIPPING_INPUT_CONDITIONING.
+   - Functional Objective: Restore initial 5-15 ms transient envelope headroom
+     by lengthening compressor attack time or removing unneeded pre-gain compression.
+   - Intent Boundary: Maintain smooth note sustain without sacrificing attack punch.
+
+7. Candidate Interventions:
+   - Candidate 1: Lengthen compressor attack time to 25-35 ms with lower ratio (2:1).
+   - Candidate 2: Completely remove compressor pedal, relying solely on natural
+     tube amplifier compression.
+   - Candidate 3: Post-amplifier transient designer boosting initial attack envelope.
+
+8. Constraint & Trade-off Evaluation:
+   - Candidate 2: Parsimony principle (Principle 14) applies: the compressor pedal
+     serves no justifiable purpose in a high-gain rig where tube saturation already
+     provides ample compression. Recommended Primary.
+   - Candidate 3: Rejected as unnecessary complexity and poor causal locus.
+
+9. Engineering Decision & Prediction:
+   - Decision: Remove compressor pedal (Candidate 2) or re-voice to slow attack (Candidate 1).
+   - Predicted Outcome: Attack transient crest factor increases by ~6 dB; pick
+     definition restored across fast runs.
+
+10. Outcome Evidence & Review:
+    - User reports: "The guitar now snaps and tracks every note perfectly."
+    - Reasoning Quality: SOUND; Outcome: FULLY_ACHIEVED.
+
+
+--------------------------------------------------------------------------------
+SCENARIO D: DUAL-MIC HOLLOW / NASAL SOUND
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "I blended an SM57 and an R-121 ribbon mic on my cabinet to
+     get a thick sound, but when I sum them together, the tone turns hollow,
+     nasal, and thin—like it's inside a cardboard box."
+   - Rig Manifest: 4x12 cabinet with two microphones positioned in front of the
+     same speaker cone, summed to a mono bus.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Severe comb filtering pattern with deep notches at 1.4 kHz,
+     4.2 kHz, and 7.0 kHz (notches exceeding -18 dB depth).
+   - Observation 2: Severe midrange hollow nasal coloration in mono sum; disappears
+     completely when either microphone is soloed.
+   - Observation 3: Measured time-of-arrival delta between mic capsules: 0.36 ms
+     (approx 4.8 inches path length difference in physical capsule position).
+
+3. Hypotheses Considered & Grounded:
+   - Hypothesis D.1 (Acoustic Time-of-Arrival Phase Cancellation):
+     * Locus: ACOUSTIC_WAVE_PROPAGATION / TRANSDUCTION.
+     * Mechanism: Ribbon element is physically recessed deeper inside its motor
+       assembly compared to the dynamic mic diaphragm, creating a 0.36 ms delay.
+       Summing creates destructive interference at wavelengths where delay equals
+       (n + 1/2) * lambda.
+     * Grounding: Phase 1C.4 Knowledge Claims on Wave Superposition, Time-Delay
+       Comb Filtering, and Dual-Transducer Summation.
+     * Evidential State: ACTIVE_STRONG (Conclusive mathematical match: 1/(2 * 0.00036s) = 1388 Hz).
+   - Hypothesis D.2 (Electrical Polarity Inversion):
+     * Locus: TRANSDUCER_COUPLING.
+     * Mechanism: One microphone cable is wired pin-2 hot and the other pin-3 hot,
+       creating 180-degree polarity flip across all frequencies.
+     * Evidential State: WEAKENED_BY_CONTRADICTION. True polarity flip creates a
+       high-pass notch at DC and broad cancellation, not periodic harmonic comb notches.
+   - Hypothesis D.3 (Cabinet Internal Baffle Resonance):
+     * Locus: ELECTROACOUSTIC_TRANSDUCER.
+     * Evidential State: FALSIFIED. Disproved by the fact that soloing either mic
+       completely eliminates the hollow nasal coloration.
+
+4. Evidence Discrimination & Additional Evidence:
+   - No additional evidence required. The mathematical calculation of comb notches
+     from 0.36 ms delay matches measured FFT notches to within 1.5%.
+
+5. Causal Diagnosis:
+   - Diagnostic Structure: SINGLE_ISOLATED_CAUSE.
+   - Primary Mechanism: Time-of-arrival propagation delay (0.36 ms) between dual
+     capsules causing severe destructive acoustic comb filtering upon mono summation.
+
+6. Engineering Requirement:
+   - Causal Target Stage: TRANSDUCER_COUPLING_AND_PLACEMENT.
+   - Functional Objective: Time-align the two transducer signals to within <0.02 ms
+     (or physically align diaphragms) to eliminate acoustic comb filtering.
+
+7. Candidate Interventions:
+   - Candidate 1 (Material Class: MICROPHONE_SELECTION_AND_PLACEMENT):
+     * Physically move the SM57 back by 4.8 inches or bring the ribbon forward
+       until diaphragms are in the exact same phase plane.
+   - Candidate 2 (Material Class: POST_PROCESSING_SURGICAL_INTERVENTION):
+     * Insert a sample-delay plugin on the SM57 channel delayed by exactly 0.36 ms
+       (17 samples at 48 kHz).
+   - Candidate 3 (Material Class: POST_PROCESSING_SURGICAL_INTERVENTION):
+     * Apply a 1.4 kHz parametric boost to EQ out the notch.
+
+8. Constraint & Trade-off Evaluation:
+   - Candidate 1: Physically pure, but difficult to calibrate without precision laser/ruler.
+   - Candidate 2: Optimal digital solution. Perfect phase coherence restored with
+     zero phase distortion. Recommended Primary.
+   - Candidate 3: FLAWED. You cannot EQ out a comb-filtering phase cancellation;
+     boosting 1.4 kHz merely pumps noise into a dead phase null. Rejected.
+
+9. Engineering Decision & Prediction:
+   - Decision: Candidate 2 (Digital Micro-Time Alignment of 0.36 ms).
+   - Predicted Outcome: Comb filtering notches eliminated; midrange body restored;
+     summed signal exhibits full, massive tone with combined ribbon warmth and
+     dynamic punch.
+
+10. Outcome Evidence & Review:
+    - Post-alignment sum shows completely flat, reinforced midrange response.
+    - Reasoning Quality: SOUND; Outcome: FULLY_ACHIEVED.
+
+
+--------------------------------------------------------------------------------
+SCENARIO E: HIGH-GAIN IDLE HISS
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "When I stop playing, the amp produces an unbearable loud
+     hissing and rushing sound. It's totally unusable in the studio."
+   - Rig Manifest: Multi-gain-stage modern metal profile, noise gate threshold
+     set to off, overdrive pedal boosting front of amp.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Idle noise floor (no guitar signal) is -38 dBFS broadband
+     white/pink noise concentrated from 1 kHz to 12 kHz.
+   - Observation 2: 50/60 Hz mains hum is negligible (-68 dBFS); noise is purely
+     thermal / Johnson noise and shot noise.
+   - Observation 3: Overdrive pedal level is set to maximum (+20 dB) with amp
+     lead gain set to 8.5/10.
+
+3. Hypotheses Considered & Grounded:
+   - Hypothesis E.1 (Excessive Compounded Cascaded Gain & Thermal Noise Amplification):
+     * Locus: PRE_NONLINEAR_FILTER & NONLINEAR_CLIPPING_STAGE.
+     * Mechanism: +20 dB boost from pedal combined with 8.5 gain on 4 cascaded
+       tube stages produces over 90 dB of total voltage gain. The microscopic
+       thermal Johnson noise of the first grid resistor is amplified into full audibility.
+     * Evidential State: ACTIVE_STRONG.
+   - Hypothesis E.2 (Electromagnetic Radio Frequency Interference):
+     * Locus: SOURCE_INSTRUMENT.
+     * Mechanism: Unshielded guitar control cavity picking up ambient EMI/RFI.
+     * Evidential State: ACTIVE_CREDIBLE.
+   - Hypothesis E.3 (Digital Quantization or Dither Noise):
+     * Locus: POST_CAPTURE_PROCESSING.
+     * Evidential State: FALSIFIED. Dither noise is at -90 dBFS, not -38 dBFS.
+
+4. Evidence Discrimination & Additional Evidence:
+   - Diagnostic Test: Mute guitar volume pot to 0.
+   - Result: Noise floor drops by only 2 dB (to -40 dBFS). This proves the noise
+     is NOT originating from guitar pickup EMI, but is generated internally by
+     the cascaded pre-gain pedal and amplifier input stages.
+
+5. Causal Diagnosis:
+   - Diagnostic Structure: PRIMARY_AND_CONTRIBUTING_FACTORS.
+   - Primary Mechanism: Unnecessary compounded gain staging amplifying input stage
+     thermal noise into the audible foreground.
+   - Contributing Factor: Complete absence of dynamic downward expansion during idle.
+
+6. Engineering Requirement:
+   - Causal Target Stage: SYSTEM_NOISE_ATTENUATION & GAIN_STAGING.
+   - Functional Objective: Reduce redundant cascaded gain while inserting a fast,
+     transparent downward expander during non-playing intervals.
+   - Intent Boundary: Must NOT cut off natural decaying note tails or clamp sustain.
+
+7. Candidate Interventions:
+   - Candidate 1: Reduce overdrive pedal output level by 6 dB and amp gain by 1.5;
+     insert an intelligent downward expander after the preamp stage.
+   - Candidate 2: Insert a hard brickwall noise gate at the very end of the signal chain.
+   - Candidate 3: Apply a steep low-pass filter at 4 kHz across the entire mix.
+
+8. Constraint & Trade-off Evaluation:
+   - Candidate 1: Balanced gain staging + transparent expansion. Preserves tone,
+     eliminates idle hiss. Recommended Primary.
+   - Candidate 2: Chops off reverb/delay trails and creates jarring gating clicks. Rejected.
+   - Candidate 3: Destroys high-end clarity of the guitar tone. Rejected.
+
+9. Engineering Decision & Prediction:
+   - Decision: Candidate 1 (Rationalize Gain Staging + Preamp-Loop Downward Expander).
+   - Predicted Outcome: Idle noise floor drops from -38 dBFS to below -75 dBFS;
+     zero audible hiss when silent; decaying notes sustain smoothly into silence.
+
+10. Outcome Evidence & Review:
+    - Post-test audio confirms silent idle state with zero note clamping.
+    - Reasoning Quality: SOUND; Outcome: FULLY_ACHIEVED.
+
+
+================================================================================
+SECTION 24 — CHALLENGE SCENARIO WALKTHROUGHS A–J (PART 2: SCENARIOS F–J)
+================================================================================
+
+--------------------------------------------------------------------------------
+SCENARIO F: STIFF / STERILE RESPONSE
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "The tone feels stiff, lifeless, and sterile. Notes feel like
+     they're hitting a brick wall instead of blooming. There's no touch sensitivity
+     or 'give' under my fingers."
+   - Rig Manifest: Solid-state or ultra-linear clean digital amp model into an
+     impulse response with flat dynamic response. Player using heavy dynamic pick attack.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Zero dynamic compression or envelope bloom during sustained chords;
+     RMS level drops linearly with string decay with no sustain plateau.
+   - Observation 2: Total Harmonic Distortion (THD) remains rigidly constant
+     across wide variations in pick velocity (no dynamic harmonic enrichment).
+   - Observation 3: High-frequency transient onset is instantaneous (<1 ms) with
+     zero power-supply sag or tube rectifier compression.
+
+3. Hypotheses Considered & Grounded:
+   - Hypothesis F.1 (Absence of Power Supply Sag and Dynamic Compression):
+     * Locus: POWER_SUPPLY_AND_SAG.
+     * Mechanism: The amplifier model employs an infinitely stiff, regulated power
+       supply emulation. Real tube amplifiers with tube rectifiers (e.g., 5U4G/GZ34)
+       experience B+ voltage drop under heavy transient load, which compresses the
+       signal dynamically and causes subsequent notes to "bloom" as voltage recovers.
+     * Grounding: Phase 1C.4 Knowledge Claims on Power Supply Sag Dynamics, Rectifier
+       Impedance, and Dynamic Envelope Bloom.
+     * Evidential State: ACTIVE_STRONG.
+   - Hypothesis F.2 (Excessive Negative Feedback in Power Section):
+     * Locus: AMPLIFIER_OPERATING_POINT_ADJUSTMENT.
+     * Mechanism: High negative feedback linearizes frequency and dynamic response,
+       increasing damping factor and eliminating tube warmth.
+     * Evidential State: ACTIVE_CREDIBLE.
+   - Hypothesis F.3 (Dead Guitar Strings):
+     * Locus: SOURCE_INSTRUMENT.
+     * Evidential State: WEAKENED_BY_CONTRADICTION. High frequencies are crisp, not dull.
+
+4. Evidence Discrimination & Additional Evidence:
+   - Diagnostic Test: Evaluate dynamic sag parameters or introduce a tube rectifier
+     emulation stage.
+   - Result: Dynamic sag introduces ~2.5 dB of soft compression during heavy attack,
+     followed by 150 ms exponential bloom. User confirms touch feel is transformed.
+
+5. Causal Diagnosis:
+   - Diagnostic Structure: PRIMARY_AND_CONTRIBUTING_FACTORS.
+   - Primary Mechanism: Unnaturally stiff power supply emulation lacking dynamic sag
+     and nonlinear recovery bloom.
+   - Contributing Factor: Excessive power-amp damping factor preventing speaker
+     acoustic compliance coupling.
+
+6. Engineering Requirement:
+   - Causal Target Stage: POWER_AMP_DYNAMIC_DAMPING.
+   - Functional Objective: Introduce dynamic supply sag (2-3 dB transient compression
+     with 100-200 ms recovery time constant) and loosen power amp damping to permit
+     speaker dynamic compliance.
+
+7. Candidate Interventions:
+   - Candidate 1 (Material Class: AMPLIFIER_OPERATING_POINT_ADJUSTMENT):
+     * Engage tube rectifier modeling, loosen power supply stiffness, and reduce
+       negative feedback loop depth.
+   - Candidate 2 (Material Class: POST_PROCESSING_SURGICAL_INTERVENTION):
+     * Add a studio optical compressor post-cabinet with slow attack and medium release.
+   - Candidate 3 (Material Class: PRE_GAIN_ANALOG_VOICING):
+     * Add a clean boost pedal in front.
+
+8. Constraint & Trade-off Evaluation:
+   - Candidate 1: Optimal causal locus. Models physical tube sag at the exact circuit
+     point. Recommended Primary.
+   - Candidate 2: Post-compression squashes the sound globally, but cannot replicate
+     the dynamic harmonic bloom of circuit-level sag. Rejected.
+   - Candidate 3: Fails to fix stiffness; simply pushes the stiff amp harder. Rejected.
+
+9. Engineering Decision & Prediction:
+   - Decision: Candidate 1 (Loosen Power Amp Sag & Negative Feedback).
+   - Predicted Outcome: 2.2 dB dynamic envelope bloom during chord attacks; touch
+     sensitivity restored; guitar volume pot responds dynamically.
+
+10. Outcome Evidence & Review:
+    - User reports: "The amp breathes now. It feels like a real vintage tube head."
+    - Reasoning Quality: SOUND; Outcome: FULLY_ACHIEVED.
+
+
+--------------------------------------------------------------------------------
+SCENARIO G: REFERENCE SPECTRUM MATCHES BUT SOUND STILL FEELS WRONG
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "I used an automated match-EQ plugin to copy the exact frequency
+     curve of the studio reference track. The FFT curve matches 100% perfectly,
+     but the sound feels completely wrong—it's dead, harsh, and doesn't sit in the mix."
+   - Rig Manifest: Direct digital tone through match EQ vs multi-tracked classic rock master.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Steady-state averaged 1/3-octave frequency spectrum matches the
+     reference track within +/- 0.5 dB across 50 Hz - 15 kHz.
+   - Observation 2: Dynamic crest factor delta is massive: Reference track exhibits
+     8.4 dB crest factor; match-EQ track exhibits 14.8 dB crest factor (uncontrolled peaks).
+   - Observation 3: Harmonic saturation structure is completely mismatched: Reference
+     track contains dense 2nd and 3rd harmonic saturation from cranked transformers;
+     user track is pristine clean through a linear match EQ with steep filter phase ripples.
+   - Observation 4: Extreme phase smearing in match-EQ track due to 128-band minimum-phase
+     filter ripples.
+
+3. Hypotheses Considered & Grounded:
+   - Hypothesis G.1 (Dynamic Compression and Crest Factor Disparity):
+     * Locus: DYNAMIC_HARMONIC_SATURATION & CONSOLE_BUS.
+     * Mechanism: A static EQ matches only time-averaged spectral magnitude; it is
+       completely blind to dynamic envelopes, tape compression, and bus limiting.
+     * Grounding: Phase 1C.4 Knowledge Claims on Spectral Matching Fallacy, Temporal
+       Envelope Masking, and Dynamic Crest Factor.
+     * Evidential State: ACTIVE_STRONG.
+   - Hypothesis G.2 (Nonlinear Harmonic Generation Absence):
+     * Locus: NONLINEAR_CLIPPING_STAGE / TRANSFORMER_SATURATION.
+     * Mechanism: The reference tone derives its body and thickness from nonlinear
+       analog console and tape saturation, which cannot be synthesized by linear filtering.
+     * Evidential State: ACTIVE_STRONG.
+   - Hypothesis G.3 (Phase Smearing from Linear/Minimum-Phase Match Filtering):
+     * Locus: POST_CAPTURE_PROCESSING.
+     * Mechanism: Extreme steep curves in match-EQ induce group delay distortion,
+       smearing transient impact.
+     * Evidential State: ACTIVE_CREDIBLE.
+
+4. Evidence Discrimination & Additional Evidence:
+   - Analysis of dynamic envelope and harmonic distortion confirms that linear
+     equalization alone cannot produce nonlinear saturation or dynamic envelope clamping.
+
+5. Causal Diagnosis:
+   - Diagnostic Structure: PRIMARY_AND_CONTRIBUTING_FACTORS.
+   - Primary Mechanism: The Spectral Matching Fallacy: Attempting to replicate
+     nonlinear harmonic saturation and dynamic bus compression using static linear EQ.
+   - Contributing Factor: Severe phase distortion introduced by high-order match-EQ filters.
+
+6. Engineering Requirement:
+   - Causal Target Stage: DYNAMIC_HARMONIC_SATURATION.
+   - Functional Objective: Replace extreme static match-EQ filtering with genuine
+     nonlinear transformer/tube saturation and dynamic envelope compression matching
+     the reference track's crest factor (8.5 dB).
+
+7. Candidate Interventions:
+   - Candidate 1: Remove match EQ. Introduce tape/console bus saturation emulation
+     and gentle opto-compression, followed by broad musical broad-band EQ shaping.
+   - Candidate 2: Keep match EQ, but add a brickwall limiter after it.
+
+8. Constraint & Trade-off Evaluation:
+   - Candidate 1: Addresses the true physical difference (nonlinear dynamics vs linear EQ).
+     Recommended Primary.
+   - Candidate 2: Compounding linear filter smearing with hard digital limiting creates
+     an unlistenable mess. Rejected.
+
+9. Engineering Decision & Prediction:
+   - Decision: Candidate 1 (Nonlinear Harmonic Saturation + Dynamic Compression).
+   - Predicted Outcome: Organic analog body restored; transient crest factor aligned
+     to 8.5 dB; artificial phase smearing eliminated.
+
+10. Outcome Evidence & Review:
+    - Demonstrates conclusively that spectral matching != engineering equivalence.
+    - Reasoning Quality: SOUND; Outcome: FULLY_ACHIEVED.
+
+
+--------------------------------------------------------------------------------
+SCENARIO H: INTENTIONALLY UNCONVENTIONAL SIGNAL CHAIN
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "The automated validator keeps yelling at me because I placed
+     a vintage germanium fuzz pedal AFTER an analog delay and stereo reverb.
+     I WANT this shoegaze / post-rock wall-of-sound texture, but traditional tools
+     keep 'correcting' it."
+   - Rig Manifest: Guitar -> Stereo Reverb (100% wet) -> Fuzz -> Clean Amplifier.
+   - Engineering Intent: Shoegaze / Ambient Noise; massive, chaotic wall-of-sound wash.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Signal topology contains Reverb block preceding nonlinear Fuzz block.
+   - Observation 2: Severe intermodulation distortion of reverberant tails when chords
+     are sustained, creating dense, swelling, non-harmonic drone textures.
+   - Observation 3: High noise floor between passages due to fuzz amplifying reverb decay.
+
+3. Hypotheses Considered & Grounded:
+   - Hypothesis H.1 (Intentional Aesthetic Topology):
+     * Locus: ARTISTIC_INTENT.
+     * Mechanism: The user is deliberately exploiting reverb intermodulation distortion
+       to generate shoegaze/drone aesthetics, in full accordance with established
+       genre traditions (e.g., My Bloody Valentine, Slowdive).
+     * Grounding: Phase 1C.4 Knowledge Claims on Ambient Fuzz Topologies, Intentional
+       Intermodulation, and Artistic Boundary Exceptions.
+     * Evidential State: ACTIVE_STRONG.
+   - Hypothesis H.2 (Accidental Routing Error):
+     * Locus: USER_ERROR.
+     * Evidential State: FALSIFIED_AND_RETIRED by explicit EngineeringIntentRecord.
+
+4. Evidence Discrimination:
+   - EngineeringIntentRecord explicitly states: "Intended genre: Shoegaze/Post-Rock.
+     Target effect: Massive wall-of-sound fuzz wash on reverb decay."
+
+5. Causal Diagnosis:
+   - Diagnostic Structure: SINGLE_ISOLATED_CAUSE.
+   - Primary Mechanism: Unconventional routing is fully intentional and technically
+     consistent with requested artistic intent.
+
+6. Engineering Requirement:
+   - Functional Objective: Preserve the Reverb -> Fuzz topology; optimize gain
+     staging to manage extreme idle noise without truncating the reverberant wash.
+
+7. Candidate Interventions:
+   - Candidate 1: Retain Reverb -> Fuzz topology; insert a subtle downward expander
+     before the reverb to silence pickup hum, leaving the fuzz wash intact.
+   - Candidate 2: Force "correction" by moving Fuzz before Reverb.
+
+8. Constraint & Trade-off Evaluation (Principle 8 & 17):
+   - Principle 8: "Engineering intent constrains the solution."
+   - Principle 17: "Deterministic systems may verify only truth they genuinely own."
+   - Candidate 2 violates Engineering Intent and represents deterministic overreach.
+     Strictly Rejected.
+   - Candidate 1 respects artistic intent while providing professional engineering
+     hygiene. Recommended Primary.
+
+9. Engineering Decision & Prediction:
+   - Decision: Preserve unconventional topology; optimize noise hygiene (Candidate 1).
+   - Predicted Outcome: Wall-of-sound fuzz wash fully preserved; idle hum eliminated.
+
+10. Outcome Evidence & Review:
+    - Confirms that TT supports legitimate creative engineering without enforcing
+      pedantic textbook rules.
+    - Reasoning Quality: SOUND; Outcome: FULLY_ACHIEVED.
+
+
+--------------------------------------------------------------------------------
+SCENARIO I: INSUFFICIENT EVIDENCE
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User inputs: A 1.5-second audio snippet of a single muffled guitar note, accompanied
+     by the text: "My tone sounds bad. Fix it."
+   - Rig Manifest: Completely blank / unspecified.
+   - Target Intent: Unspecified.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: Audio file duration is 1.48 seconds; peak level -22 dBFS.
+   - Observation 2: Single palm-muted note on undetermined string.
+   - Evidence Completeness State: MINIMAL.
+   - Unobserved Domains: No musical context, no rig manifest, no pickup details,
+     no intent goals, no clean reference.
+
+3. Hypotheses Considered:
+   - Over 15 different physical mechanisms could explain why a single note sounds
+     muffled (bad cable, rolled-off tone pot, neck pickup, dark amp, dead strings,
+     off-axis mic, low-pass filter).
+   - All hypotheses remain at `UNRESOLVED_DUE_TO_DATA_LIMITATION`.
+
+4. Evidence Discrimination & Additional Evidence (Principle 21):
+   - Rather than guessing an intervention, the engine recognizes that additional
+     discriminating evidence is mandatory.
+   - Emits `DiscriminatingEvidenceRequestRecord`:
+     * Action 1: Capture a 15-second audio passage including rhythm chords, single-note
+       leads, and palm mutes.
+     * Action 2: Specify the guitar and amplifier model used.
+     * Action 3: State the intended musical genre or reference target.
+
+5. Lifecycle Execution:
+   - Lifecycle Action: PAUSE_FOR_DISCRIMINATING_EVIDENCE.
+   - Status: System abstains from modifying presets or generating semantic designs.
+
+6. Abstention Justification:
+   - "Tone Translator cannot formulate a defensible causal diagnosis because the
+     available evidence is limited to a single 1.5-second uncalibrated note without
+     rig context or musical intent. Intervening now would be blind guesswork."
+
+7. Review Finding:
+   - Exemplifies Principle 21: Recognizing when additional evidence is more valuable
+     than another intervention. Prevents "hallucinated fixes."
+
+
+--------------------------------------------------------------------------------
+SCENARIO J: MULTIPLE DEFENSIBLE SOLUTIONS
+--------------------------------------------------------------------------------
+1. Context & Raw Evidence:
+   - User complaints: "The guitar track sounds somewhat boxy and congested in the
+     500-800 Hz range when placed into our rock mix."
+   - Rig Manifest: Classic tube amp with 4x12 cabinet and SM57 microphone.
+   - Engineering Intent: Modern energetic rock mix; needs midrange clarity without
+     sounding scooped or hollow.
+
+2. Factual Observations (ObservationRecord):
+   - Observation 1: 550-750 Hz band is +4.5 dB relative to modern commercial rock curve.
+   - Observation 2: No harsh distortion or intermodulation; problem is purely spectral
+     congestion in a dense mix.
+
+3. Hypotheses Considered & Grounded:
+   - Causal mechanism is well understood: Midrange acoustic energy concentration
+     characteristic of classic British speaker cabinets and SM57 capture.
+
+4. Professional Judgement Boundary (Authoritative Section 4):
+   - "Professional engineering judgement begins where available evidence and
+     established knowledge permit more than one defensible interpretation or
+     intervention."
+   - In professional mixing, there are at least three equally valid, defensible ways
+     to solve 600 Hz congestion:
+     * Solution 1: Acoustic/Capture approach (Microphone choice: blend an off-center
+       condenser or ribbon with naturally scooped midrange).
+     * Solution 2: Pre-Amplifier tone-stack approach (Shift amp Mid control from 6 to 3.5).
+     * Solution 3: Post-Capture surgical console approach (Narrow parametric cut of
+       3.5 dB at 620 Hz, Q=1.8 on the console channel).
+
+5. Candidate Interventions & Trade-off Analysis:
+   - Candidate 1 (Mic Substitution): Produces smooth acoustic rolloff; trade-off
+     is changing phase relationship and room bleed.
+   - Candidate 2 (Amp Tone Stack): Changes the drive and clipping texture of the
+     preamp tubes (since tone stack interacts with tube loading in classic circuits).
+   - Candidate 3 (Post Console EQ): Keeps the exact guitar amp distortion feel 100%
+     identical, carving only the final acoustic footprint.
+
+6. Engineering Decision & Uncertainty Preservation:
+   - The AI Sound Engineer does NOT claim one solution is "91.4% correct" while
+     the others are wrong.
+   - Decision: Select Candidate 3 (Console Parametric Cut) as Primary because it
+     preserves the player's core amp drive dynamics.
+   - Preserves Candidate 1 and Candidate 2 as `retained_credible_alternatives`.
+   - Records explicit residual uncertainty: "Choice between amp tone stack vs console
+     EQ depends on whether the player prefers tactile amp feel changes or mix-bus
+     isolation. Both remain professionally defensible."
+
+7. Review Finding:
+   - Proves that TT can exercise nuanced professional judgement, retaining credible
+     alternatives rather than forcing false singular dogma.
+
+
+================================================================================
+SECTION 25 — ADVERSARIAL SELF-REVIEW
+================================================================================
+
+In accordance with Section 15 of the mandate, an exhaustive adversarial self-review
+was conducted on the drafted Phase 1C.5a architecture. Each of the fifteen
+adversarial audit questions is analyzed below:
+
+--------------------------------------------------------------------------------
+Audit 1: Did we accidentally create a recipe engine?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - There is zero mapping between perceptual symptom keywords and parameter values.
+  - The architecture requires that symptoms pass through:
+    Symptom Descriptor -> Objective Observation -> Grounded Causal Hypotheses ->
+    Evidence Discrimination -> Causal Diagnosis -> Abstract Engineering Requirement ->
+    Materially Distinct Interventions -> Trade-Off Evaluation -> Decision.
+  - Direct symptom-to-setting shortcuts are architecturally prohibited and structurally
+    impossible given the mandatory parent-pointer requirements in the schemas.
+
+--------------------------------------------------------------------------------
+Audit 2: Did we create arbitrary confidence scores?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - All arbitrary scalar confidence numbers (e.g., 0.88, 92%, 7.5/10) have been
+    completely eliminated.
+  - Epistemic states are categorical and multi-factorial: `ACTIVE_STRONG`,
+    `ACTIVE_CREDIBLE`, `WEAKENED_BY_CONTRADICTION`, `FALSIFIED_AND_RETIRED`,
+    and `UNRESOLVED_DUE_TO_DATA_LIMITATION`.
+  - Trade-off severities are qualitative: `NEGLIGIBLE`, `ACCEPTABLE_COLLATERAL`,
+    `SIGNIFICANT_DEGRADATION`, and `INTENT_BREAKING`.
+
+--------------------------------------------------------------------------------
+Audit 3: Did we collapse observation and interpretation?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - `ObservationRecord` and `HypothesisRecord` are separated by a strict structural
+    firewall.
+  - Observations are strictly phenomenological (descriptive metrics, FFT bins,
+    decay times); they are prohibited from containing causal attribution, fault
+    assignment, or equipment references.
+
+--------------------------------------------------------------------------------
+Audit 4: Did we force one hypothesis?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - The `HypothesisWorkspaceRecord` is an n-ary concurrent container that mandates
+    multiple competing hypotheses for multi-causal symptoms.
+  - Hypotheses cannot be pruned without explicit falsification evidence.
+  - The `CausalDiagnosisRecord` explicitly supports `DISJUNCTIVE_COMPETING_CAUSES`
+    when evidence is insufficient to isolate a single cause.
+
+--------------------------------------------------------------------------------
+Audit 5: Did we allow genre/style to become proof?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Contextual priors (genre, artist, era) are isolated in `contextual_priors`
+    within `CaseEvidenceAssessmentRecord`.
+  - They are permitted to inform hypothesis generation plausibility, but the
+    schema forbids citing contextual priors as `SupportingEvidence` for a causal
+    diagnosis.
+
+--------------------------------------------------------------------------------
+Audit 6: Did we allow Reference Cases to become precedent?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Reference Cases from Phase 1C.4 are classified as illustrative examples,
+    not binding engineering law.
+  - A reference case cannot override physical observations or force an intervention.
+
+--------------------------------------------------------------------------------
+Audit 7: Did we allow platform capability upstream?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Upstream reasoning records (`CausalDiagnosisRecord`, `EngineeringRequirementRecord`,
+    `CandidateInterventionRecord`) have zero awareness of platform constraints
+    (e.g., AmpliTube 5 block counts or parameter schemas).
+  - Downstream platform bottlenecks produce translation compromise reports, never
+    altering the upstream diagnostic truth.
+
+--------------------------------------------------------------------------------
+Audit 8: Did deterministic validation acquire professional judgement?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Deterministic validators are restricted to checking structural invariants:
+    schema typing, acyclic graph flow, mathematical ranges, and checksums.
+  - Deterministic validators are explicitly prohibited from making aesthetic,
+    musical, or causal evaluations.
+
+--------------------------------------------------------------------------------
+Audit 9: Did we erase uncertainty at decision time?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Principle 15 is strictly enforced via the mandatory `ResidualUncertaintyDescriptor`
+    in every `EngineeringDecisionRecord`.
+  - Unobserved variables, untested assumptions, and confidence envelopes survive
+    into the decision and review records.
+
+--------------------------------------------------------------------------------
+Audit 10: Did we confuse successful outcome with good reasoning?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Principle 18 is enforced via the 2x2 Orthogonal Evaluation Matrix in
+    `EngineeringReviewRecord`.
+  - Reasoning quality and outcome quality are evaluated independently. Quadrant 3
+    (Lucky Guess / Defective Reasoning) is explicitly quarantined from canonization.
+
+--------------------------------------------------------------------------------
+Audit 11: Did we create a feedback loop that rewrites history?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - All sealed records are cryptographically hashed and immutable.
+  - Iteration creates a new `RunID` referencing past records by immutable ID.
+  - Historical decisions, predictions, and diagnoses are never overwritten or altered.
+
+--------------------------------------------------------------------------------
+Audit 12: Did we require hidden chain-of-thought?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Auditability is achieved purely through typed, structured data contracts:
+    `evidence_refs`, `hypothesis_refs`, `causal_links`, and `trade_off_evaluations`.
+  - No access to raw LLM hidden states or private chain-of-thought tokens is required.
+
+--------------------------------------------------------------------------------
+Audit 13: Did we create unnecessary canonical entities?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Exactly thirteen coherent records are defined, organized into four clear
+    functional tiers.
+  - Every record maps directly to an indispensable stage of professional audio
+    engineering practice.
+
+--------------------------------------------------------------------------------
+Audit 14: Did we redesign frozen 1C.4?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - Phase 1C.4 Knowledge Architecture is treated as an authoritative, read-only
+    upstream dependency.
+  - Reasoning queries Phase 1C.4 `KnowledgeClaim` records via immutable IDs and
+    respects all epistemic boundaries.
+
+--------------------------------------------------------------------------------
+Audit 15: Did we prematurely specify 1C.5b–1C.5h implementation details?
+--------------------------------------------------------------------------------
+Finding: NEGATIVE (PASSED).
+Analysis:
+  - No production source code, prompt templates, test runners, or DSP algorithms
+    have been implemented.
+  - The specification defines purely architectural models, data contracts, state
+    transitions, and governance rules.
+
+
+================================================================================
+SECTION 26 — OPEN QUESTIONS / DEFERRED DECISIONS
+================================================================================
+
+To maintain strict phase discipline, the following technical details are explicitly
+identified as properly deferred to subsequent subphases:
+
+1. Deferred to Phase 1C.5b (Reasoning Schemas & Storage Implementation):
+   - Exact database serialization schemas (e.g., Firestore collections vs JSONB).
+   - Cryptographic hashing algorithm selection (SHA-256 vs BLAKE3) and canonical
+     JSON serialization formats.
+   - Indexing strategies for multi-run historical audit trails.
+
+2. Deferred to Phase 1C.5c (Observation & Diagnostic Engines):
+   - Specific DSP feature extraction libraries (e.g., Essentia, Librosa) and
+     time-frequency windowing parameters for automated FFT feature extraction.
+   - Formal ontology mapping for user verbal perceptual descriptors.
+
+3. Deferred to Phase 1C.5d (Candidate Intervention & Trade-off Evaluators):
+   - Heuristics for pruning candidate intervention combinatorial explosions in
+     multi-block guitar rigs.
+   - Domain-specific trade-off weightings for extreme high-gain vs clean jazz rigs.
+
+4. Deferred to Phase 1C.5e (Semantic Tone Design Bridge):
+   - Exact mathematical representation of abstract transfer functions in the
+     Semantic Tone Design contract.
+
+5. Deferred to Phase 1C.5h (Reasoning UAT):
+   - Construction of the automated adversarial test suite to execute the 10
+     challenge scenarios in automated CI/CD pipelines.
+
+6. Deferred to Phase 1C.6 (Competency Certification):
+   - Formal sound engineering competency benchmarking against human professional
+     mastering and mixing engineers.
+
+
+================================================================================
+SECTION 27 — PHASE 1C.5a ACCEPTANCE CRITERIA
+================================================================================
+
+The architectural design submitted herein satisfies all acceptance criteria
+mandated for Phase 1C.5a:
+
+  [x] Criterion 1: Complete and uncompromised adoption of the 21 Frozen Constitutional
+      Principles without weakening or reinterpretation.
+  [x] Criterion 2: Explicit implementation of the authoritative Professional
+      Engineering Judgement Boundary.
+  [x] Criterion 3: Formal structural specification of all thirteen reasoning
+      contracts with strict ownership, mutability rules, and typed schemas.
+  [x] Criterion 4: Complete definition of the 14-stage Decision Lifecycle state machine
+      with non-linear backtracking and discriminating evidence loops.
+  [x] Criterion 5: Elimination of arbitrary scalar confidence scores and symptom-lookup
+      recipe engines.
+  [x] Criterion 6: Strict firewalls maintained between Knowledge, Evidence, Reasoning,
+      Semantic Tone Design, Platform Translation, and Deterministic Code.
+  [x] Criterion 7: Explicit definitions for all nine mandatory failure and abstention
+      behaviors.
+  [x] Criterion 8: Comprehensive walkthrough of all ten challenge scenarios (A through J).
+  [x] Criterion 9: Complete and unsparing adversarial self-review answering all
+      fifteen audit questions.
+  [x] Criterion 10: Strict adherence to Phase 1C.5a scope (No code, no prompts,
+      no premature 1C.5b-1C.5h execution).
+
+
+================================================================================
+SECTION 28 — FINAL RECOMMENDATION
+================================================================================
+
+In accordance with Section 17 and Section 18 of the Phase 1C.5a Governance Mandate:
+  - This document represents a DRAFT ARCHITECTURE FOR INDEPENDENT REVIEW.
+  - Gemini is strictly prohibited from marking Phase 1C.5a as PASS, FROZEN,
+    SIGNED OFF, IMPLEMENTED, or PRODUCTION READY.
+
+Having verified the complete structural integrity, epistemic rigor, and constitutional
+compliance of the proposed architecture, the sole authorized recommendation is:
+
+                      ==================================================
+                      READY FOR INDEPENDENT ARCHITECTURAL REVIEW
+                      ==================================================
+
+The specification is now submitted for independent expert examination.
+================================================================================
+END OF SPECIFICATION: TT_Engineering_Reasoning_Architecture_and_Decision_Lifecycle_v0.1.txt
+================================================================================

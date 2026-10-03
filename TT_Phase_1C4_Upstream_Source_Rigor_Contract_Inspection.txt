@@ -1,0 +1,344 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4b-R — UPSTREAM FROZEN CONTRACT EVIDENCE EXTRACTION REPORT
+UPSTREAM SOURCE RIGOR CONTRACT INSPECTION
+================================================================================
+Date: 2026-09-27
+Mode: READ-ONLY ARCHITECTURAL INSPECTION
+Target Artifact: /TT_Phase_1C4_Upstream_Source_Rigor_Contract_Inspection.txt
+Status: COMPLETED READ-ONLY AUDIT
+================================================================================
+
+--------------------------------------------------------------------------------
+SECTION 1 — AUTHORITATIVE ARTIFACTS INSPECTED
+--------------------------------------------------------------------------------
+
+1. Phase 1C.4a-R v1.1: Knowledge Architecture & Lifecycle
+   - File Path: /TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt
+   - Title: TONE TRANSLATOR (TT) PHASE 1C.4a-R — SOUND ENGINEERING KNOWLEDGE ARCHITECTURE & LIFECYCLE
+   - Version: FREEZE CANDIDATE v1.1
+   - Date: 2026-09-26
+   - Line Count: 1,342 lines
+   - Status: Authoritative Freeze Candidate v1.1
+
+2. Phase 1C.4a-DR v1.1: Associated Revalidation / Decision / Addendum Artifact
+   - File Path: /TT_Phase_1C4a_Dependency_Revalidation_Against_1C3c_v1.1.txt
+   - Title: TONE TRANSLATOR (TT) PHASE 1C.4a-DR — DEPENDENCY REVALIDATION REPORT
+   - Version: v1.1
+   - Date: 2026-09-26
+   - Line Count: 644 lines
+   - Status: Formally frozen dependency revalidation report (PASS WITH BOUNDED ADDENDUM)
+
+
+--------------------------------------------------------------------------------
+SECTION 2 — SEARCH TARGETS & CORPUS COVERAGE
+--------------------------------------------------------------------------------
+
+Both authoritative frozen artifacts were inspected exhaustively for:
+- source_rigor, source_rigor_tier, rigor, R1-R5, PHYSICAL_LAW, PEER_REVIEWED_RESEARCH,
+  MANUFACTURER_ENGINEERING, PROFESSIONAL_TREATISE, PRACTITIONER_ACCOUNT, UNASSESSED,
+  UNASSESSED_LEGACY_SOURCE
+- source class, source type, source category, authority, hierarchy, evidence strength,
+  evidence quality, evidence sufficiency, methodological, methodology, epistemic,
+  epistemic basis, EpistemicValidation, consensus, replication, jurisdiction,
+  provenance, ClaimAttribution, SourceDocument, KnowledgeClaim, claim quality,
+  source quality, source type != truth, venue, confidence, scalar, ordinal, ranking,
+  Addendum 1, Current TT, legacy source, recovered provenance, inherit, inheritance.
+
+
+--------------------------------------------------------------------------------
+SECTION 3 — VERBATIM UPSTREAM TEXTUAL EVIDENCE
+--------------------------------------------------------------------------------
+
+EVIDENCE ITEM 1: Multi-Dimensional Authority Preservation
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 52-54)
+"2. Multi-Dimensional Authority Preservation: Eliminated the composite scalar
+   `authority_score`; preserved Source Rigor (R1-R5) and Domain Jurisdiction
+   (J_CORE, J_APPLIED, J_PERIPHERAL) as independent, queryable dimensions."
+
+EVIDENCE ITEM 2: Correction 1 — Structured Epistemic Validation
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 88-95)
+"Removed the scalar float entirely. Introduced a structured `EpistemicValidation`
+contract comprising five qualitative categorical factors: `evidence_strength`
+(THEORETICAL_PROOF, SYSTEMATIC_EMPIRICAL, CORROBORATED_PRACTICE, ANECDOTAL),
+`consensus_state` (ESTABLISHED_CONSENSUS, PREDOMINANT, DEBATED, OUTLIER),
+`replication_state` (INDEPENDENTLY_REPLICATED, EXPERIMENTALLY_VERIFIED,
+OBSERVATIONAL_ONLY), `conflict_status` (UNCONTESTED, ACTIVE_COMPETING_CLAIM),
+and `boundary_certainty` (TIGHTLY_BOUNDED, PARTIAL_ENVELOPE, UNEXPLORED_LIMITS).
+Distinguished claim-level confidence from runtime contextual applicability."
+
+EVIDENCE ITEM 3: Correction 2 — Prohibition of Collapsing Epistemic Authority
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 109-118)
+"Architectural Correction:
+  Eliminated `authority_score`. Source Rigor (R1 to R5) and Domain Jurisdiction
+  (J_CORE, J_APPLIED, J_PERIPHERAL) remain separate, independently queryable facets
+  in retrieval metadata. Conflict resolution and ranking remain contextual and
+  evidence-sensitive rather than reducible to a single number.
+Affected Entities/Sections:
+  `SourceDocument`, `KnowledgeClaim`, Section 10, Section 16, Section 22.
+Resulting Design Principle:
+  Authority is structural and relational; collapsing multi-dimensional rigor and
+  domain relevance into a single scalar destroys epistemological nuance."
+
+EVIDENCE ITEM 4: Correction 3 — Normalization of Source, Attribution, and Review
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 127-139)
+"Architectural Correction:
+  Normalized into three decoupled entities:
+  - `SourceDocument`: Persistent bibliographic identity and document hash.
+  - `ClaimAttribution`: The specific relationship between a `KnowledgeClaim` and a
+    `SourceDocument`, including page, quotation, support type (SUPPORTS, QUALIFIES,
+    CONTRADICTS, ILLUSTRATES), and extraction lineage.
+  - `ReviewRecord`: Independent governance audit entity tracking review purpose,
+    reviewer role, decision, findings, and applicable standard.
+Affected Entities/Sections:
+  Section 6 (Entity Model), Section 7, Section 8, Section 9, Section 17, Section 22.
+Resulting Design Principle:
+  Provenance data, citation relationships, and governance events operate on distinct
+  lifecycles and must be independently addressable and auditable."
+
+EVIDENCE ITEM 5: Entity Model Diagram (SourceDocument and Relationships)
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 391-419)
+"   +───────────────────────────────────+
+   │          SourceDocument           │
+   │  - source_id                      │
+   │  - bibliographic_metadata         │
+   │  - source_rigor_tier (R1-R5)      │
+   │  - domain_jurisdiction            │
+   │  - document_hash                  │
+   +─────────────────┬─────────────────+
+                     │ 1
+                     │ cites
+                     ▼ 1..*
+   +───────────────────────────────────+       1..* captures
+   │          ClaimAttribution         ├───────────────────────────+
+   │  - attribution_id                 │                           │
+   │  - source_id                      │                           │
+   │  - location_in_source             │                           │
+   │  - support_type (SUPPORTS, etc.)  │                           │
+   │  - extracted_passage              │                           │
+   +─────────────────┬─────────────────+                           │
+                     │ 1..*                                        │
+                     │ validates                                   │
+                     ▼ 1                                           ▼
+   +───────────────────────────────────+       1..* relates  +───────────────+
+   │          KnowledgeClaim           │<───────────────────>│ConflictRecord │
+   │  - claim_id                       │                     │- conflict_id  │
+   │  - domain_id (1-22)               │                     │- claim_ids[]  │
+   │  - 3_axis_classification          │                     │- nature       │
+   │  - statement (declarative)        │                     │- status       │
+   +──────────┬─────────────────┬──────+                     +───────────────+"
+
+EVIDENCE ITEM 6: Normalized Schema Specification for SourceDocument
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 454-466)
+"Entity 1: `SourceDocument`
+  Represents the persistent bibliographic identity of a source.
+  - `source_id`: String (e.g. `SRC-BOOK-BLENCOWE-2014`)
+  - `title`: String
+  - `authors`: Array of String
+  - `publisher_or_institution`: String
+  - `publication_year`: Integer
+  - `edition_or_version`: Optional String
+  - `isbn_or_doi`: Optional String
+  - `source_rigor_tier`: Enum (`R1_PHYSICAL_LAW`, `R2_PEER_REVIEWED_RESEARCH`,
+    `R3_MANUFACTURER_ENGINEERING`, `R4_PROFESSIONAL_TREATISE`, `R5_PRACTITIONER_ACCOUNT`)
+  - `domain_jurisdictions`: Map of DomainID -> Enum (`J_CORE`, `J_APPLIED`, `J_PERIPHERAL`)
+  - `document_hash`: String (SHA-256 of canonical text or file)"
+
+EVIDENCE ITEM 7: Normalized Schema Specification for KnowledgeClaim
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 479-508)
+"Entity 3: `KnowledgeClaim`
+  The fundamental atomic unit of sound engineering knowledge.
+  - `claim_id`: String (e.g. `KC-D10-PROXIMITY-001`)
+  - `domain_id`: Integer (1 to 22, per Phase 1C.3a)
+  - `concept_name`: String
+  - `epistemic_basis`: Enum (from Axis 1: `PHYSICAL_LAW`, `ESTABLISHED_ENGINEERING_PRINCIPLE`,
+    `EMPIRICAL_RELATIONSHIP`, `ENGINEERING_TENDENCY`, `HYPOTHETICAL_OR_COMPETING_MODEL`)
+  - `knowledge_role`: Enum (from Axis 2: `FUNDAMENTAL_THEORY`, `PHENOMENOLOGICAL_MODEL`,
+    `CONTEXT_DEPENDENT_PRACTICE`, `PROFESSIONAL_CONVENTION`, `ILLUSTRATIVE_EXAMPLE`)
+  - `physical_scope`: Enum (from Axis 3: `TRANSDUCER_PHYSICS`, `CIRCUIT_ELECTRONICS`,
+    `WAVE_ACOUSTICS`, `PSYCHOACOUSTICS`, `SYSTEM_TOPOLOGY`, `DEVICE_SPECIFIC_BEHAVIOUR`)
+  - `statement`: String (Declarative, platform-independent assertion)
+  - `formal_derivation_or_math`: Optional Object:
+    - `notation_format`: Enum (`LATEX_DECLARATIVE`, `STRUCTURED_MATH_AST`)
+    - `formula_expression`: String
+  - `epistemic_validation`: Object (Structured validation replacing scalar confidence):
+    - `evidence_strength`: Enum (`THEORETICAL_PROOF`, `SYSTEMATIC_EMPIRICAL`,
+      `CORROBORATED_PRACTICE`, `ANECDOTAL_OBSERVATION`)
+    - `consensus_state`: Enum (`ESTABLISHED_CONSENSUS`, `PREDOMINANT_VIEW`,
+      `DEBATED_VIEW`, `OUTLIER_HYPOTHESIS`)
+    - `replication_state`: Enum (`INDEPENDENTLY_REPLICATED`, `LABORATORY_VERIFIED`,
+      `OBSERVATIONAL_UNREPLICATED`)
+    - `conflict_status`: Enum (`UNCONTESTED`, `ACTIVE_COMPETING_CLAIM`)
+    - `boundary_certainty`: Enum (`TIGHTLY_BOUNDED`, `PARTIALLY_BOUNDED`,
+      `EXPLORATORY_LIMITS`)
+  - `lifecycle_state`: Enum (`CAPTURED`, `EXTRACTED`, `NORMALIZED`, `UNDER_REVIEW`,
+    `VALIDATED_ACTIVE`, `DEPRECATED`, `SUPERSEDED`, `REJECTED`,
+    `UNVERIFIED_SCHEMA_ILLUSTRATION`)
+  - `version`: Integer
+  - `superseded_by`: Optional String"
+
+EVIDENCE ITEM 8: Section 9 — Two-Dimensional Authority Matrix
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 648-672)
+"9.1 THE TWO-DIMENSIONAL AUTHORITY MATRIX
+Authority is determined by the intersection of Source Rigor and Domain Jurisdiction:
+
+Dimension 1: Source Rigor (R-Tier)
+  - R1: Formally Proven Physical / Mathematical Law (Peer-reviewed textbooks, IEEE/AES standards).
+  - R2: Controlled Empirical & Scientific Engineering Research (AES papers, ASA laboratory data).
+  - R3: Authoritative Technical & Manufacturer Documentation (Schematics, patents, engineering whitepapers).
+  - R4: Systematic Professional Engineering Literature (Treatises by master recording engineers).
+  - R5: Contextual Practitioner Accounts & Interviews (Documented artist/engineer interviews).
+
+Dimension 2: Domain Jurisdiction (J-Tier)
+  - J_CORE: The source operates within its primary scientific or technical discipline.
+  - J_APPLIED: The source applies principles from an external discipline to its domain.
+  - J_PERIPHERAL: The source makes informal remarks outside its primary expertise.
+
+9.2 DISPENSING WITH SCALAR AUTHORITY SCORES
+The architecture strictly prohibits combining R-Tier and J-Tier into a single scalar
+score (e.g. "Authority = 8.7/10").
+During retrieval and reasoning:
+  - Queries filter by minimum Rigor and Jurisdiction requirements.
+  - An R3/J_CORE manufacturer schematic for an amplifier circuit takes precedence
+    over an R1/J_PERIPHERAL textbook comment on guitar amp tone stacks.
+  - An R1/J_CORE acoustics textbook takes precedence over an R4/J_APPLIED recording
+    engineer's handbook regarding wave diffraction physics."
+
+EVIDENCE ITEM 9: Section 15.1 — Retrieval-Readiness Metadata Facets
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 810-828)
+"15.1 PURPOSE & MULTI-FACETED QUERY VECTORS
+Retrieval metadata supports dynamic discovery without encoding fixed symptom-to-fix
+recipes. Every `KnowledgeClaim` and `CausalModel` exposes ten orthogonal query facets:
+  1. `domain_id`: Integer (1 to 22).
+  2. `electro_acoustic_stage`: Enum (`SOURCE`, `FRONT_END`, `PREAMP`, `POWER_AMP`,
+     `CABINET`, `ROOM`, `CAPTURE`, `POST_PROCESS`).
+  3. `physical_phenomena`: Tags (`RESONANCE`, `SATURATION`, `PROXIMITY_EFFECT`,
+     `COMB_FILTERING`, `SAG`, `THERMAL_NOISE`).
+  4. `acoustic_symptom_descriptors`: Descriptive tags (`MUDDY_LOW_END`, `HARSH_FIZZ`,
+     `INDISTINCT_ATTACK`, `HOLLOW_NOTCH`, `STEREO_COLLAPSE`).
+     *Crucial Distinction: Tags enable query filtering; they do NOT link to fixes.*
+  5. `evidence_metric_requirements`: Required DSP metrics (`SPECTRAL_CENTROID`,
+     `CREST_FACTOR`, `PHASE_CORRELATION`, `ATTACK_SLOPE`).
+  6. `source_rigor_tier`: Enum (`R1` to `R5`).
+  7. `domain_jurisdiction`: Enum (`J_CORE`, `J_APPLIED`, `J_PERIPHERAL`).
+  8. `epistemic_basis`: Enum (`PHYSICAL_LAW`, `ESTABLISHED_PRINCIPLE`, etc.).
+  9. `conflict_active_flag`: Boolean.
+  10. `lifecycle_state`: Must be `VALIDATED_ACTIVE` for production retrieval."
+
+EVIDENCE ITEM 10: Section 17.1 — Current TT as an Unverified Source
+Artifact: TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Lines 867-870)
+"17.1 CURRENT TT AS AN UNVERIFIED SOURCE
+Knowledge embedded in Current TT's codebase is treated as source material with
+`source_rigor_tier: R4_PROFESSIONAL_TREATISE` and `jurisdiction: J_APPLIED`.
+It is NOT authoritative until it passes full deconstruction and governance."
+
+EVIDENCE ITEM 11: Multi-Factor Evidence Assessment in Revalidation
+Artifact: TT_Phase_1C4a_Dependency_Revalidation_Against_1C3c_v1.1.txt (Lines 229-249)
+"7.1 MULTI-FACTOR EVIDENCE ASSESSMENT
+Phase 1C.3c-R Section 20 mandates a multi-factor evidence assessment framework where
+source category alone never determines absolute truth. Factors include source rigor,
+methodological validity, empirical reproducibility, peer review, domain jurisdiction,
+and operational context.
+
+Phase 1C.4a-R Sections 6, 8, 9, and 10 provide an exact architectural match:
+  - Source Rigor Tier: Five-tier continuum (`R1_PHYSICAL_LAW` to `R5_PRACTITIONER_ACCOUNT`).
+  - Domain Jurisdiction: Three-tier classification (`J_CORE`, `J_APPLIED`, `J_PERIPHERAL`)
+    evaluated on a per-domain basis.
+  - Elimination of Scalar Authority: Section 9.2 strictly prohibits collapsing rigor and
+    jurisdiction into a composite score (e.g. "8.7/10"). Queries filter and sort along
+    orthogonal dimensions.
+  - Epistemic Validation: Replaces arbitrary confidence floats (e.g. 0.92) with five
+    structured qualitative factors:
+      * `evidence_strength`: THEORETICAL_PROOF, SYSTEMATIC_EMPIRICAL, CORROBORATED_PRACTICE, ANECDOTAL
+      * `consensus_state`: ESTABLISHED_CONSENSUS, PREDOMINANT, DEBATED, OUTLIER
+      * `replication_state`: INDEPENDENTLY_REPLICATED, EXPERIMENTALLY_VERIFIED, OBSERVATIONAL_ONLY
+      * `conflict_status`: UNCONTESTED, ACTIVE_COMPETING_CLAIM
+      * `boundary_certainty`: TIGHTLY_BOUNDED, PARTIAL_ENVELOPE, UNEXPLORED_LIMITS"
+
+EVIDENCE ITEM 12: Revalidation Review of Section 17.1 & Overclaim Finding
+Artifact: TT_Phase_1C4a_Dependency_Revalidation_Against_1C3c_v1.1.txt (Lines 327-356)
+"9.2 EVALUATION OF 1C.4a-R SECTION 17.1
+In Phase 1C.4a-R v1.1 Section 17.1, the document states:
+    "Knowledge embedded in Current TT's codebase is treated as source material with
+     source_rigor_tier: R4_PROFESSIONAL_TREATISE and jurisdiction: J_APPLIED.
+     It is NOT authoritative until it passes full deconstruction and governance."
+
+Architectural Evaluation:
+  - The four-stage deconstruction pipeline in Section 17.2 (Separation -> Physical
+    Formulation -> Boundary Documentation -> Governance Review) is completely sound.
+  - However, labeling Current TT itself as `R4_PROFESSIONAL_TREATISE` is an epistemic
+    overclaim. Current TT is a software codebase containing unverified heuristics, not
+    a published, peer-reviewed professional treatise (such as Huber, Rumsey, or Blencowe).
+  - Assigning R4 to Current TT risks inflating the baseline authority of unprovenanced
+    heuristics before their underlying literature roots are identified.
+
+9.3 RESOLUTION: BOUNDED REVALIDATION ADDENDUM
+In accordance with the review instruction and smallest-change principle:
+  - An architectural rewrite of Phase 1C.4a is NOT required.
+  - A formal Bounded Revalidation Addendum is established (Section 15, Addendum 1):
+    Current TT codebase is formally designated as:
+        `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`
+    When an atomic claim is extracted from Current TT:
+      a) If its underlying physical principle is traced to authoritative primary
+         literature (e.g. Blencowe, AES, Beranek), the resulting `ClaimAttribution`
+         cites that primary source and receives the primary source's true Rigor Tier
+         (R1 to R4). Current TT is recorded solely as the historical migration origin.
+      b) If no primary literature source can be verified, the claim remains at
+         `UNASSESSED_LEGACY_SOURCE` (or R5_PRACTITIONER_ACCOUNT if corroboration exists)
+         and CANNOT be promoted to `VALIDATED_ACTIVE` without empirical validation."
+
+EVIDENCE ITEM 13: Authoritative Revalidation Addendum 1 (Verbatim Full Text)
+Artifact: TT_Phase_1C4a_Dependency_Revalidation_Against_1C3c_v1.1.txt (Lines 580-600)
+"AUTHORITATIVE REVALIDATION ADDENDUM 1:
+Classification of Current TT as UNASSESSED_LEGACY_SOURCE
+--------------------------------------------------------------------------------
+Scope: Modifies the source classification in Phase 1C.4a-R Section 17.1.
+Specification:
+  1. The Current TT codebase shall NOT be classified as `R4_PROFESSIONAL_TREATISE`.
+  2. For bibliographic and ingestion registry purposes, Current TT is formally classified as:
+         `source_rigor_tier: UNASSESSED_LEGACY_SOURCE`
+         `domain_jurisdictions: { "1".."22": "J_APPLIED" }`
+  3. When an atomic candidate claim or causal model is extracted from Current TT during
+     migration (Phase 1C.4e):
+     - The extraction specialist must locate and cite the original primary literature
+       source establishing the underlying physical, electrical, or acoustic principle.
+     - The resulting `SourceDocument` and `ClaimAttribution` records shall cite the
+       primary literature source and inherit that source's verified Rigor Tier (R1 to R4).
+       Current TT shall be recorded solely as the extraction lineage origin.
+     - Any claim extracted from Current TT for which no authoritative primary source
+       can be identified shall remain quarantined at `UNASSESSED_LEGACY_SOURCE` and
+       cannot achieve `VALIDATED_ACTIVE` state without rigorous empirical laboratory
+       verification."
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — SUMMARY OF ANSWERS TO EPISTEMIC QUESTIONS
+--------------------------------------------------------------------------------
+
+1. source_rigor_tier is explicitly defined in frozen 1C.4a-R (SourceDocument field and claim query facet).
+2. Canonical enum set: R1_PHYSICAL_LAW, R2_PEER_REVIEWED_RESEARCH, R3_MANUFACTURER_ENGINEERING,
+   R4_PROFESSIONAL_TREATISE, R5_PRACTITIONER_ACCOUNT, plus UNASSESSED_LEGACY_SOURCE (from Addendum 1).
+3. It represents an upstream composite classification/authority facet of a source document conflating
+   publication format/genre with methodological caliber.
+4. It is implicitly ordinal upstream (treated as a continuum, used for minimum rigor queries,
+   precedence under equal jurisdiction, and warnings against inflating baseline authority),
+   though cross-dimensional queries prohibit scalar collapse.
+5. It directly maps source types/venues to R-tiers (parenthetical mappings in Section 9.1).
+6. SOURCE TYPE != TRUTH is explicit (1C.4a-DR lines 230-233).
+   SOURCE VENUE != RIGOR is not present upstream (upstream maps venue directly to rigor).
+   RIGOR != EPISTEMIC BASIS is explicit (Rigor is on SourceDocument, Epistemic Basis is on KnowledgeClaim).
+   JURISDICTION != RIGOR is explicit (orthogonal dimensions).
+7. Concepts are decoupled across SourceDocument (source_rigor_tier, domain_jurisdictions) and
+   KnowledgeClaim (epistemic_basis, epistemic_validation, lifecycle_state).
+8. Source-level assessment is decoupled from claim-level assessment via relational normalization.
+9. Inheritance of source rigor to claims is conditionally stated in 1C.4a-DR, but claims require
+   independent epistemic validation and operational boundaries.
+10. Addendum 1 reclassified Current TT as UNASSESSED_LEGACY_SOURCE, required primary literature recovery,
+    and quarantined unprovenanced claims.
+11. UNASSESSED_LEGACY_SOURCE serves multiple roles upstream: source_rigor_tier value, source classification,
+    acquisition status, and claim quarantine standing.
+12. Downstream phases may add orthogonal characterisation (e.g. methodological_mode) provided
+    SourceDocument.source_rigor_tier and backward compatibility are strictly preserved.
+================================================================================
+END OF INSPECTION REPORT
+================================================================================

@@ -1,0 +1,1615 @@
+================================================================================
+TONE TRANSLATOR (TT)
+PHASE 1C.4e-R v0.1 — CURRENT TT KNOWLEDGE MIGRATION SPECIFICATION
+PROFESSIONAL SOUND ENGINEER FOUNDATION
+
+MODE: ARCHITECTURE / SPECIFICATION ONLY
+Version: 0.1 — Initial Specification Freeze Candidate
+Date: 2026-09-28
+Status: AUTHORITATIVE KNOWLEDGE MIGRATION SPECIFICATION
+Governing Classification: UNASSESSED_LEGACY_SOURCE
+Target Artifact: /TT_Current_TT_Knowledge_Migration_Specification_v0.1.txt
+Canonical Aliases:
+  - /TT_Phase_1C4e_Current_TT_Knowledge_Migration_Specification_v0.1.txt
+  - /TT_Phase_1C.4e-R_v0.1_Specification.txt
+================================================================================
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+SECTION 1  — EXECUTIVE SUMMARY, MANDATE & GOVERNING EPISTEMIC PRINCIPLES
+  1.1 Architectural Purpose & Context
+  1.2 Upstream Dependency Integration & Freeze Preservation
+  1.3 Strict Operational Boundaries & Non-Goals
+  1.4 Core Epistemic Axioms
+  1.5 The Core Mandate: Anti-Patterns to Prevent
+
+SECTION 2  — THE CANONICAL MIGRATION PIPELINE & ATOMIC DECONSTRUCTION METHODOLOGY
+  2.1 The End-to-End Migration Chain
+  2.2 The 1-to-Many Atomic Decomposition Principle
+  2.3 Deconstruction Heuristics & Boundary Rules
+  2.4 Decoupling Sound Engineering Knowledge from Platform Implementation
+
+SECTION 3  — DISCIPLINED ASSET & PROPOSITION TAXONOMY ("WHAT IT ACTUALLY IS")
+  3.1 Necessity of Epistemic & Ontological Precision
+  3.2 The 18 Canonical Asset Categories
+  3.3 Boundary Disambiguation Criteria
+  3.4 Taxonomic Classification Decision Tree
+
+SECTION 4  — FORMAL DISPOSITIONS & MULTI-ANNOTATION TAXONOMY
+  4.1 The Six Primary Dispositions
+  4.2 Primary Disposition Exclusivity Rule
+  4.3 Secondary Annotation Tagging System
+  4.4 Non-Destructive NLR Quarantine Rule
+
+SECTION 5  — ARCHITECTURAL OWNERSHIP & THE STRICT BOUNDARY FIREWALL
+  5.1 The Ten Architectural Owners
+  5.2 The Core Ownership Axiom
+  5.3 The Anti-Hijack Principle & Deterministic Separation of Concerns
+  5.4 Responsibility Boundary Matrix
+
+SECTION 6  — THE REFERENCE CASE EVIDENCE FIREWALL & PRECEDENT ISOLATION
+  6.1 Purpose & Role of Reference Case Evidence
+  6.2 Canonical Schema of Reference Case Evidence
+  6.3 The Four Anti-Precedent Firewalls
+  6.4 Governed Retrieval & Querying of Reference Cases
+
+SECTION 7  — OPERATIONAL REALITY INSPECTION METHODOLOGY
+  7.1 The Six Operational States
+  7.2 Forensic Audit & Reality Inspection Protocol
+  7.3 Operational Status Transition Lifecycle
+
+SECTION 8  — PROVENANCE RECOVERY & RISK-PROPORTIONAL VALIDATION WORKFLOW
+  8.1 Operationalizing the UNASSESSED_LEGACY_SOURCE Ingestion Pipeline
+  8.2 Risk-Proportional Evidence Sufficiency Tiers
+  8.3 Recovered SourceDocument Schema & Citation Requirements
+  8.4 Downstream Epistemic Lifecycle Integration (Phase 1C.4d)
+
+SECTION 9  — ARCHAEOLOGICAL LAYER MIGRATION SPECIFICATIONS
+  9.1 Layer 1: Prompt & LLM Ingestion Layer
+  9.2 Layer 2: Curated Static Recipes & Preset Knowledge
+  9.3 Layer 3: Deterministic Overrides & Surgical Mutations
+  9.4 Layer 4: Domain Taxonomy, Semantic Abstractions & 4D VIR Coordinates
+  9.5 Layer 5: Gear Catalogues, Parameter Manifests & Platform Translation
+  9.6 Layer 6: Audio Input Scaffolding, Shadow Traces, Test Suites & UI Scaffolding
+
+SECTION 10 — THE FORMAL ATOMIC MIGRATION RECORD SCHEMA
+  10.1 Schema Field Definitions & Specifications
+  10.2 TypeScript Interface Definition
+  10.3 JSON Schema Representation
+
+SECTION 11 — CONCRETE WORKED DECONSTRUCTION EXAMPLES (END-TO-END)
+  11.1 Example 1: Master Prompt "Gain Pivot" Rule
+  11.2 Example 2: Static Recipe "Cowboys From Hell" Dimebag Darrell Preset
+  11.3 Example 3: Deterministic Override adjustThrashPedalSelection()
+  11.4 Example 4: AT5 VIR 4D Microphone Placement Engine & Calibration Data
+  11.5 Example 5: Disconnected Audio Input Pipeline (recordingData / currentAudio)
+  11.6 Example 6: SoundEngineerService Shadow Mode & Synthetic Execution Traces
+
+SECTION 12 — MIGRATION PROTOCOL, AUDITING, VERIFICATION & HANDOFF GATES
+  12.1 Phase-Gate Execution Lifecycle
+  12.2 Verification & Non-Regression Audit Protocol
+  12.3 Sign-Off Gates & Handoff to Downstream Phases
+================================================================================
+
+--------------------------------------------------------------------------------
+SECTION 1 — EXECUTIVE SUMMARY, MANDATE & GOVERNING EPISTEMIC PRINCIPLES
+--------------------------------------------------------------------------------
+1.1 ARCHITECTURAL PURPOSE & CONTEXT
+Tone Translator (TT) is undergoing a fundamental architectural evolution: transitioning
+from an AmpliTube 5 (AT5) preset-generation application into a platform-independent,
+acoustically grounded, professional AI Sound Engineer architecture.
+
+The target macro-architecture establishes a strict, unidirectional causal flow:
+
+    INPUT / EVIDENCE
+        ↓
+    AI SOUND ENGINEER (Reasoning from foundational acoustic first principles)
+        ↓
+    ENGINEERING DECISION (Declarative, platform-agnostic diagnostic and intervention plans)
+        ↓
+    SEMANTIC TONE DESIGN (High-level abstract audio topology and parameterization)
+        ↓
+    DETERMINISTIC VALIDATION (Acoustic rule verification, conflict detection, bounds check)
+        ↓
+    PLATFORM TRANSLATOR (Target-specific semantic-to-hardware mapping engine)
+        ↓
+    PLATFORM-SPECIFIC IMPLEMENTATION / EXPORT (AmpliTube 5, Quad Cortex, Helix, Kemper, etc.)
+
+In this future architecture, target platforms such as AmpliTube 5 remain supported
+deployment targets, but they NEVER dictate, constrain, or define the Sound Engineer's
+internal reasoning, diagnostic ontology, or epistemic knowledge base.
+
+Current TT predates this architecture. As documented in the comprehensive archaeological
+survey (/TT_Current_TT_Archaeological_Survey_v1.txt), the legacy codebase is an
+archaeological accumulation of valuable sound-engineering knowledge, heuristic rules,
+genre conventions, artist recipes, post-generation deterministic overrides, prompt
+instructions, platform-specific quirks, and dormant scaffolding.
+
+Before the new AI Sound Engineer architecture can be populated with knowledge, a formal,
+rigorous specification must govern how Current TT legacy assets will be decomposed,
+evaluated, classified, preserved, relocated, investigated, or retired. This document
+establishes that definitive migration specification.
+
+1.2 UPSTREAM DEPENDENCY INTEGRATION & FREEZE PRESERVATION
+This specification directly consumes and preserves all frozen decisions, contracts, and
+taxonomies established in preceding Phase 1C architecture artifacts:
+  - Phase 1C.3 Competency Model & Gap Analysis:
+      * /TT_Professional_Sound_Engineer_Standards_v1.txt (Phase 1C.3a)
+      * /TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt (Phase 1C.3b)
+      * /TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt (Phase 1C.3c)
+  - Phase 1C.4a-R v1.1 Sound Engineering Knowledge Architecture:
+      * 8 Normalized Entity Types: CorePrinciple, CausalRelationship, DiagnosticTree,
+        InterventionPattern, AcousticBoundary, PsychoacousticModel, EngineeringRule,
+        DeviceProfile.
+      * 22 Specific Knowledge Domains across the 4 foundational pillars.
+      * 3-Axis Taxonomy: Engineering Nature, Acoustical Signal Chain Locus, and Operational Scope.
+  - Phase 1C.4b-R v1.1g Sound Engineering Knowledge Source & Acquisition Architecture:
+      * 10-Stage Internal Ingestion Pipeline terminating in review-ready candidate packages.
+      * Class I Source Ingestion Category: UNASSESSED_LEGACY_SOURCE.
+      * Binding Provenance Principle: Risk-proportional underlying provenance recovery.
+  - Phase 1C.4c-R v1.1b Sound Engineering Knowledge Retrieval & Runtime Context Architecture:
+      * Runtime Context Budgeting, Lineage Token tracking, Zero-Leakage Prompt Construction.
+  - Phase 1C.4d-R v1.1a Knowledge Conflict, Uncertainty & Governance Architecture:
+      * Qualitative Uncertainty Modeling, Explicit ConflictRecord preservation,
+        Review-Ready Candidate Dossier gating, Non-Destructive Quarantine lifecycle.
+  - Phase 1C.4e Archaeological Survey Baseline:
+      * /TT_Current_TT_Archaeological_Survey_v1.txt (and canonical aliases).
+
+All frozen decisions from these phases are preserved intact. Phase 1C.4e-R consumes them
+without reinterpreting, modifying, or replacing their established contracts.
+
+1.3 STRICT OPERATIONAL BOUNDARIES & NON-GOALS
+This task is ARCHITECTURE AND SPECIFICATION ONLY.
+In strict conformance with project governance:
+  - DO NOT modify production runtime behaviour in src/.
+  - DO NOT delete legacy or dead code.
+  - DO NOT execute line-by-line asset migration or populate the knowledge inventory.
+  - DO NOT promote legacy claims to canonical status.
+  - DO NOT implement the future Sound Engineer runtime or reasoning loop.
+  - DO NOT execute Phase 1C.4f acceptance/UAT scenarios.
+
+1.4 CORE EPISTEMIC AXIOMS
+The entire migration methodology is anchored in four foundational epistemic axioms:
+
+AXIOM 1: CURRENT TT IS CLASSIFIED AS UNASSESSED_LEGACY_SOURCE
+Existing behaviour, code structures, prompts, and recipes possess ZERO automatic
+epistemic authority merely because they are implemented in the application codebase.
+Code presence proves that an implementation exists; it does not prove that the underlying
+engineering proposition is true, optimal, or acoustically justified.
+
+AXIOM 2: OBSOLETE IMPLEMENTATION DOES NOT IMPLY USELESS KNOWLEDGE
+A dormant recipe, hardcoded override, unused helper, or obsolete test fixture may
+encapsulate a profound physical or engineering proposition. Do not dismiss, delete,
+or ignore an asset merely because its current code path is dead, bypassed, or poorly
+implemented.
+
+AXIOM 3: SUCCESSFUL OUTPUT DOES NOT PROVE CORRECT REASONING
+A legacy prompt or deterministic override may have historically generated subjectively
+acceptable presets for a handful of test cases. This coincidental or heuristic success
+does NOT constitute proof that its embedded engineering assumptions, causal claims,
+or acoustic theories are valid.
+
+AXIOM 4: BINDING PROVENANCE & RISK-PROPORTIONAL EVIDENCE STANDARD
+Candidate propositions extracted from Current TT must recover the best available
+underlying provenance and validate the claim to an evidence standard appropriate to its
+nature and risk.
+There is NO universal requirement for primary laboratory research or peer-reviewed
+academic literature across all claims. Low-risk genre conventions or historical
+production practices require documentation of established professional consensus,
+whereas high-risk physical or safety claims demand rigorous technical or electroacoustic
+verification.
+
+1.5 THE CORE MANDATE: ANTI-PATTERNS TO PREVENT
+The migration methodology defined in this specification is designed to systematically
+prevent the following critical failure modes:
+  1. Recipes Becoming Engineering Laws:
+     A specific setting (e.g. "set Tube Screamer drive to 1, tone to 7, level to 9 for thrash")
+     must never be recorded as a general physical law. It is a contextual reference recipe,
+     rooted in a specific equipment combination and historical aesthetic.
+  2. Platform Quirks Becoming Sound Engineer Knowledge:
+     AmpliTube 5 specific behaviors (e.g. digital gain staging anomalies, 4-stomp slot
+     limits, specific GUID bindings) must never be encoded as Sound Engineer principles.
+     They belong exclusively in the target-specific Platform Translator.
+  3. Successful Historical Outputs Becoming Proof of Reasoning:
+     The fact that a user liked a preset generated by a deterministic surgery must not be
+     used to justify the surgical mutation as sound acoustic reasoning.
+  4. Perceptual Shorthand Becoming Physical Fact:
+     Subjective buzzwords ("warmth", "punch", "chug", "tightness", "glassy", "ice-pick")
+     must not be treated as objective physical entities. They must be deconstructed into
+     measurable spectral, dynamic, and temporal acoustic dimensions.
+  5. Dead or Unused Capability Represented as Operational Capability:
+     Scaffolding that is bypassed, disconnected, or isolated in shadow mode (e.g. audio
+     input analysis, SoundEngineerService shadow mode) must be forensically audited and
+     never presented as functioning runtime competence.
+  6. Deterministic Implementation Logic Silently Inheriting AI Judgement:
+     Hardcoded TypeScript overrides must not silently mutate or redesign engineering
+     decisions made by the Sound Engineer. Truth checking and validation must report
+     violations, not secretly replace decisions.
+  7. Reference Case Evidence Silently Becoming Canonical Precedent:
+     Historical recording recipes and album benchmark setups must not automatically
+     bind future decisions. They must be quarantined behind a Reference Case Firewall.
+  8. Useful Knowledge Lost When Obsolete Scaffolding Is Retired:
+     Retiring dead code without first performing atomic deconstruction risks destroying
+     valuable acoustic heuristics and platform calibration data embedded within it.
+
+--------------------------------------------------------------------------------
+SECTION 2 — THE CANONICAL MIGRATION PIPELINE & ATOMIC DECONSTRUCTION METHODOLOGY
+--------------------------------------------------------------------------------
+2.1 THE END-TO-END MIGRATION CHAIN
+The migration process transforms legacy assets into formal, governed engineering knowledge
+through an unbroken nine-stage pipeline:
+
+  [ Stage 1: Legacy Asset Identification ]
+         Identify discrete code, prompt, recipe, override, or schema asset in repository.
+         ↓
+  [ Stage 2: Atomic Deconstruction ]
+         Isolate every discrete assertion, assumption, heuristic, rule, and calibration point.
+         ↓
+  [ Stage 3: Determine What It Actually Is ]
+         Classify each atomic proposition against the 18 Disciplined Asset Categories.
+         ↓
+  [ Stage 4: Architectural Ownership Assignment ]
+         Assign each atomic item to exactly one of the 10 Architectural Owners.
+         ↓
+  [ Stage 5: Epistemic Assessment & Risk Scoring ]
+         Evaluate physical validity, operational envelope, falsifiability, and risk tier.
+         ↓
+  [ Stage 6: Primary Disposition & Multi-Annotation ]
+         Assign exactly one Primary Disposition and apply secondary diagnostic tags.
+         ↓
+  [ Stage 7: Destination Mapping ]
+         Route the item to its designated architectural repository or retirement archive.
+         ↓
+  [ Stage 8: Provenance Recovery ]
+         Trace underlying physical, historical, or platform provenance (SourceDocument).
+         ↓
+  [ Stage 9: Formal Migration Record Creation ]
+         Generate an immutable, auditable, machine-readable Migration Record.
+
+2.2 THE 1-TO-MANY ATOMIC DECOMPOSITION PRINCIPLE
+A single legacy asset in Current TT is rarely atomic. A single function, prompt section,
+or recipe almost always conflates:
+  - An acoustic principle (e.g. low-frequency phase cancellation);
+  - A causal relationship (e.g. pre-distortion high-pass filtering prevents intermodulation);
+  - A genre-specific convention (e.g. thrash metal rhythm guitar tracking);
+  - A specific hardware choice (e.g. Ibanez TS9 Tube Screamer);
+  - A platform-specific implementation parameter (e.g. AT5 OverScream GUID 102, Drive 1.0);
+  - A deterministic override mechanism (e.g. adjusting pedal selection post-generation);
+  - A user interface binding or test assertion.
+
+THEREFORE: A SINGLE LEGACY ASSET MAY DECOMPOSE INTO MULTIPLE ATOMIC OUTPUTS
+WITH DIFFERENT ARCHITECTURAL OWNERS, EPISTEMIC TYPES, AND DISPOSITIONS.
+
+Decomposition Example:
+The legacy function `adjustThrashPedalSelection()` in `src/services/geminiService.ts`:
+  - Output 1 (Causal Model): Pre-gain bass cut reduces intermodulation distortion in high-gain
+    amplification stages.
+    -> Owner: Sound Engineer Knowledge. Category: Causal Relationship. Disposition: KEEP CANDIDATE.
+  - Output 2 (Context Practice): Thrash metal rhythm guitar traditionally uses an overdrive pedal
+    with Drive near zero and Level boosted to tighten low-end response.
+    -> Owner: Sound Engineer Knowledge. Category: Context-Dependent Practice. Disposition: KEEP CANDIDATE.
+  - Output 3 (Universalised Prescription): Thrash tones MUST ALWAYS use an OverScream pedal.
+    -> Owner: Sound Engineer Knowledge. Category: Anti-Pattern. Disposition: NLR — NO LONGER REQUIRED.
+  - Output 4 (Platform Translation): AT5 "OverScream" corresponds to IK Multimedia Model GUID 102.
+    -> Owner: Platform Translator — AT5. Category: Platform Product Knowledge. Disposition: KEEP — RELOCATE.
+  - Output 5 (Deterministic Override): Post-generation silent mutation of LLM pedal selection.
+    -> Owner: None / Retire. Category: Anti-Pattern / Dead Code. Disposition: NLR — NO LONGER REQUIRED.
+
+2.3 DECONSTRUCTION HEURISTICS & BOUNDARY RULES
+Engineers performing migration deconstruction must apply four strict boundary rules:
+  Rule 1: Separate Intent from Implementation.
+    Ask: "What acoustic or musical problem was the original author attempting to solve?"
+    Do not confuse the problem being solved with the hack used to solve it.
+  Rule 2: Strip Target-Specific Hardware Bindings.
+    Ask: "Does this proposition remain true if the guitarist plays through a real analog
+    Mesa/Boogie Dual Rectifier, a Neural DSP Quad Cortex, or a Kemper Profiler?"
+    If yes, it is platform-agnostic sound engineering knowledge. If no, it is platform-specific.
+  Rule 3: Decouple Causal Physics from Stylistic Preference.
+    Ask: "Is this governed by physical electroacoustic behavior, or is it an aesthetic choice
+    characteristic of a specific musical subculture?"
+  Rule 4: Identify Silent Redesigns.
+    Ask: "Does this code silently replace a sound engineer's judgement, or does it merely
+    verify that the output is physically valid?"
+
+2.4 DECOUPLING SOUND ENGINEERING KNOWLEDGE FROM PLATFORM IMPLEMENTATION
+Current TT is deeply coupled to AmpliTube 5. To achieve platform independence:
+  1. Acoustical Signal Chain Abstraction:
+     The Sound Engineer reasons in terms of abstract functional blocks:
+     Input Transducer -> Input Conditioning / Filter -> Non-linear Pre-amplification ->
+     Passive Tone Stack -> Power Stage Saturation -> Complex Load / Acoustic Transducer ->
+     Spatial / Environmental Acoustics -> Post-transducer Equalization and Dynamics.
+  2. Platform Translator Boundary:
+     The Platform Translator receives the abstract Semantic Tone Design and maps it onto
+     the capabilities and quirks of the target environment (e.g. mapping an abstract
+     "mid-boost overdrive with 720Hz hump" to an AT5 OverScream or a Helix Screamer).
+  3. Platform Limitations Handled Gracefully:
+     If a target platform cannot represent a design (e.g. AT5 has a 4-stomp slot limit
+     and the design requires 5), the Platform Translator solves the constraint satisfaction
+     problem or reports the limitation. The Sound Engineer's acoustic model is NOT altered
+     to accommodate platform poverty.
+
+--------------------------------------------------------------------------------
+SECTION 3 — DISCIPLINED ASSET & PROPOSITION TAXONOMY ("WHAT IT ACTUALLY IS")
+--------------------------------------------------------------------------------
+3.1 NECESSITY OF EPISTEMIC & ONTOLOGICAL PRECISION
+In Current TT, code comments, prompt instructions, deterministic overrides, and UI labels
+freely interchange physical facts, genre rules of thumb, and software hacks.
+To construct a professional engineering knowledge system, every extracted asset must be
+categorized according to what it ACTUALLY is, not what it purports to be.
+
+An asset cannot be assumed to be sound engineering knowledge merely because it resides
+in a prompt, a "knowledge" file, a recipe, a service, or a configuration structure.
+
+3.2 THE 18 CANONICAL ASSET CATEGORIES
+Every atomic asset extracted from Current TT must be classified into exactly one of the
+following 18 canonical categories:
+
+1. ENGINEERING PRINCIPLE
+   - Definition: A foundational, invariant physical, electrical, or acoustical law that
+     holds universally across all audio production environments regardless of style or gear.
+   - Criteria: Grounded in wave mechanics, electromagnetism, circuit theory, or acoustic physics.
+     Falsifiable via standard laboratory measurement. Invariant across platforms.
+   - Example: Inverse-square law of acoustic radiation; comb filtering caused by coherent
+     signals arriving with temporal offset (tau = d / c); Ohm's law in speaker loading.
+
+2. CAUSAL RELATIONSHIP / MODEL
+   - Definition: A predictable, directional cause-and-effect relationship between an engineering
+     intervention (parameter adjustment, component choice) and its physical signal outcome.
+   - Criteria: Describes how altering X causes a change in Y across linear or non-linear stages.
+   - Example: Attenuating low frequencies prior to asymmetric diode clipping reduces intermodulation
+     distortion, increasing clarity and perceived attack tightness.
+
+3. REASONING FRAMEWORK
+   - Definition: A structured cognitive methodology, decision tree, or logical sequence used
+     by a sound engineer to diagnose problems and construct interventions.
+   - Criteria: Governs the sequence and dependencies of engineering choices; platform-independent.
+   - Example: The 10-step systematic tone design process in the Master Prompt (diagnosing acoustic
+     context before selecting transducers; setting amplifier gain structure before post-EQ).
+
+4. CONTEXT-DEPENDENT ENGINEERING PRACTICE
+   - Definition: An established engineering technique that is effective and appropriate within
+     a well-defined acoustic, musical, or production context, but not universally applicable.
+   - Criteria: Valid within specific operational boundaries (genre, instrument role, mix density);
+     counterproductive if applied outside those boundaries.
+   - Example: Scooping 800Hz by 4-6dB on high-gain rhythm guitars in dense modern metal mixes
+     to create spectral space for vocal intelligibility and bass guitar fundamental.
+
+5. PROFESSIONAL CONVENTION
+   - Definition: A widely adopted, standardized studio practice or workflow consensus that
+     practitioners rely upon for predictability and efficiency.
+   - Criteria: Based on professional consensus and historical standardization rather than
+     immutable physical laws; represents established best practice.
+   - Example: Placing a cardioid dynamic microphone (e.g. Shure SM57) pointing at the speaker
+     cone-cap boundary as the standard baseline guitar cabinet recording setup.
+
+6. UNIVERSALISED PRESCRIPTION
+   - Definition: A context-dependent practice or personal habit that has been dogmatically
+     and incorrectly codified as an absolute, universal rule.
+   - Criteria: Uses unconditional language ("always", "never", "must") for choices that are
+     inherently contextual. Represents an epistemic error in legacy code.
+   - Example: Master Prompt instruction stating: "NEVER boost bass on high-gain amplifiers"
+     or "ALWAYS place an EQ after the cabinet".
+
+7. SEMANTIC REPRESENTATION
+   - Definition: A platform-agnostic, conceptual data structure or ontology used to describe
+     sound, signal topology, gear capabilities, or spatial relationships.
+   - Criteria: Abstract schema that captures domain concepts without platform-specific syntax.
+   - Example: The 4D Microphone Placement coordinate model (X-axis radial, Y-axis lateral,
+     Z-axis distance, Alpha orientation angle).
+
+8. PHYSICAL / DEVICE-SPECIFIC ENGINEERING KNOWLEDGE
+   - Definition: Deep technical understanding of the physical construction, electronic circuit
+     topology, component behavior, and electroacoustic response of real-world equipment.
+   - Criteria: Pertains to real analog hardware; documented in schematics, datasheets, or bench tests.
+   - Example: Marshall JCM800 2203 preamp topology utilizing cold clipper cathode stages;
+     Celestion Vintage 30 speaker cone resonant peak around 2.5kHz - 3.0kHz.
+
+9. PLATFORM-SPECIFIC PRODUCT / MODEL KNOWLEDGE
+   - Definition: Technical facts, parameters, capabilities, limitations, and operational quirks
+     of a specific digital simulation platform or software product.
+   - Criteria: Applies strictly to the software implementation (e.g. AmpliTube 5, Helix, Kemper);
+     irrelevant to real analog hardware or competing platforms.
+   - Example: AmpliTube 5's internal model ID for the "British Tube Lead 800" is GUID 52;
+     AT5 stomp chain supports a maximum of 4 serial slots in Section A.
+
+10. PLATFORM CALIBRATION / TRANSLATION DATA
+    - Definition: Quantitative mapping functions, calibration curves, and coordinate translation
+      tables required to translate abstract semantic values into platform-specific parameter scales.
+    - Criteria: Mathematical or lookup data connecting semantic models to platform parameters.
+    - Example: AT5 VIR coordinate calibration table mapping normalized mic distance [0.0, 1.0]
+      to actual millimeter grid bounds for the 4x12 Brit 800 cabinet model.
+
+11. DETERMINISTIC EXECUTION / SERIALIZATION LOGIC
+    - Definition: Pure software logic responsible for data transformation, XML document generation,
+      binary encoding, file input/output, and schema compliance.
+    - Criteria: Platform-specific execution code containing zero audio engineering judgement.
+    - Example: `at5PresetBuilder.ts` constructing XML DOM nodes `<Stomp>`, `<Amp>`, `<Cab>`,
+      and base64 encoding preset payloads for .at5p file export.
+
+12. HISTORICAL PRODUCTION / CONTEXT INFORMATION
+    - Definition: Factual, documentary records regarding how specific historical recordings,
+      albums, or artist tones were originally engineered in real recording sessions.
+    - Criteria: Grounded in historical evidence (studio logs, producer interviews, track sheets).
+    - Example: Malcolm Young recording AC/DC's 'Jailbreak' using a 1963 Gretsch Jet Firebird
+      with Filter'Tron pickup into a Marshall JTM45 / Super Lead amplifier and 4x12 cabinet.
+
+13. PERCEPTUAL SHORTHAND
+    - Definition: Psychoacoustic, metaphorical, or subjective vocabulary used by musicians and
+      engineers to describe perceived tonal sensations.
+    - Criteria: Subjective descriptors that lack direct physical units but correlate with
+      measurable acoustic phenomena.
+    - Example: "Chug" (high dynamic palm-mute energy in 80Hz - 160Hz with fast decay);
+      "Ice-pick" (excessive uncompressed energy spike between 3.5kHz and 6kHz).
+
+14. REFERENCE CASE EVIDENCE
+    - Definition: An empirical record of a specific historical audio engineering configuration,
+      its input conditions, applied interventions, and documented listening outcomes.
+    - Criteria: A concrete, bounded case study preserved for illustrative or benchmark purposes;
+      not a generalizable rule.
+    - Example: The Pantera 'Cowboys From Hell' benchmark preset configuration and listening test.
+
+15. GOVERNANCE / INTEGRITY PRINCIPLE
+    - Definition: Explicit safety limits, boundary constraints, and architectural invariants
+      enforced to protect audio fidelity, prevent equipment damage, or maintain system integrity.
+    - Criteria: Guardrails that prevent invalid, unphysical, or destructive states.
+    - Example: Enforcing maximum digital gain ceiling (+12dB) to prevent inter-sample clipping;
+      preventing simultaneous 180-degree phase inversion across summing parallel channels.
+
+16. ANTI-PATTERN
+    - Definition: A flawed engineering practice, inappropriate software hack, or incorrect
+      assumption that produces degraded audio outcomes, fragile code, or epistemic distortion.
+    - Criteria: Practices proven to be sub-optimal, misleading, or destructive.
+    - Example: Inserting cascaded post-EQ blocks to compensate for incorrect microphone placement
+      rather than moving the microphone; silent deterministic mutation of AI engineering plans.
+
+17. CAPABILITY / COMPETENCY GAP
+    - Definition: An area of professional sound engineering knowledge, reasoning, or sensory
+      evaluation that Current TT completely lacks or implements in a deficient manner.
+    - Criteria: Documented discrepancy against professional standards (Phase 1C.3b gap matrix).
+    - Example: Inability to perform actual spectral listening analysis on incoming audio;
+      lack of room acoustics and boundary reflection modeling.
+
+18. UI / INFRASTRUCTURE / OBSERVABILITY MECHANISM
+    - Definition: User interface components, state management stores, debug panels, telemetry
+      logging, and test fixtures designed to support user interaction and system observability.
+    - Criteria: Software infrastructure that does not participate in sound engineering reasoning.
+    - Example: `MicPlacementManagementView.tsx` 2D grid visualization; `ToneProfileView.tsx`.
+
+(19. DEAD / OBSOLETE IMPLEMENTATION)
+    - Sub-type of UI/Infrastructure: Unreachable code paths, abandoned UI toggles, or unused services.
+    - Example: The abandoned `Recipe` UI toggle in `App.tsx` and dormant `recipes.ts`.
+
+3.3 BOUNDARY DISAMBIGUATION CRITERIA
+When classifying candidate assets, engineers must apply the following disambiguation tests:
+
+  Test A: Engineering Principle vs. Context-Dependent Practice
+    - If the proposition holds true for ALL signals and acoustic systems (e.g. Nyquist theorem,
+      acoustic phase addition), it is an ENGINEERING PRINCIPLE.
+    - If the proposition is desirable in some genres or mixes but undesirable in others (e.g.
+      high-pass filtering electric guitar at 100Hz), it is a CONTEXT-DEPENDENT PRACTICE.
+
+  Test B: Causal Model vs. Universalised Prescription
+    - If the proposition states: "If you do X, physical effect Y occurs under conditions Z",
+      it is a CAUSAL MODEL.
+    - If the proposition states: "You must always do X because Y is good", it is a
+      UNIVERSALISED PRESCRIPTION (and must be flagged as an Anti-Pattern).
+
+  Test C: Physical Device Knowledge vs. Platform Product Knowledge
+    - If the statement describes the actual analog circuitry of a Tube Screamer (e.g. symmetrical
+      silicon diode clipping in the op-amp feedback loop with a 720Hz high-pass filter),
+      it is PHYSICAL / DEVICE-SPECIFIC ENGINEERING KNOWLEDGE.
+    - If the statement describes AmpliTube 5's digital model (e.g. "OverScream model GUID is 102
+      and its Drive knob scales from 0.0 to 10.0"), it is PLATFORM-SPECIFIC PRODUCT KNOWLEDGE.
+
+  Test D: Reference Case Evidence vs. Canonical Knowledge
+    - If the asset represents "What was done on a specific recording or preset benchmark",
+      it is REFERENCE CASE EVIDENCE.
+    - If the asset represents "How acoustic systems behave in general", it is declarative
+      ENGINEERING KNOWLEDGE.
+
+3.4 TAXONOMIC CLASSIFICATION DECISION TREE
+Engineers must traverse this 5-stage decision tree for every extracted asset:
+
+  Step 1: Is this an invariant physical/electrical law of nature?
+          YES -> Category 1 (Engineering Principle)
+          NO  -> Proceed to Step 2.
+
+  Step 2: Does it describe a physical/acoustic cause-and-effect relationship?
+          YES -> Category 2 (Causal Relationship / Model)
+          NO  -> Proceed to Step 3.
+
+  Step 3: Is it specific to a software simulation platform (e.g. AmpliTube 5)?
+          YES -> Is it execution/file logic? -> Category 11 (Deterministic Execution)
+                 Is it parameter/coordinate mapping? -> Category 10 (Platform Calibration)
+                 Is it software model metadata? -> Category 9 (Platform Product Knowledge)
+          NO  -> Proceed to Step 4.
+
+  Step 4: Does it describe real-world analog hardware or historical studio sessions?
+          YES -> Is it hardware circuitry? -> Category 8 (Physical Device Knowledge)
+                 Is it a specific album/session record? -> Category 12 (Historical Context)
+                 Is it a specific benchmark preset case? -> Category 14 (Reference Case Evidence)
+          NO  -> Proceed to Step 5.
+
+  Step 5: Is it a rule of thumb, studio method, or subjective descriptor?
+          - If a structured decision sequence -> Category 3 (Reasoning Framework)
+          - If valid in bounded musical context -> Category 4 (Context-Dependent Practice)
+          - If industry standard consensus -> Category 5 (Professional Convention)
+          - If dogmatic unconditional rule -> Category 6 (Universalised Prescription)
+          - If perceptual vocabulary -> Category 13 (Perceptual Shorthand)
+          - If safety/boundary limit -> Category 15 (Governance Principle)
+          - If flawed practice or silent hack -> Category 16 (Anti-Pattern)
+          - If missing professional capability -> Category 17 (Capability Gap)
+          - If UI, debug, or dead code -> Category 18/19 (UI/Infrastructure/Dead Code)
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — FORMAL DISPOSITIONS & MULTI-ANNOTATION TAXONOMY
+--------------------------------------------------------------------------------
+4.1 THE SIX PRIMARY DISPOSITIONS
+Every atomic asset extracted from Current TT must be assigned EXACTLY ONE primary disposition.
+The six permitted primary dispositions are defined as follows:
+
+1. KEEP CANDIDATE
+   - Semantics: High-value sound engineering proposition, physical device insight, causal model,
+     or reasoning framework that is worthy of entering the Sound Engineer Knowledge Base.
+   - Permitted Use: Applied to domain concepts that are platform-independent, physically plausible,
+     and relevant to tone engineering.
+   - Requirement: Must undergo formal provenance recovery and epistemic validation under
+     Phase 1C.4b / 1C.4d before reaching canonical `VALIDATED_ACTIVE` status.
+
+2. KEEP — RELOCATE
+   - Semantics: A valid, necessary operational asset that belongs in the new architecture,
+     but NOT inside the Sound Engineer's declarative knowledge base.
+   - Permitted Use: Applied to platform calibration tables (e.g. AT5 VIR coordinates), platform
+     translation algorithms (e.g. GUID lookups), deterministic XML serializers, UI components
+     (e.g. 2D mic placement grid), and deterministic validation checks.
+   - Target Destination: Specific subsystems outside the Sound Engineer Knowledge Base
+     (e.g. Platform Translator, Exporter, Observability/UI).
+
+3. PRESERVE — REFERENCE CASE
+   - Semantics: A concrete historical configuration, album recording recipe, artist benchmark,
+     or listening test outcome that must be preserved as empirical evidence behind the
+     Reference Case Firewall.
+   - Permitted Use: Applied to curated recipes (e.g. Malcolm Young 'Jailbreak', Dimebag 'CFH',
+     Metallica 'KEA') and benchmark tone profiles.
+   - Boundary: Must NEVER be converted into a universal rule or general engineering law.
+
+4. HOLD / INVESTIGATE
+   - Semantics: An asset that is ambiguous, disputed, poorly understood, contradictory, or
+     partially unverified, requiring deeper technical investigation, acoustic laboratory
+     measurement, or engineering review.
+   - Permitted Use: Applied when the engineering validity of a heuristic cannot be established
+     from available legacy comments or existing literature.
+   - Lifecycle: Placed in quarantine; cannot be used in production or discarded until resolved.
+
+5. NLR — NO LONGER REQUIRED
+   - Semantics: An asset, code path, override function, or prompt fragment that is obsolete,
+     redundant, unphysical, destructive, or superseded by superior architecture.
+   - Permitted Use: Applied to dead UI toggles, bypassed services, silent deterministic mutations,
+     and redundant prompt instructions.
+   - Critical Invariant: Subject to the Non-Destructive Quarantine Rule (Section 4.4).
+     NLR does NOT permit destructive deletion until all underlying propositions, calibrations,
+     case evidence, and governance lessons have been extracted.
+
+6. GAP
+   - Semantics: A deficiency, omission, or missing competency exposed during legacy deconstruction
+     where Current TT completely lacks necessary engineering logic, physics models, or sensory input.
+   - Permitted Use: Applied when a legacy asset attempts to solve a problem using a crude hack
+     because the underlying professional capability is missing.
+   - Target Destination: Logged directly into the Capability Gap Matrix for future engineering.
+
+4.2 PRIMARY DISPOSITION EXCLUSIVITY RULE
+Every atomic migration record MUST carry exactly one primary disposition:
+  - Hybrid or compound dispositions (e.g. "KEEP / NLR" or "RELOCATE / INVESTIGATE") are
+    STRICTLY FORBIDDEN.
+  - If an asset appears to require multiple dispositions, it has NOT been sufficiently
+    deconstructed into atomic units. The engineer MUST decompose the asset further until
+    each constituent atomic proposition has exactly one unambiguous primary disposition.
+
+4.3 SECONDARY ANNOTATION TAGGING SYSTEM
+While primary dispositions are strictly exclusive, an atomic record may carry one or more
+standardized secondary annotations to preserve critical diagnostic, governance, and
+contextual metadata.
+
+The permitted secondary annotation tags are:
+  - `#ANTI_PATTERN`: The asset represents bad practice, epistemic error, or an architectural hack
+    (e.g. silent parameter override, cascading EQs to fix mic placement).
+  - `#PERCEPTUAL_SHORTHAND`: The asset relies on subjective, psychoacoustic terminology
+    ("warmth", "punch", "chug", "tightness") requiring translation into physical acoustics.
+  - `#OVERRIDE_BURDEN`: Deterministic code created specifically to patch around an LLM failure
+    or hallucination in legacy prompt execution.
+  - `#UNVERIFIED_PROVENANCE`: A candidate claim that currently lacks verified external
+    citations, datasheets, or textbook corroboration.
+  - `#PLATFORM_COUPLED`: An acoustic claim that is deeply entangled with AmpliTube 5 specific
+    quirks or data structures.
+  - `#SHADOW_ONLY`: Scaffolding that executes only in shadow mode or background analysis,
+    completely decoupled from live preset generation.
+  - `#TEST_FIXTURE`: Logic or data that exists exclusively inside unit test suites or mock fixtures.
+  - `#HISTORICAL_CONTEXT`: Documentary information regarding historical recording sessions or gear.
+  - `#COGNITIVE_BIAS`: An engineering heuristic driven by subjective habit or genre mythology
+    rather than electroacoustic reality.
+  - `#ACOUSTIC_HAZARD`: A heuristic or rule that risks introducing phase cancellation, extreme
+    resonant ringing, or inter-sample digital clipping.
+
+4.4 NON-DESTRUCTIVE NLR QUARANTINE RULE
+To prevent catastrophic loss of domain knowledge during migration:
+  1. No Destructive Code Deletion:
+     Assigning `NLR — NO LONGER REQUIRED` to a legacy function, prompt, or recipe does NOT
+     authorize its immediate deletion from the codebase.
+  2. Prerequisite Accounting:
+     Before any legacy code marked NLR can be removed in future refactoring phases, the engineer
+     must verify that:
+       * All underlying engineering propositions have been extracted as KEEP CANDIDATE records;
+       * All platform translation or calibration data has been extracted as KEEP — RELOCATE;
+       * All historical benchmarks have been extracted as PRESERVE — REFERENCE CASE;
+       * All governance lessons and anti-patterns have been documented.
+  3. Quarantine Archive:
+     All NLR assets are catalogued in the Migration Ledger as an immutable record of retired
+     mechanisms, ensuring full traceability and future auditability.
+
+--------------------------------------------------------------------------------
+SECTION 5 — ARCHITECTURAL OWNERSHIP & THE STRICT BOUNDARY FIREWALL
+--------------------------------------------------------------------------------
+5.1 THE TEN ARCHITECTURAL OWNERS
+Every atomic asset must be mapped to exactly one architectural owner within the target
+Sound Engineer platform:
+
+1. SOUND ENGINEER KNOWLEDGE
+   - Scope: Platform-agnostic, declarative knowledge base containing foundational physical
+     principles, circuit behavior, transducer physics, psychoacoustic boundaries, and causal models.
+   - Boundaries: Contains zero platform-specific implementation code, zero XML generators,
+     and zero target GUIDs.
+
+2. ENGINEERING REASONING
+   - Scope: Cognitive reasoning engine responsible for diagnostic evaluation, problem decomposition,
+     trade-off balancing, intervention sequencing, and high-level tone design.
+   - Boundaries: Decides WHAT acoustic goals to achieve and WHY. Does not perform XML serialization.
+
+3. EVIDENCE / INPUT
+   - Scope: Ingestion and analysis of incoming audio signals, user intent, style preferences,
+     and environmental context (transducer extraction, spectral analysis, dynamic profiling).
+   - Boundaries: Extracts physical and musical features from evidence; does not design presets.
+
+4. SEMANTIC TONE DESIGN
+   - Scope: Declarative representation of abstract signal chain topology, module functions,
+     and normalized parameter intent (e.g. "pre-gain high-pass at 720Hz, Q=0.7").
+   - Boundaries: Platform-independent; specifies the ideal acoustical configuration.
+
+5. DETERMINISTIC SEMANTIC VALIDATION
+   - Scope: Hardcoded verification rules that check Semantic Tone Designs for acoustic safety,
+     phase cancellation risks, severe gain staging errors, and topological coherence.
+   - Boundaries: Verifies integrity; DOES NOT redesign or silently mutate engineering decisions.
+
+6. PLATFORM TRANSLATOR — AT5 (and other targets)
+   - Scope: Target-specific mapping engine that translates Semantic Tone Designs into concrete
+     hardware models, GUIDs, parameter warping curves, and VIR mic coordinates for AmpliTube 5.
+   - Boundaries: Decides HOW a design is realized on a specific target; does not make acoustic decisions.
+
+7. EXPORTER / EXECUTION
+   - Scope: Deterministic file builders, XML serializers, checksum generators, and I/O handlers
+     that package translated configurations into target preset files (e.g. .at5p).
+   - Boundaries: Pure software serialization; zero audio engineering reasoning.
+
+8. REFERENCE / CASE EVIDENCE
+   - Scope: Isolated historical vault containing benchmark presets, album recording setups,
+     listening evaluations, and session logs, protected by the Reference Case Firewall.
+   - Boundaries: Preserved for illustrative and comparative purposes; cannot dictate future decisions.
+
+9. OBSERVABILITY / INFRASTRUCTURE / UI
+   - Scope: Interactive user interfaces (2D mic placement grid, tone profile viewers), debug panels,
+     telemetry logging, and runtime tracing infrastructure.
+   - Boundaries: Provides user and developer visibility; does not perform tone synthesis.
+
+10. NONE / RETIRE
+    - Scope: Dead code, superseded duplicate helpers, abandoned UI toggles, and obsolete hacks.
+    - Boundaries: Archived in the migration ledger; targeted for retirement.
+
+5.2 THE CORE OWNERSHIP AXIOM
+The entire target architecture is governed by the Core Ownership Axiom:
+
+    "AI DECIDES WHAT + WHY.
+     DETERMINISTIC SYSTEMS OWN TRUTH, CHECKING, AND EXECUTION.
+     PLATFORM TRANSLATORS DETERMINE HOW FOR A TARGET PLATFORM."
+
+Detailed Division of Responsibility:
+  - WHAT + WHY (AI Sound Engineer):
+    * Diagnoses tonal balance and identifies acoustic deficiencies.
+    * Decides necessary engineering interventions (e.g. "tighten bass response before distortion").
+    * Formulates declarative Semantic Tone Designs explaining why each block is placed.
+  - TRUTH & CHECKING (Deterministic Systems):
+    * Verifies mathematical and acoustic safety invariants.
+    * Checks for unphysical configurations (e.g. microphone placed inside the speaker magnet).
+    * Validates structural integrity and bounds.
+  - HOW (Platform Translators):
+    * Resolves target platform constraints (e.g. mapping 5 pedals into a 4-stomp AT5 chain).
+    * Warps abstract parameters to target knob scales.
+    * Selects best-matching available platform gear.
+
+5.3 THE ANTI-HIJACK PRINCIPLE & DETERMINISTIC SEPARATION OF CONCERNS
+In Current TT, deterministic functions repeatedly hijack and redesign engineering decisions:
+  - `adjustThrashPedalSelection()` overrides the LLM's pedal selection;
+  - `filterDuplicateEqsWithRemoved()` silently strips equalizer modules;
+  - `ensureSignalChainSemanticPlacements()` forcibly re-orders stomp chains.
+
+THE FUTURE ARCHITECTURE STRICTLY FORBIDS SILENT DETERMINISTIC MUTATIONS:
+  1. No Silent Redesign:
+     A deterministic validation subsystem MUST NEVER silently alter, replace, or mutate an
+     engineering decision made by the AI Sound Engineer.
+  2. Explicit Violation Reporting:
+     If a Semantic Tone Design violates a deterministic physical or platform constraint, the
+     validator must reject the design and generate a structured `ConstraintViolationReport`
+     containing:
+       * The violated acoustic or structural invariant;
+       * The physical reason for the violation;
+       * Suggested bounding parameters.
+  3. Cognitive Replanning:
+     The report is returned to the AI Sound Engineer, which replans its intervention with full
+     cognitive awareness of the constraint, maintaining complete auditability and reasoning integrity.
+
+5.4 RESPONSIBILITY BOUNDARY MATRIX
+---------------------------------------------------------------------------------------------------------
+Subsystem                     | Decides What? | Decides Why? | Checks Truth? | Maps Target? | Serializes?
+---------------------------------------------------------------------------------------------------------
+AI Sound Engineer             |     YES       |     YES      |      NO       |      NO      |     NO
+Deterministic Validator       |     NO        |     NO       |     YES       |      NO      |     NO
+Platform Translator (AT5)     |     NO        |     NO       |      NO       |     YES      |     NO
+File Exporter                 |     NO        |     NO       |      NO       |      NO      |    YES
+Reference Case Vault          |     NO        |     NO       |      NO       |      NO      |     NO
+UI / Observability            |     NO        |     NO       |      NO       |      NO      |     NO
+---------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+SECTION 6 — THE REFERENCE CASE EVIDENCE FIREWALL & PRECEDENT ISOLATION
+--------------------------------------------------------------------------------
+6.1 PURPOSE & ROLE OF REFERENCE CASE EVIDENCE
+Historical guitar tones from landmark albums (e.g. AC/DC's 'Back in Black', Metallica's
+'Master of Puppets', Pantera's 'Cowboys From Hell') represent valuable cultural, aesthetic,
+and empirical benchmarks.
+
+However, in legacy systems, historical presets are frequently corrupted into general engineering
+prescriptions (e.g. "Because Dimebag used a 6-band graphic EQ with a mid scoop on CFH,
+all metal rhythm guitars must have an aggressive mid scoop").
+
+THE REFERENCE CASE EVIDENCE FIREWALL ISOLATES HISTORICAL PRECEDENT FROM DECLARATIVE REASONING.
+Reference cases are preserved as historical evidence, but are strictly prohibited from
+becoming general sound engineering rules.
+
+6.2 CANONICAL SCHEMA OF REFERENCE CASE EVIDENCE
+Every preserved reference case must be encapsulated within a formal schema preserving:
+  1. Case Metadata:
+     * Unique Case Identifier;
+     * Source Track / Album / Artist;
+     * Recording Date and Studio Location;
+     * Historical Production Team (Producer, Tracking Engineer, Mix Engineer).
+  2. Input Acoustic Context:
+     * Instrument (Body wood, construction, scale length);
+     * Pickups (Inductance, DC resistance, magnet type, active/passive);
+     * Strings (Gauge, core type, tuning);
+     * Playing Technique (Plectrum hardness, attack angle, palm mute intensity).
+  3. Applied Signal Chain Intervention:
+     * Conditioning pedals (exact settings, circuit mods);
+     * Amplifiers (preamp gain, master volume, tone stack, presence/depth);
+     * Speakers / Cabinets (cabinet construction, speaker models, impedance loading);
+     * Microphone Setup (mic model, capsule angle, distance, speaker cone locus);
+     * Console Preamp, Outboard Compression, and Console EQ.
+  4. Documented Listening Evidence & Outcomes:
+     * Resulting spectral distribution (measured frequency profile);
+     * Dynamic response and transient envelope;
+     * Mix placement context (isolated track vs. full band balance).
+  5. Critical Engineering Assessment:
+     * Why the setup worked in that specific production context;
+     * Known acoustic compromises or flaws in the setup;
+     * How modern production techniques would alter the approach.
+  6. Provenance & Citations:
+     * Documentary sources (studio tracking sheets, mix engineer interviews, technical articles).
+
+6.3 THE FOUR ANTI-PRECEDENT FIREWALLS
+The architecture enforces four strict firewalls between Reference Cases and the Sound Engineer:
+
+  FIREWALL 1: REFERENCE CASES ARE NEVER CANONICAL ENGINEERING KNOWLEDGE
+  A reference case is an empirical record of an event, NOT an invariant principle of acoustics.
+  The Sound Engineer Knowledge Base must contain the physical principles governing why the
+  setup sounded the way it did, but the reference case itself remains in the Case Vault.
+
+  FIREWALL 2: REFERENCE CASES ARE NEVER UNIVERSAL PRESCRIPTIONS
+  The presence of a reference case in the repository does not authorize the system to
+  mandate that configuration for any user prompt. A reference case must never be turned into
+  an unconditional rule.
+
+  FIREWALL 3: REFERENCE CASES NEVER SUBSTITUTE FOR CURRENT CASE EVIDENCE
+  When a user requests a tone, the Sound Engineer MUST reason from the user's specific input
+  evidence (guitar, pickups, playing style, monitoring environment). It is strictly forbidden
+  to bypass reasoning by simply copying a reference preset.
+
+  FIREWALL 4: GOVERNED ANALOGICAL RETRIEVAL ONLY
+  If the Sound Engineer retrieves a reference case, it may use it ONLY as an illustrative
+  analogy or benchmark reference point. The system must explicitly document:
+    "Referencing historical setup from [Case ID] as an aesthetic baseline; adapting gain staging
+     and EQ balance to account for user's higher-output pickups and differing speaker load."
+
+6.4 GOVERNED RETRIEVAL & QUERYING OF REFERENCE CASES
+Retrieval of reference cases is governed by Phase 1C.4c runtime context policies:
+  - Reference cases are queried via semantic embedding of musical context and gear topology.
+  - Injected reference cases carry explicit `#REFERENCE_CASE_ONLY` lineage tokens.
+  - The Sound Engineer prompt generator wraps reference cases in strict epistemic delimiters:
+    `<reference_case_evidence precedent="non_binding"> ... </reference_case_evidence>`
+  - The reasoning engine is instructed to extract lessons regarding trade-offs, not parameter values.
+
+
+--------------------------------------------------------------------------------
+SECTION 7 — OPERATIONAL REALITY INSPECTION METHODOLOGY
+--------------------------------------------------------------------------------
+7.1 THE SIX OPERATIONAL STATES
+An archaeological survey of legacy code reveals that what is written in source code often
+bears little resemblance to what actually executes at runtime. Types may be declared but
+never instantiated; services may execute in shadow mode without affecting outputs; and
+functions may be completely bypassed by hardcoded overrides.
+
+To ensure epistemic truthfulness, every legacy asset must be audited and assigned one of
+the following six Operational States:
+
+1. DECLARED_ONLY
+   - Definition: The asset exists in TypeScript types, interfaces, schemas, or function
+     signatures, but is never instantiated, populated, or invoked by executable runtime logic.
+   - Example: The `recordingData` parameter in `translateTone()`. The type accepts recorded
+     audio buffers, but the function body completely ignores the parameter and never passes
+     it to Gemini or audio analysis engines.
+
+2. ACTIVE_PRODUCTION
+   - Definition: The asset resides in the direct, live execution path of user tone generation
+     or primary UI workflows, actively contributing to system outputs.
+   - Example: The central `MASTER_PROMPT` in `src/services/geminiService.ts` and the core
+     XML node generation in `at5PresetBuilder.ts`.
+
+3. BYPASSED_OVERRIDDEN
+   - Definition: The asset executes during runtime, but its output is subsequently mutated,
+     overridden, or completely replaced by downstream deterministic code or static bypass flags.
+   - Example: The LLM's pedal selection for thrash metal prompts, which is generated during
+     API execution but immediately overwritten by `adjustThrashPedalSelection()`.
+
+4. SHADOW_ISOLATED
+   - Definition: The asset executes in an isolated or asynchronous pipeline that runs alongside
+     production, but its results do not affect the generated preset or user experience.
+   - Example: `SoundEngineerService` executing in shadow mode, generating synthetic reasoning
+     traces stored in state but completely decoupled from the live AT5 preset output.
+
+5. TEST_FIXTURE_ONLY
+   - Definition: The asset exists exclusively inside automated test suites (`src/tests/`),
+     mock objects, or test fixtures, with no production caller or operational deployment.
+   - Example: The synthetic execution trace generators in `soundEngineerService.test.ts`
+     and mock VIR coordinate test fixtures.
+
+6. DEAD_CODE
+   - Definition: The asset is completely uncalled, unexported, unreachable via any runtime
+     path, or gated behind permanently false feature toggles.
+   - Example: The abandoned `Recipe` UI toggle in `App.tsx` and dormant functions in `recipes.ts`.
+
+7.2 FORENSIC AUDIT & REALITY INSPECTION PROTOCOL
+Engineers conducting migration analysis must execute a strict 5-step forensic audit before
+documenting any legacy asset's operational status:
+
+  Step 1: Entry Point Reachability Audit
+    - Trace the call graph backwards from application entry points (`main.tsx`, `App.tsx`,
+      and Express API endpoints).
+    - If no call path reaches the function, classify as `DEAD_CODE`.
+
+  Step 2: Data Flow & Mutation Tracing
+    - Trace the data output from the function forward to the final preset generation response.
+    - If the output is discarded or overwritten before reaching the user, classify as
+      `BYPASSED_OVERRIDDEN`.
+
+  Step 3: Branch & Feature Gate Analysis
+    - Inspect conditional statements gating the asset (e.g. `if (isValidationActive)`).
+    - Check whether flags are hardcoded or togglable from active production UI.
+    - If gated behind permanent false conditions, classify as `DEAD_CODE`.
+
+  Step 4: Shadow Execution Isolation Audit
+    - Determine if the asset's side effects are purely observational (logging, telemetry,
+      shadow state) or if they influence core application state.
+    - If strictly observational, classify as `SHADOW_ISOLATED`.
+
+  Step 5: Test Fixture Confinement Check
+    - Grep the codebase for all occurrences of the symbol.
+    - If all callers reside in `src/tests/` or `*.test.ts`, classify as `TEST_FIXTURE_ONLY`.
+
+7.3 OPERATIONAL STATUS TRANSITION LIFECYCLE
+Tracking operational status informs migration priorities:
+  - `ACTIVE_PRODUCTION` assets must be migrated with highest priority to prevent regressions.
+  - `BYPASSED_OVERRIDDEN` assets indicate architectural friction; the underlying engineering
+    need must be extracted while the override hack is retired.
+  - `SHADOW_ISOLATED` and `TEST_FIXTURE_ONLY` assets provide valuable reference contracts and
+    verification assertions for future implementations.
+  - `DEAD_CODE` and `DECLARED_ONLY` assets must be audited for underlying insights, then safely
+    retired to reduce codebase complexity.
+
+--------------------------------------------------------------------------------
+SECTION 8 — PROVENANCE RECOVERY & RISK-PROPORTIONAL VALIDATION WORKFLOW
+--------------------------------------------------------------------------------
+8.1 OPERATIONALIZING THE UNASSESSED_LEGACY_SOURCE INGESTION PIPELINE
+Under Phase 1C.4b-R v1.1g, Current TT is classified as an `UNASSESSED_LEGACY_SOURCE`.
+Candidate propositions extracted from legacy code cannot directly enter the canonical
+knowledge base. They must pass through the formal Provenance Recovery Pipeline:
+
+  [ Legacy Candidate Extraction ]
+         Extract atomic proposition from legacy asset.
+         ↓
+  [ Forensic Provenance Recovery ]
+         Search for underlying external source (datasheet, schematic, textbook, AES paper).
+         ↓
+  [ Risk-Proportional Evidence Assessment ]
+         Evaluate evidence against the risk tier of the specific claim.
+         ↓
+  [ SourceDocument Generation ]
+         Create formal SourceDocument record citing the recovered external evidence.
+         ↓
+  [ Epistemic Validation Dossier (Phase 1C.4d) ]
+         Submit candidate claim to Phase 1C.4d governance for canonical adjudication.
+
+8.2 RISK-PROPORTIONAL EVIDENCE SUFFICIENCY TIERS
+In accordance with the frozen Phase 1C.4b-R contract, Tone Translator enforces a
+risk-proportional evidence standard. Claims do NOT face an arbitrary, blanket requirement
+for peer-reviewed academic literature:
+
+TIER 1: HIGH-RISK CLAIMS (Physical Safety, Electroacoustics, Circuit Damage, Phase Hazards)
+  - Scope: Electrical impedance matching, tube amplifier load safety, extreme phase cancellation,
+    digital inter-sample clipping, and fundamental wave physics.
+  - Evidence Standard: RIGOROUS SCIENTIFIC & TECHNICAL PROVENANCE.
+  - Permitted Sources: Electrical engineering textbooks, published AES papers, manufacturer
+    circuit schematics, bench oscilloscope/analyzer measurements, IEEE standards.
+  - Example: "Operating a tube amplifier without an inductive speaker load damages output
+    transformers due to high-voltage inductive flyback spikes."
+
+TIER 2: MEDIUM-RISK CLAIMS (Psychoacoustic Models, Studio Practices, Acoustic Boundaries)
+  - Scope: Masking thresholds, off-axis high-frequency microphone roll-off, preamp distortion
+    harmonic distribution, compressor attack/release dynamics.
+  - Evidence Standard: ESTABLISHED PROFESSIONAL LITERATURE & BROAD CONSENSUS.
+  - Permitted Sources: Authoritative audio engineering texts (Everest 'Master Handbook of
+    Acoustics', Rumsey 'Sound and Recording', Katz 'Mastering Audio', Owsinski 'The Mixing
+    Engineer's Handbook'), gear service manuals, published acoustic measurements.
+  - Example: "Dynamic moving-coil microphones exhibit off-axis high-frequency attenuation
+    above 4kHz due to acoustic phase cancellation across the diaphragm."
+
+TIER 3: LOW-RISK CLAIMS (Genre Conventions, Aesthetic Heuristics, Historical Recipes)
+  - Scope: Genre-specific EQ curves, overdrive pedal boost settings, album tone recreation.
+  - Evidence Standard: DOCUMENTED HISTORICAL PRODUCTION EVIDENCE & INDUSTRY CONSENSUS.
+  - Permitted Sources: Producer/engineer interviews (Sound on Sound, Mix Magazine, Tape Op),
+    studio tracking sheets, verified artist rig rundowns, published multi-album track analyses.
+  - Example: "In 1980s thrash metal production, boosting an overdrive pedal's level with drive
+    near zero was standard practice to tighten low-end attack into Marshall JCM800 amplifiers."
+
+8.3 RECOVERED SOURCEDOCUMENT SCHEMA & CITATION REQUIREMENTS
+When provenance is recovered for a legacy asset, a formal `SourceDocument` record is created:
+  - `source_id`: Unique identifier (e.g. `SRC-TEXTBOOK-EVEREST-001`, `SRC-SCHEM-MARSHALL-2203`).
+  - `source_type`: Academic Literature, Technical Textbook, Manufacturer Schematic, Patent,
+    Engineering Datasheet, Industry Standard, Historical Production Record.
+  - `title` & `author`: Formal bibliographic citation.
+  - `publication_year`: Date of publication or release.
+  - `relevant_excerpt`: Verbatim or summarized technical citation corroborating the claim.
+  - `provenance_confidence`: HIGH (Primary technical source), MEDIUM (Secondary textbook),
+    LOW (Informal interview or oral history).
+
+8.4 DOWNSTREAM EPISTEMIC LIFECYCLE INTEGRATION (PHASE 1C.4d)
+Once provenance is attached, the candidate proposition is packaged into a Review-Ready Candidate
+Dossier and submitted to the Phase 1C.4d governance lifecycle:
+  - If evidence meets the sufficiency threshold and no contradictions exist -> `VALIDATED_ACTIVE`.
+  - If competing evidence or professional disagreement exists -> `ConflictRecord` created.
+  - If evidence is weak or uncorroborated -> Retained in `HOLD / INVESTIGATE` quarantine.
+  - If proven unphysical, misleading, or destructive -> `REJECTED` and archived.
+
+--------------------------------------------------------------------------------
+SECTION 9 — ARCHAEOLOGICAL LAYER MIGRATION SPECIFICATIONS
+--------------------------------------------------------------------------------
+9.1 LAYER 1: PROMPT & LLM INGESTION LAYER
+Archaeological Finding:
+  - The central prompt (`MASTER_PROMPT` in `src/services/geminiService.ts`, ~49KB) embeds the
+    "Killer Rig Systematic Tone" acoustic philosophy, defining concepts like the "Gain Pivot",
+    "Gain Staging", "Frequency Dominance", and a 10-step design sequence.
+Migration Strategy:
+  1. Deconstruct Prompts into Declarative Entities:
+     * Extract the "Gain Pivot" into a `CausalRelationship` (pre-gain shaping alters distortion
+       character; post-gain shaping alters perceived frequency balance).
+     * Extract the 10-step design sequence into a `ReasoningFramework` for the cognitive engine.
+     * Extract troubleshooting rules (e.g. diagnosing "muddiness" or "harshness") into
+       `DiagnosticTree` entities.
+  2. Strip Target Platform Bindings:
+     * Remove all references to AmpliTube 5, specific AT5 GUIDs, and XML formatting instructions.
+     * Translate parameter recommendations into normalized semantic units.
+  3. Retire Prompt Mechanics:
+     * Mark prompt text formatting, escape strings, and LLM roleplay scaffolding as NLR.
+
+9.2 LAYER 2: CURATED STATIC RECIPES & PRESET KNOWLEDGE
+Archaeological Finding:
+  - Curated album recipes (Malcolm Young 'Jailbreak', Pantera 'Cowboys From Hell', Metallica
+    'Kill 'Em All') in `geminiService.ts` and `toneProfileBuilder.ts` completely bypass LLM
+    reasoning when validation flags or keyword triggers match.
+Migration Strategy:
+  1. Relocate to Reference Case Vault:
+     * Deconstruct each recipe into a `ReferenceCase` entity under `PRESERVE — REFERENCE CASE`.
+     * Populate historical input context, applied interventions, and documentary citations.
+  2. Retire Deterministic Bypasses:
+     * The hardcoded bypass logic (`if (isValidationActive) return staticRecipe`) is marked
+       `NLR — NO LONGER REQUIRED`.
+     * In the future architecture, historical tones are referenced via governed analogical
+       retrieval, never by bypassing sound engineering reasoning.
+
+9.3 LAYER 3: DETERMINISTIC OVERRIDES & SURGICAL MUTATIONS
+Archaeological Finding:
+  - Post-generation override functions (`adjustThrashPedalSelection`, `filterDuplicateEqsWithRemoved`,
+    `ensureSignalChainSemanticPlacements`) forcibly mutate LLM output to fix constraint violations.
+Migration Strategy:
+  1. Extract Underlying Engineering Propositions:
+     * From `adjustThrashPedalSelection`: Extract the acoustic principle of pre-distortion
+       bass attenuation as a `CausalRelationship` (KEEP CANDIDATE).
+     * From `filterDuplicateEqsWithRemoved`: Extract the governance rule against redundant
+       phase-shifting filter blocks as an `AcousticBoundary` (KEEP CANDIDATE).
+     * From `ensureSignalChainSemanticPlacements`: Extract topological sequencing rules as
+       `SemanticToneDesign` constraints (KEEP — RELOCATE).
+  2. Retire Silent Mutations:
+     * Mark the mutation logic itself as `NLR — NO LONGER REQUIRED` (#ANTI_PATTERN).
+     * Replace silent mutation with explicit deterministic validation checking that returns
+       structured violation reports to the cognitive engine.
+
+9.4 LAYER 4: DOMAIN TAXONOMY, SEMANTIC ABSTRACTIONS & 4D VIR COORDINATES
+Archaeological Finding:
+  - `at5MicPlacementService.ts` implements an advanced 4D Microphone Placement model (X, Y, Z, Alpha)
+    with VIR coordinate bounding boxes, off-axis dispersion calculations, and acoustic profiles.
+Migration Strategy:
+  1. Relocate Semantic Models to Sound Engineer Knowledge:
+     * The abstract 4D coordinate system (radial offset, distance, angle) and acoustic dispersion
+       physics are platform-agnostic -> Assign to `Sound Engineer Knowledge` (KEEP CANDIDATE).
+  2. Relocate Platform Calibration Data to Platform Translator:
+     * The VIR calibration tables mapping normalized coordinates to AT5 cabinet grids are
+       platform-specific -> Assign to `Platform Translator — AT5` (KEEP — RELOCATE).
+  3. Relocate 2D Interactive Grid to UI / Observability:
+     * The visualization component `MicPlacementManagementView.tsx` -> Assign to
+       `Observability / Infrastructure / UI` (KEEP — RELOCATE).
+
+9.5 LAYER 5: GEAR CATALOGUES, PARAMETER MANIFESTS & PLATFORM TRANSLATION
+Archaeological Finding:
+  - Comprehensive AmpliTube 5 hardware manifests (`at5GearCatalogue.ts`, `at5AmpCatalogue.ts`,
+    `at5CabinetCatalogue.ts`), IK Multimedia GUID maps, and XML builders (`at5PresetBuilder.ts`).
+Migration Strategy:
+  1. Assign Completely to Platform Translator & Exporter:
+     * All AT5 GUID mappings, model tables, knob warping curves, and XML serialization logic
+       belong strictly to `Platform Translator — AT5` and `Exporter / Execution` (KEEP — RELOCATE).
+  2. Complete Epistemic Isolation:
+     * ZERO AT5 GUIDs, model strings, or XML structures may enter the Sound Engineer Knowledge Base.
+
+9.6 LAYER 6: AUDIO INPUT SCAFFOLDING, SHADOW TRACES, TEST SUITES & UI SCAFFOLDING
+Archaeological Finding:
+  - `recordingData` is declared but ignored in `translateTone()`; `SoundEngineerService` operates
+    in shadow mode generating synthetic trace fixtures; 21 test suites contain 309 unit tests.
+Migration Strategy:
+  1. Log Capability Gaps:
+     * The disconnection of audio input analysis is logged as a critical `GAP` in the Gap Matrix.
+  2. Preserve Test Assertions as Validation Contracts:
+     * The 309 unit tests contain implicit regression assertions (e.g. compressor threshold
+       ranges, mic coordinate bounds). Extract these assertions into `Deterministic Semantic Validation`
+       rules (KEEP — RELOCATE).
+  3. Retire Synthetic Fixtures:
+     * Hardcoded synthetic execution traces in `soundEngineerService.test.ts` are marked
+       `NLR — NO LONGER REQUIRED` once real reasoning loops are implemented in Phase 1C.5.
+
+
+--------------------------------------------------------------------------------
+SECTION 10 — THE FORMAL ATOMIC MIGRATION RECORD SCHEMA
+--------------------------------------------------------------------------------
+10.1 SCHEMA FIELD DEFINITIONS & SPECIFICATIONS
+Every atomic asset extracted from Current TT must be formally recorded using the following
+canonical schema:
+
+  1. `migration_record_id` (string, required):
+     Unique identifier following pattern `MIG-[LAYER]-[ASSET_SLUG]-[INDEX]`
+     (e.g. `MIG-PROMPT-GAINPIVOT-001`, `MIG-RECIPE-CFH-002`, `MIG-OVERRIDE-TS9-001`).
+  2. `legacy_source_asset_id` (string, required):
+     Identifier of the parent legacy construct (e.g. `LEG-SRC-GEMINI-MASTERPROMPT`).
+  3. `legacy_source_location` (string, required):
+     Precise file path and line numbers (e.g. `src/services/geminiService.ts:425-450`).
+  4. `legacy_operational_reality` (enum, required):
+     Must be exactly one of: `DECLARED_ONLY`, `ACTIVE_PRODUCTION`, `BYPASSED_OVERRIDDEN`,
+     `SHADOW_ISOLATED`, `TEST_FIXTURE_ONLY`, `DEAD_CODE`.
+  5. `atomic_proposition_text` (string, required):
+     Unambiguous, declarative statement of the extracted claim, rule, or calibration data.
+  6. `what_it_actually_is` (enum, required):
+     Must be exactly one of the 18 canonical categories (e.g. `ENGINEERING_PRINCIPLE`,
+     `CAUSAL_RELATIONSHIP`, `CONTEXT_DEPENDENT_PRACTICE`, `PLATFORM_PRODUCT_KNOWLEDGE`, etc.).
+  7. `architectural_owner` (enum, required):
+     Must be exactly one of the 10 owners (e.g. `SOUND_ENGINEER_KNOWLEDGE`,
+     `ENGINEERING_REASONING`, `PLATFORM_TRANSLATOR_AT5`, `NONE_RETIRE`, etc.).
+  8. `primary_disposition` (enum, required):
+     Must be exactly one of: `KEEP_CANDIDATE`, `KEEP_RELOCATE`, `PRESERVE_REFERENCE_CASE`,
+     `HOLD_INVESTIGATE`, `NLR_NO_LONGER_REQUIRED`, `GAP`.
+  9. `secondary_annotations` (array of strings, optional):
+     Zero or more permitted tags (`#ANTI_PATTERN`, `#PERCEPTUAL_SHORTHAND`, `#OVERRIDE_BURDEN`,
+     `#UNVERIFIED_PROVENANCE`, `#PLATFORM_COUPLED`, `#SHADOW_ONLY`, `#TEST_FIXTURE`, etc.).
+  10. `risk_tier` (enum, required):
+      `HIGH` (safety/physics), `MEDIUM` (psychoacoustics/studio), `LOW` (genre/aesthetic).
+  11. `validation_pathway` (string, required):
+      Method for evaluating validity (e.g. "Circuit schematic analysis", "Acoustics textbook
+      cross-reference", "Historical session log documentation").
+  12. `recovered_provenance` (object, optional):
+      Link to formal SourceDocument (`source_id`, `citation`, `confidence`).
+  13. `target_destination_system` (string, required):
+      Specific architectural target (e.g. `src/knowledge/causal_models/`, `src/translators/at5/`).
+  14. `governance_notes` (string, optional):
+      Contextual justification, anti-pattern explanation, or prerequisite retirement checks.
+
+10.2 TYPESCRIPT INTERFACE DEFINITION
+```typescript
+export type LegacyOperationalReality =
+  | 'DECLARED_ONLY'
+  | 'ACTIVE_PRODUCTION'
+  | 'BYPASSED_OVERRIDDEN'
+  | 'SHADOW_ISOLATED'
+  | 'TEST_FIXTURE_ONLY'
+  | 'DEAD_CODE';
+
+export type CanonicalAssetCategory =
+  | 'ENGINEERING_PRINCIPLE'
+  | 'CAUSAL_RELATIONSHIP'
+  | 'REASONING_FRAMEWORK'
+  | 'CONTEXT_DEPENDENT_PRACTICE'
+  | 'PROFESSIONAL_CONVENTION'
+  | 'UNIVERSALISED_PRESCRIPTION'
+  | 'SEMANTIC_REPRESENTATION'
+  | 'PHYSICAL_DEVICE_KNOWLEDGE'
+  | 'PLATFORM_PRODUCT_KNOWLEDGE'
+  | 'PLATFORM_CALIBRATION_DATA'
+  | 'DETERMINISTIC_EXECUTION_LOGIC'
+  | 'HISTORICAL_PRODUCTION_CONTEXT'
+  | 'PERCEPTUAL_SHORTHAND'
+  | 'REFERENCE_CASE_EVIDENCE'
+  | 'GOVERNANCE_INTEGRITY_PRINCIPLE'
+  | 'ANTI_PATTERN'
+  | 'CAPABILITY_COMPETENCY_GAP'
+  | 'UI_INFRASTRUCTURE_MECHANISM'
+  | 'DEAD_OBSOLETE_IMPLEMENTATION';
+
+export type ArchitecturalOwner =
+  | 'SOUND_ENGINEER_KNOWLEDGE'
+  | 'ENGINEERING_REASONING'
+  | 'EVIDENCE_INPUT'
+  | 'SEMANTIC_TONE_DESIGN'
+  | 'DETERMINISTIC_SEMANTIC_VALIDATION'
+  | 'PLATFORM_TRANSLATOR_AT5'
+  | 'EXPORTER_EXECUTION'
+  | 'REFERENCE_CASE_EVIDENCE'
+  | 'OBSERVABILITY_INFRASTRUCTURE_UI'
+  | 'NONE_RETIRE';
+
+export type PrimaryDisposition =
+  | 'KEEP_CANDIDATE'
+  | 'KEEP_RELOCATE'
+  | 'PRESERVE_REFERENCE_CASE'
+  | 'HOLD_INVESTIGATE'
+  | 'NLR_NO_LONGER_REQUIRED'
+  | 'GAP';
+
+export interface RecoveredProvenance {
+  source_id: string;
+  source_type: string;
+  bibliographic_citation: string;
+  relevant_excerpt: string;
+  provenance_confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface LegacyMigrationRecord {
+  migration_record_id: string;
+  legacy_source_asset_id: string;
+  legacy_source_location: string;
+  legacy_operational_reality: LegacyOperationalReality;
+  atomic_proposition_text: string;
+  what_it_actually_is: CanonicalAssetCategory;
+  architectural_owner: ArchitecturalOwner;
+  primary_disposition: PrimaryDisposition;
+  secondary_annotations: string[];
+  risk_tier: 'HIGH' | 'MEDIUM' | 'LOW';
+  validation_pathway: string;
+  recovered_provenance?: RecoveredProvenance;
+  target_destination_system: string;
+  governance_notes?: string;
+}
+```
+
+10.3 JSON SCHEMA REPRESENTATION
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LegacyMigrationRecord",
+  "type": "object",
+  "required": [
+    "migration_record_id",
+    "legacy_source_asset_id",
+    "legacy_source_location",
+    "legacy_operational_reality",
+    "atomic_proposition_text",
+    "what_it_actually_is",
+    "architectural_owner",
+    "primary_disposition",
+    "secondary_annotations",
+    "risk_tier",
+    "validation_pathway",
+    "target_destination_system"
+  ],
+  "properties": {
+    "migration_record_id": { "type": "string" },
+    "legacy_source_asset_id": { "type": "string" },
+    "legacy_source_location": { "type": "string" },
+    "legacy_operational_reality": {
+      "enum": ["DECLARED_ONLY", "ACTIVE_PRODUCTION", "BYPASSED_OVERRIDDEN", "SHADOW_ISOLATED", "TEST_FIXTURE_ONLY", "DEAD_CODE"]
+    },
+    "atomic_proposition_text": { "type": "string" },
+    "what_it_actually_is": { "type": "string" },
+    "architectural_owner": { "type": "string" },
+    "primary_disposition": {
+      "enum": ["KEEP_CANDIDATE", "KEEP_RELOCATE", "PRESERVE_REFERENCE_CASE", "HOLD_INVESTIGATE", "NLR_NO_LONGER_REQUIRED", "GAP"]
+    },
+    "secondary_annotations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risk_tier": {
+      "enum": ["HIGH", "MEDIUM", "LOW"]
+    },
+    "validation_pathway": { "type": "string" },
+    "recovered_provenance": { "type": "object" },
+    "target_destination_system": { "type": "string" },
+    "governance_notes": { "type": "string" }
+  }
+}
+```
+
+--------------------------------------------------------------------------------
+SECTION 11 — CONCRETE WORKED DECONSTRUCTION EXAMPLES (END-TO-END)
+--------------------------------------------------------------------------------
+To illustrate the rigor of this specification, six complex legacy constructs from Current TT
+are deconstructed end-to-end into formal atomic migration records:
+
+11.1 EXAMPLE 1: MASTER PROMPT "GAIN PIVOT" RULE
+Legacy Source: `src/services/geminiService.ts:425-460`
+Context: The prompt instructs the LLM that tone shaping occurs around a central "Gain Pivot":
+equalization placed BEFORE non-linear distortion alters clipping harmonics and tightness,
+while equalization placed AFTER distortion refines spectral balance.
+
+Deconstruction:
+Record 1:
+  - Record ID: `MIG-PROMPT-GAINPIVOT-001`
+  - Proposition: "Equalization applied prior to non-linear clipping stages alters the harmonic
+    distribution and intermodulation distortion character of the saturated signal."
+  - What It Actually Is: `CAUSAL_RELATIONSHIP`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `SOUND_ENGINEER_KNOWLEDGE`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: []
+  - Risk Tier: `MEDIUM`
+  - Provenance: Everest 'Master Handbook of Acoustics'; Doidic et al. 'Guitar Preamp Non-linear Analysis' (AES 2011).
+  - Destination: `src/knowledge/causal_models/distortion_pre_filtering.json`
+
+Record 2:
+  - Record ID: `MIG-PROMPT-GAINPIVOT-002`
+  - Proposition: "Equalization applied after non-linear clipping stages functions as a linear filter
+    modifying overall perceived spectral balance without changing harmonic generation."
+  - What It Actually Is: `CAUSAL_RELATIONSHIP`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `SOUND_ENGINEER_KNOWLEDGE`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: []
+  - Risk Tier: `MEDIUM`
+  - Provenance: Zölzer 'DAFX: Digital Audio Effects' (Wiley 2011).
+  - Destination: `src/knowledge/causal_models/post_clipping_equalization.json`
+
+Record 3:
+  - Record ID: `MIG-PROMPT-GAINPIVOT-003`
+  - Proposition: "A sound engineer should diagnose and treat low-frequency flub or transient
+    smearing before the distortion stage rather than attempting extreme post-distortion bass cuts."
+  - What It Actually Is: `REASONING_FRAMEWORK`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `ENGINEERING_REASONING`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: []
+  - Risk Tier: `LOW`
+  - Provenance: Owsinski 'The Mixing Engineer's Handbook'; studio tracking best practice.
+  - Destination: `src/reasoning/diagnostic_trees/low_end_tightness_resolution.json`
+
+Record 4:
+  - Record ID: `MIG-PROMPT-GAINPIVOT-004`
+  - Proposition: "Prompt instructions formatting the Gain Pivot concept as Markdown bullet points
+    inside the Gemini system message."
+  - What It Actually Is: `UI_INFRASTRUCTURE_MECHANISM`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `NONE_RETIRE`
+  - Disposition: `NLR_NO_LONGER_REQUIRED`
+  - Annotations: [`#OVERRIDE_BURDEN`]
+  - Risk Tier: `LOW`
+  - Destination: `src/archive/retired_prompts/`
+  - Notes: Scaffolding to be retired once native Sound Engineer reasoning loop is active.
+
+11.2 EXAMPLE 2: STATIC RECIPE "COWBOYS FROM HELL" DIMEBAG DARRELL PRESET
+Legacy Source: `src/services/geminiService.ts:750-815`
+Context: Hardcoded preset returned when keywords match Pantera / Cowboys From Hell.
+
+Deconstruction:
+Record 1:
+  - Record ID: `MIG-RECIPE-CFH-001`
+  - Proposition: "Dimebag Darrell's recorded tone on 'Cowboys From Hell' utilized a solid-state
+    Randall RG100ES amplifier, Bill Lawrence L500XL bridge pickup, Furman PQ-4 parametric EQ
+    boosting 1.4kHz and cutting 800Hz, and MXR 6-band graphic EQ in the effects loop."
+  - What It Actually Is: `REFERENCE_CASE_EVIDENCE`
+  - Operational Reality: `BYPASSED_OVERRIDDEN` (bypasses LLM reasoning)
+  - Owner: `REFERENCE_CASE_EVIDENCE`
+  - Disposition: `PRESERVE_REFERENCE_CASE`
+  - Annotations: [`#HISTORICAL_CONTEXT`]
+  - Risk Tier: `LOW`
+  - Provenance: Terry Date (Producer) interview, Tape Op Magazine #94; Guitar World rig rundown.
+  - Destination: `src/evidence/reference_vault/cases/pantera_cowboys_from_hell.json`
+
+Record 2:
+  - Record ID: `MIG-RECIPE-CFH-002`
+  - Proposition: "Solid-state bipolar transistor clipping produces sharp, odd-harmonic dominant
+    distortion with fast transient recovery compared to tube sag."
+  - What It Actually Is: `PHYSICAL_DEVICE_KNOWLEDGE`
+  - Operational Reality: `BYPASSED_OVERRIDDEN`
+  - Owner: `SOUND_ENGINEER_KNOWLEDGE`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: []
+  - Risk Tier: `HIGH`
+  - Provenance: Self 'Audio Power Amplifier Design' (Focal Press); circuit bench analysis.
+  - Destination: `src/knowledge/device_profiles/solid_state_clipping_behavior.json`
+
+Record 3:
+  - Record ID: `MIG-RECIPE-CFH-003`
+  - Proposition: "All metal rhythm guitars must have an aggressive 800Hz mid scoop."
+  - What It Actually Is: `UNIVERSALISED_PRESCRIPTION`
+  - Operational Reality: `BYPASSED_OVERRIDDEN`
+  - Owner: `NONE_RETIRE`
+  - Disposition: `NLR_NO_LONGER_REQUIRED`
+  - Annotations: [`#ANTI_PATTERN`, `#COGNITIVE_BIAS`]
+  - Risk Tier: `MEDIUM`
+  - Destination: `src/archive/retired_prescriptions/`
+  - Notes: Erroneous universalization of an aesthetic choice. Mid scoop causes mix masking in modern productions.
+
+Record 4:
+  - Record ID: `MIG-RECIPE-CFH-004`
+  - Proposition: "Hardcoded bypass branch `if (prompt.includes('Cowboys')) return staticCFHProfile;`"
+  - What It Actually Is: `DEAD_OBSOLETE_IMPLEMENTATION`
+  - Operational Reality: `BYPASSED_OVERRIDDEN`
+  - Owner: `NONE_RETIRE`
+  - Disposition: `NLR_NO_LONGER_REQUIRED`
+  - Annotations: [`#ANTI_PATTERN`]
+  - Risk Tier: `LOW`
+  - Destination: `src/archive/retired_bypasses/`
+
+11.3 EXAMPLE 3: DETERMINISTIC OVERRIDE `adjustThrashPedalSelection()`
+Legacy Source: `src/services/geminiService.ts:1120-1160`
+Context: Deterministic function that overrides LLM pedal selection for thrash metal prompts,
+forcing an OverScream pedal with Drive=1.0, Tone=7.0, Level=9.0.
+
+Deconstruction:
+Record 1:
+  - Record ID: `MIG-OVERRIDE-TS9-001`
+  - Proposition: "Placing a symmetrical overdrive with low drive and high output level before a
+    high-gain amplifier attenuates sub-bass frequencies below 720Hz while boosting mid frequencies,
+    preventing low-frequency intermodulation in the amplifier preamp."
+  - What It Actually Is: `CAUSAL_RELATIONSHIP`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `SOUND_ENGINEER_KNOWLEDGE`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: []
+  - Risk Tier: `MEDIUM`
+  - Provenance: Ibanez TS9 circuit schematic (720Hz high-pass filter formed by 0.047uF cap and 4.7k resistor).
+  - Destination: `src/knowledge/causal_models/overdrive_tightening_mechanism.json`
+
+Record 2:
+  - Record ID: `MIG-OVERRIDE-TS9-002`
+  - Proposition: "Thrash metal rhythm guitar tracking conventionally employs a clean boost/overdrive
+    pedal to tighten palm-muted attack transients."
+  - What It Actually Is: `CONTEXT_DEPENDENT_PRACTICE`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `SOUND_ENGINEER_KNOWLEDGE`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: [`#PERCEPTUAL_SHORTHAND`]
+  - Risk Tier: `LOW`
+  - Provenance: Andy Sneap (Producer) production interviews; Sound on Sound metal tracking guide.
+  - Destination: `src/knowledge/context_practices/thrash_rhythm_tracking.json`
+
+Record 3:
+  - Record ID: `MIG-OVERRIDE-TS9-003`
+  - Proposition: "AmpliTube 5 'OverScream' model corresponds to GUID 102 with parameter knob scaling [0.0 - 10.0]."
+  - What It Actually Is: `PLATFORM_PRODUCT_KNOWLEDGE`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `PLATFORM_TRANSLATOR_AT5`
+  - Disposition: `KEEP_RELOCATE`
+  - Annotations: [`#PLATFORM_COUPLED`]
+  - Risk Tier: `LOW`
+  - Provenance: AmpliTube 5 XML preset inspection and parameter database.
+  - Destination: `src/translators/at5/gear_models/overscream_guid_102.json`
+
+Record 4:
+  - Record ID: `MIG-OVERRIDE-TS9-004`
+  - Proposition: "Silent post-generation mutation replacing the LLM's selected overdrive pedal."
+  - What It Actually Is: `ANTI_PATTERN`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `NONE_RETIRE`
+  - Disposition: `NLR_NO_LONGER_REQUIRED`
+  - Annotations: [`#ANTI_PATTERN`, `#OVERRIDE_BURDEN`]
+  - Risk Tier: `LOW`
+  - Destination: `src/archive/retired_overrides/`
+  - Notes: Silent mutations violate architectural integrity. Replaced with explicit validator checks.
+
+11.4 EXAMPLE 4: AT5 VIR 4D MICROPHONE PLACEMENT ENGINE & CALIBRATION DATA
+Legacy Source: `src/services/at5MicPlacementService.ts:150-320`
+
+Deconstruction:
+Record 1:
+  - Record ID: `MIG-VIR-ACOUSTIC-001`
+  - Proposition: "Moving a microphone off the central axis of a loudspeaker cone introduces
+    progressive high-frequency attenuation above 3kHz due to phase cancellation across the
+    diaphragm surface and loudspeaker directional beaming."
+  - What It Actually Is: `ENGINEERING_PRINCIPLE`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `SOUND_ENGINEER_KNOWLEDGE`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: []
+  - Risk Tier: `HIGH`
+  - Provenance: Olson 'Acoustical Engineering' (1957); Beranek 'Acoustics' (1954).
+  - Destination: `src/knowledge/core_principles/transducer_off_axis_dispersion.json`
+
+Record 2:
+  - Record ID: `MIG-VIR-SEMANTIC-001`
+  - Proposition: "Microphone placement in acoustic space is parameterized by a 4D coordinate tuple:
+    Radial Offset (X), Lateral Offset (Y), Distance (Z), and Orientation Angle (Alpha)."
+  - What It Actually Is: `SEMANTIC_REPRESENTATION`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `SEMANTIC_TONE_DESIGN`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: []
+  - Risk Tier: `LOW`
+  - Provenance: Phase 1A Architectural Contract; Sound Recording engineering conventions.
+  - Destination: `src/domain/semantic_models/microphone_4d_coordinate.ts`
+
+Record 3:
+  - Record ID: `MIG-VIR-CALIB-001`
+  - Proposition: "AmpliTube 5 VIR coordinate table for the '4x12 Brit 800' cabinet maps normalized
+    X-axis [0.0, 1.0] to [-150mm, +150mm] and Z-axis [0.0, 1.0] to [0mm, 300mm]."
+  - What It Actually Is: `PLATFORM_CALIBRATION_DATA`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `PLATFORM_TRANSLATOR_AT5`
+  - Disposition: `KEEP_RELOCATE`
+  - Annotations: [`#PLATFORM_COUPLED`]
+  - Risk Tier: `LOW`
+  - Provenance: `at5MicPlacementService.ts:VIR_CALIBRATION_COORDINATES`.
+  - Destination: `src/translators/at5/calibration/vir_cabinet_bounds.json`
+
+Record 4:
+  - Record ID: `MIG-VIR-UI-001`
+  - Proposition: "Interactive 2D canvas visualization rendering speaker cone grid, microphone
+    crosshairs, and distance sliders in `MicPlacementManagementView.tsx`."
+  - What It Actually Is: `UI_INFRASTRUCTURE_MECHANISM`
+  - Operational Reality: `ACTIVE_PRODUCTION`
+  - Owner: `OBSERVABILITY_INFRASTRUCTURE_UI`
+  - Disposition: `KEEP_RELOCATE`
+  - Annotations: []
+  - Risk Tier: `LOW`
+  - Provenance: Current TT frontend UI implementation.
+  - Destination: `src/ui/components/mic_placement_grid/`
+
+11.5 EXAMPLE 5: DISCONNECTED AUDIO INPUT PIPELINE
+Legacy Source: `src/services/geminiService.ts:180-210`
+
+Deconstruction:
+Record 1:
+  - Record ID: `MIG-INPUT-PARAM-001`
+  - Proposition: "The function signature of `translateTone()` declares a `recordingData?: AudioData` parameter."
+  - What It Actually Is: `SEMANTIC_REPRESENTATION`
+  - Operational Reality: `DECLARED_ONLY`
+  - Owner: `EVIDENCE_INPUT`
+  - Disposition: `KEEP_RELOCATE`
+  - Annotations: [`#SHADOW_ONLY`]
+  - Risk Tier: `LOW`
+  - Destination: `src/domain/evidence_contracts/audio_input_schema.ts`
+
+Record 2:
+  - Record ID: `MIG-INPUT-GAP-001`
+  - Proposition: "Current TT completely lacks sensory listening capability: incoming audio is never
+    analyzed for spectral distribution, dynamic range, pitch, or pickup resonance."
+  - What It Actually Is: `CAPABILITY_COMPETENCY_GAP`
+  - Operational Reality: `DECLARED_ONLY`
+  - Owner: `EVIDENCE_INPUT`
+  - Disposition: `GAP`
+  - Annotations: [`#GAP`, `#DECLARED_ONLY`]
+  - Risk Tier: `HIGH`
+  - Provenance: Phase 1C.3b Capability Gap Matrix (Competency 1C.1 Sensory Evaluation).
+  - Destination: `src/governance/gap_matrix/GAP-001-AUDIO-SPECTRAL-INGESTION.json`
+
+11.6 EXAMPLE 6: SOUNDENGINEERSERVICE SHADOW MODE & SYNTHETIC TRACES
+Legacy Source: `src/services/soundEngineerService.ts:50-120`
+
+Deconstruction:
+Record 1:
+  - Record ID: `MIG-TRACE-CONTRACT-001`
+  - Proposition: "A professional sound engineering decision trace must log: Target Context,
+    Acoustic Diagnosis, Topological Intent, Parameter Rationale, and Verification Invariants."
+  - What It Actually Is: `REASONING_FRAMEWORK`
+  - Operational Reality: `SHADOW_ISOLATED`
+  - Owner: `SEMANTIC_TONE_DESIGN`
+  - Disposition: `KEEP_CANDIDATE`
+  - Annotations: [`#SHADOW_ONLY`]
+  - Risk Tier: `LOW`
+  - Provenance: Phase 1B Architectural Contract (`SoundEngineerDiagnosticTrace`).
+  - Destination: `src/reasoning/contracts/diagnostic_trace_schema.ts`
+
+Record 2:
+  - Record ID: `MIG-TRACE-FIXTURE-001`
+  - Proposition: "Hardcoded synthetic JSON traces returned by `soundEngineerService.ts` in shadow mode."
+  - What It Actually Is: `DEAD_OBSOLETE_IMPLEMENTATION`
+  - Operational Reality: `SHADOW_ISOLATED`
+  - Owner: `NONE_RETIRE`
+  - Disposition: `NLR_NO_LONGER_REQUIRED`
+  - Annotations: [`#SHADOW_ONLY`, `#TEST_FIXTURE`]
+  - Risk Tier: `LOW`
+  - Destination: `src/archive/retired_shadow_fixtures/`
+  - Notes: To be replaced by live cognitive reasoning output in Phase 1C.5.
+
+--------------------------------------------------------------------------------
+SECTION 12 — MIGRATION PROTOCOL, AUDITING, VERIFICATION & HANDOFF GATES
+--------------------------------------------------------------------------------
+12.1 PHASE-GATE EXECUTION LIFECYCLE
+The actual execution of legacy knowledge migration will occur across six strictly sequenced gates:
+
+  GATE 1: ARCHAEOLOGICAL SURVEY (COMPLETE)
+    - Full static inspection of Current TT completed and recorded in
+      `/TT_Current_TT_Archaeological_Survey_v1.txt`.
+
+  GATE 2: MIGRATION SPECIFICATION FREEZE (THIS PHASE — 1C.4e-R v0.1)
+    - Formal specification defining decomposition rules, taxonomy, dispositions, ownership,
+      and schemas accepted as frozen baseline.
+
+  GATE 3: ATOMIC DECONSTRUCTION EXECUTION (FUTURE IMPLEMENTATION PHASE)
+    - Forensic line-by-line deconstruction of Current TT assets into the formal Migration Ledger.
+    - Every legacy function, prompt, recipe, and schema assigned an atomic record.
+
+  GATE 4: PROVENANCE RECOVERY & DOSSIER COMPILATION
+    - Recovering underlying citations and datasheets for all `KEEP_CANDIDATE` records.
+    - Packaging candidate claims into formal Phase 1C.4d review dossiers.
+
+  GATE 5: EPISTEMIC ADJUDICATION & GOVERNANCE ACTIVATION
+    - Adjudicating candidate claims via Phase 1C.4d governance workflows.
+    - Populating the canonical Sound Engineer Knowledge Base with `VALIDATED_ACTIVE` entities.
+
+  GATE 6: NON-DESTRUCTIVE RELOCATION & RETIREMENT
+    - Relocating platform assets to `Platform Translator — AT5`.
+    - Quarantining and retiring NLR assets only after zero-loss accounting is certified.
+
+12.2 VERIFICATION & NON-REGRESSION AUDIT PROTOCOL
+During future migration execution, the migration engine must satisfy two non-negotiable audits:
+
+  AUDIT 1: ZERO-KNOWLEDGE-LOSS AUDIT
+  Before any legacy file in `src/` can be refactored or marked for retirement:
+    - 100% of propositions contained in that file must be accounted for in the Migration Ledger.
+    - Every proposition must have a verified target destination or a documented NLR quarantine entry.
+    - Certified by comparing the Migration Ledger against the Archaeological Survey baseline.
+
+  AUDIT 2: BEHAVIORAL NON-REGRESSION AUDIT
+  Throughout the migration process:
+    - The production application must continue to compile cleanly (`npm run build`).
+    - The existing 309 automated unit tests must continue to pass (100% test pass rate).
+    - AmpliTube 5 preset generation and XML serialization must remain fully operational.
+
+12.3 SIGN-OFF GATES & HANDOFF TO DOWNSTREAM PHASES
+This specification formally completes Phase 1C.4e-R v0.1 (Current TT Knowledge Migration Specification).
+
+Downstream Handoffs:
+  - Transition to Phase 1C.4f (Knowledge Architecture UAT & Acceptance Scenarios):
+    * Phase 1C.4f will validate the end-to-end knowledge architecture (Entities, Acquisition,
+      Retrieval, Governance, and Migration Specification) against realistic sound engineering
+      acceptance scenarios.
+  - Handoff to Phase 1C.5 (AI Sound Engineer Reasoning Engine):
+    * Phase 1C.5 will consume the migrated declarative knowledge base and implement the
+      live cognitive reasoning loop.
+  - Handoff to Phase 1C.6 (Professional Sound Engineer Competency Benchmarks):
+    * Validating the Sound Engineer against the 1C.3 competency evaluation blueprint.
+
+================================================================================
+END OF SPECIFICATION: /TT_Current_TT_Knowledge_Migration_Specification_v0.1.txt
+================================================================================

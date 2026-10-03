@@ -1,11 +1,19 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with the provisioned database ID as mandated by Firebase skill
+// Initialize Firestore with the provisioned database ID and enable experimentalForceLongPolling
+// with standard HTTP requests (useFetchStreams: false) to prevent WebChannel streaming handshake
+// timeouts in browser iframes and proxied preview environments.
+initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  ...({ useFetchStreams: false } as Record<string, unknown>),
+}, firebaseConfig.firestoreDatabaseId);
+
+// Export db instance as mandated by Firebase skill.
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 export const auth = getAuth(app);
@@ -21,26 +29,22 @@ export const signInWithGoogle = async () => {
   }
 };
 
-// Validate connection to Firestore as mandated by documentation
-async function testConnection(retry = 0) {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-    console.log("Firebase connection verified");
-  } catch (error: any) {
-    const isOffline = error instanceof Error && (
-      error.message.includes('the client is offline') || 
-      (error as any).code === 'unavailable' ||
-      error.message.includes('unavailable')
-    );
-    if (isOffline) {
-      console.warn("Firestore client is offline; operating in local mode until reconnected.");
-      if (retry < 2) {
-        setTimeout(() => {
-          testConnection(retry + 1).catch(() => {});
-        }, 2500);
+// Validate connection to Firestore as mandated by documentation with progressive retries
+// to accommodate initial handshake latency in iframe sandboxes.
+async function testConnection(maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await getDocFromServer(doc(db, 'test', 'connection'));
+      console.log("Firebase connection verified");
+      return;
+    } catch (error: unknown) {
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+        continue;
       }
-    } else {
-      console.warn("Firebase connection notice:", error instanceof Error ? error.message : error);
+      if (error instanceof Error && error.message.includes('the client is offline')) {
+        console.error("Please check your Firebase configuration.");
+      }
     }
   }
 }
