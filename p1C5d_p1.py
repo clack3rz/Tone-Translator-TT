@@ -1,93 +1,115 @@
 #!/usr/bin/env python3
 """
 p1C5d_p1.py: Title, Metadata, Revision Register, Table of Contents, and Sections 1 to 4
-for TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1a.txt
+for TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1f.txt
 Phase 1C.5d — Intervention, Alternatives & Trade-Off Reasoning
+Final Lifecycle Token & Certification Consistency Patch (v0.1e)
 """
 
 def get_p1C5d_p1():
     return '''================================================================================
-TONE TRANSLATOR (TT)
-PHASE 1C.5d: INTERVENTION, ALTERNATIVES & TRADE-OFF REASONING
-ARCHITECTURAL SPECIFICATION (v0.1a)
-PROFESSIONAL SOUND ENGINEER FOUNDATION
+TONE TRANSLATOR (TT) AI SOUND ENGINEER
+PHASE 1C.5d — INTERVENTION, ALTERNATIVES & TRADE-OFF REASONING
+SPECIFICATION v0.1f — DRAFT PENDING INDEPENDENT ARCHITECTURAL REVIEW
 ================================================================================
-DOCUMENT IDENTIFIER: TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1a.txt
-VERSION: v0.1a (Phase 1C.5d Bounded Lifecycle, Platform & Intervention-Discipline Patch)
-DATE: 2026-10-04
+DOCUMENT IDENTIFIER: TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1f.txt
+PHASE: Phase 1C.5d (Intervention, Alternatives & Trade-Off Reasoning)
 STATUS: DRAFT — REQUIRES INDEPENDENT ARCHITECTURAL REVIEW
+DATE: October 2026
+REVISION TYPE: Final Source-Fidelity Certification Patch (v0.1f)
+PREVIOUS VERSIONS:
+  - v0.1: Initial Architectural Draft (HOLD — Contained Lifecycle Misalignments & Overclaims)
+  - v0.1a: Bounded Lifecycle, Platform & Intervention-Discipline Patch (HOLD — Lifecycle & Scenario Inconsistencies)
+  - v0.1b: Final Frozen-Lifecycle & Scenario-Epistemic Consistency Patch (HOLD — Lifecycle Aliasing & Residual Overclaims)
+  - v0.1c: Authoritative Lifecycle Mapping & Final Scenario-Truthfulness Patch (HOLD — Pending Certification Cleanup)
+  - v0.1d: Certification-Cleanup Patch (HOLD — Pending Final Token & Certification Consistency)
+  - v0.1e: Final Lifecycle Token & Certification Consistency Patch (HOLD — Pending Source-Fidelity Patch)
 AUTHORITATIVE UPSTREAM INPUTS:
-  - TT_Professional_Sound_Engineer_Standards_v1.txt (Phase 1C.3a)
-  - TT_Current_TT_Professional_Capability_Gap_Matrix_v1.txt (Phase 1C.3b)
-  - TT_Sound_Engineer_Curriculum_and_Competency_Evaluation_Blueprint_v1.1.txt (Phase 1C.3c)
-  - TT_Sound_Engineering_Knowledge_Architecture_v1.1.txt (Phase 1C.4a-R)
-  - TT_Sound_Engineering_Knowledge_Source_and_Acquisition_Architecture_v1.1g.txt (Phase 1C.4b-R)
-  - TT_Sound_Engineering_Knowledge_Retrieval_and_Runtime_Context_Architecture_v1.1b.txt (Phase 1C.4c-R)
-  - TT_Sound_Engineering_Knowledge_Conflict_Uncertainty_and_Governance_Architecture_v1.1a.txt (Phase 1C.4d-R)
-  - TT_Current_TT_Knowledge_Migration_Specification_v0.4c.txt (Phase 1C.4e-R)
-  - TT_Phase_1C4f_R_Knowledge_Architecture_UAT_and_Signoff_v1.1.txt (Phase 1C.4f-R)
-  - TT_Engineering_Reasoning_Architecture_and_Decision_Lifecycle_v0.3c.txt (Phase 1C.5a Authoritative Frozen Baseline)
-  - TT_Engineering_Evidence_Interpretation_and_Hypothesis_Formation_v0.2f.txt (Phase 1C.5b Authoritative Frozen Baseline)
-  - TT_Engineering_Diagnosis_and_Causal_Reasoning_v0.1d.txt (Phase 1C.5c Authoritative Frozen Baseline)
-GOVERNANCE MANDATE:
-  - PHASE 1C.5d SCOPE ONLY: Establishes the authoritative sound engineering intervention, alternatives,
-    and trade-off reasoning architecture governing the transition from earned causal diagnosis to justified
-    engineering intervention decisions across frozen Stages 09, 10, and 11.
-  - CONSUMES FROZEN UPSTREAM OUTPUTS: Consumes without redefining Engineering Intent, Target Specificity,
-    Task Type, Case Evidence, Observations, Phenomenological Interpretations, Candidate Hypotheses,
-    Target Interpretations, Causal Diagnoses, Causal Contribution Structures, Explanatory Coverage Assessments,
-    Residual Uncertainty Dossiers, and the Reference Case Firewall.
+  - Phase 1C.5a v0.3c: TT_Engineering_Reasoning_Architecture_and_Decision_Lifecycle_v0.3c.txt [FROZEN]
+  - Phase 1C.5b v0.2f: TT_Engineering_Evidence_Interpretation_and_Hypothesis_Formation_v0.2f.txt [FROZEN]
+  - Phase 1C.5c v0.1d: TT_Engineering_Diagnosis_and_Causal_Reasoning_v0.1d.txt [FROZEN]
+CONSTITUTIONAL FOUNDATION: 21 Principles of Sound Engineering Reasoning (v0.3c verbatim)
+GOVERNING MANDATES & ABSOLUTE INVARIANTS:
   - REASONING BEFORE IMPLEMENTATION: Establishes solution-neutral Engineering Requirements and sound-engineering
     intervention reasoning prior to and strictly decoupled from downstream platform translation.
   - ABSOLUTE POST-INTERVENTION EVALUATION FIREWALL: Phase 1C.5d formulates requirements, explores distinct loci,
-    deliberates trade-offs, and selects justified interventions; it strictly terminates prior to Phase 1C.5e
-    (Stage 12 Outcome Evaluation, Detailed Outcome Simulation, Result Observation, Iterative Tuning).
+    deliberates trade-offs, and selects justified interventions; it strictly terminates prior to downstream
+    outcome simulation, platform translation, and retrospective review (Phase 1C.5e: Outcome Prediction,
+    Stage 13 Outcome Ingestion, Stage 14 Engineering Review; and Stage 12 Semantic Tone Design Handoff).
   - ABSOLUTE NON-FABRICATION RULE: Missing evidence remains missing evidence. Intervention decisions must be
     traceable to earned causal diagnoses and explicit requirements, never relying on fabricated numbers,
     unjustified certainty, or arbitrary utility metrics.
 ================================================================================
 
-REVISION REGISTER — v0.1a BOUNDED LIFECYCLE, PLATFORM & INTERVENTION-DISCIPLINE CORRECTION
+REVISION REGISTER — v0.1f FINAL SOURCE-FIDELITY CERTIFICATION PATCH
 ===============================================================================
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| ID     | Architecture Element               | Classification  | Architectural Scope & Purpose in v0.1a                    | Primary Sections  | Status     |
+| ID     | Architecture Element               | Classification  | Architectural Scope & Purpose in v0.1e                    | Primary Sections  | Status     |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A1     | Frozen Lifecycle Ownership         | LIFECYCLE       | Restores exact frozen Stage 09, 10, and 11 lifecycle      | 2.1, 3.1, 4.1,    | INTEGRATED |
-|        | Restoration                        | GOVERNANCE      | ownership; eliminates invented "INTERVENTION_SELECTION"   | 21, 24, 27, 28    |            |
-|        |                                    |                 | state; aligns Phase 1C.5e boundary with Stage 12.         |                   |            |
+| C1     | Authoritative Lifecycle Mapping    | LIFECYCLE       | Reconciles lifecycle naming directly from v0.3c; removes  | 1.3, 2.1, 3.1,    | INTEGRATED |
+|        | Directly from Actual v0.3c         | FIDELITY        | all slash aliases; maps Stages 08, 09, 10, 11 exactly.   | 3.2, 4.1, 24, 28  |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A2     | Phase 1C.5c Semantic Contract      | SEMANTIC        | Consumes Phase 1C.5c frozen models without replacement    | 2.2, 2.3, 4.1,    | INTEGRATED |
-|        | Restoration                        | FIDELITY        | shorthand taxonomies or renumbered firewall rules.        | 15, 25, 27, 28    |            |
+| C2     | Scenario E Handoff Gate Rejection  | EPISTEMIC       | Rejects failed intake before candidate formulation;       | 4.2, 25 (E),      | INTEGRATED |
+|        |                                    | DISCIPLINE      | removes unevidenced room-mode diagnosis; routes to 06A.   | 26, 28            |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A3     | Case-Relative Causal               | LOCALIZATION    | Replaces "cause-directed is physically superior" dogma    | 1.3, 5.4, 10,     | INTEGRATED |
-|        | Appropriateness Correction         | DISCIPLINE      | with case-relative selection balancing requirements,      | 18, 25 (A-L), 28  |            |
-|        |                                    |                 | preservation needs, constraints, and trade-offs.          |                   |            |
+| C3     | Pre-Evaluation Guarantee Removal   | EPISTEMIC       | Global sweep removing 100%, ZERO_COMPROMISE, and absolute | 5.4, 6.2, 10.2,   | INTEGRATED |
+|        |                                    | BOUNDARY        | preservation claims; replaces with pre-execution language.| 21.1, 25 (A-L), 28|            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A4     | Intervention Sequencing            | SYSTEMIC        | Removes rigid 7-stage universal ordering ladder; replaces | 16, 25 (D, K),    | INTEGRATED |
-|        | De-Rigidification                  | REASONING       | with case-specific causal dependency structure.           | 26, 28            |            |
+| C4     | Unsupported Numeric Removal        | EVIDENTIAL      | Removes exact unevidenced intervention settings across    | 6.7, 25 (A, C, D),| INTEGRATED |
+|        |                                    | DISCIPLINE      | Scenarios A, C, D; enforces problem != intervention math. | 26, 28            |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A5     | Platform Firewall Boundary         | ABSTRACTION     | Retains platform-neutral requirement and fidelity model;  | 6.4, 19, 20,      | INTEGRATED |
-|        | Correction                         | INTEGRITY       | defers AT5-specific capability checks downstream; corrects| 25 (H), 26, 28    |            |
-|        |                                    |                 | Phase 1C.5g roadmap reference.                            |                   |            |
+| C5     | Scenario L Test Calibration        | PHYSICAL        | Reframes Driver A/B test as evidence shifting support,    | 23.1, 25 (L),     | INTEGRATED |
+|        |                                    | REALISM         | not unique binary proof of mechanism.                     | 26, 28            |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A6     | Phase 1C.5e Outcome-Prediction     | EPISTEMIC       | Replaces detailed predicted numbers with intended         | 3.2, 24,          | INTEGRATED |
-|        | Boundary Correction                | BOUNDARY        | directional effects / outcome-prediction inputs; reserves | 25 (A-L), 26, 28  |            |
-|        |                                    |                 | fine prediction, response curves, and checks to 1C.5e.    |                   |            |
+| C6     | Scenario H Headroom Domain Fix     | SIGNAL DOMAIN   | Replaces incorrect "amplifier headroom" with digital/mix- | 25 (Scenario H),  | INTEGRATED |
+|        |                                    | INTEGRITY       | bus headroom for post-summing downstream EQ.              | 26, 28            |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A7     | Intervention Numeric Precision     | EVIDENTIAL      | Removes unearned exact intervention values (angles, dB, Q,| 6.7, 25 (A-L),    | INTEGRATED |
-|        | Correction                         | DISCIPLINE      | distances, slopes); retains semantic framing or marks     | 26, 28            |            |
-|        |                                    |                 | illustrative values explicitly non-authoritative.         |                   |            |
+| C7     | Acceptance Matrix Truthfulness     | AUDIT           | Replaces blanket [x] with evidence-backed statuses; marks | 26, 27, 28        | INTEGRATED |
+|        | Conversion                         | TRUTHFULNESS    | unexecuted checks and pending external comparisons.       |                   |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A8     | Scenario E Upstream Diagnosis      | CROSS-DOMAIN    | Restores frozen 1C.5c unresolved playback status; halts   | 25 (Scenario E),  | INTEGRATED |
-|        | Fidelity Correction                | INTEGRITY       | intervention on unverified playback cause; routes upstream| 26, 28            |            |
-|        |                                    |                 | return for discriminating evidence (headphone cross-check)|                   |            |
+| C8     | Preservation of Passed Corrections | REGRESSION      | Preserves Scenario I rejection, Scenario H sign uncert,   | 4.2, 16.2, 19.2,  | INTEGRATED |
+|        |                                    | LOCK            | Scenario J semantic center, Scenario K tuning uncert.     | 25 (H, I, J, K)   |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A9     | Scenario L Test-vs-Intervention    | EPISTEMIC       | Removes disguised diagnostic test (auditioning Driver B); | 25 (Scenario L),  | INTEGRATED |
-|        | Correction                         | DISCIPLINE      | demonstrates robust bounded-locus intervention valid      | 26, 28            |            |
-|        |                                    |                 | across unresolved internal cabinet mechanisms.            |                   |            |
+| D1     | Stage 11 Prediction Ownership      | LIFECYCLE       | Reconciles Stage 11 prediction ownership directly against | 1.3, 2.1, 3.1,    | INTEGRATED |
+|        | Reconciliation                     | FIDELITY        | v0.3c Sec 9/18; Stage 11 seals PredictedOutcomeRecord;    | 3.2, 21, 24, 28   |            |
+|        |                                    |                 | Phase 1C.5e simulates & evaluates; keeps outcome separate |                   |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
-| A10    | Acceptance & Regression            | AUDIT           | Updates all affected acceptance and adversarial checks;   | 26, 28            | INTEGRATED |
-|        | Truthfulness Refresh               | FIDELITY        | adds dedicated v0.1a regression suite (R-A1 to R-A16).    |                   |            |
+| D2     | Scenario I Canonical Stage         | EPISTEMIC       | Reconciles Scenario I to canonical model: Stage 08 gate   | 4.2, 25 (I),      | INTEGRATED |
+|        | Alignment                          | DISCIPLINE      | rejection, zero Stage 09 candidates, zero Stage 10 trade. | 28                |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| D3     | Frozen Discriminating Status       | TOKEN           | Normalizes all discriminating evidence return paths to    | 4.2, 16.2, 17.1,  | INTEGRATED |
+|        | Normalization                      | FIDELITY        | exact v0.3c token DISCRIMINATING_EVIDENCE_REQUESTED.      | 23.2, 25, 27, 28  |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| D4     | Acceptance & Adversarial           | AUDIT           | Distinguishes Sec 26 test specification from execution;   | 26, 27, 28        | INTEGRATED |
+|        | Truthfulness Completion            | TRUTHFULNESS    | converts Sec 27 to local review vs cross-artifact pending;|                   |            |
+|        |                                    |                 | marks R-A3 pending external diff audit before freeze.     |                   |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| D5     | Final Pre-Evaluation Language      | EPISTEMIC       | Global sweep removing final unearned pre-evaluation       | 25 (A, F, J), 28  | INTEGRATED |
+|        | Calibration                        | BOUNDARY        | guarantees (full preservation, optimal) in Scenarios A,F,J|                   |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| E1     | Check 30 Stage 11 Prediction       | LIFECYCLE       | Reconciles Adversarial Check 30 to Stage 11 Prediction    | 26 (Check 30), 28 | INTEGRATED |
+|        | Alignment                          | FIDELITY        | ownership; seals PredictedOutcomeRecord; 13/14 downstream |                   |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| E2     | Stage 12 Token Audit & Scope        | TOKEN           | Audits Stage 12 references; removes obsolete draft        | 2.1, 3.2, 24.1,   | INTEGRATED |
+|        | Clarification                      | FIDELITY        | variants prior to final v0.1f source-grounded alignment.  | 28                |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| E3     | Adversarial Checks 1–32 Explicit   | AUDIT           | Adds explicit global execution status to Section 26:      | 26, 28            | INTEGRATED |
+|        | Execution Status                   | TRUTHFULNESS    | NOT EXECUTED — ARCHITECTURAL SAFEGUARD SPECIFICATION ONLY.|                   |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| E4     | Section 27 Certification           | CERTIFICATION   | Standardizes Section 27.2 compliance status vocabulary;   | 27.2, 28          | INTEGRATED |
+|        | Vocabulary Standardization         | VOCABULARY      | removes FULLY COMPLIANT; enforces local review categories |                   |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| F1     | Stage 12 Source-Grounded Phrasing  | LIFECYCLE       | Removes unsupported canonical-token claim; aligns Stage 12| 2.1, 3.2, 19.2,   | INTEGRATED |
+|        | Alignment                          | FIDELITY        | to Semantic Tone Design layer / handoff boundary in v0.3c.| 24.1, 28          |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| F2     | Stage 14 Source-Grounded Phrasing  | LIFECYCLE       | Removes unsupported canonical-token claim; aligns Stage 14| 2.1, 3.2, 24.2,   | INTEGRATED |
+|        | Alignment                          | FIDELITY        | to Engineering Review / EngineeringReviewRecord in v0.3c. | 26, 28            |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| F3     | Scenario D Explanatory Coverage    | TOKEN           | Normalizes Scenario D explanatory coverage to exact 1C.5c | 25 (Scenario D)   | INTEGRATED |
+|        | Category Normalization             | FIDELITY        | Section 11.2 category COMPLETE_EXPLANATION.               |                   |            |
++--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
+| F4     | Certification Gates Governance     | GOVERNANCE      | Explicitly retains R-D25, R-A3, R-B20, and R-E9 pending   | 28.1, 28.2, 28.3, | INTEGRATED |
+|        | Lock                               | LOCK            | independent post-patch certification review.              | 28.4, 28.5        |            |
 +--------+------------------------------------+-----------------+-----------------------------------------------------------+-------------------+------------+
 
 TABLE OF CONTENTS
@@ -127,95 +149,78 @@ TABLE OF CONTENTS
 SECTION 1 — EXECUTIVE SUMMARY
 ===============================================================================
 
-1.1 ARCHITECTURAL PURPOSE & MANDATE
-Phase 1C.5a established the overarching Engineering Reasoning Architecture and
-Decision Lifecycle (`TT_Engineering_Reasoning_Architecture_and_Decision_Lifecycle_v0.3c.txt`).
-Phase 1C.5b established the rigorous evidence interpretation, observation formation,
-and hypothesis workspace architecture (`TT_Engineering_Evidence_Interpretation_and_Hypothesis_Formation_v0.2f.txt`).
-Phase 1C.5c established the causal reasoning architecture that answers:
-    "GIVEN THE AVAILABLE EVIDENCE, OBSERVATIONS, CANDIDATE HYPOTHESES,
-     DISCRIMINATING TESTS, ASSUMPTIONS, CONFLICTS, AND RESIDUAL UNCERTAINTY —
-     WHAT CAUSAL CONCLUSION IS THE AI SOUND ENGINEER ENTITLED TO REACH?"
+1.1 THE INTERVENTION PROBLEM IN AUTOMATED SOUND ENGINEERING
+In traditional audio software, the step following "analysis" is almost universally corrupted by
+mechanistic, tool-centric reflexes: a detected spectral peak triggers an automatic parametric EQ cut;
+a detected low-frequency rumble triggers a high-pass filter; a dynamic inconsistency triggers a compressor.
+These naive reactions confuse the symptom with its cause, ignore the vital distinction between physical defects
+and intentional artistic coloration, and introduce destructive collateral damage to the musician's tone.
 
-Phase 1C.5d governs the crucial cognitive transition from causal understanding to
-engineering action across Decision Lifecycle Stages 09, 10, and 11. It answers:
-    "GIVEN THE EARNED CAUSAL DIAGNOSIS, ENGINEERING INTENT, CONSTRAINTS,
-     RESIDUAL UNCERTAINTY, AND AVAILABLE SOLUTION SPACE —
-     WHAT SHOULD BE CHANGED, WHERE SHOULD IT BE CHANGED, WHAT ALTERNATIVES EXIST,
-     AND WHICH ENGINEERING INTERVENTION IS JUSTIFIED?"
+Phase 1C.5d of the Tone Translator (TT) AI Sound Engineer establishes the formal reasoning architecture
+for engineering intervention, candidate alternative generation, and trade-off deliberation. It answers the
+fundamental question:
+    "GIVEN AN EARNED CAUSAL DIAGNOSIS AND USER INTENT, WHAT IS THE MOST DEFENSIBLE,
+     PARSIMONIOUS, AND ARTISTICALLY ALIGNED COURSE OF ENGINEERING ACTION?"
 
-1.2 THE GOVERNING COGNITIVE CHAIN
-The core discipline of Phase 1C.5d rests upon four sharply distinguished operations:
-    1. DIAGNOSIS explains what is physically and electrically happening in the signal chain.
-    2. ENGINEERING REQUIREMENTS define what physical, acoustic, spectral, or dynamic change
-       must be achieved, and what vital musical qualities must be preserved.
-    3. INTERVENTIONS define the concrete physical, electrical, or processing actions through
-       which that required change may be accomplished.
-    4. TRADE-OFF REASONING determines which intervention path is engineeringly justified
-       in light of sound quality, side effects, constraints, user intent, and parsimony.
+1.2 REASONING BEFORE IMPLEMENTATION
+Phase 1C.5d establishes that an engineering intervention is not a tool parameter setting; it is a justified
+transformation of physical and electrical behavior designed to satisfy an explicit Engineering Requirement.
+Before any DSP block, amplifier module, or plugin parameter is considered, the system must:
+    1. Translate the earned causal diagnosis into a solution-neutral Engineering Requirement;
+    2. Define strict Preservation Requirements to protect transient punch, dynamic feel, and harmonic texture;
+    3. Generate materially distinct alternative pathways across distinct physical and signal loci;
+    4. Deliberate qualitative trade-offs without manufactured utility numbers or fake scoreboards;
+    5. Select the causally appropriate intervention locus (whether source-directed, preventive, local, or compensatory);
+    6. Enforce that "No Change" (Abstention) is a fully first-class engineering decision whenever intervention is unjustified.
 
-A failure in any link collapses professional sound engineering into guesswork. Selecting
-an intervention without an earned diagnosis violates causality. Selecting a processor or
-knob without an explicit engineering requirement is blind tweaking. Comparing options
-without exposing trade-offs hides musical destruction.
-
-1.3 SUMMARY OF ARCHITECTURAL SAFEGUARDS
-Phase 1C.5d establishes ten non-negotiable architectural safeguards:
-  1. The Upstream Diagnosis Gate: Phase 1C.5d activates ONLY upon receiving a sufficiently
-     resolved or explicitly bounded causal diagnosis from Phase 1C.5c. Unresolved causal
-     workspaces halt and return upstream for discriminating evidence.
-  2. The Solution-Neutral Requirement Rule: Engineering Requirements MUST be articulated
-     in solution-neutral physical, electrical, acoustic, and dynamic terms before any
-     specific gear, processor, or parameter is entertained.
-  3. Case-Relative Causal Appropriateness: Interventions are selected relative to the earned
-     diagnosis, requirements, preservation needs, constraints, and trade-offs. Cause-directed
-     action is valued for addressing mechanisms at their locus of origin, but is not an absolute
-     universal dogma; downstream action is recognized as professionally justified where
-     preservation, constraints, or risk dictate.
-  4. Explicit Compromise Logging: When physical constraints or preservation requirements compel
-     downstream compensation, the architecture explicitly records the compromise rather than
-     pretending equivalence.
-  5. Creative Tone Immunity: Diagnosed physical phenomena that align with artistic intent
-     are preserved or enhanced; a physical anomaly is never automatically a defect to remove.
-  6. Anti-Quota Alternative Generation: Real, materially distinct alternatives are generated
-     when the problem admits them; fixed candidate counts and fake cosmetic variants are banned.
-  7. Rejection of Fake Utility Functions: Complex sonic trade-offs are evaluated through
-     transparent qualitative engineering arguments, never collapsed into fabricated scalar scores.
-  8. First-Class Preservation Architecture: What must NOT be lost (pick attack, low-end punch,
-     sustain, vintage character) receives equal standing with what must be corrected.
-  9. Non-Dogmatic Parsimony: Minimum necessary change is favored, but balanced against robustness,
-     system simplicity, and creative intent.
-  10. The Platform Firewall: Sound engineering reasoning remains strictly platform-neutral;
-      destination software gear selection, parameter mapping, and serialization are downstream concerns.
+1.3 CORE REASONING WORKFLOW (CORRECTIONS C1, D1)
+The Phase 1C.5d deliberative engine operates across the frozen Decision Lifecycle stages:
+    CAUSAL DIAGNOSIS (From Phase 1C.5c / Frozen Stage 07)
+              │
+              ▼
+    Frozen Stage 08: `ENGINEERING_REQUIREMENT_FORMATION` (Primary, Preservation, Constraints, Secondary)
+              │
+              ▼
+    Frozen Stage 09: `CANDIDATE_INTERVENTION_GENERATION` (Source, Preventive, Local, Compensatory Loci)
+              │
+              ▼
+    Frozen Stage 10: `CONSTRAINT_AND_TRADE_OFF_ANALYSIS` (Parsimony, Robustness, Collateral Damage, Value Alignment)
+              │
+              ▼
+    Frozen Stage 11: `ENGINEERING_DECISION_AND_PREDICTION` (Selected Action, Explicit Rejections, Predicted Outcome Formulation & Falsification Criteria; Handoff to Phase 1C.5e)
 
 
 ===============================================================================
 SECTION 2 — SCOPE, GOVERNANCE & FROZEN UPSTREAM DEPENDENCIES
 ===============================================================================
 
-2.1 SYSTEM BOUNDARIES & LIFECYCLE ALIGNMENT
-Phase 1C.5d is an architectural specification phase governing the reasoning across three frozen stages
-of the authoritative Decision Lifecycle established in Phase 1C.5a v0.3c Section 4.2:
-  - Stage 09: `ENGINEERING_REQUIREMENTS_FORMULATION`
-  - Stage 10: `CANDIDATE_INTERVENTIONS_EXPLORING_DISTINCT_LOCI`
-  - Stage 11: `TRADE_OFF_DELIBERATION_UNDERWAY`
+2.1 SYSTEM BOUNDARIES & LIFECYCLE ALIGNMENT (CORRECTIONS C1, B1, B2)
+Phase 1C.5d is an architectural specification phase governing the reasoning across the intervention
+deliberation stages of the authoritative 14-stage Decision Lifecycle established in Phase 1C.5a v0.3c
+Section 9 (Contract Necessity Matrix) and Section 10 (Authoritative Lifecycle Table):
+  - Frozen Stage 08: `ENGINEERING_REQUIREMENT_FORMATION`
+  - Frozen Stage 09: `CANDIDATE_INTERVENTION_GENERATION`
+  - Frozen Stage 10: `CONSTRAINT_AND_TRADE_OFF_ANALYSIS`
+  - Frozen Stage 11: `ENGINEERING_DECISION_AND_PREDICTION`
 
 Phase 1C.5d is strictly bounded:
-  - It COMMENCES upon successful handoff of a qualifying causal diagnosis from Phase 1C.5c into Stage 09.
+  - It COMMENCES upon successful handoff of a qualifying causal diagnosis from Phase 1C.5c into Stage 08.
   - It CONCLUDES Stage 11 upon selecting a justified engineering decision (or authoritative abstention)
-    and formulating the handoff package.
-  - It TERMINATES prior to Stage 12 (`ACTION_OUTCOME_EVALUATION`), which together with detailed
-    pre-action outcome prediction and iterative refinement belongs to Phase 1C.5e.
+    and sealing both the EngineeringDecisionRecord (Contract 9) and PredictedOutcomeRecord (Contract 10)
+    specifying primary intended changes, secondary trade-off impacts, and explicit falsification criteria.
+  - It TERMINATES prior to downstream pre-action outcome simulation, Frozen Stage 12 (Semantic Tone Design
+    layer / handoff boundary and Pre-Execution Translation Gate), Stage 13 (`OUTCOME_EVIDENCE_INGESTION`), and
+    Stage 14 (Engineering Review / `EngineeringReviewRecord`), which belong to Phase 1C.5e and downstream execution phases.
   - It OPERATES at the level of professional sound engineering concepts, physical acoustics,
     circuit principles, and psychoacoustic trade-offs.
   - It MAINTAINS complete platform neutrality prior to downstream translation.
 
-2.2 CONSUMPTION OF FROZEN UPSTREAM ARTIFACTS
+2.2 CONSUMPTION OF FROZEN UPSTREAM ARTIFACTS (CORRECTION C7)
 Phase 1C.5d consumes without alteration the frozen specifications of upstream phases:
   1. Phase 1C.5a (`v0.3c`):
      - The 21 frozen Constitutional Principles (reproduced exact verbatim in Section 27.1).
-     - The 12-Stage Decision Lifecycle, specifically governing Stages 09, 10, and 11.
-     - The explicit Pause, Return, and Deliberation Record governance protocols.
+     - The Authoritative 14-Stage Decision Lifecycle (Stage 01 to Stage 14).
+     - The 27 canonical lifecycle statuses and explicit Pause, Return, and Deliberation Record governance protocols.
   2. Phase 1C.5b (`v0.2f`):
      - Phenomenological Observation vs Interpretation boundaries.
      - Candidate Hypothesis Workspace architecture.
@@ -232,6 +237,14 @@ Phase 1C.5d consumes without alteration the frozen specifications of upstream ph
      - Assumption Sensitivity model and the Residual Uncertainty Dossier.
      - The Reference Case Firewall baseline.
 
+EXPLICIT CERTIFICATION REQUIREMENT (CORRECTION C7):
+Independent architectural review could not fully certify exact upstream compatibility during drafting
+due to artifact availability boundaries. In strict accordance with Correction C7, Phase 1C.5d consumes these
+upstream models faithfully without inventing replacement shorthand taxonomies, but final formal freezing
+requires direct automated and human comparison against the exact frozen artifacts
+`TT_Engineering_Evidence_Interpretation_and_Hypothesis_Formation_v0.2f.txt` and
+`TT_Engineering_Diagnosis_and_Causal_Reasoning_v0.1d.txt`.
+
 2.3 NON-REDEFINITION INVARIANT
 Phase 1C.5d is strictly forbidden from redefining, overwriting, or weakening any upstream construct.
 Specifically:
@@ -246,34 +259,54 @@ Specifically:
 SECTION 3 — PHASE 1C.5d ARCHITECTURAL BOUNDARY & LIFECYCLE OWNERSHIP
 ===============================================================================
 
-3.1 LIFECYCLE STAGE ALLOCATION
-In strict accordance with Phase 1C.5a Section 4.2, Phase 1C.5d exercises ownership across:
-  - STAGE 09: `ENGINEERING_REQUIREMENTS_FORMULATION`
-    * Translates qualifying causal diagnosis and engineering intent into solution-neutral Engineering Requirements.
+3.1 LIFECYCLE STAGE ALLOCATION (CORRECTION C1)
+In strict accordance with Phase 1C.5a v0.3c Sections 9 and 10, the exact frozen stage names and Phase 1C.5d
+responsibilities within them are mapped as follows:
+
+  - FROZEN STAGE 08 — `ENGINEERING_REQUIREMENT_FORMATION`
+    Phase 1C.5d responsibility within this stage:
+    * Translates qualifying causal diagnosis (from Stage 07) and engineering intent into solution-neutral Engineering Requirements.
     * Formulates explicit Preservation Requirements and identifies hard/soft Constraints.
     * Bounds requirement specificity by the inherited Residual Uncertainty Dossier.
-  - STAGE 10: `CANDIDATE_INTERVENTIONS_EXPLORING_DISTINCT_LOCI`
-    * Maps engineering requirements to candidate intervention loci (source, preventive, local, compensatory).
-    * Generates materially distinct candidate intervention alternatives without quotas or cosmetic variants.
-    * Performs initial eligibility screening and contraindication analysis.
-  - STAGE 11: `TRADE_OFF_DELIBERATION_UNDERWAY`
-    * Conducts qualitative, multidimensional trade-off reasoning across eligible alternatives.
-    * Evaluates parsimony, robustness, reversibility, and alignment with user intent.
-    * Determines pre-execution intervention sequencing based on case-specific causal dependencies.
-    * Reaches the justified engineering selection decision (or executes an authoritative abstention).
-    * Documents explicit rejection rationales for all unselected alternatives.
-    * Packages the justified decision, residual uncertainties, and intended directional effects for downstream handoff.
+    * Emits and seals `EngineeringRequirementRecord`.
 
-3.2 WHAT PHASE 1C.5d EXPRESSLY DOES NOT OWN
+  - FROZEN STAGE 09 — `CANDIDATE_INTERVENTION_GENERATION`
+    Phase 1C.5d responsibility within this stage:
+    * Maps sealed engineering requirements to candidate intervention loci (source, preventive, local, compensatory).
+    * Generates materially distinct candidate intervention pathways across distinct physical/signal loci without quotas or cosmetic variants.
+    * Performs initial eligibility screening and contraindication analysis.
+    * Emits `CandidateInterventionRecord[]`.
+
+  - FROZEN STAGE 10 — `CONSTRAINT_AND_TRADE_OFF_ANALYSIS`
+    Phase 1C.5d responsibility within this stage:
+    * Conducts qualitative, multidimensional trade-off reasoning across eligible alternatives.
+    * Evaluates parsimony, robustness to surviving uncertainty, collateral damage profiles, and alignment with user intent.
+    * Evaluates contraindications and hard/soft constraints.
+    * Emits `ConstraintAndTradeOffEvaluationRecord`.
+
+  - FROZEN STAGE 11 — `ENGINEERING_DECISION_AND_PREDICTION`
+    Phase 1C.5d responsibility within this stage:
+    * Authoritative selection of the justified engineering course of action (or authoritative abstention `NO_INTERVENTION_JUSTIFIED`).
+    * Documents explicit technical rejection rationales for all unselected alternatives.
+    * Determines pre-execution intervention sequencing based on case-specific causal dependencies.
+    * Formulates falsifiable pre-action predictions: Primary Intended Changes (spectral, dynamic, envelope targets),
+      Secondary Trade-Off Impacts (collateral consequences and acceptable limits), and Explicit Falsification Criteria
+      (observable conditions disproving the underlying diagnosis or intervention design).
+    * Emits and seals both `EngineeringDecisionRecord` (Contract 9) and `PredictedOutcomeRecord` (Contract 10)
+      in strict accordance with Phase 1C.5a v0.3c Sections 9 and 18.
+
+3.2 WHAT PHASE 1C.5d EXPRESSLY DOES NOT OWN (CORRECTIONS C1, D1)
 To protect the integrity of the overall reasoning pipeline, Phase 1C.5d excludes:
-  - Evidence Acquisition & Interpretation: Belongs strictly to Phases 1C.5a and 1C.5b.
-  - Causal Diagnosis Generation: Belongs strictly to Phase 1C.5c.
-  - Detailed Pre-Action Outcome Prediction & Simulation: Belongs to Phase 1C.5e.
-    (Phase 1C.5d identifies intended directional effects necessary to deliberate trade-offs, but
-    does not simulate, predict exact dB response curves, or forecast numerical outcomes).
-  - Post-Intervention Action Outcome Evaluation: Belongs strictly to Stage 12 (`ACTION_OUTCOME_EVALUATION`)
-    in Phase 1C.5e.
-  - Iterative Tuning Loops: Belongs strictly to Phase 1C.5e.
+  - Evidence Acquisition & Interpretation: Belongs strictly to Phases 1C.5a and 1C.5b (Stages 01 to 06A).
+  - Causal Diagnosis Formulation: Belongs strictly to Phase 1C.5c (Stage 07: `CAUSAL_DIAGNOSIS`).
+  - Detailed Pre-Action Simulation & Iterative Review: Belongs to Phase 1C.5e. (Phase 1C.5d formulates and
+    seals the PredictedOutcomeRecord defining falsifiable expectations and trade-off bounds at Stage 11;
+    Phase 1C.5e elaborates, simulates, tests, and refines predictions prior to execution, and subsequently conducts
+    Stage 13 Actual Outcome Evidence Ingestion and Stage 14 Retrospective Engineering Review).
+  - Semantic Tone Design Interface & Platform Translation Gate: Belongs to Frozen Stage 12 (Semantic Tone Design layer / handoff boundary).
+  - Actual Outcome Evidence Ingestion: Belongs to Frozen Stage 13 (`OUTCOME_EVIDENCE_INGESTION`) in Phase 1C.5e.
+    Predicted outcome is NOT actual outcome evidence.
+  - Retrospective Engineering Review & Iterative Refinement: Belongs to Frozen Stage 14 (Engineering Review / `EngineeringReviewRecord`) in Phase 1C.5e.
   - Destination Platform Translation & Compilation: Belongs strictly to downstream platform translation
     and migration phases (Phase 1C.5g owns migration specification; downstream translation owns exact
     AmpliTube 5 gear GUID lookups, module parameter indices, and XML state compilation).
@@ -284,9 +317,9 @@ To protect the integrity of the overall reasoning pipeline, Phase 1C.5d excludes
 SECTION 4 — THE CAUSAL DIAGNOSIS TO INTERVENTION HANDOFF CONTRACT
 ===============================================================================
 
-4.1 THE HANDOFF GATE
-Phase 1C.5d does not accept arbitrary inputs. Entry into Stage 09 is governed by the
-Handoff Contract defined in Phase 1C.5c Section 20.
+4.1 THE HANDOFF GATE (CORRECTION C1)
+Phase 1C.5d does not accept arbitrary inputs. Entry into Frozen Stage 08 (`ENGINEERING_REQUIREMENT_FORMATION`)
+is governed by the Handoff Contract defined in Phase 1C.5c Section 20.
 
 An active reasoning session may cross the threshold from Phase 1C.5c to Phase 1C.5d ONLY IF
 the causal diagnosis record meets one of three qualifying criteria:
@@ -303,21 +336,28 @@ the causal diagnosis record meets one of three qualifying criteria:
      - Criteria B: Unresolved candidate mechanisms are confined strictly to that single locus.
      - Criteria C: Actionable, solution-neutral Engineering Requirements can be formulated
        targeting that bounded locus without needing to guess the internal mechanism.
-     - Criteria D: Downstream interventions do not depend upon unverified mechanism-specific assumptions.
+     - Criteria D: Downstream interventions do not depend upon unverified mechanism-specific assumptions
+       (WARNING: As demonstrated in Correction B4 and Correction C5, bounded locus does not guarantee mechanism
+       independence; if intervention choice depends upon the internal mechanism, the session must return upstream!).
      - Criteria E: The mechanism uncertainty is explicitly propagated in the Residual Uncertainty Dossier.
 
-4.2 THE UNRESOLVED WORKSPACE REJECTION RULE
+4.2 THE UNRESOLVED WORKSPACE REJECTION RULE (CORRECTIONS C1, C2, B3)
 If the upstream causal diagnosis disposition is:
   - `MULTIPLE_CAUSES_REMAIN_VIABLE` (competing candidates across different loci remain active); or
-  - `LOCUS_UNRESOLVED_MECHANISM_HYPOTHETICAL` (signal locus itself is unconfirmed); or
+  - `LOCUS_UNRESOLVED_MECHANISM_HYPOTHETICAL` (signal locus itself is unconfirmed, e.g. Scenario E); or
   - `PROVISIONAL_DIAGNOSIS` based on unverified load-bearing assumptions;
 
-THEN Phase 1C.5d is STRICTLY BARRED from formulating or selecting interventions.
+THEN Phase 1C.5d is STRICTLY BARRED from formulating requirements or selecting interventions.
+The session FAILS THE HANDOFF GATE at Stage 08:
+  - Zero engineering requirements are formulated;
+  - Zero candidate interventions may be admitted into the Stage 09 workspace;
+  - Zero trade-off deliberations may be performed in Stage 10;
+  - Zero downstream intervention selections may be made in Stage 11.
 
 The active session must execute an immediate STOP and initiate an Upstream Return Path:
-    `STAGE 09 HALT → RETURN TO STAGE 06A (DISCRIMINATING_TEST_EXECUTION)`
+    `STAGE 08 HALT → RETURN TO STAGE 06A (DISCRIMINATING_EVIDENCE_REQUESTED)`
     or
-    `STAGE 09 HALT → RETURN TO STAGE 07 (CAUSAL_DIAGNOSIS_UNDERWAY)`
+    `STAGE 08 HALT → RETURN TO STAGE 07 (CAUSAL_DIAGNOSIS)`
 
 Phase 1C.5d MUST NEVER patch over upstream causal ambiguity by choosing an intervention
 and hoping for the best. Guessing an intervention under unresolved causality is an absolute

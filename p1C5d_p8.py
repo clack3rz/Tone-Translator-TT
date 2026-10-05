@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 """
-p1C5d_p8.py: Sections 26 and 27 for TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1a.txt
+p1C5d_p8.py: Sections 26 and 27 for TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1f.txt
 Phase 1C.5d — Intervention, Alternatives & Trade-Off Reasoning
+Final Source-Fidelity Certification Patch (v0.1f)
 """
 
 def get_p1C5d_p8():
     return '''===============================================================================
-SECTION 26 — ADVERSARIAL REVIEW SUITE (CHECKS 1–32) (CORRECTION A10)
+SECTION 26 — ADVERSARIAL REVIEW SUITE (CHECKS 1–32) (CORRECTIONS A10, D4, E1, E3)
 ===============================================================================
 
-The Phase 1C.5d architecture has been stress-tested against thirty-two explicit adversarial failure modes.
-Each check specifies a fatal reasoning pathology, the detection mechanism, and the architectural safeguard.
+The Phase 1C.5d architecture specifies thirty-two explicit adversarial failure mode checks.
+Each check defines a fatal reasoning pathology, the detection mechanism, and the architectural safeguard
+governing Phase 1C.5d design (with formal automated runtime test execution distinguished as a downstream verification activity).
+
+**EXECUTION STATUS — CHECKS 1–32:**
+`NOT EXECUTED — ARCHITECTURAL SAFEGUARD SPECIFICATION ONLY.`
+These checks define required failure modes, detection conditions, and safeguards. Their presence in this specification does not constitute runtime or automated execution evidence. Formal execution belongs to downstream verification / UAT.
 
 --------------------------------------------------------------------------------
 CHECK 1: INTERVENTION SELECTED BEFORE DIAGNOSIS
@@ -21,7 +27,7 @@ CHECK 1: INTERVENTION SELECTED BEFORE DIAGNOSIS
 
 CHECK 2: PROCESSOR SELECTED BEFORE REQUIREMENT
 - Failure Mode: Engine selects a specific tool before defining the required change.
-- Detection: Intervention candidate generated in Stage 10 without an explicit, solution-neutral Primary Requirement.
+- Detection: Intervention candidate generated in Stage 09 without an explicit, solution-neutral Primary Requirement.
 - Safeguard: Section 5.2 & 5.3 mandate that requirements describe physical/acoustic transformations first.
 
 CHECK 3: DIAGNOSIS REWRITTEN TO JUSTIFY PREFERRED INTERVENTION
@@ -36,7 +42,7 @@ CHECK 4: FAMILIAR STUDIO FIX AUTOMATICALLY SELECTED
 
 CHECK 5: DESTINATION PLATFORM CAPABILITY DETERMINES SOUND ENGINEERING REASONING
 - Failure Mode: The engine chooses an action because a target software platform happens to have that gear.
-- Detection: Destination platform catalog models, parameter indices, or XML nodes in Stage 09/10/11 deliberations.
+- Detection: Destination platform catalog models, parameter indices, or XML nodes in Stage 08/09/10/11 deliberations.
 - Safeguard: Section 19 Platform Firewall enforces strict platform neutrality prior to downstream translation.
 
 CHECK 6: CHEAPEST INTERVENTION AUTOMATICALLY WINS
@@ -96,7 +102,7 @@ CHECK 16: UNACCEPTABLE PLATFORM COMPROMISE ACCEPTED
 
 CHECK 17: TRADE-OFF OMITTED
 - Failure Mode: Presenting an intervention candidate as a "perfect solution with zero downsides."
-- Detection: Alternative record in Stage 11 missing an explicit Trade-Off Profile.
+- Detection: Alternative record in Stage 10 missing an explicit Trade-Off Profile.
 - Safeguard: Section 12.1 mandates that every admitted alternative must document potential side-effects.
 
 CHECK 18: TRADE-OFF INVENTED WITHOUT PHYSICAL BASIS
@@ -159,10 +165,10 @@ CHECK 29: NO-CHANGE OPTION PROHIBITED
 - Detection: Inability of system to output `DECISION_STATUS: NO_INTERVENTION_JUSTIFIED`.
 - Safeguard: Section 22 elevates abstention to a first-class, authoritative decision state.
 
-CHECK 30: PHASE 1C.5d LEAKS INTO OUTCOME PREDICTION / STAGE 12 EVALUATION
-- Failure Mode: Engine predicts exact post-action dB changes, calculates curves, or measures results.
-- Detection: Handoff package containing guaranteed outcome assertions rather than intended directional inputs.
-- Safeguard: Section 3.2 & 24.2 enforce strict boundary: 1C.5d defines intended direction; 1C.5e evaluates outcome.
+CHECK 30: PHASE 1C.5d LEAKS INTO OUTCOME SIMULATION, ACTUAL EVIDENCE INGESTION, OR RETROSPECTIVE REVIEW (STAGES 13/14)
+- Failure Mode: Engine asserts actual observed outcomes, performs downstream outcome simulation/refinement, evaluates post-execution results, or asserts guaranteed success claims. (Does NOT treat Stage 11 prediction formulation itself as a leak).
+- Detection: Handoff package or deliberation record containing post-execution evaluation claims, guaranteed empirical success assertions, or premature retrospective review judgments.
+- Safeguard: Phase 1C.5d / Frozen Stage 11 formulates and seals the falsifiable `PredictedOutcomeRecord` (primary intended changes, secondary trade-off impacts, and falsification criteria). Phase 1C.5e subsequently elaborates, simulates, tests, and refines those predictions prior to execution and evaluates actual outcome evidence downstream. Stage 13 owns actual observed outcome evidence ingestion; Stage 14 owns Engineering Review (`EngineeringReviewRecord`). Governing rule: STAGE 11 PREDICTION IS REQUIRED. ACTUAL OUTCOME EVIDENCE IS DOWNSTREAM.
 
 CHECK 31: PHYSICAL ANOMALY AUTOMATICALLY CLASSIFIED AS DEFECT
 - Failure Mode: Automatically treating tube compression, speaker breakup, or tape saturation as errors.
@@ -204,113 +210,119 @@ preserved exact verbatim from Phase 1C.5a v0.3c Section 4.1:
   20. The Deliberation Record Must Support Independent Retrospective Audit.
   21. Where Evidence is Missing, Seek Discriminating Evidence Rather Than Guessing.
 
-27.2 PRINCIPLE-BY-PRINCIPLE COMPLIANCE & OPERATIONALIZATION ANALYSIS
-The Phase 1C.5d specification operationalizes and complies with each principle across Stages 09, 10, and 11 as follows:
+27.2 PRINCIPLE-BY-PRINCIPLE COMPLIANCE & OPERATIONALIZATION ANALYSIS (CORRECTIONS D4, E4)
+The Phase 1C.5d specification operationalizes each principle across Stages 08, 09, 10, and 11.
+Compliance is certified under local architectural review using standardized evidence-status categories,
+with cross-artifact boundaries and downstream execution explicitly designated as pending external comparison or runtime verification:
+  - Category A: LOCAL TEXT REVIEW: VERIFIED (verifiable completely from the current 1C.5d artifact itself).
+  - Category B: LOCAL TEXT REVIEW: VERIFIED — CROSS-ARTIFACT CERTIFICATION PENDING (depends on comparison against exact frozen upstream artifacts 1C.5b v0.2f or 1C.5c v0.1d).
+  - Category C: LOCAL TEXT REVIEW: VERIFIED — RUNTIME / DOWNSTREAM VERIFICATION PENDING (architecture locally verified; operational confirmation occurs downstream).
+  - Category D: LOCAL TEXT REVIEW: VERIFIED — CROSS-ARTIFACT AND RUNTIME CERTIFICATION PENDING (both cross-artifact comparison and runtime confirmation pending).
 
 1. Principle 1: Evidence Precedes Diagnosis.
    - Phase 1C.5d Operationalization: Phase 1C.5d consumes only diagnoses that were earned by evidence
      in Phase 1C.5c. It never fabricates evidence or diagnoses to justify an intervention.
-   - Compliance Status: FULLY COMPLIANT (Section 4.1).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED — CROSS-ARTIFACT CERTIFICATION PENDING (Cross-artifact intake boundary pending external comparison against Phase 1C.5c v0.1d).
 
 2. Principle 2: Observation is not Interpretation.
    - Phase 1C.5d Operationalization: Maintains strict distinction between observed DSP telemetry and
      engineering requirement formulation; does not confuse user perception with track-domain reality.
-   - Compliance Status: FULLY COMPLIANT (Section 6.2, Scenario E).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 6.2, Scenario E).
 
 3. Principle 3: Missing Evidence is not Negative Evidence.
    - Phase 1C.5d Operationalization: Unmeasured circuit variables or unknown pickup types are preserved
      as active uncertainties; missing data is never treated as proof of absence.
-   - Compliance Status: FULLY COMPLIANT (Section 23.1, Scenario I).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 23.1, Scenario I).
 
 4. Principle 4: A Symptom Does Not Identify Its Cause.
    - Phase 1C.5d Operationalization: Bars selecting interventions based on symptoms alone (e.g., treating
      "harshness" with knee-jerk EQ); requires tracing to the diagnosed physical cause.
-   - Compliance Status: FULLY COMPLIANT (Section 5.1, Section 9.1).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 5.1, Section 9.1).
 
 5. Principle 5: Diagnosis Should Be Causal Where Evidence Permits.
    - Phase 1C.5d Operationalization: Halts intervention formulation when causal diagnosis is unresolved;
      refuses to proceed on speculative correlations.
-   - Compliance Status: FULLY COMPLIANT (Section 4.2, Scenario I, Scenario E).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 4.2, Scenario I, Scenario E).
 
 6. Principle 6: Competing Hypotheses Survive Until Evidence Justifies Narrowing Them.
    - Phase 1C.5d Operationalization: If multiple causal hypotheses survived 1C.5c, 1C.5d halts and does
      not arbitrarily pick one to formulate an intervention.
-   - Compliance Status: FULLY COMPLIANT (Section 4.2, Section 23.2).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 4.2, Section 23.2).
 
 7. Principle 7: Context Informs Reasoning but Does Not Prove Causation.
    - Phase 1C.5d Operationalization: Studio context and genre norms inform trade-offs and user intent,
      but never substitute for causal diagnosis.
-   - Compliance Status: FULLY COMPLIANT (Section 9.2, Section 13.1).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 9.2, Section 13.1).
 
 8. Principle 8: Engineering Intent Constrains the Solution.
    - Phase 1C.5d Operationalization: Core governing pillar. Engineering intent dictates whether a diagnosed
      phenomenon is removed, reduced, preserved, or enhanced; prevents unwanted sanitization.
-   - Compliance Status: FULLY COMPLIANT (Section 7, Section 13, Scenarios F, J).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 7, Section 13, Scenarios F, J).
 
 9. Principle 9: Generate Alternatives When the Problem Admits Alternatives.
-   - Phase 1C.5d Operationalization: Mandates generating materially distinct intervention paths in Stage 10
+   - Phase 1C.5d Operationalization: Mandates generating materially distinct intervention paths in Stage 09
      across distinct loci without artificial quotas or cosmetic variations.
-   - Compliance Status: FULLY COMPLIANT (Section 8, Scenarios A-L).
+   - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 8, Scenarios A-L).
 
 10. Principle 10: Intervention Selection Follows Diagnosis.
     - Phase 1C.5d Operationalization: Core governing pillar. Absolute ban on selecting gear, plugins,
       or parameters prior to an earned, qualifying causal diagnosis and explicit requirement.
-    - Compliance Status: FULLY COMPLIANT (Section 5.1, Section 5.2, Section 21).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 5.1, Section 5.2, Section 21).
 
 11. Principle 11: Intervention Should Occur at the Causally Appropriate Point.
     - Phase 1C.5d Operationalization: Core governing pillar. Establishes case-relative causal appropriateness
       balancing physical locus, preservation requirements, constraints, and trade-offs without dogmatism.
-    - Compliance Status: FULLY COMPLIANT (Section 5.4, Section 10, Scenarios A, B, D, G).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 5.4, Section 10, Scenarios A, B, D, G).
 
 12. Principle 12: Predict Consequences Before Acting.
     - Phase 1C.5d Operationalization: Evaluates intended directional consequences and known trade-offs
-      during Stage 11 deliberation, while strictly delegating detailed outcome simulation to Phase 1C.5e.
-    - Compliance Status: FULLY COMPLIANT (Section 3.2, Section 12, Section 24.2).
+      during Stage 10 trade-off deliberation and Stage 11 selection, while strictly delegating detailed outcome simulation to Phase 1C.5e.
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED — RUNTIME / DOWNSTREAM VERIFICATION PENDING (Section 3.2, Section 12, Section 24.2; operational outcome simulation and empirical verification pending downstream Phase 1C.5e).
 
 13. Principle 13: Every Intervention Has Potential Trade-Offs.
     - Phase 1C.5d Operationalization: Core governing pillar. Outlaws "free lunch" assumptions; mandates
       multidimensional trade-off analysis across transient, spectral, dynamic, and phase domains.
-    - Compliance Status: FULLY COMPLIANT (Section 12, Section 14, Scenarios A-L).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 12, Section 14, Scenarios A-L).
 
 14. Principle 14: Parsimony: Do Not Intervene Without Justified Engineering Purpose.
     - Phase 1C.5d Operationalization: Core governing pillar. Minimum necessary intervention rule; elevates
       Abstention / No-Change to an authoritative decision state; rejects needless signal manipulation.
-    - Compliance Status: FULLY COMPLIANT (Section 11, Section 22, Scenarios E, F).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 11, Section 22, Scenarios E, F).
 
 15. Principle 15: Platform Translation Operates Downstream of Engineering Reasoning.
-    - Phase 1C.5d Operationalization: Core governing pillar. The Platform Firewall enforces 100% platform-neutral
+    - Phase 1C.5d Operationalization: Core governing pillar. The Platform Firewall enforces strict platform-neutral
       engineering decisions; destination platform mapping belongs to downstream translation.
-    - Compliance Status: FULLY COMPLIANT (Section 19, Scenario H).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED — RUNTIME / DOWNSTREAM VERIFICATION PENDING (Platform mapping and gear compilation decoupled to downstream phases).
 
 16. Principle 16: Reject Unacceptable Platform Compromises.
     - Phase 1C.5d Operationalization: Core governing pillar. Explicitly identifies platform limitations;
       mandates rejecting software workarounds that destroy tone or violate preservation requirements.
-    - Compliance Status: FULLY COMPLIANT (Section 20, Scenario H).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 20, Scenario H).
 
 17. Principle 17: Deterministic Code Validates Constraints; It Does Not Replace Sound Engineering Judgement.
     - Phase 1C.5d Operationalization: Rejects fake scalar utility functions and mathematical optimization
       scoring; relies on qualitative, defensible sound engineering arguments.
-    - Compliance Status: FULLY COMPLIANT (Section 12.2, Check 19).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED (Section 12.2, Check 19).
 
 18. Principle 18: Evaluate Outcomes Honestly Without Circular Justification.
     - Phase 1C.5d Operationalization: Distinguishes track-domain facts from playback-domain perceptions;
-      prevents modifying audio to fix room acoustic flaws.
-    - Compliance Status: FULLY COMPLIANT (Section 10.1, Scenario E).
+      rejects modifying audio to mask room acoustic flaws; Scenario E halts at the Stage 08 handoff gate when playback mechanism is unverified.
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED — RUNTIME / DOWNSTREAM VERIFICATION PENDING (Local pre-evaluation specification verified; empirical post-render outcome evaluation executed downstream in Phase 1C.5e).
 
 19. Principle 19: Capture Engineering Experience for Governed Review.
     - Phase 1C.5d Operationalization: All trade-off deliberations, rejected alternatives, and compromise
       justifications are structured into an audit-compliant Deliberation Record.
-    - Compliance Status: FULLY COMPLIANT (Section 21, Section 24).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED — RUNTIME / DOWNSTREAM VERIFICATION PENDING (Deliberation records sealed locally; candidate lesson harvesting executed downstream in Stage 14).
 
 20. Principle 20: The Deliberation Record Must Support Independent Retrospective Audit.
     - Phase 1C.5d Operationalization: Every decision traces from diagnosis through requirements, alternatives,
       trade-offs, and rejections; zero opaque "black-box" jumps.
-    - Compliance Status: FULLY COMPLIANT (Section 21.1, Section 28).
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED — RUNTIME / DOWNSTREAM VERIFICATION PENDING (Deliberation lineage fully auditable; runtime retrospective audit executed downstream in Phase 1C.5f).
 
 21. Principle 21: Where Evidence is Missing, Seek Discriminating Evidence Rather Than Guessing.
     - Phase 1C.5d Operationalization: Core governing pillar. When residual uncertainty could overturn
       an intervention choice, 1C.5d halts and triggers an immediate Upstream Return to Phase 1C.5c Stage 06A.
-    - Compliance Status: FULLY COMPLIANT (Section 23.2, Scenario E, Scenario I).'''
+    - Compliance Status: LOCAL TEXT REVIEW: VERIFIED — CROSS-ARTIFACT CERTIFICATION PENDING (Section 17.1, Section 23.2, Scenario E, Scenario I, Scenario L; upstream return handshake pending external certification against Phase 1C.5c).'''
 
 if __name__ == "__main__":
     print(get_p1C5d_p8()[:300])
