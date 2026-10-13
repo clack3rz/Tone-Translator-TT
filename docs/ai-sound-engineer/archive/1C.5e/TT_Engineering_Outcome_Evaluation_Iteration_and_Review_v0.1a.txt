@@ -1,0 +1,1365 @@
+================================================================================
+TONE TRANSLATOR (TT) AI SOUND ENGINEER
+PHASE 1C.5e — OUTCOME EVALUATION, ITERATION & ENGINEERING REVIEW
+ARCHITECTURAL SPECIFICATION (v0.1a)
+BOUNDED EPISTEMIC, LIFECYCLE & CAUSAL CORRECTION
+================================================================================
+DOCUMENT IDENTIFIER: TT_Engineering_Outcome_Evaluation_Iteration_and_Review_v0.1a.txt
+PHASE: Phase 1C.5e (Outcome Evaluation, Iteration & Engineering Review)
+STATUS: DRAFT — ARCHITECTURAL REVIEW REQUIRED
+DATE: October 2026
+REVISION TYPE: Architectural Correction Baseline (v0.1a)
+PREVIOUS VERSIONS:
+  - TT_Engineering_Outcome_Evaluation_Iteration_and_Review_v0.1.txt (v0.1 Design Baseline — Preserved Unchanged)
+AUTHORITATIVE UPSTREAM INPUTS (IMMUTABLE BASELINES):
+  - Phase 1C.5a v0.3c: TT_Engineering_Reasoning_Architecture_and_Decision_Lifecycle_v0.3c.txt [FROZEN]
+  - Phase 1C.5b v0.2f: TT_Engineering_Evidence_Interpretation_and_Hypothesis_Formation_v0.2f.txt [FROZEN]
+  - Phase 1C.5c v0.1d: TT_Engineering_Diagnosis_and_Causal_Reasoning_v0.1d.txt [FROZEN]
+  - Phase 1C.5d v0.1l: TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1l.txt [FROZEN]
+GOVERNANCE & LIFECYCLE CONTROLLING AUTHORITIES:
+  - Phase 1C.5a v0.3c serves as the controlling authority for the 14-stage lifecycle and 27 lifecycle states.
+  - Phase 1C.5d v0.1l serves as the reconciled authority for Stages 08 through 11 ownership and handoffs.
+
+CONSTITUTIONAL FOUNDATION:
+  21 Principles of Sound Engineering Reasoning (v0.3c verbatim, restored in full without modification).
+
+SCOPE OF CORRECTION MANDATE (CM-01 THROUGH CM-14):
+  This v0.1a artifact incorporates the full Phase 1C.5e Architectural Correction Mandate:
+  - CM-01: Constitutional & Upstream Source Fidelity (restores 21 Principles verbatim; preserves v0.3c lifecycle).
+  - CM-02: Upstream Record-Name Rectification (restores exact frozen upstream record names without alias drift).
+  - CM-03: Contract Numbering Discipline (removes unsupported canonical contract numbering; designates records as proposed Phase 1C.5e contracts).
+  - CM-04: Pre-Action Responsibility Enforcement (restores consumption and validation of 1C.5d pre-execution criteria).
+  - CM-05: Modality-Dependent, Question-Relative Evidence Sufficiency (eliminates universal binary sufficiency).
+  - CM-06: Causal Non-Overreach & Failed-Remedy Disambiguation (separates intervention failure from diagnostic falsification).
+  - CM-07: De-Dogmatization of Universal Numeric Thresholds (eliminates arbitrary universal numbers and fixed iteration counts).
+  - CM-08: Explicit Iteration Authorization & Trajectory Governance (binds iteration strictly to verified diagnostic mechanism).
+  - CM-09: Clean Reversion Semantics (enforces non-additive baseline restoration without DSP residue or compounding).
+  - CM-10: Scenario Expansion & Boundary Edge-Case Coverage (corrects Scenarios 1–15; adds Boundary Scenarios 16–20).
+  - CM-11: Formal Concordance Registries (provides source-concordance, vocabulary, and lifecycle/record tables).
+  - CM-12: Correction & Scenario Audit Registers (provides full CM-01–CM-14 and scenario rectification tables).
+  - CM-13: Independent-Review Checklist & Epistemic Audit (formal peer review criteria).
+  - CM-14: Runtime/UAT Boundary Preservation & Draft Governance (strictly preserves runtime implementation and UAT testing as unexecuted; retains DRAFT status; disclaims freeze eligibility).
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+Phase 1C.5e defines the reasoning architecture governing post-decision lifecycle activities in the Tone Translator AI Sound Engineer:
+  1. OUTCOME PREDICTION CONSUMPTION: Ingesting the sealed outputs of Stage 11 (EngineeringDecisionRecord and PredictedOutcomeRecord).
+  2. EXECUTION HANDOFF: Establishing the clean operational boundary to external DSP/runtime execution engines (Stage 12).
+  3. ACTUAL OUTCOME EVIDENCE INGESTION: Sourcing, calibrating, and auditing post-intervention evidence across multiple modalities (Stage 13).
+  4. OUTCOME EVALUATION: Conducting multi-dimensional delta comparisons against engineering requirements, preservation criteria, and predicted trade-offs.
+  5. CAUSAL ATTRIBUTION & CONFOUNDER AUDITING: Determining whether observed acoustic changes were caused by the intervention or by confounding external factors.
+  6. ITERATION & REVERSION DISCIPLINE: Governing parameter refinement, alternative selection, clean baseline rollback, and explicit return-upstream directives.
+  7. RETROSPECTIVE ENGINEERING REVIEW: Conducting independent, non-punitive audits of diagnostic validity, intervention suitability, and architectural learning (Stage 14).
+
+The absolute governing architectural distinction throughout this specification is:
+  "A PREDICTED OUTCOME IS A TESTABLE EXPECTATION. IT IS NOT EVIDENCE THAT THE INTERVENTION WORKED."
+
+Under this invariant:
+  - Prediction is never evidence.
+  - Absence of outcome evidence is never evidence of success; missing evidence survives as unresolved uncertainty.
+  - An outcome cannot be judged successful merely because an action was executed.
+  - A failed intervention does not automatically falsify a diagnosis, but a diagnosis cannot be sustained when post-intervention observations directly contradict its underlying causal mechanism.
+  - Reversion to baseline is a first-class, respectable engineering outcome that prevents compounding damage.
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+SECTION 1  — PURPOSE, SCOPE & GOVERNANCE BOUNDARIES
+SECTION 2  — ARCHITECTURAL POSITION & UPSTREAM DEPENDENCY MAP
+SECTION 3  — UPSTREAM RECORD IMMUTABILITY & ANTI-REWRITE ENFORCEMENT
+SECTION 4  — LIFECYCLE OWNERSHIP & STAGE BOUNDARIES (STAGES 11 TO 14)
+SECTION 5  — CONSTITUTIONAL FOUNDATION: 21 PRINCIPLES VERBATIM
+SECTION 6  — PREDICTION CONSUMPTION & PRE-ACTION VERIFICATION
+SECTION 7  — THE OUTCOME EVIDENCE FIREWALL
+SECTION 8  — ACTUAL OUTCOME EVIDENCE ARCHITECTURE (STAGE 13)
+SECTION 9  — OUTCOME COMPARISON & MULTI-DIMENSIONAL DELTA EVALUATION
+SECTION 10 — PRESERVATION REQUIREMENTS EVALUATION
+SECTION 11 — TRADE-OFF, COLLATERAL DAMAGE & UNEXPECTED EFFECT EVALUATION
+SECTION 12 — CAUSAL ATTRIBUTION ARCHITECTURE & CONFOUNDER GOVERNANCE
+SECTION 13 — OUTCOME DISPOSITION TAXONOMY
+SECTION 14 — ITERATION ARCHITECTURE & PATHWAY GOVERNANCE
+SECTION 15 — REFINEMENT VS ALTERNATIVE VS RE-DIAGNOSIS BOUNDARY MATRIX
+SECTION 16 — REVERSION ARCHITECTURE & NON-ADDITIVE DISCIPLINE
+SECTION 17 — RETURN-UPSTREAM DIRECTIVES & PARENT-CHILD RUN TRACEABILITY
+SECTION 18 — RETROSPECTIVE ENGINEERING REVIEW ARCHITECTURE (STAGE 14)
+SECTION 19 — RECORD ARCHITECTURE & PROPOSED PHASE 1C.5e CONTRACTS
+SECTION 20 — UNCERTAINTY PRESERVATION ACROSS EVALUATION & REVIEW
+SECTION 21 — HUMAN / USER EVALUATION & MULTI-TRACK COEXISTENCE
+SECTION 22 — FAILURE MODES & PROHIBITED ANTI-PATTERNS
+SECTION 23 — CROSS-PHASE INTERFACES & DOWNSTREAM INTEGRATION BOUNDARIES
+SECTION 24 — WORKED ARCHITECTURAL CHALLENGE SCENARIOS (1 TO 20)
+SECTION 25 — CONCORDANCE REGISTRIES & AUDIT TABLES
+SECTION 26 — CM-01 THROUGH CM-14 CORRECTION REGISTERS
+SECTION 27 — INDEPENDENT-REVIEW CHECKLIST & REGRESSION AUDIT
+SECTION 28 — OPEN DESIGN QUESTIONS, REVISION REGISTER & FINAL STATUS
+
+================================================================================
+SECTION 1 — PURPOSE, SCOPE & GOVERNANCE BOUNDARIES
+================================================================================
+1.1 PRIMARY PURPOSE
+Phase 1C.5e establishes the formal sound engineering reasoning architecture for evaluating actual intervention outcomes, governing bounded iteration, executing principled baseline reversion, routing justified upstream returns, and performing retrospective engineering reviews.
+
+1.2 ARCHITECTURAL GOVERNANCE & PROHIBITED OVERREACH
+To preserve structural integrity across the Tone Translator program:
+  1. Phase 1C.5e is an ARCHITECTURAL SPECIFICATION, not a runtime DSP code implementation, AT5 execution script, or UI component.
+  2. Phase 1C.5e DOES NOT REDEFINE upstream lifecycle stages. It treats Phase 1C.5a v0.3c as the controlling lifecycle authority and Phase 1C.5d v0.1l as the reconciled Stage 08–11 authority.
+  3. Phase 1C.5e DOES NOT REWRITE sealed upstream records. Earlier hypotheses, diagnoses, requirements, decisions, and predictions are immutable historical artifacts.
+  4. Phase 1C.5e STRICTLY ENFORCES the Outcome Evidence Firewall: predictions are testable expectations; only empirical post-intervention observations constitute outcome evidence.
+  5. Phase 1C.5e PROHIBITS universal arbitrary numbers. Engineering tolerances, sample windows, and confidence thresholds must derive from acoustic physics, track context, and requirement bounds.
+  6. Phase 1C.5e PROHIBITS unprincipled additive parameter creeping. When an intervention fails or creates unacceptable collateral damage, clean reversion to baseline is enforced.
+
+================================================================================
+SECTION 2 — ARCHITECTURAL POSITION & UPSTREAM DEPENDENCY MAP
+================================================================================
+2.1 THE UPSTREAM CHAIN
+Phase 1C.5e occupies the penultimate reasoning tier in the Phase 1C reasoning program:
+  - Phase 1C.5a v0.3c (Decision Lifecycle & Architecture): Defines the 14 lifecycle stages, 27 lifecycle states, and 21 Constitutional Principles. [FROZEN]
+  - Phase 1C.5b v0.2f (Evidence Interpretation & Hypotheses): Defines evidence intake, perceptual interpretations, and candidate hypothesis formulation. [FROZEN]
+  - Phase 1C.5c v0.1d (Diagnosis & Causal Reasoning): Defines causal graphs, contribution structures, and earned causal diagnoses. [FROZEN]
+  - Phase 1C.5d v0.1l (Interventions & Trade-Offs): Defines requirement formulation, candidate exploration, trade-off evaluation, engineering decisions, and predicted outcomes. [FROZEN]
+  - Phase 1C.5e v0.1a (Current Artifact): Defines outcome prediction consumption, execution boundary, actual evidence intake, outcome evaluation, iteration, reversion, and engineering review.
+
+2.2 IMMUTABILITY CONTRACT
+All upstream artifacts are frozen and immutable baselines. Phase 1C.5e consumes their outputs strictly through read-only references and parent run identifiers. Under no circumstances may Phase 1C.5e amend upstream definitions, re-open sealed upstream contracts, or invent replacement lifecycle states.
+
+================================================================================
+SECTION 3 — UPSTREAM RECORD IMMUTABILITY & ANTI-REWRITE ENFORCEMENT
+================================================================================
+3.1 SEALED UPSTREAM RECORDS
+Phase 1C.5e ingests the following authoritative upstream records without modification:
+  - `EngineeringRequirementRecord` (Phase 1C.5d, Stage 08 / Contract 6)
+  - `CandidateInterventionRecord` (Phase 1C.5d, Stage 09 / Contract 7)
+  - `TradeOffEvaluationRecord` (Phase 1C.5d, Stage 10 / Contract 8)
+  - `EngineeringDecisionRecord` (Phase 1C.5d, Stage 11 / Contract 9)
+  - `PredictedOutcomeRecord` (Phase 1C.5d, Stage 11 / Contract 10)
+
+3.2 THE ANTI-REWRITE GUARANTEE
+If post-intervention evaluation reveals that:
+  - An engineering requirement was ill-formed or missed a critical acoustic dimension;
+  - An intervention was physically ineffective or harmful;
+  - A trade-off was severely underestimated;
+  - A predicted outcome was inaccurate or physically impossible; or
+  - An underlying causal diagnosis was incorrect or incomplete;
+THE SYSTEM MUST NEVER RETROACTIVELY EDIT THE UPSTREAM RECORDS TO DISGUISE THE DEFECT.
+The upstream records remain immutable historical records of what was reasoned prior to execution. The defect must be documented explicitly in `OutcomeComparisonRecord` (Stage 13) and `EngineeringReviewRecord` (Stage 14), and routed through a formal `ReturnUpstreamDirectiveRecord` to generate a child run.
+
+================================================================================
+SECTION 4 — LIFECYCLE OWNERSHIP & STAGE BOUNDARIES (STAGES 11 TO 14)
+================================================================================
+4.1 LIFECYCLE STAGE CONCORDANCE
+As authoritatively established in Phase 1C.5a v0.3c and reconciled in Phase 1C.5d v0.1l:
+  - STAGE 11: Engineering Decision & Predicted Outcome Formation (Owned by Phase 1C.5d).
+    Output: Sealed `EngineeringDecisionRecord` and `PredictedOutcomeRecord`.
+  - STAGE 12: Execution & Implementation Boundary (Operational Boundary).
+    Role: Handoff from sound engineering reasoning to external execution engines (DSP processors, DAW automation, AT5 preset applicators, physical hardware).
+    Phase 1C.5e defines the contract interface to Stage 12, but does not implement runtime DSP code.
+  - STAGE 13: Actual Outcome Evidence & Evaluation (Owned by Phase 1C.5e).
+    Role: Ingestion of post-intervention audio/telemetry/evaluator data, execution of Outcome Evidence Firewall, multi-dimensional delta evaluation, preservation verification, trade-off verification, causal attribution, and disposition assignment.
+  - STAGE 14: Engineering Review & Retrospective Learning (Owned by Phase 1C.5e).
+    Role: Post-hoc audit of the entire reasoning chain, evaluation of diagnostic and predictive competence, identification of systemic knowledge gaps, and generation of generalizable engineering lessons.
+
+4.2 LIFECYCLE STATE ALIGNMENT
+Phase 1C.5e respects the frozen 27 lifecycle states of v0.3c:
+  - Enters via `EXECUTION_COMPLETED_AWAITING_OUTCOME` or `EXECUTION_BLOCKED_UNACCEPTABLE_TRADEOFF`.
+  - Ingests evidence into `OUTCOME_EVIDENCE_INGESTED`.
+  - Evaluates outcomes into `OUTCOME_EVALUATED_SUCCESS`, `OUTCOME_EVALUATED_PARTIAL`, `OUTCOME_EVALUATED_REGRESSIVE`, or `OUTCOME_EVALUATED_UNACCEPTABLE_TRADEOFF`.
+  - Determines iteration trajectory into `ITERATION_RECOMMENDED_REFINEMENT`, `ITERATION_RECOMMENDED_ALTERNATIVE`, `REVERSION_REQUIRED_TO_BASELINE`, `UPSTREAM_RETURN_TO_DIAGNOSIS`, or `UPSTREAM_RETURN_TO_REQUIREMENTS`.
+  - Concludes Stage 14 into `ENGINEERING_REVIEW_COMPLETE`.
+
+
+================================================================================
+SECTION 5 — CONSTITUTIONAL FOUNDATION: 21 PRINCIPLES VERBATIM
+================================================================================
+Phase 1C.5e operates in strict subordination to the 21 Principles of Sound Engineering Reasoning, established in Phase 1C.5a v0.3c Section 4.1. In compliance with CM-01, they are recited verbatim without abbreviation, paraphrase, or weakening:
+
+Principle 1 — Problem-First Primacy:
+  Engineering reasoning begins with the problem, defect, or musical goal, never with an available tool, preset, or habituated processing chain.
+
+Principle 2 — Evidence-Grounded Observation:
+  No engineering claim may be asserted without traceable grounding in observed audio, acoustic measurement, explicit user direction, or established physical constraints.
+
+Principle 3 — Causal Precedence:
+  Interventions must target the verified or plausible causal mechanism producing an acoustic defect, not merely its superficial symptom.
+
+Principle 4 — Multi-Hypothesis Competition:
+  When observed symptoms are consistent with more than one physical or acoustic cause, multiple hypotheses must be formulated and systematically evaluated.
+
+Principle 5 — Presumptive Abstention Under Uncertainty:
+  When available evidence is insufficient to distinguish competing hypotheses, the system must declare uncertainty and avoid ungrounded irreversible actions.
+
+Principle 6 — Requirement-Driven Intervention:
+  Every intervention must satisfy an explicit, solution-neutral engineering requirement derived from verified diagnostic hypotheses.
+
+Principle 7 — Alternative Diversity:
+  The system must explore genuinely diverse intervention loci (source, transducer, pre-gain, gain, post-gain, acoustic space) before selecting an action.
+
+Principle 8 — Minimum Necessary Intervention:
+  The engineer selects the least disruptive intervention capable of achieving the engineering requirement, preserving original signal integrity.
+
+Principle 9 — Unavoidable Trade-Off Explicit Recognition:
+  Every acoustic intervention introduces trade-offs. Trade-offs must be explicitly predicted, quantified where possible, and evaluated against project tolerances.
+
+Principle 10 — Preservation Imperative:
+  Critical musical qualities (transient definition, low-end weight, articulation, harmonic character) must be explicitly monitored and protected against collateral degradation.
+
+Principle 11 — Pre-Action Reversibility & Risk Assessment:
+  The risk of sonic damage, cumulative degradation, and irreversibility must be evaluated before executing any intervention.
+
+Principle 12 — Platform Independence:
+  Engineering reasoning (problem formulation, causal diagnosis, requirement definition, intervention selection) is platform-neutral and occurs prior to translation into specific tool parameters.
+
+Principle 13 — Explicit Prediction Requirement:
+  Every engineering decision must be accompanied by explicit, falsifiable predictions of intended improvements, expected trade-offs, and non-exceedance bounds.
+
+Principle 14 — Execution Boundary Rigor:
+  The transition from engineering decision to physical or digital execution must cross a formalized operational boundary with verified parameter mappings.
+
+Principle 15 — Outcome Evidence Firewall:
+  A predicted outcome is a testable expectation, not evidence of success. Actual outcome evaluation requires independent, post-intervention empirical observation.
+
+Principle 16 — Multi-Dimensional Outcome Evaluation:
+  Outcomes must be evaluated across intended improvements, preservation requirements, predicted trade-offs, and unexpected collateral effects.
+
+Principle 17 — Causal Attribution Integrity:
+  Observed changes must be causally attributed to the specific intervention, systematically ruling out external confounders, gain discrepancies, and measurement artifacts.
+
+Principle 18 — Non-Additive Reversion Discipline:
+  When an intervention fails or introduces unacceptable side effects, the system must execute clean reversion to baseline rather than applying compounding corrective patches.
+
+Principle 19 — Retrospective Review Honesty:
+  Retrospective engineering review must evaluate the validity of upstream hypotheses, diagnostic reasoning, and predictive accuracy without defensive bias.
+
+Principle 20 — Multi-Track Evaluative Coexistence:
+  Objective acoustic measurements, engineering critical listening, reference comparisons, and subjective user preferences must coexist without artificial subordination.
+
+Principle 21 — Non-Fabrication Invariant:
+  Missing evidence remains missing. Unknowns remain unknown. The system must never invent measurements, simulate certainty, or fabricate evidence to justify decisions.
+
+================================================================================
+SECTION 6 — PREDICTION CONSUMPTION & PRE-ACTION VERIFICATION
+================================================================================
+6.1 PREDICTION CONSUMPTION CONTRACT
+Phase 1C.5e consumes two sealed upstream records delivered at the Stage 11 boundary:
+  1. `EngineeringDecisionRecord` (Phase 1C.5d Contract 9): Contains the chosen `CandidateInterventionRecord`, the target intervention locus, justified engineering rationale, parameter allocations, and execution prerequisites.
+  2. `PredictedOutcomeRecord` (Phase 1C.5d Contract 10): Contains the formal testable expectations generated by Phase 1C.5d prior to execution.
+
+6.2 STRUCTURE OF CONSUMED PREDICTED OUTCOMES
+In accordance with Phase 1C.5d Section 24, each `PredictedOutcomeRecord` specifies:
+  - `target_improvements`: Explicit acoustic changes expected at primary frequencies, dynamic ranges, or spatial parameters.
+  - `preservation_expectations`: Acoustic qualities mandated to remain intact (e.g. transient punch, body, headroom).
+  - `tolerated_tradeoffs`: Explicitly anticipated secondary effects deemed acceptable during Stage 10 trade-off evaluation.
+  - `non_exceedance_bounds`: Hard physical limits that, if breached, define immediate intervention failure (e.g. maximum permitted THD increase, maximum high-shelf phase smear).
+  - `falsification_criteria`: Explicit acoustic observations that would prove the underlying causal diagnosis or intervention theory false.
+
+6.3 PRE-ACTION RESPONSIBILITY VERIFICATION (CM-04)
+Before authorising execution handoff to Stage 12, Phase 1C.5e must perform Pre-Action Verification. It verifies:
+  1. Structural Completeness: Both `EngineeringDecisionRecord` and `PredictedOutcomeRecord` are sealed, cryptographically intact, and cross-referenced.
+  2. Locus Alignment: The selected intervention matches the causal mechanism identified in `CausalDiagnosisRecord` (Phase 1C.5c).
+  3. Pre-Execution Prerequisites: Prerequisites defined in Phase 1C.5d (e.g. baseline gain calibration, reference capture, bypass state verification) have been satisfied.
+  4. Falsification Definition: Explicit falsification criteria are present and measurable; otherwise execution must be held until testable criteria are defined.
+  5. Baseline State Checkpoint: An immutable baseline audio and parameter snapshot has been registered to enable clean reversion if required.
+
+================================================================================
+SECTION 7 — THE OUTCOME EVIDENCE FIREWALL
+================================================================================
+7.1 THE FIREWALL INVARIANT
+  "PREDICTED OUTCOME IS AN EXPECTATION. POST-INTERVENTION OBSERVATION IS EVIDENCE."
+  "UNDER NO CIRCUMSTANCE MAY AN EXPECTATION BE PROMOTED TO AN OBSERVATION WITHOUT EMPIRICAL DATA."
+
+7.2 FIREWALL RULES
+To prevent confirmation bias, illusory improvement, and automated self-deception:
+  - Rule FW-01 (Strict Epistemic Isolation): The prediction engine and the outcome observation engine are decoupled. The outcome observation engine ingests raw post-intervention data without accessing prediction records until raw feature extraction is complete.
+  - Rule FW-02 (Anti-Assumption Rule): The system must never assume an action succeeded simply because an execution script returned a success code (e.g. "DSP plug-in updated"). Execution success only proves that code ran; it provides zero evidence of acoustic efficacy.
+  - Rule FW-03 (Anti-Conversion Rule): The system must never convert a predicted parameter into an observed metric (e.g. converting a predicted "-3 dB cut at 250 Hz" into an assertion that "250 Hz mud is reduced by 3 dB").
+  - Rule FW-04 (Missing Evidence Preserved): If post-intervention audio, telemetry, or user listening feedback is missing or incomplete, the missing dimension must be explicitly recorded as `UNCERTAIN_UNMEASURED`. It must never be populated with predicted values.
+  - Rule FW-05 (Temporal Precedence): Outcome evidence must have a timestamp strictly posterior to the execution timestamp recorded at Stage 12. Pre-intervention measurements cannot serve as outcome evidence.
+
+
+================================================================================
+SECTION 8 — ACTUAL OUTCOME EVIDENCE ARCHITECTURE (STAGE 13)
+================================================================================
+8.1 MULTI-MODAL EVIDENCE INTAKE
+Actual outcome evidence enters Stage 13 through four distinct, non-fungible modalities:
+  1. Acoustic Waveform & Spectral Telemetry:
+     - Post-intervention audio captures, high-resolution FFT spectra, spectrograms, loudness metrics (LUFS momentary, short-term, integrated), crest factor, and true-peak levels.
+  2. Measured Equipment/DSP Telemetry:
+     - Realized parameter states from external engines (actual filter frequencies, Q factors, gain offsets, compression gain reduction meters, THD analyzers).
+  3. Engineering Critical Listening Observations:
+     - Structured auditory evaluations conducted by trained human sound engineers or qualified evaluators focusing on timbre, depth, mask dynamics, and musicality.
+  4. User/Client Perceptual Feedback:
+     - Unfiltered subjective reports, qualitative comments, and preference declarations from the end user or artist.
+
+8.2 MODALITY-DEPENDENT & QUESTION-RELATIVE EVIDENCE SUFFICIENCY (CM-05)
+Evidence sufficiency cannot be evaluated as an abstract universal binary (PASS/FAIL) or a generic aggregate score. In sound engineering, sufficiency is strictly:
+  - MODALITY-DEPENDENT: Certain questions require specific modalities. For example, verifying that total harmonic distortion did not exceed 0.5% requires calibrated spectral measurement; assessing whether vocal intimacy is musically preserved requires critical listening. Waveform telemetry cannot substitute for listening; user enthusiasm cannot substitute for crest factor verification.
+  - QUESTION-RELATIVE: Evidence is evaluated relative to the specific hypothesis, requirement, or non-exceedance bound under test:
+    * To answer "Did the 300 Hz acoustic resonance decrease?", an averaged 1/24-octave FFT delta is sufficient.
+    * To answer "Did the intervention introduce audible phase smearing on the drum transient?", transient response analysis combined with critical listening across the initial 20 ms attack window is necessary.
+    * If evidence is sufficient to evaluate spectral improvement but missing for transient preservation, the system records:
+      `EVALUATION_STATUS: PARTIALLY_EVIDENCED (Improvement: SUFFICIENT; Preservation: INSUFFICIENT_UNCERTAIN)`.
+      Uncertainty survives precisely where evidence is absent.
+
+8.3 GAIN-MATCHING & CALIBRATION DISCIPLINE
+A fundamental trap in sound engineering evaluation is the Fletcher-Munson loudness illusion (equal loudness contours): human listeners and uncalibrated metrics consistently prefer louder signals, misinterpreting level increases as clarity, warmth, or punch.
+Stage 13 mandates:
+  - Rigid Loudness Normalization: Pre- and post-intervention signals must be matched to within +/- 0.1 LUFS integrated across identical musical sections before comparative evaluation.
+  - Level-Matched A/B Switching: Comparative critical listening must be conducted with instantaneous level-matched bypass switching to isolate spectral and dynamic changes from gain changes.
+  - Measurement Calibration: Spectral measurements must account for source level fluctuations between takes.
+
+================================================================================
+SECTION 9 — OUTCOME COMPARISON & MULTI-DIMENSIONAL DELTA EVALUATION
+================================================================================
+9.1 THE 5-WAY COMPARISON MATRIX
+Outcome evaluation compares the actual post-intervention evidence against five distinct benchmarks:
+  1. Baseline State (Pre-Intervention Evidence): What was the state prior to the action? (Calculates the raw delta).
+  2. Engineering Requirement (Phase 1C.5d Stage 08): What was the explicit physical/acoustic requirement that needed satisfaction?
+  3. Predicted Outcome (Phase 1C.5d Stage 11): What exact changes were expected?
+  4. Preservation Bounds: Did protected musical qualities stay within non-exceedance limits?
+  5. Reference Target (if applicable): Did the change move the signal closer to the reference without copying non-contextual artifacts?
+
+9.2 MULTI-DIMENSIONAL DELTA METRICS
+Deltas are evaluated across independent acoustic dimensions:
+  - Spectral Delta (Delta_S): Frequency-dependent energy redistribution (dBs across critical bands).
+  - Dynamic Delta (Delta_D): Crest factor change, attack envelope sharpness, macro-dynamic range shift.
+  - Phase & Time Delta (Delta_T): Group delay shifts, comb filtering notches, transient smearing.
+  - Harmonic Delta (Delta_H): Total harmonic distortion, intermodulation distortion, saturation warmth vs. harshness.
+  - Spatial Delta (Delta_W): Stereo correlation, width coefficient, mid/side energy balance, depth perception.
+
+9.3 EVALUATING PREDICTED VS OBSERVED DELTAS
+For each dimension, the system computes:
+  - Accuracy of Improvement: Did the observed delta match the predicted direction and magnitude?
+  - Falsification Check: Did any observed delta breach the explicit falsification criteria established in Stage 11?
+  - Non-Exceedance Check: Did any secondary parameter breach the preservation bounds?
+
+================================================================================
+SECTION 10 — PRESERVATION REQUIREMENTS EVALUATION
+================================================================================
+10.1 THE PRESERVATION IMPERATIVE (PRINCIPLE 10)
+An intervention that cures a defect while destroying essential musical qualities is a failed intervention. Outcome evaluation must explicitly audit all preservation requirements defined in `EngineeringRequirementRecord`.
+
+10.2 AUDITED PRESERVATION QUALITIES
+Stage 13 performs dedicated preservation audits across:
+  1. Articulation & Intelligibility: Vocal consonant definition, guitar pick attack, bass note separation.
+  2. Transient Punch & Definition: Snare crack, kick drum impact; verification that compressors or soft clippers have not blunted transient leading edges.
+  3. Low-End Weight & Authority: Sub-bass fundamental integrity (40–90 Hz); ensuring high-pass filtering or multi-band control did not castrate foundation.
+  4. Body, Warmth & Sustain: Core midrange resonance (200–800 Hz); ensuring notch filters or de-box cuts did not leave the instrument thin and hollow.
+  5. High-Frequency Air & Smoothness: Top-end extension (>10 kHz); ensuring de-essing or low-pass cuts did not create a dull, suffocated presentation.
+  6. Dynamic Expression: Micro-dynamics and natural musical breathing; ensuring over-compression did not create a static, lifeless wall of sound.
+  7. Spatial Imaging & Phase Integrity: Stereo field width and mono compatibility; ensuring widener or chorus processing did not introduce destructive phase cancellation.
+  8. Noise Floor & Artifact Profile: S/N ratio, absence of digital quantization noise, pump-and-breathe pumping artifacts, or aliasing.
+
+10.3 PRESERVATION DISPOSITION
+If any primary preservation requirement is breached beyond agreed tolerances:
+  - The outcome CANNOT be classified as a clean success.
+  - It is classified as `DISPOSITION_UNACCEPTABLE_TRADEOFF` or `DISPOSITION_REGRESSIVE_SONIC_DAMAGE`, triggering immediate consideration of clean baseline reversion.
+
+
+================================================================================
+SECTION 11 — TRADE-OFF, COLLATERAL DAMAGE & UNEXPECTED EFFECT EVALUATION
+================================================================================
+11.1 TRADE-OFF VERIFICATION
+In Phase 1C.5d Stage 10, candidate interventions underwent trade-off deliberation. Post-intervention evaluation must determine:
+  1. Did the predicted trade-offs actually materialize?
+  2. Was the magnitude of the trade-off consistent with prediction?
+  3. Did the trade-off remain acceptable within the track and project context?
+
+11.2 UNEXPECTED COLLATERAL EFFECTS
+Interventions frequently generate secondary consequences that were not foreseen during prediction:
+  - Phase distortion from aggressive minimum-phase equalization;
+  - Dynamic pumping or breathing in multiband processing;
+  - Intermodulation distortion arising when saturating complex polyphonic material;
+  - Masking alterations: unmasking previously buried harsh resonances when fixing low-mid mud.
+When unexpected effects occur, they are documented in an `UnexpectedOutcomeRecord` with acoustic characterization, severity classification, and musical impact.
+
+11.3 DE-DOGMATIZATION OF UNIVERSAL NUMERIC THRESHOLDS (CM-07)
+A critical flaw in simplistic evaluation systems is imposing arbitrary universal numeric cutoffs across all audio engineering decisions (e.g. "any THD > 1% is always unacceptable", or "all changes must fall within +/- 0.5 dB").
+In authentic sound engineering:
+  - An acoustic guitar fingerpicking ballad may have zero tolerance for added THD (>0.1% unacceptable), whereas an aggressive industrial bass synth intentionally benefits from 15% third-harmonic saturation.
+  - A transient notch filter on an isolated hi-hat track may tolerate a 1.5 dB phase shift, whereas the same shift on an overhead pair causes destructive stereo comb filtering.
+Tolerances must therefore be:
+  - DERIVED from the specific `EngineeringRequirementRecord` and track genre/context;
+  - BOUNDED by explicit non-exceedance criteria established in Stage 11;
+  - AUDITED against musical preservation rather than dogmatic universal constants.
+
+================================================================================
+SECTION 12 — CAUSAL ATTRIBUTION ARCHITECTURE & CONFOUNDER GOVERNANCE
+================================================================================
+12.1 THE CAUSAL ATTRIBUTION QUESTION (PRINCIPLE 17)
+Did the executed intervention actually produce the observed change, or did the change result from confounding variables?
+Causal attribution is never assumed. It requires rigorous confounder isolation.
+
+12.2 COMMON SOUND ENGINEERING CONFOUNDERS
+Stage 13 explicitly audits six primary confounder categories:
+  1. Gain/Loudness Differences: An apparent improvement in low-end punch caused purely by an inadvertent 1.2 dB output level boost from an EQ plug-in.
+  2. Performance/Take Variability: Differences in player dynamics, pick attack strength, or vocalist distance from the microphone between takes.
+  3. Monitoring Chain & Room Acoustics: Inconsistencies introduced by non-linear monitor response, room mode interference, or monitoring volume shifts.
+  4. Multi-Track Masking & Mix Context Interactions: An apparent clearing of guitar mud that actually resulted from the bass guitar fader being lowered or a mute being applied elsewhere in the mix.
+  5. Measurement Window & FFT Windowing Artifacts: Mismatched time windows, window leakage, or analyzing non-representative sections of the performance.
+  6. Concurrent Processing Changes: External plug-ins, bus compressors, or master limiters reacting differently to altered peak structures.
+
+12.3 FAILED-REMEDY VS DIAGNOSTIC FALSIFICATION DISAMBIGUATION (CM-06)
+A central mandate of this specification is preventing causal overreach when an intervention does not produce the desired result.
+A failed intervention DOES NOT automatically prove that the diagnosis was wrong:
+  - Scenario A (Failed Remedy / Ineffective Implementation): The diagnosis was "350 Hz buildup due to room mode reflection." The engineer applied a narrow notch filter at 350 Hz with Q=10. The resonance was actually broad (Q=1.5). The intervention failed because the remedy was parameterized sub-optimally, not because the diagnosis was incorrect. The diagnosis remains valid; the intervention requires refinement or replacement.
+  - Scenario B (Causal Mechanism Falsification): The diagnosis was "harshness is caused by clipping distortion in the pre-amplifier." An intervention reduced pre-amplifier gain by 12 dB, completely eliminating clipping, yet the harshness remained identical in spectral profile and perceived ear fatigue. Here, the post-intervention evidence DIRECTLY CONTRADICTS the causal mechanism: the harshness was not caused by pre-amp clipping (it was likely microphone capsule resonance). The diagnosis is FALSIFIED, requiring a formal return upstream to Stage 06/07 for re-diagnosis.
+
+The system must evaluate whether the observed result:
+  (1) Supports both diagnosis and intervention;
+  (2) Supports diagnosis but indicates ineffective/sub-optimal intervention;
+  (3) Contradicts and falsifies the diagnostic mechanism; or
+  (4) Is confounded and unattributable due to external variables.
+
+================================================================================
+SECTION 13 — OUTCOME DISPOSITION TAXONOMY
+================================================================================
+Phase 1C.5e establishes a formal, non-binary, 9-member outcome disposition taxonomy:
+
+1. `DISPOSITION_SUCCESS_INTENDED_ACHIEVED`:
+   - Intended improvements fully realized within predicted bounds.
+   - All preservation requirements intact.
+   - Predicted trade-offs within acceptable limits; zero unexpected collateral damage.
+   - Causal attribution confident.
+   - Routing: Complete and proceed to Stage 14 Engineering Review.
+
+2. `DISPOSITION_SUCCESS_ACCEPTABLE_TRADEOFF`:
+   - Intended improvement substantially achieved.
+   - Secondary trade-offs occurred as predicted and remain strictly acceptable within project context.
+   - Preservation requirements intact.
+   - Routing: Complete and proceed to Stage 14.
+
+3. `DISPOSITION_PARTIAL_IMPROVEMENT_BOUNDED`:
+   - Acoustic improvement moved in the intended direction but fell short of requirement target.
+   - Diagnostic mechanism remains supported by observed delta.
+   - Preservation requirements intact.
+   - Routing: Authorize bounded refinement (tuning parameters within the same intervention locus).
+
+4. `DISPOSITION_INEFFECTIVE_DIAGNOSIS_SUPPORTED`:
+   - Intervention produced negligible or insufficient acoustic change.
+   - Diagnostic mechanism remains plausible, but the chosen intervention tool/locus was incapable of affecting it.
+   - Routing: Abandon current intervention, cleanly revert, and select alternative intervention candidate.
+
+5. `DISPOSITION_UNACCEPTABLE_TRADEOFF`:
+   - Intended improvement may have occurred, but collateral trade-offs (e.g. loss of punch, severe phase shift) exceeded non-exceedance bounds.
+   - Routing: Mandatory clean reversion to baseline; evaluate alternative intervention locus.
+
+6. `DISPOSITION_REGRESSIVE_SONIC_DAMAGE`:
+   - The intervention degraded the audio signal, introducing new defects (distortion, comb filtering, pumping) or worsening the original problem.
+   - Routing: Immediate mandatory clean reversion to baseline; prohibit further additive tweaking.
+
+7. `DISPOSITION_CONTRADICTORY_DIAGNOSIS_FALSIFIED`:
+   - Post-intervention evidence directly contradicts the underlying causal hypothesis (e.g. removing hypothesized cause did not alter symptom).
+   - Routing: Clean reversion to baseline; issue `ReturnUpstreamDirectiveRecord` to Stage 06/07 for re-diagnosis.
+
+8. `DISPOSITION_CONFOUNDED_UNATTRIBUTABLE`:
+   - Acoustic changes cannot be causally attributed to the intervention due to uncontrolled external variables (gain shifts, take changes, mix interactions).
+   - Routing: Clean reversion or hold; require controlled re-measurement and confounder isolation.
+
+9. `DISPOSITION_INSUFFICIENT_EVIDENCE`:
+   - Ingested evidence lacks required modalities or duration to evaluate the question.
+   - Uncertainty survives; system refuses to declare success or failure.
+   - Routing: Hold in Stage 13; request necessary evidence or human critical listening.
+
+
+================================================================================
+SECTION 14 — ITERATION ARCHITECTURE & PATHWAY GOVERNANCE
+================================================================================
+14.1 THE EIGHT ITERATION PATHWAYS
+Phase 1C.5e establishes eight distinct, formally governed iteration pathways:
+
+  - PATHWAY A (Accept & Complete):
+    * Trigger: `DISPOSITION_SUCCESS_INTENDED_ACHIEVED` or `DISPOSITION_SUCCESS_ACCEPTABLE_TRADEOFF`.
+    * Action: Finalize decision, seal `ActualOutcomeEvidenceRecord`, advance to Stage 14 Engineering Review.
+
+  - PATHWAY B (Bounded Parameter Refinement):
+    * Trigger: `DISPOSITION_PARTIAL_IMPROVEMENT_BOUNDED`.
+    * Condition: Diagnostic mechanism intact, preservation requirements satisfied, improvement moving along expected vector.
+    * Action: Adjust parameter values (e.g. adjust filter gain from -2 dB to -3.5 dB) within the same intervention locus.
+
+  - PATHWAY C (Alternative Intervention Selection):
+    * Trigger: `DISPOSITION_INEFFECTIVE_DIAGNOSIS_SUPPORTED` or `DISPOSITION_UNACCEPTABLE_TRADEOFF` where locus was flawed.
+    * Condition: Diagnostic mechanism remains supported, but current intervention locus proved ineffective or collateral damage too high.
+    * Action: Cleanly revert current intervention to baseline; select next ranked candidate from `CandidateInterventionRecord`.
+
+  - PATHWAY D (Clean Baseline Reversion):
+    * Trigger: `DISPOSITION_REGRESSIVE_SONIC_DAMAGE` or unrecoverable trade-off violation.
+    * Action: Immediately restore baseline state. Halt automated processing; require engineering deliberation.
+
+  - PATHWAY E (Return Upstream to Re-Diagnosis):
+    * Trigger: `DISPOSITION_CONTRADICTORY_DIAGNOSIS_FALSIFIED`.
+    * Action: Cleanly revert to baseline; issue `ReturnUpstreamDirectiveRecord` to Phase 1C.5c (Stage 06/07) to invalidate hypothesis and re-diagnose.
+
+  - PATHWAY F (Return Upstream to Requirement Reformulation):
+    * Trigger: Outcome evaluation proves that original requirement was musically unachievable, physically contradictory, or omitted vital preservation goals.
+    * Action: Cleanly revert to baseline; issue directive to Phase 1C.5d (Stage 08) to reformulate requirements.
+
+  - PATHWAY G (Return Upstream to Evidence Re-Acquisition):
+    * Trigger: `DISPOSITION_CONFOUNDED_UNATTRIBUTABLE` or `DISPOSITION_INSUFFICIENT_EVIDENCE`.
+    * Action: Hold processing; issue directive to Phase 1C.5b (Stage 02/03) to obtain calibrated, isolated audio captures.
+
+  - PATHWAY H (Human Engineering Escalation):
+    * Trigger: Persistent divergence between objective metrics and critical listening, or conflicting artistic preferences.
+    * Action: Present multi-track evaluation dossier to senior sound engineer / user for authoritative resolution.
+
+14.2 ITERATION AUTHORIZATION & TRAJECTORY GOVERNANCE (CM-08)
+Iteration is not an automatic license to endlessly tweak parameters.
+An iteration step is AUTHORIZED ONLY IF ALL of the following conditions are met:
+  1. Diagnostic Mechanism Validated: The previous delta confirmed that the acoustic symptom responds to the targeted causal parameter.
+  2. Trajectory Convergent: The improvement is moving monotonically toward the requirement target without deteriorating preservation metrics.
+  3. Preservation Bounds Unbreached: Zero non-exceedance bounds have been violated.
+  4. Stopping Criteria Pre-Defined: Clear stopping thresholds are established prior to the iteration step.
+
+14.3 ANTI-THRASHING & TERMINATION SAFEGUARDS (CM-07)
+Rather than imposing rigid universal iteration count numbers (e.g. arbitrarily mandating "exactly 3 iterations"), anti-thrashing is governed by dynamic convergence:
+  - Divergence Rule: If an iteration step produces a smaller delta than the preceding step while trade-offs increase (diminishing returns), iteration terminates immediately.
+  - Oscillation Rule: If parameter values flip between opposing directions (e.g. boosting then cutting the same frequency band), thrashing is declared; iteration halts and clean reversion is triggered.
+  - Contextual Budget: Iteration cycles are bound by track-specific complexity budgets; once exhausted, the system halts and escalates to Pathway D or H.
+
+================================================================================
+SECTION 15 — REFINEMENT VS ALTERNATIVE VS RE-DIAGNOSIS BOUNDARY MATRIX
+================================================================================
+A core source of architectural failure in sound engineering systems is confusing:
+  - When to slightly adjust a parameter (Refinement);
+  - When to choose a different tool/locus (Alternative Intervention); and
+  - When to admit the underlying causal theory was wrong (Re-Diagnosis).
+
+The boundary matrix establishes strict decision rules:
+
++----------------------------+-----------------------------+-----------------------------+-----------------------------+
+| Acoustic & Causal State    | REFINEMENT (Pathway B)      | ALTERNATIVE (Pathway C)     | RE-DIAGNOSIS (Pathway E)    |
++----------------------------+-----------------------------+-----------------------------+-----------------------------+
+| Diagnostic Mechanism       | Confirmed & Active          | Confirmed & Active          | Falsified or Contradicted   |
+| Status                     | (acoustic response aligns)  | (cause is real, tool wrong) | (cause was not as claimed)  |
++----------------------------+-----------------------------+-----------------------------+-----------------------------+
+| Observed Acoustic Delta    | In intended direction, but  | Negligible change OR        | No change OR symptom moved  |
+|                            | insufficient magnitude      | unresolvable side effect    | opposite to physical theory |
++----------------------------+-----------------------------+-----------------------------+-----------------------------+
+| Intervention Locus         | Correct locus               | Sub-optimal locus; need     | Irrelevant locus; need      |
+|                            | (e.g. pre-gain dynamic cut) | alternative locus           | new diagnostic graph        |
++----------------------------+-----------------------------+-----------------------------+-----------------------------+
+| Action Boundary            | Parameter tweak on current  | Clean rollback of current;  | Clean rollback of current;  |
+|                            | tool (+/- dB, Hz, ms)       | activate candidate from 1C5d| return to Stage 06/07       |
++----------------------------+-----------------------------+-----------------------------+-----------------------------+
+| Allowed Cumulative Actions | Max bounded cycle           | Fresh single intervention   | Full upstream cycle         |
++----------------------------+-----------------------------+-----------------------------+-----------------------------+
+
+CRITICAL MANDATE:
+Under no circumstances may a system disguise a failed diagnosis as "parameter refinement." If reducing a hypothesized cause fails to alter the defect, the system is FORBIDDEN from continuing to tweak that parameter; it must classify the state as diagnostic falsification.
+
+================================================================================
+SECTION 16 — REVERSION ARCHITECTURE & NON-ADDITIVE DISCIPLINE
+================================================================================
+16.1 REVERSION AS A FIRST-CLASS ENGINEERING OUTCOME (PRINCIPLE 18)
+In amateur sound engineering, an ineffective action is frequently "corrected" by adding another filter, compressor, or exciter on top of the failed chain. This creates catastrophic additive creeping, phase smearing, headroom loss, and irrecoverable signal degradation.
+In professional sound engineering:
+  "REVERSION TO BASELINE IS A PRIMARY, RESPECTABLE, AND SAFEGUARDING ENGINEERING ACTION."
+
+16.2 CLEAN BASELINE RESTORATION (CM-09)
+When an intervention fails, proves regressive, or violates preservation bounds:
+  - Clean Rollback: The signal chain is restored completely to the pre-intervention baseline snapshot.
+  - Zero Residual Footprint: All parameter modifications, temporary plug-ins, side-chain routings, or gain trims introduced by the failed intervention are eradicated.
+  - Non-Compounding Guarantee: The baseline for any subsequent intervention is the original clean baseline, NEVER the degraded state of the failed attempt.
+
+16.3 PREVENTING INTERVENTION STACKING
+The system strictly enforces the Anti-Stacking Rule:
+  - No corrective patch may be applied to compensate for collateral damage caused by an active intervention.
+  - If Intervention X creates unwanted side effect Y, the engineer CANNOT apply Intervention Z to cure side effect Y while leaving X active.
+  - The correct engineering response is: REVERT X, and select an alternative intervention that achieves the goal without producing side effect Y.
+
+================================================================================
+SECTION 17 — RETURN-UPSTREAM DIRECTIVES & PARENT-CHILD RUN TRACEABILITY
+================================================================================
+17.1 RETURN-UPSTREAM DIRECTIVES
+When an outcome demonstrates that upstream reasoning was deficient, Phase 1C.5e issues a formal `ReturnUpstreamDirectiveRecord`.
+Each directive contains:
+  - `directive_id`: Unique cryptographic identifier.
+  - `target_upstream_stage`: Exact upstream destination (Stage 02/03 Evidence, Stage 06/07 Diagnosis, or Stage 08 Requirements).
+  - `triggering_disposition`: Formal disposition from Section 13.
+  - `justification_evidence`: Empirical data from Stage 13 disproving the upstream assumption.
+  - `quarantined_elements`: Specific hypotheses, models, or intervention loci barred from re-use without new evidence.
+
+17.2 PARENT-CHILD RUN LINEAGE
+To prevent circular reasoning and preserve historical audit trails:
+  - The failed run is sealed with its complete history intact.
+  - A new child run is instantiated, referencing the parent `run_id`.
+  - The child run inherits all verified baseline evidence but carries forward the explicit quarantine and falsification directives.
+  - This ensures complete, immutable traceability across iterations without rewriting history.
+
+
+================================================================================
+SECTION 18 — RETROSPECTIVE ENGINEERING REVIEW ARCHITECTURE (STAGE 14)
+================================================================================
+18.1 PURPOSE OF RETROSPECTIVE REVIEW (PRINCIPLE 19)
+Stage 14 provides an independent, post-hoc engineering review of the complete decision-and-outcome lifecycle.
+The purpose of Stage 14 is NOT to justify or rationalize earlier choices, but to evaluate the objective quality of reasoning, identify systemic predictive or diagnostic errors, and extract generalizable engineering knowledge.
+
+18.2 THE SIX REVIEW DIMENSIONS
+Stage 14 evaluates the lifecycle across six rigorous dimensions:
+  1. Diagnostic Validity Audit: Did the post-intervention evidence validate or falsify the causal mechanism identified in Stage 06/07?
+  2. Intervention Suitability Audit: Was the chosen intervention locus the minimum necessary and most parsimonious action capable of achieving the goal?
+  3. Predictive Accuracy Audit: How accurately did the Stage 11 predictions match empirical deltas across improvements, trade-offs, and bounds?
+  4. Preservation Integrity Audit: Were critical musical qualities safeguarded, or were unpredicted collateral damages incurred?
+  5. Trade-Off Proportionality Audit: Was the musical cost of the trade-off proportionate to the benefit gained?
+  6. Generalizable Engineering Lessons: What transferable knowledge (acoustic behavior, instrument interactions, gear quirks) was revealed by this outcome?
+
+18.3 INDEPENDENCE & ANTI-DEFENSIVE AUDITING
+Stage 14 functions as an independent reviewer:
+  - Non-Punitive Posture: Identifying that an intervention failed or a diagnosis was wrong is celebrated as an essential error-correction event, not penalized.
+  - Zero Defensive Rationalization: The system is forbidden from asserting that "the audio would have sounded worse without the intervention" or shifting the definition of success post-hoc.
+  - Candidate Lesson Quarantine: Any architectural lesson proposed for system-wide knowledge base updates is placed in quarantine until reviewed and ratified by sound engineering governance.
+
+================================================================================
+SECTION 19 — RECORD ARCHITECTURE & PROPOSED PHASE 1C.5e CONTRACTS
+================================================================================
+19.1 CONTRACT NUMBERING GOVERNANCE (CM-03)
+In Phase 1C.5a v0.3c, formal contracts were numbered through Contract 10 (Stage 11 PredictedOutcomeRecord).
+Phase 1C.5e proposes the downstream record schemas for Stages 13 and 14. To maintain rigorous constitutional fidelity:
+  - Phase 1C.5e DOES NOT claim that Contracts 11 and 12 were previously frozen in v0.3c.
+  - Instead, Phase 1C.5e establishes `ActualOutcomeEvidenceRecord` and `EngineeringReviewRecord` as PROPOSED Phase 1C.5e contracts and record specifications, designated for formal ratification.
+
+19.2 PRIMARY CONTRACT 11 (PROPOSED): `ActualOutcomeEvidenceRecord` (STAGE 13)
+Schema elements:
+  - `evidence_record_id`: UUIDv4 string.
+  - `parent_run_id`: Reference to the execution run.
+  - `decision_record_ref`: Reference to sealed `EngineeringDecisionRecord`.
+  - `predicted_outcome_ref`: Reference to sealed `PredictedOutcomeRecord`.
+  - `intake_timestamp`: ISO 8601 UTC timestamp.
+  - `gain_match_verification`:
+    * `pre_lufs`: Float.
+    * `post_lufs`: Float.
+    * `delta_lufs`: Float (tolerance must be verified).
+  - `evidence_modalities_present`: Array of strings (`AUDIO_WAVEFORM`, `SPECTRAL_FFT`, `DSP_TELEMETRY`, `CRITICAL_LISTENING`, `USER_FEEDBACK`).
+  - `evidence_sufficiency_assessment`:
+    * `modality_status`: Object mapping questions to sufficiency states (`SUFFICIENT`, `PARTIALLY_SUFFICIENT`, `INSUFFICIENT`).
+  - `observed_acoustic_deltas`:
+    * `spectral_deltas`: Array of band deltas (frequency, delta_db, bandwidth_q).
+    * `dynamic_deltas`: Array of crest factor and envelope deltas.
+    * `transient_deltas`: Metric deltas across initial 20 ms attack window.
+    * `thd_delta_percent`: Float.
+    * `spatial_correlation_delta`: Float.
+  - `preservation_evaluations`: Array of `PreservationEvaluationRecord`.
+  - `tradeoff_evaluations`: Array of evaluated trade-offs vs. predictions.
+  - `unexpected_effects`: Array of `UnexpectedOutcomeRecord`.
+  - `causal_attribution`: `CausalAttributionRecord`.
+  - `outcome_disposition`: Formal enum value from Section 13.
+  - `cryptographic_hash`: SHA-256 hash sealing the record.
+
+19.3 PRIMARY CONTRACT 12 (PROPOSED): `EngineeringReviewRecord` (STAGE 14)
+Schema elements:
+  - `review_record_id`: UUIDv4 string.
+  - `evidence_record_ref`: Reference to sealed `ActualOutcomeEvidenceRecord`.
+  - `review_timestamp`: ISO 8601 UTC timestamp.
+  - `diagnostic_validity_verdict`: Enum (`CONFIRMED_SUPPORTED`, `INCONCLUSIVE_INSUFFICIENT_DELTA`, `FALSIFIED_CONTRADICTED`).
+  - `diagnostic_audit_commentary`: Detailed acoustic reasoning.
+  - `intervention_suitability_verdict`: Enum (`OPTIMAL_PARSIMONIOUS`, `SUB_OPTIMAL_INEFFECTIVE`, `OVERLY_AGGRESSIVE`, `WRONG_LOCUS`).
+  - `prediction_accuracy_score`: Multi-dimensional evaluation across improvements, trade-offs, and bounds.
+  - `preservation_success_verdict`: Enum (`FULLY_PRESERVED`, `ACCEPTABLE_MINOR_IMPAIRMENT`, `UNACCEPTABLE_COLLATERAL_DAMAGE`).
+  - `retrospective_learnings`: Array of structured lesson objects (domain, acoustic_phenomenon, lesson_statement).
+  - `candidate_knowledge_updates`: Array of quarantined knowledge candidates for governance review.
+  - `cryptographic_hash`: SHA-256 hash sealing the record.
+
+19.4 SUPPORTING RECORD SCHEMAS
+Phase 1C.5e defines six supporting record structures:
+  1. `OutcomeComparisonRecord`: Documents the multi-dimensional delta against baseline, requirement, and prediction.
+  2. `PreservationEvaluationRecord`: Documents the status of individual musical qualities against non-exceedance bounds.
+  3. `UnexpectedOutcomeRecord`: Documents unexpected acoustic phenomena, severity, and potential mechanism.
+  4. `CausalAttributionRecord`: Documents confounder audit results, isolation methodology, and causal confidence.
+  5. `IterationDecisionRecord`: Documents the selected iteration pathway (A through H), parameter adjustments, and convergence checks.
+  6. `ReturnUpstreamDirectiveRecord`: Formally packages directives to upstream stages with justification evidence.
+
+================================================================================
+SECTION 20 — UNCERTAINTY HANDLING ACROSS EVALUATION & REVIEW
+================================================================================
+20.1 SURVIVAL OF UNCERTAINTY (PRINCIPLES 5 & 21)
+In sound engineering evaluation, uncertainty is an inescapable physical reality. Where evidence is incomplete, ambiguous, or confounded, uncertainty MUST survive.
+The system is strictly forbidden from:
+  - Forcing an uncertain result into a binary PASS or FAIL;
+  - Substituting missing post-intervention measurements with predicted numbers;
+  - Assuming an intervention succeeded because no user complaints were received; or
+  - Fabricating causal confidence when multiple confounders remain unisolated.
+
+20.2 EXPLICIT UNCERTAINTY TAXONOMY IN STAGE 13 & 14
+Uncertainty is categorized and explicitly tracked:
+  - `UNCERTAINTY_MEASUREMENT`: Due to FFT windowing, background noise, or microphone placement variations.
+  - `UNCERTAINTY_CONFOUNDING`: Due to concurrent mix processing or performance take differences.
+  - `UNCERTAINTY_PERCEPTUAL`: Due to subtle acoustic changes that fall within psychoacoustic jnd (just-noticeable difference) thresholds.
+  - `UNCERTAINTY_CAUSAL_DIRECTION`: When an observed improvement cannot be definitively linked to the intervention vs. external signal dynamics.
+Each uncertain dimension is preserved with explicit bounds and carried forward into `EngineeringReviewRecord`.
+
+
+================================================================================
+SECTION 21 — HUMAN / USER EVALUATION & MULTI-TRACK COEXISTENCE
+================================================================================
+21.1 THE FOUR EVALUATIVE TRACKS (PRINCIPLE 20)
+Sound engineering exists at the intersection of acoustic physics and human artistic emotion.
+Stage 13 establishes four distinct evaluative tracks that must coexist without artificial subordination:
+  1. TRACK 1: Objective Acoustic & DSP Measurements (FFT curves, LUFS, crest factor, THD).
+  2. TRACK 2: Professional Critical Listening (trained auditory evaluation of timbre, balance, depth, mask dynamics).
+  3. TRACK 3: Reference Track Comparison (contextual similarity to target commercial production).
+  4. TRACK 4: User/Artist Subjective Experience (emotional response, perceived vibe, artistic intent).
+
+21.2 HANDLING DIVERGENCE BETWEEN TRACKS
+Divergence between tracks is natural and informative:
+  - Divergence Type A (Measurement Perfect, Listening Rejects): An EQ curve perfectly flattens a resonant peak on an acoustic guitar, but critical listening reveals the instrument now sounds lifeless, plastic, and unmusical. The listening track takes precedence; the intervention must be refined or reverted.
+  - Divergence Type B (Measurement Shows Trade-Off, Artist Enthusiastic): Adding heavy tube saturation increases THD to 8% and squashes dynamic range by 3 dB, but the artist loves the "vintage grit and swagger." The system must NOT override the artist by declaring technical failure; it documents the trade-off and registers user-authorized trade-off acceptance.
+  - Divergence Type C (User Complains, Technical Metrics Unchanged): The user reports that the vocal sounds "distant" after an intervention, even though spectral analysis shows identical mid frequencies. This indicates a spatial or masking artifact that raw spectral metrics failed to capture. The system investigates depth and reverb reflections.
+
+21.3 PROHIBITION OF GASLIGHTING & FORCED CONFORMITY
+The system is strictly forbidden from:
+  - Dismissing user perceptual feedback by asserting that "the numbers prove the track is objectively better";
+  - Forcing the user to agree with algorithmic evaluations; or
+  - Smoothing over genuine disagreements between critical listening and objective telemetry.
+Divergences are preserved as explicit tension records in `OutcomeComparisonRecord`.
+
+================================================================================
+SECTION 22 — FAILURE MODES & PROHIBITED ANTI-PATTERNS
+================================================================================
+Phase 1C.5e explicitly catalogs and outlaws seven fatal architectural anti-patterns:
+
+1. ANTI-PATTERN AP-01 (Confirmation Bias & Self-Fulfilling Success):
+   - Prohibited Behavior: Assuming that because an intervention was chosen and executed, it must have achieved its goal.
+   - Mandated Defense: Strict enforcement of the Outcome Evidence Firewall. Actual evidence must independently verify success.
+
+2. ANTI-PATTERN AP-02 (Additive Stacking & Corrective Creep):
+   - Prohibited Behavior: Applying additional corrective plug-ins or EQ filters on top of a failed intervention to fix the side effects created by that intervention.
+   - Mandated Defense: Enforced clean reversion to baseline. Prohibit all compounding patches.
+
+3. ANTI-PATTERN AP-03 (Goalpost Shifting & Defensive Rationalization):
+   - Prohibited Behavior: Redefining the criteria of success after the action was executed (e.g. "We didn't fix the mud, but we made the guitar brighter, so it's a win!").
+   - Mandated Defense: Requirements and non-exceedance bounds are locked in `EngineeringRequirementRecord` and `PredictedOutcomeRecord` prior to execution. Success is judged strictly against pre-locked criteria.
+
+4. ANTI-PATTERN AP-04 (Infinite Iteration & Blind Parameter Hunting):
+   - Prohibited Behavior: Endlessly tweaking filter frequencies or compressor thresholds without a convergent trajectory.
+   - Mandated Defense: Strict anti-thrashing rules, oscillation detection, and mandatory termination to clean reversion.
+
+5. ANTI-PATTERN AP-05 (Sacrificing Musicality for Telemetry):
+   - Prohibited Behavior: Chasing flat frequency lines or arbitrary metric targets at the expense of instrument tone, punch, and soul.
+   - Mandated Defense: Mandatory preservation audits across musical qualities; critical listening coexists with telemetry.
+
+6. ANTI-PATTERN AP-06 (Causal Overreach & Premature Falsification):
+   - Prohibited Behavior: Either declaring a diagnosis fully proven when external confounders were present, or throwing out a correct diagnosis simply because a single sub-optimal filter value was tried.
+   - Mandated Defense: Rigorous confounder isolation; clear distinction between failed remedy parameterization and genuine diagnostic mechanism contradiction.
+
+7. ANTI-PATTERN AP-07 (Blaming the User for System Failure):
+   - Prohibited Behavior: Rationalizing bad acoustic outcomes by blaming the user's listening environment, monitoring chain, or musical tastes.
+   - Mandated Defense: Honest logging of outcome divergence; non-defensive logging in `EngineeringReviewRecord`.
+
+================================================================================
+SECTION 23 — CROSS-PHASE INTERFACES & DOWNSTREAM INTEGRATION BOUNDARIES
+================================================================================
+23.1 INTERFACE MAP
+Phase 1C.5e interfaces with adjacent lifecycle phases:
+  - From Phase 1C.5d: Ingests `EngineeringDecisionRecord` and `PredictedOutcomeRecord` at Stage 11.
+  - To Stage 12 Execution Engine: Hands off executable parameter instructions with pre-action verification tokens; receives execution status and telemetry receipts.
+  - From Stage 12: Ingests post-intervention audio and telemetry into Stage 13.
+  - To Phase 1C.5b (via Stage 02/03): Issues `ReturnUpstreamDirectiveRecord` when evidence is missing or confounded.
+  - To Phase 1C.5c (via Stage 06/07): Issues `ReturnUpstreamDirectiveRecord` when post-intervention observations falsify the causal diagnosis.
+  - To Phase 1C.5d (via Stage 08): Issues `ReturnUpstreamDirectiveRecord` when requirements prove unachievable or incomplete.
+  - To Phase 1C.5f (Traceability & Governance): Delivers immutable `ActualOutcomeEvidenceRecord` and `EngineeringReviewRecord` for cryptographic audit sealing.
+  - To Phase 1C.5g (Knowledge Migration): Delivers validated empirical lessons from Stage 14 for migration into canonical knowledge structures.
+  - To Phase 1C.5h (UAT & Validation): Provides empirical validation criteria and scenario test benches.
+
+
+================================================================================
+SECTION 24 — WORKED ARCHITECTURAL CHALLENGE SCENARIOS (1 TO 20)
+================================================================================
+This section demonstrates the complete, end-to-end execution of Phase 1C.5e across 20 demanding sound engineering challenge scenarios.
+Scenarios 1 through 15 correct and expand the original design baseline scenarios in strict compliance with CM-01 through CM-14 (rectifying record naming, eliminating causal overreach, and de-dogmatizing universal thresholds).
+Scenarios 16 through 20 provide dedicated boundary and edge-case evaluations mandated by CM-10.
+
+--------------------------------------------------------------------------------
+SCENARIO 1: Clean Success — Resonant Snare Ring Attenuation
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis (Phase 1C.5c): 680 Hz high-Q ringing caused by undamped bottom snare head resonance.
+   - Engineering Requirement (Phase 1C.5d Stage 08): Attenuate 680 Hz ringing by 9 dB while preserving initial snare transient attack and 200 Hz body punch.
+   - Engineering Decision (Phase 1C.5d Stage 11): Narrow notch filter at 680 Hz (Q=12, -9 dB) placed in pre-compression slot.
+   - Predicted Outcome (Stage 11): 680 Hz energy reduced by 9 dB; snare attack crest factor within +/- 0.3 dB of baseline; body unaffected.
+2. EXECUTION BOUNDARY (Stage 12):
+   - Executed via DAW parametric EQ; confirmed parameter write receipt.
+3. ACTUAL OUTCOME EVIDENCE (Stage 13):
+   - Gain match verified: pre -18.2 LUFS, post -18.3 LUFS (delta -0.1 LUFS).
+   - Spectral FFT delta: -8.8 dB reduction at 679.5 Hz; Q bandwidth matches predicted 12.
+   - Transient audit: Attack envelope crest factor preserved within 0.1 dB; zero audible phase smear on transient leading edge.
+   - Preservation audit: 200 Hz snare body punch identical to baseline.
+   - Causal Attribution: Confident; ringing disappeared precisely when filter engaged; zero confounders detected.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_SUCCESS_INTENDED_ACHIEVED`.
+   - Routing: Pathway A (Accept & Complete).
+5. RETROSPECTIVE REVIEW (Stage 14):
+   - Diagnostic Validity: Confirmed; ringing was isolated acoustic resonance.
+   - Intervention Suitability: Optimal; narrow notch avoided collateral phase degradation.
+   - Predictive Accuracy: High (97.7% delta match).
+
+--------------------------------------------------------------------------------
+SCENARIO 2: Partial Improvement — Acoustic Guitar Boxiness
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: 420 Hz acoustic boxiness caused by small-body guitar soundhole resonance.
+   - Requirement: Reduce boxy buildup around 400–450 Hz by 4 dB; preserve low-E fundamental (82 Hz) and strumming articulation.
+   - Decision: Bell filter at 430 Hz (Q=2.0, -3.0 dB).
+   - Prediction: 430 Hz energy reduced by 3.0 dB; strum clarity enhanced.
+2. EXECUTION BOUNDARY:
+   - Executed on acoustic guitar track.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Level matched: delta 0.0 LUFS.
+   - Spectral FFT delta: -1.8 dB reduction at 430 Hz. Boxiness audibly diminished but still perceptually prominent.
+   - Preservation audit: Low-E warmth intact; articulation clean.
+   - Causal Attribution: Confirmed; acoustic response moved strictly in intended direction.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Evaluation: Partial improvement along verified causal trajectory; non-exceedance bounds respected.
+   - Disposition: `DISPOSITION_PARTIAL_IMPROVEMENT_BOUNDED`.
+   - Routing: Pathway B (Bounded Parameter Refinement).
+   - Iteration Action: Adjust filter gain from -3.0 dB to -4.5 dB. Re-evaluate post-iteration capture.
+
+--------------------------------------------------------------------------------
+SCENARIO 3: Predicted Trade-Off Realized — Lead Vocal Brightening vs Sibilance
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Vocal lacks modern top-end presence due to dark dynamic microphone capsule.
+   - Requirement: Boost top-end air (>10 kHz) by 3 dB; preserve vocal body; tolerate anticipated rise in 6–8 kHz sibilance up to +1.5 dB.
+   - Decision: High shelf boost at 10 kHz (+3.5 dB) paired with dynamic de-esser at 7 kHz.
+   - Prediction: Air increased by 3.5 dB; sibilance controlled to within +1.0 dB.
+2. EXECUTION BOUNDARY:
+   - Executed shelf and de-esser on lead vocal chain.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Spectral delta: +3.4 dB energy increase >10 kHz; sibilance peak at 7.2 kHz increased by +0.8 dB on harsh consonants.
+   - Critical listening: Vocal is airy, open, and forward; sibilance is audible but non-fatiguing and well within accepted context.
+   - Preservation audit: Intelligibility and warm body fully preserved.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Evaluation: Intended air achieved; predicted trade-off realized within tolerated bounds.
+   - Disposition: `DISPOSITION_SUCCESS_ACCEPTABLE_TRADEOFF`.
+   - Routing: Pathway A (Accept & Complete).
+
+--------------------------------------------------------------------------------
+SCENARIO 4: Unexpected Trade-Off — Electric Bass Saturation Comb Filtering
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: DI bass guitar lacks harmonic bite to cut through dense rock guitars.
+   - Requirement: Introduce second- and third-harmonic distortion between 700 Hz and 2 kHz; preserve sub-bass fundamental (45–80 Hz).
+   - Decision: Parallel saturation blend (clean DI blended with 50% saturated drive channel).
+   - Prediction: Harmonic density increased; sub-bass fundamental uncompromised.
+2. EXECUTION BOUNDARY:
+   - Executed parallel processing path in DAW.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Spectral delta: Harmonics at 1 kHz increased by 4 dB, but severe notch at 110 Hz (-14 dB) observed in combined signal.
+   - Cause: Latency difference of 28 samples between clean DI and saturation plug-in created acoustic comb filtering at 110 Hz.
+   - Preservation audit: FAILED. 110 Hz note fundamental gutted by phase cancellation.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_UNACCEPTABLE_TRADEOFF`.
+   - Routing: Pathway D (Clean Baseline Reversion).
+   - Corrective Action: Revert parallel chain to clean baseline. Prohibit parallel saturation without sample-accurate phase alignment.
+
+--------------------------------------------------------------------------------
+SCENARIO 5: Diagnostic Falsification — Drum Room Harshness
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Harshness in drum room mics is caused by cymbal bleed over-amplified by room compressor fast release.
+   - Requirement: Slow compressor release time from 50 ms to 250 ms to reduce cymbal splash breathing by 4 dB.
+   - Decision: Adjust compressor release to 250 ms.
+   - Prediction: Cymbal harshness reduced by 4 dB during sustain tails.
+2. EXECUTION BOUNDARY:
+   - Executed compressor parameter change.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Spectral delta: Cymbal tail splash decreased slightly, but overall harshness at 3.5 kHz remained completely identical in intensity and ear fatigue.
+   - Analysis: The 3.5 kHz harshness was NOT caused by compressor release behavior; it was caused by room boundary acoustic flutter echo between parallel concrete walls.
+   - Causal Attribution: Post-intervention observation directly contradicts the causal mechanism.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_CONTRADICTORY_DIAGNOSIS_FALSIFIED`.
+   - Routing: Pathway E (Return Upstream to Re-Diagnosis).
+   - Directive: Issue `ReturnUpstreamDirectiveRecord` to Stage 06/07. Quarantine compressor-timing hypothesis; direct attention to acoustic flutter resonance.
+
+--------------------------------------------------------------------------------
+SCENARIO 6: Failed Remedy (Diagnosis Supported) — 808 Sub-Bass Bloat
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: 808 sub-bass exhibits uncontrolled sustain bloat at 45 Hz masking kick drum impact.
+   - Requirement: Shorten 45 Hz decay time by 300 ms; preserve initial sub impact.
+   - Decision: High-pass filter at 42 Hz (18 dB/oct Butterworth).
+   - Prediction: Sub bloat reduced; kick clarity improved.
+2. EXECUTION BOUNDARY:
+   - Executed high-pass filter.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Spectral delta: 45 Hz energy dropped by 6 dB, but steep filter introduced massive group delay resonance at cut-off, causing the 45 Hz tail to smear and ring even longer in time.
+   - Analysis: The diagnosis (45 Hz decay is too long) was completely correct. But the chosen remedy (steep minimum-phase HPF) aggravated time-domain ringing due to phase rotation.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Evaluation: Diagnosis supported, but intervention tool caused physical side effect.
+   - Disposition: `DISPOSITION_INEFFECTIVE_DIAGNOSIS_SUPPORTED`.
+   - Routing: Pathway C (Alternative Intervention Selection).
+   - Action: Cleanly revert HPF to baseline. Select alternative candidate: frequency-dependent dynamic envelope shaper or transient decay clamp.
+
+--------------------------------------------------------------------------------
+SCENARIO 7: Regressive Sonic Damage — Master Bus Limiting Squash
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Master track lacks competitive commercial loudness (-14 LUFS vs target -9 LUFS).
+   - Requirement: Increase integrated loudness by 5 LUFS; preserve drum transient punch and dynamic contrast.
+   - Decision: Apply digital brickwall limiter with 5 dB gain reduction.
+   - Prediction: Loudness reaches -9 LUFS; crest factor maintained within 1.5 dB.
+2. EXECUTION BOUNDARY:
+   - Executed brickwall limiter.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Loudness: -9.1 LUFS achieved.
+   - Transient audit: Drum transients completely flattened; snare crack blunted; severe intermodulation distortion audible on bass drops; stereo image collapsed.
+   - Preservation audit: CATASTROPHIC FAILURE. Musical dynamics destroyed.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_REGRESSIVE_SONIC_DAMAGE`.
+   - Routing: Pathway D (Clean Baseline Reversion).
+   - Action: Immediate clean rollback to baseline mix. Prohibit aggressive single-stage brickwall limiting; return upstream to formulate multi-stage gain structure requirements.
+
+--------------------------------------------------------------------------------
+SCENARIO 8: Confounded Outcome — Multi-Track Masking Shift
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Rhythm guitar is masked in mid-frequencies by keyboard pad.
+   - Requirement: Cut 800 Hz by 3 dB on keyboard pad to unmask rhythm guitar.
+   - Decision: Bell EQ on keyboard pad (-3 dB at 800 Hz).
+   - Prediction: Rhythm guitar intelligibility improves by 2 dB in mix context.
+2. EXECUTION BOUNDARY:
+   - Executed EQ on keyboard pad.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Evaluation: Rhythm guitar suddenly became vastly clearer and brighter.
+   - Confounder Audit: Telemetry revealed that during the test bounce, the mixing engineer concurrently raised the master fader and soloed the guitar bus. The apparent clarity was a gain and solo artifact.
+   - Attribution: Unattributable to the keyboard EQ alone.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_CONFOUNDED_UNATTRIBUTABLE`.
+   - Routing: Pathway G (Return Upstream to Evidence Re-Acquisition).
+   - Action: Restore baseline gain state; perform level-matched, automated bounce with locked multi-track routing.
+
+--------------------------------------------------------------------------------
+SCENARIO 9: Insufficient Evidence — Vocal Reverb Depth in Crowded Mix
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Vocal reverb decay is muddying the rear spatial plane in chorus.
+   - Requirement: Damp high-frequency reverb decay above 4 kHz by 50%.
+   - Decision: High-shelf attenuation on reverb return bus (-6 dB at 4 kHz).
+   - Prediction: Spatial depth cleaned up; vocal clarity enhanced.
+2. EXECUTION BOUNDARY:
+   - Executed shelf on reverb aux.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Supplied Audio: Only a 1.5-second isolated vocal phrase was bounced without instruments or chorus context.
+   - Analysis: Impossible to evaluate rear spatial plane depth or chorus mix masking from an isolated 1.5-second snippet.
+   - Sufficiency Assessment: INSUFFICIENT for the core question.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_INSUFFICIENT_EVIDENCE`.
+   - Routing: Pathway G (Hold and Re-Acquire Evidence).
+   - Action: Refuse automated pass/fail judgment; request full chorus mix stem capture.
+
+--------------------------------------------------------------------------------
+SCENARIO 10: Multi-Track Divergence — Objective Perfection vs Subjective Vibe
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Vintage snare drum has irregular pitch drift and uneven resonant ring at 180 Hz.
+   - Requirement: Clean up 180 Hz resonance with dynamic notch.
+   - Decision: Dynamic EQ notch at 180 Hz.
+   - Prediction: Resonant ringing reduced by 6 dB.
+2. EXECUTION BOUNDARY:
+   - Executed dynamic notch.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Track 1 (Objective Measurement): Perfectly flat resonance; ringing attenuated exactly by 6.1 dB.
+   - Track 2 (Critical Listening): Clean, technically controlled snare sound.
+   - Track 4 (User/Artist Feedback): "The snare lost its vintage garage-rock character! It sounds too sterile and modern now."
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Analysis: Objective success diverged completely from artist aesthetic intent.
+   - Disposition: User-Authorized Trade-off Rejection.
+   - Routing: Pathway D / H (Clean Reversion to Baseline).
+   - Retrospective Review: Lesson extracted: for indie/garage genres, irregular drum resonance is often an intentional aesthetic marker, not a defect.
+
+
+--------------------------------------------------------------------------------
+SCENARIO 11: Physical Transducer Alternative — Guitar Cabinet Mic Axis
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: High-frequency harshness (4.5 kHz fizz) is caused by on-axis microphone placement pointing directly at speaker dust cap center.
+   - Requirement: Attenuate 4.5 kHz fizz by 5 dB; preserve pick attack articulation and guitar body warmth.
+   - Decision: Physical microphone re-positioning in AT5: Move primary mic from "Cap, Close, On Axis" to "Cap Edge, Close, 45° Off Axis".
+   - Prediction: 4.5 kHz acoustic beaming reduced by 5.5 dB; smooth high-frequency roll-off achieved without digital phase shift.
+2. EXECUTION BOUNDARY:
+   - Executed transducer parameter change in AT5 cabinet module.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Spectral delta: Smooth -5.2 dB attenuation across 4–6 kHz; natural acoustic dispersion restored.
+   - Transient audit: Pick attack remains punchy; zero digital minimum-phase pre-ringing.
+   - Preservation audit: Warmth and fundamental body fully intact.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_SUCCESS_INTENDED_ACHIEVED`.
+   - Routing: Pathway A (Accept & Complete).
+   - Retrospective Review: Confirms physical transducer repositioning is acoustically superior to post-hoc digital notch filtering for speaker beam harshness.
+
+--------------------------------------------------------------------------------
+SCENARIO 12: Mono Compatibility Breach — Stereo Chorus Width Expansion
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Clean electric guitar sounds narrow and claustrophobic in stereo field.
+   - Requirement: Widen stereo image; preserve center mono compatibility (mono correlation coefficient > +0.7).
+   - Decision: Apply stereo chorus with phase-inverted right channel.
+   - Prediction: Stereo width increased by 60%; mono compatibility preserved.
+2. EXECUTION BOUNDARY:
+   - Executed chorus processing.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Stereo listening: Wide, lush, expansive image in stereo headphones.
+   - Mono Summing Audit: Mono correlation coefficient dropped to -0.65. When summed to mono, guitar completely disappeared due to 180° phase cancellation.
+   - Preservation audit: CATASTROPHIC FAILURE of mono compatibility bound.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_UNACCEPTABLE_TRADEOFF`.
+   - Routing: Pathway D (Clean Baseline Reversion).
+   - Action: Cleanly revert phase-inverted chorus. Prohibit 180° inverted stereo wideners on primary rhythm instruments.
+
+--------------------------------------------------------------------------------
+SCENARIO 13: Vocal De-Esser Lisp Artifact — Over-Aggressive Dynamic Attenuation
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Vocal displays piercing sibilance peaks around 7.5 kHz on "s" and "t" syllables.
+   - Requirement: Reduce sibilance peaks by 6 dB; preserve natural consonant articulation without introducing lisping artifacts.
+   - Decision: Broad-band de-esser set to -8 dB gain reduction with fast attack.
+   - Prediction: Sibilance controlled; vocal naturalness preserved.
+2. EXECUTION BOUNDARY:
+   - Executed de-esser.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Spectral delta: 7.5 kHz energy dropped by 7.8 dB during sibilant events.
+   - Critical listening: Vocalist now sounds as though speaking with an unnatural lisp; "s" consonants sound like "th"; high-frequency air clamped down prematurely.
+   - Preservation audit: Natural articulation breached.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_UNACCEPTABLE_TRADEOFF`.
+   - Routing: Pathway C (Alternative Intervention Selection).
+   - Action: Revert broad-band de-esser. Select split-band dynamic de-esser targeting narrow 7.2–8.0 kHz range with softer knee.
+
+--------------------------------------------------------------------------------
+SCENARIO 14: Dynamic Headroom Sag — Bass Amp Compression vs Transients
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Fingerstyle bass notes display inconsistent dynamic levels (+/- 6 dB note-to-note variation).
+   - Requirement: Smooth dynamic variance to +/- 2 dB; preserve initial finger plucking attack transient.
+   - Decision: Opto compressor model with 4:1 ratio, medium-slow attack (30 ms), fast release.
+   - Prediction: Dynamic variance reduced to 2.2 dB; attack transients unblemished.
+2. EXECUTION BOUNDARY:
+   - Executed opto compressor.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Dynamic delta: Note-to-note consistency improved to +/- 1.8 dB.
+   - Transient audit: 30 ms attack allowed initial finger transient to punch cleanly through before gain reduction clamped down.
+   - Preservation audit: Full sub-bass low-end weight preserved.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_SUCCESS_INTENDED_ACHIEVED`.
+   - Routing: Pathway A (Accept & Complete).
+
+--------------------------------------------------------------------------------
+SCENARIO 15: Polyphonic Masking — Acoustic Piano Resonant Clutter
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Dense piano chord voicings accumulate muddy clutter between 250 Hz and 350 Hz.
+   - Requirement: Clean up 300 Hz clutter by 3 dB; preserve solo piano octave weight and warm fundamental notes.
+   - Decision: Static parametric bell cut at 290 Hz (-3 dB, Q=1.8).
+   - Prediction: Clutter reduced; octave clarity improved.
+2. EXECUTION BOUNDARY:
+   - Executed static bell cut.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Outcome: When heavy chords play, the 300 Hz clutter is cleaner. But during sparse, high-register passages, the piano sounds thin, fragile, and gutted of natural chest resonance.
+   - Analysis: Static EQ is blind to musical arrangement density; cutting a static band permanently damages sparse passages.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_UNACCEPTABLE_TRADEOFF`.
+   - Routing: Pathway C (Alternative Intervention Selection).
+   - Action: Revert static EQ. Select dynamic EQ or sidechain multi-band expander that only attenuates when polyphonic clutter exceeds threshold.
+
+--------------------------------------------------------------------------------
+SCENARIO 16: Confounded Multi-Track Interaction with Incomplete Telemetry (CM-10)
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Lead synthesizer is clashing with rhythm electric guitar in 1.2 kHz upper-midrange.
+   - Requirement: Carve 2.5 dB pocket at 1.2 kHz on rhythm guitar bus to allow synth lead projection.
+   - Decision: Bell EQ on rhythm guitar bus (-2.5 dB at 1.2 kHz, Q=2.0).
+   - Prediction: Lead synth intelligibility improves by 2.0 dB in full mix.
+2. EXECUTION BOUNDARY:
+   - Executed EQ on rhythm guitar bus.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Evaluation: Lead synth clarity jumped dramatically, but spectral analysis revealed that during the bounce, the rhythm guitar fader was inadvertently muted by an uncalibrated automation pass.
+   - Analysis: The observed improvement was completely confounded by track muting, not by the 1.2 kHz EQ cut.
+   - Sufficiency Assessment: Confounded telemetry; impossible to attribute outcome to the intervention.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_CONFOUNDED_UNATTRIBUTABLE`.
+   - Routing: Pathway G (Return Upstream to Evidence Re-Acquisition).
+   - Action: Hold processing. Re-enable all tracks, lock automation lanes, and perform controlled level-matched re-capture.
+
+--------------------------------------------------------------------------------
+SCENARIO 17: User Subjective Preference Overriding Technical Perfection (CM-10)
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Acoustic drum overheads contain room flutter resonance at 2.8 kHz and room phase asymmetry.
+   - Requirement: Linearize stereo phase correlation and notch 2.8 kHz flutter resonance by 4 dB.
+   - Decision: Linear-phase multi-band notch and stereo phase alignment processor.
+   - Prediction: 2.8 kHz resonance eliminated; stereo correlation improves from +0.45 to +0.85.
+2. EXECUTION BOUNDARY:
+   - Executed processing chain on overhead bus.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Track 1 (Objective Measurement): Resonance eliminated; stereo phase correlation reaches +0.88.
+   - Track 2 (Critical Listening): Acoustically flat, clean, mathematically corrected drums.
+   - Track 4 (User/Artist Feedback): "This sounds sterile, clinical, and completely dead. We recorded in this specific room because we wanted the raw, trashy, lo-fi room ambiance. Restore the original room sound immediately."
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Evaluation: Objective engineering metrics directly clashed with artistic vision and aesthetic intent.
+   - Disposition: User-Authorized Trade-off Rejection.
+   - Routing: Pathway D (Clean Baseline Reversion).
+   - Retrospective Review: Lesson registered: technical corrections that eliminate room character must be pre-cleared with user intent before execution.
+
+--------------------------------------------------------------------------------
+SCENARIO 18: Unintended Degradation Triggering Clean Reversion to Baseline (CM-10)
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Funk guitar strumming lacks percussive presence; needs transient enhancement.
+   - Requirement: Boost initial pick transient by 4 dB; preserve natural string sustain and zero noise amplification.
+   - Decision: Transient designer plug-in with +4 dB attack boost.
+   - Prediction: Pick transient accentuated; sustain neutral.
+2. EXECUTION BOUNDARY:
+   - Executed transient designer on funk guitar track.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Transient audit: Pick transient boosted, but the aggressive attack envelope triggered harsh digital clipping across multiple peaks (+2.4 dBFS true peak).
+   - Noise audit: Low-level fret noise and amplifier hiss between strums were amplified by +6 dB.
+   - Preservation audit: CATASTROPHIC REGRESSION. Audible digital overs and unacceptable noise floor elevation.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Disposition: `DISPOSITION_REGRESSIVE_SONIC_DAMAGE`.
+   - Routing: Pathway D (Clean Baseline Reversion).
+   - Action: Immediate clean rollback to baseline. Anti-stacking rule enforced: system is FORBIDDEN from adding a limiter or noise gate to fix the damage caused by the transient designer; clean baseline restored.
+
+--------------------------------------------------------------------------------
+SCENARIO 19: Boundary Diagnostic Falsification vs Parameter Tuning (CM-10)
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Sibilance on female vocal is caused by 6 kHz microphone capsule peaking.
+   - Requirement: Attenuate 6 kHz region by 4 dB; preserve vocal presence and air.
+   - Decision: Bell cut at 6.0 kHz (-4.0 dB, Q=3.0).
+   - Prediction: Sibilance reduced by 4 dB.
+2. EXECUTION BOUNDARY:
+   - Executed 6 kHz cut.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Spectral delta: 6 kHz energy reduced by exactly 4.1 dB. However, harsh vocal sibilance was completely unaffected and continued piercing at full intensity.
+   - Forensic Analysis: High-resolution spectral tracking revealed that the actual sibilance energy was concentrated between 9.2 kHz and 10.5 kHz (whistling sibilance on dental fricatives). The 6 kHz region was completely innocent.
+   - Causal Mechanism Verdict: The diagnostic hypothesis (6 kHz capsule peak) was FACTUALLY FALSE.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Analysis: This is NOT a case for parameter fine-tuning. The system must not simply widen the cut at 6 kHz. The diagnosis itself is falsified.
+   - Disposition: `DISPOSITION_CONTRADICTORY_DIAGNOSIS_FALSIFIED`.
+   - Routing: Pathway E (Return Upstream to Re-Diagnosis).
+   - Directive: Cleanly revert 6 kHz cut; issue directive to Phase 1C.5c to re-diagnose sibilant center frequency.
+
+--------------------------------------------------------------------------------
+SCENARIO 20: Cross-Boundary Epistemic Abstention with Surviving Uncertainty (CM-10)
+--------------------------------------------------------------------------------
+1. UPSTREAM CONTEXT:
+   - Diagnostic Hypothesis: Complex orchestral woodwind section suffers from intermodulation distortion when woodwinds and brass play unison forte.
+   - Requirement: Isolate and reduce intermodulation distortion by 6 dB without impairing individual instrument timbre.
+   - Decision: Multi-channel dynamic deconvolver.
+   - Prediction: Intermodulation reduced; natural brass/woodwind balance preserved.
+2. EXECUTION BOUNDARY:
+   - Executed processing on stereo mix stem.
+3. ACTUAL OUTCOME EVIDENCE:
+   - Measurements: FFT shows slight reduction in sideband energy, but intermodulation artifacts are heavily masked by full-ensemble reverberation.
+   - Critical listening: Two senior engineers evaluate the passage: Engineer A hears a clearer clarinet line; Engineer B hears phase smearing on French horns and no change in distortion.
+   - Telemetry: S/N ratio is insufficient to distinguish deconvolver artifacts from room decay tails.
+4. OUTCOME EVALUATION & DISPOSITION:
+   - Analysis: Evidence is inherently ambiguous and conflicting across listeners; objective metrics are within measurement noise floor.
+   - Sufficiency Assessment: INSUFFICIENT & CONFLICTING.
+   - Disposition: `DISPOSITION_INSUFFICIENT_EVIDENCE`.
+   - Routing: Pathway D / H (Presumptive Abstention Under Uncertainty — Principle 5).
+   - Action: Cleanly revert processing. Declare surviving residual uncertainty. Refuse to assert that the deconvolver helped or harmed; abstain from automated processing on this stem.
+
+
+================================================================================
+SECTION 25 — CONCORDANCE REGISTRIES & AUDIT TABLES (CM-11)
+================================================================================
+25.1 SOURCE-CONCORDANCE TABLE
+Maps authoritative upstream artifacts to their corresponding consumption points in Phase 1C.5e:
+
++----------------------------+-----------------------------+------------------------------------+-----------------------------+
+| Upstream Artifact          | Upstream Section / Stage    | Upstream Concept / Record          | Phase 1C.5e Section Binding |
++----------------------------+-----------------------------+------------------------------------+-----------------------------+
+| Phase 1C.5a v0.3c [FROZEN] | Section 4.1                 | 21 Principles of Sound Engineering | Section 5 (Verbatim recit.) |
+| Phase 1C.5a v0.3c [FROZEN] | Section 8, 9, 10            | 14 Stages & 27 Lifecycle States    | Section 4 (Stages 11 to 14) |
+| Phase 1C.5b v0.2f [FROZEN] | Section 6, 7                | Evidence Intake & Hypotheses       | Section 8, Section 17 (G)   |
+| Phase 1C.5c v0.1d [FROZEN] | Section 8, 9, 13            | Causal Graphs & Causal Diagnoses   | Section 6.3, Section 12, 17 |
+| Phase 1C.5d v0.1l [FROZEN] | Section 6 (Contract 6)      | EngineeringRequirementRecord       | Section 6.1, Section 9, 10  |
+| Phase 1C.5d v0.1l [FROZEN] | Section 8 (Contract 7)      | CandidateInterventionRecord        | Section 6.1, Section 14 (C) |
+| Phase 1C.5d v0.1l [FROZEN] | Section 12 (Contract 8)     | TradeOffEvaluationRecord           | Section 6.1, Section 11     |
+| Phase 1C.5d v0.1l [FROZEN] | Section 21 (Contract 9)     | EngineeringDecisionRecord          | Section 6.1, Section 19.2   |
+| Phase 1C.5d v0.1l [FROZEN] | Section 24 (Contract 10)    | PredictedOutcomeRecord             | Section 6.1, Section 7, 9   |
++----------------------------+-----------------------------+------------------------------------+-----------------------------+
+
+25.2 VOCABULARY CONCORDANCE (INHERITED, PROPOSED, DEFERRED)
+Categorizes all architectural terminology across program phases:
+
++------------------------------------+---------------+------------------------------------------------------------------------+
+| Term / Concept                     | Status        | Architectural Definition & Governance Scope                            |
++------------------------------------+---------------+------------------------------------------------------------------------+
+| Outcome Evidence Firewall          | INHERITED     | Strict boundary separating testable expectations from actual evidence. |
+| EngineeringRequirementRecord       | INHERITED     | Sealed Stage 08 requirements record (Phase 1C.5d Contract 6).          |
+| CandidateInterventionRecord        | INHERITED     | Sealed Stage 09 intervention candidate record (Phase 1C.5d Contract 7).|
+| TradeOffEvaluationRecord           | INHERITED     | Sealed Stage 10 trade-off deliberation record (Phase 1C.5d Contract 8).|
+| EngineeringDecisionRecord          | INHERITED     | Sealed Stage 11 decision record (Phase 1C.5d Contract 9).               |
+| PredictedOutcomeRecord             | INHERITED     | Sealed Stage 11 expectation record (Phase 1C.5d Contract 10).           |
+| Non-Additive Reversion Discipline  | INHERITED     | Principle 18 mandate forbidding compounding corrective patches.        |
+| ActualOutcomeEvidenceRecord        | PROPOSED      | Proposed Phase 1C.5e Stage 13 record schema (Proposed Contract 11).    |
+| EngineeringReviewRecord            | PROPOSED      | Proposed Phase 1C.5e Stage 14 retrospective audit schema (Contract 12).|
+| OutcomeComparisonRecord            | PROPOSED      | Supporting schema evaluating 5-way delta comparison.                   |
+| PreservationEvaluationRecord       | PROPOSED      | Supporting schema evaluating non-exceedance bounds.                    |
+| UnexpectedOutcomeRecord            | PROPOSED      | Supporting schema logging unpredicted collateral phenomena.           |
+| CausalAttributionRecord            | PROPOSED      | Supporting schema logging confounder isolation and causal confidence.  |
+| IterationDecisionRecord            | PROPOSED      | Supporting schema governing Pathways A through H.                      |
+| ReturnUpstreamDirectiveRecord      | PROPOSED      | Supporting schema routing falsification/re-diagnosis to earlier stages.|
+| Merkle Tree Cryptographic Sealing  | DEFERRED      | Deferred to Phase 1C.5f (Traceability, Explainability & Governance).   |
+| Real-Time Streaming Ingestion      | DEFERRED      | Deferred to Phase 1C.5f / Runtime Implementation.                      |
+| Empirical Test Suite Automation    | DEFERRED      | Deferred to Phase 1C.5h (UAT, Validation & Sign-Off).                  |
++------------------------------------+---------------+------------------------------------------------------------------------+
+
+25.3 LIFECYCLE & RECORD-PRESENCE CONCORDANCE
+Details record presence and modification rules across Stages 11 through 14:
+
++----------+---------------------------------+---------------------------------+----------------------------------------------+
+| Stage ID | Stage Name                      | Records Read (Read-Only)        | Records Created & Sealed                     |
++----------+---------------------------------+---------------------------------+----------------------------------------------+
+| Stage 11 | Decision & Prediction Formation | Diagnosis, Requirements, Trade-Off| EngineeringDecisionRecord, PredictedOutcome  |
+| Stage 12 | Execution & Handoff Boundary    | DecisionRecord, PredictedOutcome| ExecutionTelemetryReceipt (External Engine)  |
+| Stage 13 | Actual Outcome Evaluation       | PredictedOutcome, Requirements  | ActualOutcomeEvidenceRecord, ComparisonRecord|
+| Stage 14 | Retrospective Engineering Review| All upstream records (Stages 1-13)| EngineeringReviewRecord, Directives          |
++----------+---------------------------------+---------------------------------+----------------------------------------------+
+
+================================================================================
+SECTION 26 — CM-01 THROUGH CM-14 CORRECTION REGISTERS (CM-12)
+================================================================================
+26.1 THE CM-01 THROUGH CM-14 MANDATE RECTIFICATION REGISTER
+
++-------+----------------------------------+----------------+-----------------------------------------------------------+-----------------------+
+| ID    | Correction Mandate Title         | Classification | Architectural Scope & Rectification in v0.1a              | Target Sections       |
++-------+----------------------------------+----------------+-----------------------------------------------------------+-----------------------+
+| CM-01 | Constitutional & Source Fidelity | CONSTITUTIONAL | Restores 21 Principles verbatim; preserves v0.3c lifecycle| Section 4, Section 5  |
+| CM-02 | Upstream Record-Name Drift Fix   | NOMENCLATURE   | Uses exact frozen names: EngineeringRequirementRecord, etc| Section 3, Section 19 |
+| CM-03 | Contract Numbering Discipline    | GOVERNANCE     | Removes false claims of frozen Contracts 11/12; designates| Section 19.1          |
+|       |                                  |                | as PROPOSED Phase 1C.5e contracts.                        |                       |
+| CM-04 | Pre-Action Responsibility Intake | LIFECYCLE      | Consumes & audits Stage 11 pre-execution prerequisites    | Section 6.3           |
+| CM-05 | Question-Relative Sufficiency    | EPISTEMIC      | Eliminates universal binary; defines modality-dependent,  | Section 8.2           |
+|       |                                  |                | question-relative evidence sufficiency.                   |                       |
+| CM-06 | Failed-Remedy vs Falsification   | CAUSAL LOGIC   | Distinguishes sub-optimal remedy from diagnostic mechanism| Section 12.3, 15      |
+|       | Disambiguation                   |                | contradiction; eliminates causal overreach.               |                       |
+| CM-07 | De-Dogmatize Numeric Thresholds  | SOUND ENG.     | Replaces arbitrary universal thresholds & fixed iteration | Section 11.3, 14.3    |
+|       |                                  |                | counts with requirement-derived bounds & convergence rules|                       |
+| CM-08 | Iteration Authorization Rules    | PROCESS GOV.   | Binds iteration strictly to confirmed diagnostic mechanism| Section 14.2          |
+| CM-09 | Clean Reversion Semantics        | REVERSION      | Enforces zero-residue rollback & anti-stacking discipline | Section 16            |
+| CM-10 | Boundary Scenario Expansion      | VERIFICATION   | Rectifies Scenarios 1–15; adds Boundary Scenarios 16–20.  | Section 24            |
+| CM-11 | Formal Concordance Registries    | AUDITABILITY   | Adds source, vocabulary, and lifecycle concordance tables | Section 25            |
+| CM-12 | Correction Audit Registers       | AUDITABILITY   | Compiles complete CM-01–CM-14 and scenario registers.     | Section 26            |
+| CM-13 | Independent-Review Checklist     | PEER REVIEW    | Adds formal 21-principle checklist for peer review.       | Section 27            |
+| CM-14 | Runtime/UAT Boundary & Status    | GOVERNANCE     | Disclaims runtime/UAT execution; retains DRAFT status;    | Section 28            |
+|       |                                  |                | forbids freeze eligibility claims.                        |                       |
++-------+----------------------------------+----------------+-----------------------------------------------------------+-----------------------+
+
+26.2 SCENARIO CORRECTION REGISTER (SCENARIOS 1 TO 20)
+
++-------------+------------------------------------+------------------------------------------------------------------------+
+| Scenario    | Audio Context & Title              | Rectification Applied in v0.1a                                         |
++-------------+------------------------------------+------------------------------------------------------------------------+
+| Scenario 1  | Snare Ring Attenuation             | Validated pre-action bounds; confirmed zero transient smearing.        |
+| Scenario 2  | Acoustic Guitar Boxiness           | Established convergent trajectory; bounded iteration authorization.   |
+| Scenario 3  | Lead Vocal Air vs Sibilance        | Explicitly verified pre-accepted trade-off bounds.                     |
+| Scenario 4  | Electric Bass Saturation Phasing   | Audited comb-filtering non-exceedance breach; enforced clean rollback. |
+| Scenario 5  | Drum Room Mic Harshness            | Rectified causal mechanism falsification; returned upstream to Stage 06|
+| Scenario 6  | 808 Sub-Bass Bloat (HPF Ringing)   | Disambiguated failed remedy from valid diagnosis; routed to Pathway C. |
+| Scenario 7  | Master Bus Limiting Squash         | Enforced anti-stacking rule; mandated clean reversion to baseline.     |
+| Scenario 8  | Multi-Track Masking Shift          | Isolated gain/solo confounders; declared unattributable state.         |
+| Scenario 9  | Vocal Reverb Depth in Mix          | Applied question-relative sufficiency; preserved uncertainty on snippet|
+| Scenario 10 | Snare Vibe vs Objective Flatness   | Integrated multi-track divergence; artist preference accepted.         |
+| Scenario 11 | Guitar Cab Mic Axis Repositioning  | Evaluated physical transducer alternative over digital filtering.      |
+| Scenario 12 | Stereo Chorus Mono Collapse        | Monitored mono correlation non-exceedance breach; clean reversion.     |
+| Scenario 13 | Vocal De-Esser Lisp Artifact       | Identified trade-off boundary violation; selected split-band remedy.   |
+| Scenario 14 | Bass Opto Compression vs Transient | Audited 30 ms attack preservation on finger plucking attack.           |
+| Scenario 15 | Piano Low-Mid Resonant Clutter     | Evaluated arrangement-dependent dynamic processing alternative.        |
+| Scenario 16 | Confounded Multi-Track Interaction | (CM-10) Handled uncalibrated automation mute confounder.               |
+| Scenario 17 | Artist Aesthetic Vibe Priority     | (CM-10) Governed deliberate rejection of clinical room flattening.     |
+| Scenario 18 | Transient Designer Digital Overs   | (CM-10) Enforced non-additive rollback on harsh digital overs.         |
+| Scenario 19 | Vocal Sibilance Diagnosis Mismatch | (CM-10) Separated parameter tuning from true diagnostic falsification. |
+| Scenario 20 | Orchestral Intermodulation Blur    | (CM-10) Executed epistemic abstention under ambiguous evidence.        |
++-------------+------------------------------------+------------------------------------------------------------------------+
+
+================================================================================
+SECTION 27 — INDEPENDENT-REVIEW CHECKLIST & REGRESSION AUDIT (CM-13)
+================================================================================
+27.1 21-PRINCIPLE CONSTITUTIONAL COMPLIANCE AUDIT
+Every section of Phase 1C.5e has been audited against the 21 Constitutional Principles:
+  - Principle 1 (Problem-First): Satisfied. Evaluation begins with engineering requirements and diagnosed defects.
+  - Principle 2 (Evidence-Grounded): Satisfied. Evaluation requires empirical audio/telemetry; no fabricated data.
+  - Principle 3 (Causal Precedence): Satisfied. Evaluates causal mechanism response, not superficial symptom mask.
+  - Principle 4 (Multi-Hypothesis): Satisfied. Multiple competing explanations for unexpected outcomes explored.
+  - Principle 5 (Presumptive Abstention): Satisfied. When evidence is ambiguous, system declares uncertainty (Scenario 20).
+  - Principle 6 (Requirement-Driven): Satisfied. Outcomes compared directly to Phase 1C.5d requirements.
+  - Principle 7 (Alternative Diversity): Satisfied. Explores diverse loci (transducer, dynamic, acoustic space).
+  - Principle 8 (Minimum Necessary): Satisfied. Audits whether intervention was parsimonious or overly aggressive.
+  - Principle 9 (Trade-Off Recognition): Satisfied. Predicted trade-offs explicitly audited against tolerances.
+  - Principle 10 (Preservation Imperative): Satisfied. Mandatory preservation audits across 8 musical dimensions.
+  - Principle 11 (Pre-Action Reversibility): Satisfied. Pre-action verification establishes clean baseline checkpoints.
+  - Principle 12 (Platform Independence): Satisfied. Reasoning is platform-neutral prior to external DSP execution.
+  - Principle 13 (Explicit Prediction): Satisfied. Consumes explicit, testable predictions from Stage 11.
+  - Principle 14 (Execution Boundary Rigor): Satisfied. Clean operational boundary at Stage 12.
+  - Principle 15 (Outcome Evidence Firewall): Satisfied. Strict firewall separating expectations from observations.
+  - Principle 16 (Multi-Dimensional Evaluation): Satisfied. 5-way comparison matrix across 5 acoustic dimensions.
+  - Principle 17 (Causal Attribution): Satisfied. Confounders explicitly isolated; failed remedies disambiguated.
+  - Principle 18 (Non-Additive Reversion): Satisfied. Clean reversion to baseline; anti-stacking rule enforced.
+  - Principle 19 (Retrospective Review): Satisfied. Independent, non-defensive Stage 14 review engine.
+  - Principle 20 (Multi-Track Coexistence): Satisfied. Four evaluative tracks coexist without forced conformity.
+  - Principle 21 (Non-Fabrication Invariant): Satisfied. Missing evidence remains missing; zero invented metrics.
+
+27.2 INDEPENDENT-REVIEW CHECKLIST FOR PEER AUDITORS
+External sound engineering and architectural reviewers must verify:
+  [ ] 1. Are all 21 Principles of v0.3c quoted verbatim without modification?
+  [ ] 2. Are upstream records (`EngineeringRequirementRecord`, `PredictedOutcomeRecord`, etc.) named accurately?
+  [ ] 3. Are Contracts 11 and 12 designated as proposed Phase 1C.5e contracts rather than retroactively frozen?
+  [ ] 4. Is the Outcome Evidence Firewall strictly maintained with zero expectation-to-evidence conversion?
+  [ ] 5. Is evidence sufficiency defined as modality-dependent and question-relative?
+  [ ] 6. Does the specification avoid declaring diagnostic falsification when only remedy parameterization failed?
+  [ ] 7. Are arbitrary universal numeric thresholds and fixed iteration counts completely absent?
+  [ ] 8. Is clean baseline reversion established as a first-class, non-punitive engineering outcome?
+  [ ] 9. Are all 20 worked scenarios technically coherent, physically plausible, and properly routed?
+  [ ] 10. Does the document strictly preserve DRAFT status and disclaim freeze eligibility?
+
+================================================================================
+SECTION 28 — OPEN DESIGN QUESTIONS, REVISION REGISTER & FINAL STATUS (CM-14)
+================================================================================
+28.1 DOWNSTREAM HANDOFF & DEFERRED RUNTIME WORK
+In strict compliance with CM-14, this specification confirms that:
+  - RUNTIME DSP CODE HAS NOT BEEN EXECUTED: No plug-in implementations or AT5 engine scripts are created here.
+  - EMPIRICAL UAT TESTING HAS NOT BEEN EXECUTED: Formal UAT execution is reserved for Phase 1C.5h.
+  - DOWNSTREAM HANDOFFS:
+    * Phase 1C.5f (Traceability & Governance): Will implement Merkle tree sealing and cryptographic verification.
+    * Phase 1C.5g (Knowledge Migration): Will migrate legacy Tone Translator heuristics into Stage 13/14 rules.
+    * Phase 1C.5h (UAT & Validation): Will execute empirical test suites using the 20 challenge scenarios.
+
+28.2 OPEN ARCHITECTURAL DESIGN QUESTIONS
+The following bounded questions remain open for Phase 1C.5f deliberation:
+  1. Automated Feature Extraction Tolerances: What standardized psychoacoustic models (e.g. PEAQ, ViSQOL) will be parameterized for automated transient sharpness evaluation in downstream runtime modules?
+  2. Multi-Channel Phase Calibration: What exact FFT cross-correlation algorithms will be standardized for detecting subtle comb filtering on stereo overhead pairs?
+  3. Governance Ratification Thresholds: What specific voting majority will the Phase 1C.4 sound engineering board require to promote quarantined Stage 14 candidate lessons into canonical knowledge?
+
+28.3 REVISION REGISTER
++---------+--------------------+----------------+------------------------------------------------------------+
+| Version | Date               | Author / Mode  | Summary of Architectural Content                           |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1    | October 2026       | Sound Engineer | Initial Design Baseline for Phase 1C.5e.                   |
+|         |                    | AI Architect   | (Preserved unchanged as historical reference).             |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1a   | October 2026       | Sound Engineer | Bounded Epistemic, Lifecycle & Causal Correction Baseline. |
+|         |                    | AI Architect   | Incorporates full CM-01 through CM-14 Correction Mandate:  |
+|         |                    |                | restores 21 Principles verbatim; rectifies record names;   |
+|         |                    |                | clarifies proposed contract numbering; integrates Stage 11|
+|         |                    |                | pre-action responsibilities; establishes question-relative |
+|         |                    |                | sufficiency; disambiguates failed remedy vs falsification; |
+|         |                    |                | de-dogmatizes numeric thresholds; governs iteration;       |
+|         |                    |                | details clean reversion; expands scenarios to 20; adds     |
+|         |                    |                | concordance, vocabulary, and audit registries; maintains   |
+|         |                    |                | DRAFT status without freeze claims.                        |
++---------+--------------------+----------------+------------------------------------------------------------+
+
+28.4 FINAL ARCHITECTURAL STATUS
+ARCHITECTURAL STATUS:
+  DRAFT — ARCHITECTURAL REVIEW REQUIRED
+
+GOVERNANCE DECLARATION & PROHIBITED CLAIMS:
+  This document is an architectural correction draft (v0.1a).
+  In strict accordance with Phase 1C governance rules, automated engineering agents are STRICTLY FORBIDDEN
+  from declaring this artifact as frozen, certified, approved, production ready, or eligible for freeze.
+  It is submitted exclusively for independent expert sound engineering peer review.
+
+================================================================================
+END OF SPECIFICATION: TT_Engineering_Outcome_Evaluation_Iteration_and_Review_v0.1a.txt
+================================================================================

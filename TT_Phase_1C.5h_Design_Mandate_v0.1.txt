@@ -1,0 +1,866 @@
+================================================================================
+TONE TRANSLATOR (TT) AI SOUND ENGINEER
+PHASE 1C.5h — FORMAL DESIGN MANDATE
+Working Scope: Empirical Validation, User Acceptance Testing, Verification & Production-Readiness Governance
+Revision: v0.1 — Initial Design Mandate
+================================================================================
+
+1. DOCUMENT IDENTITY & AUTHORITY
+
+1.1 Document Identification
+Artifact: TT_Phase_1C.5h_Design_Mandate_v0.1.txt
+Title: PHASE 1C.5h — EMPIRICAL VALIDATION, USER ACCEPTANCE TESTING, VERIFICATION & PRODUCTION-READINESS GOVERNANCE DESIGN MANDATE
+Phase: Phase 1C.5h (Empirical Validation, User Acceptance Testing, Verification & Production-Readiness Governance)
+Version: v0.1 — Initial Design Mandate
+Immediate Prior Version: None [Initial Creation]
+Status: DRAFT — ARCHITECTURAL REVIEW REQUIRED
+Authority Level: Constitutional Governance Mandate
+
+1.2 Scope and Role
+This document is NOT an implementation specification, audio processing test script, or runtime test harness.
+It is the authoritative constitutional design mandate that governs all subsequent Phase 1C.5h architecture, validation protocol designs, golden audio fixture curation, empirical listening test frameworks, regression detection criteria, user acceptance testing (UAT) rubrics, operational performance SLAs, and production-readiness governance.
+
+Its purpose is to establish the scope, ownership boundaries, invariants, non-ownership fences, evaluation dimensions, audio fixture standards, multi-perspective UAT rubrics, regression resistance thresholds, AmpliTube 5 platform integrity verifications, rollback validation protocols, and Gate 8 Production Cutover Authorization requirements.
+
+No subsequent Phase 1C.5h architectural specification, validation plan, testing suite, benchmark catalogue, or cutover certificate may weaken, contradict, bypass, or exceed the boundaries established herein.
+
+
+2. PURPOSE OF THIS MANDATE
+
+This mandate defines the authoritative design fence for Phase 1C.5h before drafting the Phase 1C.5h architectural specification.
+
+It exists to prevent Phase 1C.5h from:
+  - redefining the frozen upstream reasoning architecture (Phases 1C.5a through 1C.5f);
+  - inventing new reasoning lifecycle stages or altering the 27 frozen lifecycle statuses;
+  - assuming ownership of substantive diagnostic, causal, intervention, or trade-off reasoning;
+  - assuming ownership of legacy estate discovery, classification, remapping, or transformation (Phase 1C.5g);
+  - presuming that architectural elegance, schema compliance, or unit-test passing guarantees acoustic excellence;
+  - reducing acoustic quality and musicality to simplistic, scalar, synthetic pass/fail metrics;
+  - validating audio systems without qualified human sound engineer listening and guitar playability evaluation;
+  - permitting "big-bang", unverified, or un-monitored production deployments;
+  - conflating Phase 1C.5g migration completeness (Gates 1–7) with Phase 1C.5h production readiness (Gate 8);
+  - authorizing production cutover without verified, deterministic, sub-minute rollback assurance;
+  - silencing or diluting empirical uncertainty and edge-case degradations;
+  - destabilizing ongoing commercial Tone Translator tone generation and IK Multimedia AmpliTube 5 (AT5) export capabilities.
+
+Phase 1C.5h operates as the terminal empirical validation, verification, and governance authority between the completed reasoning and migration architecture and live commercial production.
+Its role is to empirically prove acoustic fidelity, verify reasoning integrity under real-world audio stress, detect regressions, validate user acceptance across multiple professional personas, and govern Gate 8 Cutover Authorization.
+
+
+3. ARCHITECTURAL POSITION
+
+3.1 Positional Sequence
+Phase 1C.5h begins strictly AFTER the complete reasoning, outcome evaluation, traceability, and knowledge migration architecture defined by Phases 1C.5a through 1C.5g has been frozen:
+
+  [Phase 1C.5a: Reasoning Lifecycle & Decision Architecture (v0.3c)]
+                               │
+                               ▼
+  [Phase 1C.5b: Evidence Interpretation & Hypothesis Formation (v0.2f)]
+                               │
+                               ▼
+  [Phase 1C.5c: Diagnosis & Causal Reasoning (v0.1d)]
+                               │
+                               ▼
+  [Phase 1C.5d: Intervention, Alternatives & Trade-Offs (v0.1l)]
+                               │
+                               ▼
+  [Phase 1C.5e: Outcome Evaluation, Iteration & Review (v0.1m)]
+                               │
+                               ▼
+  [Phase 1C.5f: Traceability, Explainability & Governance (v0.1j / Mandate)]
+                               │
+                               ▼
+  [Phase 1C.5g: Knowledge Migration, Remapping & Controlled Adoption (v0.1e)]
+                               │
+                               ▼  MigrationHandoffPackageRecord (Gates 1–7 Sealed)
+  [PHASE 1C.5h: EMPIRICAL VALIDATION, UAT & PRODUCTION-READINESS GOVERNANCE]
+                               │
+                               ▼  AdoptionDecisionRecord (Gate 8 Cutover Authorized)
+  [Phase 1C.5g: PATH-ADOPT Governed Production Cutover Execution]
+
+3.2 Downstream and Terminal Relationship
+Phase 1C.5h is the final architectural phase in the Phase 1C Sound Engineering Foundation sequence.
+It does not create new reasoning concepts; it validates that the existing frozen architecture actually works acoustically, logically, computationally, and commercially when driven by real audio signals, complex guitarist prompts, and extreme production edge cases.
+
+3.3 Independence of Validation
+Phase 1C.5h is strictly independent of Phase 1C.5g.
+Phase 1C.5g prepares, maps, and packages migrated assets, but cannot validate them or authorize its own cutover.
+Phase 1C.5h evaluates the packaged assets, subjects them to empirical audio testing, and alone decides whether Gate 8 authorization is granted.
+
+
+4. BINDING UPSTREAM AUTHORITIES
+
+Phase 1C.5h is bound by the constitutional authorities established in preceding phases:
+
+4.1 Phase 1C.5a Authority (v0.3c) — FROZEN
+Remains the immutable authority for:
+  - the 21 Principles of Sound Engineering Reasoning;
+  - the 14-stage reasoning lifecycle (Stage 01 through Stage 14);
+  - the 27 frozen reasoning lifecycle statuses;
+  - lifecycle record-presence and state-transition semantics;
+  - the governing invariant: UNCERTAINTY MUST SURVIVE THE DECISION.
+Phase 1C.5h shall not create new lifecycle stages, statuses, or bypass reasoning lifecycle boundaries.
+
+4.2 Phase 1C.5b Authority (v0.2f) — FROZEN
+Remains the immutable authority for:
+  - evidence intake, parsing, and acoustic observation;
+  - observation vs. interpretation separation;
+  - hypothesis formation and evidential discrimination;
+  - evidential sufficiency and evidential uncertainty.
+
+4.3 Phase 1C.5c Authority (v0.1d) — FROZEN
+Remains the immutable authority for:
+  - causal reasoning and causal diagnosis;
+  - surviving hypotheses and diagnostic specificity;
+  - causal exclusions, multi-causal interactions, and unresolved mechanisms;
+  - causal uncertainty boundaries.
+
+4.4 Phase 1C.5d Authority (v0.1l) — FROZEN
+Remains the immutable authority for:
+  - Engineering Requirements (Stage 08);
+  - Candidate Interventions (Stage 09);
+  - Constraint and Trade-Off Evaluation (Stage 10);
+  - Engineering Decisions (Stage 11);
+  - Predicted Outcomes (Stage 11);
+  - decision selection logic and trade-off justification.
+
+4.5 Phase 1C.5e Authority (v0.1m) — FROZEN
+Remains the immutable authority for:
+  - Pre-action validation;
+  - Prediction consumption;
+  - Stage 13 outcome evidence and evaluation;
+  - Stage 14 engineering review;
+  - Parent/child run iteration and reversion;
+  - Candidate lesson quarantine and containment.
+
+4.6 Phase 1C.5f Authority (v0.1j / Design Mandate) — FROZEN BASELINE
+Remains the immutable authority for:
+  - Traceability, provenance, and run identity models;
+  - Lineage reconstruction and immutable history;
+  - Explainability records and auditability;
+  - Candidate-lesson governance and candidate-learning quarantine;
+  - Tamper-evident integrity records.
+
+4.7 Phase 1C.5g Authority (v0.1e) — FROZEN
+Remains the immutable authority for:
+  - Legacy estate discovery and inventory;
+  - Migration classification and disposition model (RETAIN, REMAP, TRANSFORM, QUARANTINE, DEPRECATE, RETIRE, DEFER);
+  - Knowledge Migration Firewall;
+  - Coexistence architecture and routing (PATH-PROD, PATH-SHADOW, PATH-COMPARE, PATH-ADOPT, PATH-ROLLBACK);
+  - Shadow-mode execution logs and differential comparison catalogues;
+  - Adoption Gates 1 through 7;
+  - MigrationHandoffPackageRecord specification and delivery;
+  - Governed execution of PATH-ADOPT cutover following Gate 8 authorization.
+Binding declaration:
+`PHASE 1C.5g FREEZE ≠ PHASE 1C.5h VALIDATION`
+Phase 1C.5g freezes the migration architecture; Phase 1C.5h empirically validates the migrated estate and authorizes production readiness.
+
+
+5. CORE ARCHITECTURAL IDENTITY
+
+Phase 1C.5h is anchored by three cardinal governing statements:
+
+STATEMENT 1:
+"VALIDATION IS EMPIRICAL, ACOUSTIC, AND ADAPTIVE — ARCHITECTURAL SOUNDNESS AND MIGRATION COMPLETION ARE NECESSARY PREREQUISITES, BUT ONLY RIGOROUS EMPIRICAL VERIFICATION PROVES PRODUCTION READINESS."
+
+STATEMENT 2:
+"ACOUSTIC INTEGRITY, MUSICALITY, AND DYNAMIC TOUCH CANNOT BE COLLAPSED INTO SYNTHETIC PASS/FAIL ASSERTIONS; VALIDATION REQUIRES DUAL-PERSPECTIVE VERIFICATION UNITING OBJECTIVE ACOUSTIC METRICS AND QUALIFIED EXPERT HUMAN LISTENING."
+
+STATEMENT 3:
+"GATE 8 PRODUCTION CUTOVER AUTHORIZATION IS AN INDEPENDENT, EXCLUSIVE, AND IRREVERSIBLE GATEWAY OWNED SOLELY BY PHASE 1C.5h; NO ASSET, ENGINE, OR PATH MAY RECEIVE PRODUCTION TRAFFIC WITHOUT AN EXPLICIT, UNBROKEN PHASE 1C.5h ADOPTION DECISION RECORD."
+
+Phase 1C.5h is an empirical sound engineering and verification discipline, not a formal bureaucratic rubber stamp.
+
+
+6. PHASE 1C.5h OWNERSHIP
+
+Phase 1C.5h owns the architecture, methodology, protocols, and governance mechanisms governing:
+
+6.1 Empirical Validation Framework & Methodology
+The comprehensive framework defining how candidate reasoning executions, transformed rules, and generated tone configurations are tested against ground truth, acoustic physical models, and reference audio.
+
+6.2 Golden Acoustic Fixture Library & Benchmark Stem Management
+The curation, governance, versioning, storage, and calibration of standardized audio fixtures, multitrack stems, dry guitar direct input (DI) recordings, playing dynamic profiles, and reference mixes.
+
+6.3 Multi-Perspective User Acceptance Testing (UAT) Protocols
+The formal test rubrics, evaluation protocols, and acceptance criteria designed to evaluate system outputs across distinct professional perspectives (Master Recording Engineer, Touring/Studio Guitarist, Creative Producer, Tone Platform Operator).
+
+6.4 Multi-Dimensional Acoustic Evaluation & Perceptual Quality Scoring
+The non-scalar evaluation methodology assessing acoustic output across orthogonal acoustic dimensions: spectral balance, dynamic responsiveness, harmonic saturation, phase/spatial coherence, contextual mix fit, and playability feel.
+
+6.5 Regression Detection, Baseline Comparison & Differential Auditing
+The rigorous identification and classification of behavioural, acoustic, and logical divergences against legacy Tone Translator baselines and human professional benchmarks, discriminating intentional improvements from unacceptable regressions.
+
+6.6 Adversarial, Boundary & Pathological Stress Testing
+The systematic subjection of the reasoning engine and platform exporters to degraded, clipped, noisy, contradictory, unachievable, or extreme audio and textual inputs.
+
+6.7 Target-Platform Usability & Preset Integrity Verification
+The empirical verification of exported preset files, parameter ranges, DSP stability, and audio rendering fidelity within IK Multimedia AmpliTube 5 (AT5) across sample rates, buffer sizes, and operating environments.
+
+6.8 Operational Performance, Latency & Resource Verification
+The quantitative benchmarking of end-to-end decision latency, multi-stage reasoning computation, token consumption, memory stability, and throughput under commercial production load.
+
+6.9 Rollback Reliability & Reversion Assurance
+The empirical pre-cutover testing and verification that operational rollback (PATH-ROLLBACK) functions deterministically, flawlessly, and within defined recovery time objectives.
+
+6.10 Gate 8 Production Cutover Authorization Protocol
+The formal evaluation, adjudication, and issuance of the cryptographically sealed `AdoptionDecisionRecord` granting or denying Gate 8 authorization for migrated components or entire subsystem paths.
+
+6.11 Phased Rollout, Canary Governance & Live Production Verification
+The governance of canary traffic slicing (e.g., 1%, 5%, 25%, 50%, 100%), real-time acoustic quality telemetry, active anomaly detection, and automated circuit-breaker triggering during live rollout.
+
+6.12 Traceability & Provenance Verification of Validated Executions
+The end-to-end audit verification ensuring that every validated result is backed by a complete, immutable, tamper-evident Phase 1C.5f reasoning trace linking inputs, hypotheses, trade-offs, and decisions.
+
+6.13 Defect Remand & Governance Feedback to Upstream Phases
+The formal documentation and routing of empirical validation failures back to Phase 1C.5g (for remapping/quarantine) or Phases 1C.5b–e (for reasoning rule remediation), including the formulation of candidate lessons under Stage 14 quarantine.
+
+
+7. PHASE 1C.5h NON-OWNERSHIP DECLARATIONS
+
+To preserve strict architectural boundaries and prevent overreach, Phase 1C.5h explicitly DOES NOT OWN:
+
+7.1 Redefining Upstream Reasoning Architecture
+Phase 1C.5h does not define, modify, or extend the 21 Principles of Sound Engineering Reasoning, the 14 reasoning lifecycle stages, or the 27 frozen reasoning lifecycle statuses established in Phase 1C.5a.
+
+7.2 Substantive Engineering Reasoning Execution
+Phase 1C.5h does not perform runtime evidence parsing (1C.5b), causal diagnosis (1C.5c), intervention design (1C.5d), or Stage 13 outcome evaluation (1C.5e). It tests, verifies, and audits the system that performs them.
+
+7.3 Legacy Estate Discovery, Remapping & Migration Planning
+Phase 1C.5h does not discover legacy assets, assign initial migration dispositions, or draft remapping schemas. Those responsibilities belong exclusively to Phase 1C.5g.
+
+7.4 Runtime Audio Engine & DAW Plugin Implementation
+Phase 1C.5h does not implement the runtime DSP audio processing engine, the AT5 software itself, or DAW host software. It evaluates the parameters and preset output generated for those targets.
+
+7.5 Unilateral Candidate-Lesson Promotion
+Phase 1C.5h does not unilaterally promote candidate lessons from validation runs into authoritative engineering knowledge. It packages failure traces and candidate lessons for independent Stage 14 knowledge governance review under Phase 1C.5e/f rules.
+
+7.6 Direct Production Routing & Traffic Manipulation
+Phase 1C.5h authorizes Gate 8 Cutover via an immutable decision record, but does not execute the physical traffic switching or routing tables (owned by Phase 1C.5g PATH-ADOPT execution and operational infrastructure).
+
+7.7 Cosmetic or Unrelated Codebase Refactoring
+Phase 1C.5h does not perform arbitrary refactoring, cleanup, or architectural modifications in application code outside the validation and verification scope.
+
+
+8. GOVERNING VALIDATION & READINESS INVARIANTS
+
+The Phase 1C.5h architecture must enforce ten inviolable constitutional invariants:
+
+INVARIANT 1: EMPIRICAL PRIMACY INVARIANT
+Structural compliance, schema validity, and passing unit tests are necessary prerequisites, but NEVER constitute sufficient proof of validation. An asset or reasoning engine is validated if and only if it demonstrates acoustic excellence and sound reasoning under empirical audio testing.
+
+INVARIANT 2: MULTI-DIMENSIONAL ACOUSTIC EVALUATION INVARIANT (ANTI-SCALAR COLLAPSE)
+Acoustic quality, musical fidelity, and tone validity shall NEVER be collapsed into a single scalar score, average metric, or simplistic threshold. Evaluation must occur across orthogonal dimensions (spectral, dynamic, harmonic, phase, mix context, and playability feel), where failure in any single critical dimension constitutes validation rejection.
+
+INVARIANT 3: PRINCIPLE COMPLIANCE INVARIANT
+Empirical success achieved via unprincipled shortcuts, hardcoded cheats, or violations of the frozen 21 Principles of Sound Engineering Reasoning is invalid. Every validated run must exhibit strict adherence to the 21 Principles across its full decision trace.
+
+INVARIANT 4: GOLDEN FIXTURE IMMUTABILITY & INDEPENDENCE INVARIANT
+The golden acoustic fixture library used for validation must be independently governed, versioned, and immutable. Test fixtures must never be used as training data, prompt engineering tuning sets, or heuristic fitment sets for the candidate engine.
+
+INVARIANT 5: REGRESSION ZERO-TOLERANCE FOR PRODUCTION-CRITICAL PATHS INVARIANT
+The new architecture shall not degrade any commercial guitar tone generation capability, AT5 preset compatibility, or operational stability relative to the established legacy production baseline. Any detected acoustic regression in a production-critical path blocks Gate 8 authorization.
+
+INVARIANT 6: GATE 8 EXCLUSIVITY & INDEPENDENCE INVARIANT
+Gate 8 Production Cutover Authorization can be granted solely by Phase 1C.5h through an independently verifiable `AdoptionDecisionRecord`. Neither Phase 1C.5g, operational engineering, nor automated test scripts may self-authorize production cutover.
+
+INVARIANT 7: DUAL-PERSPECTIVE EVALUATION INVARIANT
+Validation requires both objective computational audio analysis and qualified subjective expert human listening. Neither perspective may override or substitute for the other; objective metric passage without expert listening acceptance is invalid, and subjective praise without objective acoustic compliance is invalid.
+
+INVARIANT 8: ADVERSARIAL & EDGE-CASE SUFFICIENCY INVARIANT
+Validation cannot be granted based solely on "happy-path" scenarios. Every component, rule, and workflow must be tested against pathological, degraded, noisy, clipped, ambiguous, and contradictory inputs to verify graceful degradation and explicit uncertainty preservation.
+
+INVARIANT 9: REVERSIBILITY & ROLLBACK VERIFICATION INVARIANT
+No component or path may receive Gate 8 Cutover Authorization without prior empirical verification that its operational rollback mechanism (PATH-ROLLBACK) executes reliably, cleanly, and within the mandated latency threshold under simulated failure conditions.
+
+INVARIANT 10: COMPLETE EVIDENTIAL LINEAGE INVARIANT
+Every validation decision, score, audit result, and sign-off must possess an unbroken, tamper-evident Phase 1C.5f provenance trail linking the input audio fixtures, user prompts, reasoning traces, parameter outputs, rendered audio, and evaluator identities.
+
+
+9. MULTI-DIMENSIONAL ACOUSTIC EVALUATION MODEL
+
+9.1 The Failure of Scalar Audio Metrics
+In professional audio engineering, scalar metrics (such as Mean Opinion Score [MOS], Signal-to-Noise Ratio [SNR], or raw Euclidean spectral distance) fail to represent musical reality:
+  - An output may have minimal spectral distance from a target yet suffer from unmusical phase smearing or dynamic harshness;
+  - A tone may match an EQ curve perfectly yet completely lack pick-attack responsiveness and power-amp sag;
+  - An aggressive high-gain rhythm tone may measure high in distortion yet possess ideal note separation and punch in a mix.
+Phase 1C.5h mandates an orthogonal, multidimensional acoustic evaluation model.
+
+9.2 Dimension 1: Spectral Balance & Tonal Tilt
+Evaluates frequency distribution across the audible spectrum:
+  - Sub-bass clarity (20–60 Hz): absence of unnecessary low-end rumble;
+  - Low-end punch (60–250 Hz): tight, resonant bass without muddiness;
+  - Low-mid warmth (250–500 Hz): body and fullness without boxiness;
+  - Midrange presence (500 Hz–2 kHz): vocal-pocket compatibility and core guitar character;
+  - Upper-mid bite (2 kHz–5 kHz): pick attack, definition, and articulation without piercing harshness;
+  - High-end sheen & air (5 kHz–20 kHz): smooth top-end extension without digital fizz or brittle aliasing.
+
+9.3 Dimension 2: Dynamic Responsiveness & Transient Preservation
+Evaluates how the system handles signal dynamics and touch sensitivity:
+  - Transient preservation: reproduction of initial pick attack without unnatural squashing or clipping;
+  - Crest factor analysis: maintaining musical dynamic range appropriate to genre;
+  - Touch sensitivity & breakup transition: smooth, continuous transition from clean to overdrive based on playing velocity;
+  - Power-amp sag & bloom: realistic emulation of power tube compression, recovery, and sustain.
+
+9.4 Dimension 3: Harmonic Structure & Saturation Quality
+Evaluates non-linear harmonic generation:
+  - Harmonic distribution: musically desirable balance of even (warmth) and odd (bite/edge) harmonics;
+  - Intermodulation distortion (IMD) management: clean chordal articulation without dissonant intermodulation mud;
+  - Aliasing artifact rejection: absence of digital foldover distortion in high-gain upper registers;
+  - Noise floor and hum: hum rejection and hiss management under extreme amplification.
+
+9.5 Dimension 4: Phase, Spatial & Stereo Coherence
+Evaluates multi-microphone and multi-speaker interactions:
+  - Multi-mic phase alignment: comb-filtering avoidance when combining close and room microphones;
+  - Mono compatibility: preservation of spectral balance and power when collapsed to mono;
+  - Spatial realism: authentic room reflections and cabinet boundary acoustic behaviour without artificial flanging.
+
+9.6 Dimension 5: Contextual & Mix Integration
+Evaluates how the guitar tone sits within a complete musical arrangement:
+  - Bass and kick drum separation: leaving adequate spectral space for rhythm section fundamentals;
+  - Vocal pocketing: absence of competing resonances in the lead vocal intelligibility band (1 kHz–3 kHz);
+  - Masking prevention: ensuring lead and rhythm tracks do not obscure each other;
+  - Headroom and master bus impact: preventing adverse clipping or excessive limiter pumping in mastering.
+
+9.7 Dimension 6: Musical Playability & Guitarist Perception
+Evaluates the tactile and perceptual experience of the performing musician:
+  - Latency and feel: immediacy of sound onset relative to performance;
+  - Note separation under complex chords: clarity of individual string voices under distortion;
+  - Feedback and sustain characteristics: natural acoustic bloom and controlled feedback predictability;
+  - Emotional and aesthetic resonance: authenticity of vintage or modern tonal archetypes.
+
+
+10. GOLDEN ACOUSTIC FIXTURE LIBRARY & BENCHMARK STEM MANAGEMENT
+
+10.1 Curated Fixture Corpus Architecture
+Phase 1C.5h mandates the creation and strict maintenance of an authoritative, versioned Golden Acoustic Fixture Library (`GAFL`).
+The library consists of pristine audio recordings, dry guitar DI signals, and multitrack stems specifically engineered to stress and validate AI sound engineering decisions.
+
+10.2 Fixture Typology & Core Archetypes
+The library must contain calibrated fixtures across eight core tonal archetypes:
+  1. Archetype A: Pristine American Clean (e.g., Fender Twin / Deluxe Reverb; high headroom, sparkling top, extended dynamics);
+  2. Archetype B: Dynamic Edge-of-Breakup (e.g., Vox AC30 / Fender Bassman; touch-sensitive transition from chiming clean to gritty crunch);
+  3. Archetype C: Classic British Crunch (e.g., Marshall JCM800 / Plexi; aggressive upper-mid punch, tight bottom, dynamic power-amp clip);
+  4. Archetype D: Modern High-Gain Rhythm (e.g., Mesa Boogie Dual Rectifier / Peavey 5150; massive low-end chunk, scooped/focused mids, extreme gain with tight palm-muting);
+  5. Archetype E: Singing High-Gain Lead (e.g., Soldano SLO-100 / Dumble / Bogner; thick midrange sustain, liquid compression, smooth top end);
+  6. Archetype F: Vintage Fuzz & Germanium Saturation (e.g., Fuzz Face / Tone Bender; extreme non-linear clipping, impedance-sensitive clean-up, gated decay);
+  7. Archetype G: Acoustic Guitar Direct & Mic Modelling (Piezo DI, magnetic soundhole pickup, studio condenser pairings; body resonance, quack suppression);
+  8. Archetype H: Bass Guitar Tracking (Active/Passive DI, tube bass head, 8x10 cabinet; sub-bass fundamental stability, mid growl, transient punch).
+
+10.3 Signal Source Standards
+All golden audio fixtures must adhere to strict recording standards:
+  - Calibrated recording chain: Class-A discrete instrument DIs with flat frequency response (±0.1 dB from 20 Hz to 20 kHz);
+  - Format standard: 24-bit depth, 96 kHz sampling rate, uncompressed PCM;
+  - Pickup coverage: Single-coil (vintage low-output, modern high-output), Humbucker (PAF vintage, high-output ceramic), P-90, Active pickups (EMG/Fishman Fluence);
+  - Playing technique profiles: Light fingerpicking, aggressive heavy pick attack, palm-muted staccato bursts, sustained single-note bends, fast arpeggios, full barre chords.
+
+10.4 Multitrack Mix Stems
+Fixtures must include full multitrack session stems (Drums, Bass, Rhythm Guitars, Keyboards, Lead Vocal) to evaluate guitar tone in mix context across multiple musical genres (Classic Rock, Modern Metal, Jazz/Blues, Pop/Funk, Indie Alternative).
+
+10.5 Adversarial & Pathological Audio Fixtures
+To satisfy Invariant 8, the library must include deliberate pathological audio fixtures:
+  - Severely clipped DI tracks (analog preamp overload);
+  - High electromagnetic interference (60 Hz / 50 Hz mains hum and single-coil buzz);
+  - Extreme impedance mismatch recordings (dull high end, resonant loading anomalies);
+  - Intentionally boomy, resonant, or out-of-phase pickup wirings;
+  - Sub-bass rumble and mechanical handling noise;
+  - Low bit-depth / low sample-rate degraded reference tracks.
+
+10.6 Fixture Governance, Immutability & Quarantine
+  - All fixtures are stored in an immutable, version-controlled fixture repository;
+  - Every fixture possesses a cryptographic hash and metadata record;
+  - Fixtures used for formal validation must be strictly segregated from model development, prompt tuning, and regression test authoring.
+
+
+11. USER ACCEPTANCE TESTING (UAT) PROTOCOLS & EVALUATION PERSPECTIVES
+
+11.1 Multi-Perspective Evaluation Methodology
+Acceptance cannot be determined by a single engineer or automated script. Phase 1C.5h mandates evaluation across four distinct professional perspectives:
+
+11.2 Evaluator Persona 1: The Master Recording & Mix Engineer
+Focus:
+  - Spectral balance, headroom management, and frequency masking;
+  - Stereo imaging, phase cancellation, and mono compatibility;
+  - Dynamic control, buss compressor interaction, and mastering readiness;
+  - Sound engineering reasoning validity and adherence to professional mixing standards.
+
+11.3 Evaluator Persona 2: The Professional Performing & Session Guitarist
+Focus:
+  - Touch sensitivity, pick attack dynamics, and volume knob clean-up;
+  - Feel, immediacy, latency, and power-amp sag responsiveness;
+  - Authentic recreation of iconic amp feel and harmonic bloom;
+  - Practical usability of tones across playing dynamics and styles.
+
+11.4 Evaluator Persona 3: The Creative Producer & Songwriter
+Focus:
+  - Emotional and aesthetic impact within musical context;
+  - Fidelity to user intent and prompt expression (e.g., "haunting atmospheric lead");
+  - Creative inspiration, genre appropriateness, and sonic character;
+  - Velocity of achieving desired musical results.
+
+11.5 Evaluator Persona 4: The Commercial Tone Platform Operator
+Focus:
+  - Deterministic execution, crash-free stability, and resource predictability;
+  - IK Multimedia AmpliTube 5 preset serialization validity and schema compliance;
+  - System throughput, token efficiency, and response latency;
+  - Rollback speed, operational monitoring, and risk containment.
+
+11.6 Double-Blind ABX & MUSHRA Listening Protocols
+  - Formal subjective evaluations must employ standardized double-blind listening protocols (MUSHRA [MPEG Audio Subjective Assessment] and ABX discrimination tests);
+  - Evaluators are presented randomized, level-matched (LUFS integrated within ±0.1 dB) audio samples;
+  - Tests compare: Target AI Sound Engineer output vs. Legacy TT output vs. Human Master Engineer baseline vs. Unprocessed Anchor;
+  - Minimum panel size: At least three qualified evaluators per testing round;
+  - Statistical significance: Results must satisfy confidence intervals (p < 0.05) to eliminate chance preference.
+
+11.7 Standardized UAT Scoring Rubrics & Confidence Thresholds
+Each evaluation dimension is scored on a standardized 1.0 to 5.0 scale:
+  - 5.0: Master Professional Standard (Indistinguishable from top-tier human engineer);
+  - 4.0: Commercially Acceptable Standard (Professional release quality, minor subjective differences);
+  - 3.0: Usable Demo Standard (Acceptable for rough demo; noticeable acoustic flaws);
+  - 2.0: Sub-Standard / Flawed (Noticeable harshness, phase clashing, or dynamic unnaturalness);
+  - 1.0: Severe Defect / Unusable (Acoustically broken, clipped, masked, or unmusical).
+Passing Threshold for Gate 8 Consideration:
+  - Minimum average score across all dimensions: >= 4.2;
+  - Minimum score on any individual dimension: >= 3.8 (zero tolerance for sub-standard dimensions);
+  - Evaluator Persona unanimity: No evaluator may assign a veto score (< 3.0).
+
+
+12. REGRESSION DETECTION & DIFFERENTIAL AUDITING ARCHITECTURE
+
+12.1 Tripartite Differential Comparison
+Phase 1C.5h establishes a tripartite comparative framework for all migrated and candidate assets:
+  - Comparison Axis 1: Candidate Architecture vs. Legacy Tone Translator Baseline;
+  - Comparison Axis 2: Candidate Architecture vs. Human Master Engineer Benchmark;
+  - Comparison Axis 3: Candidate Architecture vs. Physical / Theoretical Acoustic Target.
+
+12.2 Differentiating Intentional Improvements from Regressions
+When candidate output differs from legacy output:
+  - If candidate output corrects a legacy acoustic flaw (e.g., removes 4 kHz harsh digital fizz, tightens boomy 120 Hz resonance, properly phase-aligns microphones), this is an INTENTIONAL ACOUSTIC IMPROVEMENT;
+  - If candidate output loses desirable legacy warmth, reduces pick-attack definition, introduces distortion, or destabilizes an established commercial tone, this is an UNACCEPTABLE REGRESSION.
+Phase 1C.5h mandates explicit differential categorization supported by Phase 1C.5g PATH-COMPARE logs and Phase 1C.5f causal traces.
+
+12.3 Hard Regression Rejection Triggers
+Any of the following constitutes an immediate, non-negotiable regression failure:
+  - Increase in Total Harmonic Distortion + Noise (THD+N) by > 1.5 dB without user-requested saturation;
+  - Reduction in transient pick-attack amplitude by > 2.0 dB on clean/crunch fixtures;
+  - High-frequency harshness spike (> 3.0 dB narrow-band resonance between 3 kHz and 6 kHz);
+  - Intermodulation distortion mud rendering complex chords unintelligible;
+  - Failure of AmpliTube 5 to open, parse, or render the exported preset;
+  - Increase in end-to-end execution latency exceeding production SLA by > 20%.
+
+12.4 Differential Audio Differencing & Spectral Null Testing
+Automated regression suites utilize automated level-matched spectral difference analysis, phase correlation meters, and spectral waterfall plots to instantly pinpoint acoustic divergences before subjective panel review.
+
+
+13. TARGET-PLATFORM INTEGRITY & EXPORT VERIFICATION (AMPLITUBE 5)
+
+13.1 AmpliTube 5 (AT5) Preset Structural Validation
+Phase 1C.5h must verify that all generated parameter decisions serialize into valid, fully compliant IK Multimedia AmpliTube 5 preset structures:
+  - XML / binary preset structure schema conformance;
+  - Valid gear model identifiers, cabinet models, microphone types, and rack FX models;
+  - Parameter value normalization and quantization adherence (e.g., clamping to valid AT5 knob ranges [0.0–10.0]);
+  - Routing chain validity (Serial, Parallel, Split A/B/Y, D/I split).
+
+13.2 Real-World AT5 Host Plugin Rendering Verification
+Automated test harnesses must load the generated presets into actual, headless or hosted AT5 VST3/AU instances:
+  - Successful instantiation without host crashes or hung threads;
+  - Verification that audio rendered through the AT5 engine matches predicted acoustic outcome (Stage 11 Predicted Outcome vs Stage 13 Actual Outcome);
+  - Absence of DSP glitches, parameter zipper noise, DC offsets, or explosive feedback loops upon preset loading.
+
+13.3 Cross-Environment Stability
+Verification across audio buffer sizes (32, 64, 128, 256, 512, 1024 samples) and sample rates (44.1 kHz, 48 kHz, 88.2 kHz, 96 kHz, 192 kHz).
+
+
+14. OPERATIONAL PERFORMANCE, LATENCY & RESOURCE VERIFICATION
+
+14.1 End-to-End Decision Latency SLA Verification
+Validation must confirm that the reasoning pipeline operates within strict operational time budgets:
+  - Interactive Guitarist Mode SLA: Complete tone generation and AT5 preset delivery within target SLA (< 3.5 seconds);
+  - Batch / Catalog Processing SLA: Average per-track reasoning and rendering latency within target bounds;
+  - Stage-by-stage latency monitoring: Ensuring no single stage (e.g., Stage 10 Trade-Off Evaluation) causes pipeline stalling.
+
+14.2 Multi-Stage Reasoning Token & Compute Efficiency
+Verification that prompt expansion, reasoning chains, and record generation remain within bounded token limits and compute budgets, preventing runaway recursive reasoning loops.
+
+14.3 Memory Stability & Leak Detection
+Sustained load testing (executing continuous 1,000+ run sequences) to verify zero memory leaks, thread pool exhaustion, or database connection starvation.
+
+
+15. ROLLBACK RELIABILITY & REVERSION ASSURANCE
+
+15.1 Mandatory Empirical Pre-Cutover Rollback Simulation
+In accordance with Invariant 9, before any asset or path is granted Gate 8 authorization:
+  - A live rollback simulation must be executed in the staging / shadow environment;
+  - Operational cutover to the candidate path is simulated;
+  - A synthetic failure trigger is injected;
+  - The PATH-ROLLBACK mechanism must revert traffic to the legacy baseline without human intervention;
+  - Reversion must complete within the operational SLA (< 30 seconds);
+  - Verification that zero dropped requests, corrupted audio files, or invalid presets occur during or after rollback.
+
+15.2 Post-Rollback Quarantine & Root Cause Isolation
+The architecture must verify that upon rollback execution:
+  - The failed candidate component is immediately isolated in QUARANTINE;
+  - Complete execution logs, failure traces, and audio artifacts are archived for forensic triage;
+  - The production system remains locked to the stable baseline until independent governance review.
+
+
+16. GATE 8 PRODUCTION CUTOVER AUTHORIZATION ARCHITECTURE
+
+16.1 Gate 8 Consideration Prerequisites
+Phase 1C.5h shall not evaluate any component, module, or subsystem for Gate 8 Cutover Authorization unless Phase 1C.5g has delivered a sealed, fully verified `MigrationHandoffPackageRecord` satisfying Gates 1 through 7:
+  - Gate 1: Estate Inventory & Provenance Verification;
+  - Gate 2: Clean Architectural Remapping;
+  - Gate 3: Structural Transformation Validation;
+  - Gate 4: Zero-Conflict & Principle Compliance;
+  - Gate 5: Production Firewall & Isolation Verification;
+  - Gate 6: Shadow-Mode Execution & Differential Verification;
+  - Gate 7: Rollback Path Integrity Proof.
+
+16.2 The Four Pillars of Gate 8 Readiness
+Phase 1C.5h evaluates the candidate package against Four Mandatory Pillars:
+  PILLAR 1: ACOUSTIC QUALITY & MUSICAL EXCELLENCE
+    - Passes all GAFL golden fixture benchmarks;
+    - Scores >= 4.2 average on multi-perspective UAT rubrics;
+    - Zero veto scores from expert listening panels;
+    - Demonstrates superior or equivalent acoustic fidelity compared to legacy baseline.
+  PILLAR 2: REASONING SOUNDNESS & PRINCIPLE ADHERENCE
+    - 100% adherence to the frozen 21 Principles of Sound Engineering Reasoning;
+    - Clean Stage 01–14 lifecycle execution without bypassed stages;
+    - Explicit preservation of uncertainty (Invariant: UNCERTAINTY MUST SURVIVE THE DECISION);
+    - Full Phase 1C.5f reasoning traceability and tamper-evident provenance.
+  PILLAR 3: SYSTEM STABILITY & PLATFORM INTEGRITY
+    - 100% AT5 preset syntax, DSP stability, and plugin render success;
+    - Compliance with end-to-end latency SLAs and resource consumption limits;
+    - Zero crash or memory leak incidents across 1,000-run stress suites.
+  PILLAR 4: ROLLBACK ASSURANCE & OPERATIONAL SAFETY
+    - Successful execution of empirical pre-cutover rollback simulation;
+    - Automated telemetry, circuit breakers, and canary routing verified and armed;
+    - Operational rollback runbooks documented and tested.
+
+16.3 The AdoptionDecisionRecord Schema
+Gate 8 Cutover Authorization must be documented in a formally sealed `AdoptionDecisionRecord` containing:
+  1. Record Identity & Unique Execution ID;
+  2. Target Component / Subsystem Identifiers and Migration Package Reference;
+  3. Authorizing Phase: Phase 1C.5h;
+  4. Decision Outcome: AUTHORIZED, CONDITIONALLY_AUTHORIZED, or REJECTED;
+  5. Objective Acoustic Evaluation Results (Spectral, Dynamic, Harmonic, Phase, Mix metrics);
+  6. Subjective UAT Panel Scores and Evaluator Signatures (Master Engineer, Guitarist, Producer, Operator);
+  7. Regression Audit Certificate (proving zero unresolved critical regressions);
+  8. AT5 Platform Usability & DSP Render Verification Certificate;
+  9. Latency and SLA Conformance Data;
+  10. Pre-Cutover Rollback Verification Proof;
+  11. Authorized Cutover Scope (Specific genre slice, canary percentage, or full subsystem);
+  12. Cryptographic Hash and Immutable Timestamp.
+
+16.4 Unconditional vs. Conditional Authorization
+  - UNCONDITIONAL: All Four Pillars fully satisfied; component approved for progressive canary deployment to 100%;
+  - CONDITIONAL: Minor non-critical acoustic notes or restricted genre validity; component approved strictly for bounded traffic slices (e.g., Clean/Crunch genres only, max 25% traffic) with mandatory follow-up evaluation;
+  - REJECTED: Any Pillar fails; cutover prohibited; asset remanded to Phase 1C.5g or upstream phases.
+
+
+17. PHASED ROLLOUT, CANARY GOVERNANCE & LIVE PRODUCTION MONITORING
+
+17.1 Progressive Canary Rollout Schedule
+Following Gate 8 Cutover Authorization, production adoption must follow a disciplined, progressive canary schedule governed by Phase 1C.5h monitoring criteria:
+  - Stage 1: Internal Synthetic Canary (0% public traffic; automated continuous validation against live feed);
+  - Stage 2: Canary Slice 1 (1% live production traffic; real-time anomaly monitoring for 24 hours);
+  - Stage 3: Canary Slice 2 (5% live production traffic; evaluation of user feedback and preset downloads for 48 hours);
+  - Stage 4: Canary Slice 3 (25% live production traffic; load and latency verification for 72 hours);
+  - Stage 5: Canary Slice 4 (50% live production traffic; comprehensive soak period for 7 days);
+  - Stage 6: Full Production Cutover (100% production traffic; legacy path deprecated and transitioned to standby).
+
+17.2 Real-Time Quality Telemetry & Automated Circuit Breakers
+During canary rollout, live monitoring tracks real-time health metrics:
+  - Error rate / exception rate exceeding 0.05% -> Automated Circuit Breaker triggers immediate rollback;
+  - AT5 preset corruption or load failure rate > 0.00% -> Automated Circuit Breaker triggers immediate rollback;
+  - End-to-end latency p99 exceeding SLA by > 25% -> Traffic throttled, alert dispatched;
+  - Negative user feedback spike regarding tonal harshness or mud -> Investigation flag raised.
+
+
+18. UPSTREAM FEEDBACK LOOPS & DEFECT REMAND ARCHITECTURE
+
+18.1 Defect Classification and Remand Routing
+When a component or reasoning execution fails empirical validation:
+  - Route A: Remand to Phase 1C.5g (Migration Governance)
+    Trigger: Failure caused by flawed legacy rule remapping, improper transformation schema, or bad configuration extraction.
+    Action: Phase 1C.5g moves asset from ready to TRANSFORM or QUARANTINE; updates transformation logic.
+  - Route B: Remand to Phase 1C.5b–e (Reasoning Rules & Causal Models)
+    Trigger: Failure caused by fundamentally unsound causal reasoning, flawed acoustic hypothesis rules, improper trade-off logic, or incorrect engineering decision criteria.
+    Action: Defect routed to Knowledge Governance; requires formal amendment to upstream reasoning models.
+  - Route C: Remand to Platform Adapter (Stage 12 Translation)
+    Trigger: Failure caused by incorrect parameter scaling, wrong AT5 knob mapping, or XML serialization defect.
+    Action: Platform adapter logic corrected; reasoning traces remain intact.
+
+18.2 Formulation of Empirical Candidate Lessons
+Every empirical validation failure or edge-case discovery must be formulated as a formal Candidate Lesson under Stage 14 quarantine rules (Phase 1C.5e/f):
+  - Failure trace captured;
+  - Causal mechanism analyzed;
+  - Candidate lesson logged in quarantine;
+  - Strictly barred from entering active knowledge bases until independent knowledge governance approval.
+
+
+19. VALIDATION FAILURE & DEGRADATION CONCEPTS
+
+Phase 1C.5h defines fifteen deterministic validation failure concepts:
+
+19.1 VAL-FAIL-01: Acoustic Degradation / Harshness Failure
+Output exhibits unmusical high-frequency harshness, digital aliasing, or shrill resonance (> 3 dB peak in 3–6 kHz band).
+Governance Action: Immediate UAT rejection; asset remanded to TRANSFORM or RETIRE.
+
+19.2 VAL-FAIL-02: Loss of Dynamic Touch / Sag Responsiveness
+Output fails touch-sensitivity evaluation; dynamics feel squashed, compressed, or unresponsive to guitarist pick attack.
+Governance Action: Rejection on Dynamic Dimension; remanded to Stage 08/10 requirement and trade-off re-tuning.
+
+19.3 VAL-FAIL-03: Frequency Masking & Mud Buildup
+Tone creates severe low-end muddiness (200–400 Hz buildup) or clashes with bass guitar and kick drum in multitrack mix tests.
+Governance Action: Mix Integration failure; remanded to Stage 08 Acoustic Target refinement.
+
+19.4 VAL-FAIL-04: Hallucinatory or Unjustified Parameter Decision
+A parameter decision in Stage 11 has no causal justification in Stage 06/07 diagnosis or Stage 10 trade-off evaluation.
+Governance Action: Principle 2 & Principle 4 violation; reasoning engine failed; cutover blocked.
+
+19.5 VAL-FAIL-05: Missing or Incomplete Reasoning Provenance
+Output produces an acceptable sound, but its Phase 1C.5f execution trace is incomplete, unverifiable, or missing intermediate stages.
+Governance Action: Hard governance failure; Invariant 10 violation; cutover barred.
+
+19.6 VAL-FAIL-06: AT5 Target Platform Incompatibility / Preset Crash
+Exported AT5 preset fails to load in AmpliTube 5, causes a DAW thread hang, or asserts out-of-range parameters.
+Governance Action: Platform integrity failure; remanded to Stage 12 Platform Translation.
+
+19.7 VAL-FAIL-07: Unresolved Legacy Regression
+Candidate architecture output is acoustically inferior to the established legacy production baseline on an identical fixture.
+Governance Action: Invariant 5 regression failure; Gate 8 denied; remanded for comparative triage.
+
+19.8 VAL-FAIL-08: Golden Fixture Benchmark Failure
+Candidate architecture fails more than 5% of standardized tests in the Golden Acoustic Fixture Library.
+Governance Action: Systematic failure; entire candidate release blocked.
+
+19.9 VAL-FAIL-09: Latency / Performance SLA Breach
+End-to-end execution time exceeds the production SLA (> 3.5s for interactive mode) under standard load.
+Governance Action: Performance failure; optimization required before cutover reconsideration.
+
+19.10 VAL-FAIL-10: Rollback Verification Failure
+Pre-cutover rollback simulation fails to revert traffic within the mandated SLA or causes dropped connections.
+Governance Action: Invariant 9 violation; absolute cutover veto; production deployment forbidden.
+
+19.11 VAL-FAIL-11: Subjective Listening Panel Veto
+Any expert evaluator assigns a fatal veto score (< 3.0) due to unmusicality or severe aesthetic defect.
+Governance Action: Subjective panel veto; component held in staging; mandatory panel review.
+
+19.12 VAL-FAIL-12: Adversarial Fixture Collapse
+System crashes, produces extreme audio spikes, or hallucinates bizarre configurations when fed clipped or noisy inputs.
+Governance Action: Invariant 8 violation; graceful degradation failure; remanded to Stage 01/02 intake hardening.
+
+19.13 VAL-FAIL-13: Principle Violation During Execution
+Reasoning trace violates any of the frozen 21 Principles (e.g., Principle 1: evidence ignored; Principle 3: unjustified certainty).
+Governance Action: Constitutional invalidity; execution voided.
+
+19.14 VAL-FAIL-14: Flaky / Non-Deterministic Evaluation Run
+Candidate architecture produces radically different decisions across identical inputs without explicit stochastic intent.
+Governance Action: Non-determinism defect; quarantined for investigation.
+
+19.15 VAL-FAIL-15: Unauthorized Cutover Bypass Attempt
+An attempt is made to deploy a migrated component to production without an authentic Phase 1C.5h AdoptionDecisionRecord.
+Governance Action: Hard security/governance alert; deployment blocked at operational firewall.
+
+Note: These failure concepts are validation governance categories. They must NOT be added to the frozen 27 reasoning lifecycle statuses.
+
+
+20. STRESS SCENARIOS
+
+The Phase 1C.5h architecture must be explicitly evaluated against twenty stress scenarios:
+
+SCENARIO 1: Clean Vintage Fender Twin Reverb Tone Matching
+A user requests a pristine, sparkling 1965 Twin Reverb tone with high headroom and lush spring reverb.
+Validation Flow: Evaluated against Archetype A GAFL fixture -> Spectral tilt verified (clean 10 kHz sheen, zero 4 kHz harshness) -> Dynamic touch tested with light fingerpicking and hard pick snaps -> AT5 preset loaded in plugin host -> MUSHRA panel scores 4.8 -> Passed.
+
+SCENARIO 2: Modern High-Gain Drop-Tuned Metal Rhythm Clarity
+A guitarist inputs a drop-C tuned high-gain metal riff with aggressive palm muting.
+Validation Flow: Evaluated against Archetype D fixture -> Low-end tightness verified (high-pass filter / tight power-amp damping preventing 80 Hz flub) -> Transient attack preserved -> Note separation in complex chord tested -> Panel confirms punch and lack of mud -> Passed.
+
+SCENARIO 3: Dynamic Edge-of-Breakup Touch Sensitivity Test
+An audio fixture contains guitar playing that smoothly transitions from delicate picking (clean) to aggressive digging in (crunch).
+Validation Flow: Dynamic response evaluated across 10-step velocity gradient -> Output exhibits progressive harmonic distortion bloom without sudden clipping cliffs -> Crest factor and pick attack naturalness verified -> Session guitarist persona scores 4.9 -> Passed.
+
+SCENARIO 4: Acoustic Guitar Piezo "Quack" Suppression
+A brittle, harsh acoustic guitar piezo DI signal is processed to achieve natural studio microphone body and warmth.
+Validation Flow: Evaluated against Archetype G fixture -> High-frequency piezo resonance (2.5 kHz–4 kHz spike) verified attenuated -> Body resonance restored without low-end feedback -> A/B listening confirms authentic mic body feel -> Passed.
+
+SCENARIO 5: Dense Multi-Track Mix Contextual Fit
+A high-gain rhythm guitar track is evaluated inside a full rock mix containing loud bass guitar, acoustic drums, and lead vocals.
+Validation Flow: Multi-track mix rendered -> Spectral masking analysis executed -> Verified: guitar leaves 60–100 Hz clear for kick/bass, dips 2 kHz slightly for vocal intelligibility, provides wide stereo imaging -> Mix engineer persona signs off -> Passed.
+
+SCENARIO 6: Pathological Audio Input — Severely Clipped DI Signal
+A user provides an input DI recording where the analog converter was severely clipped, resulting in flat-topped waveforms.
+Validation Flow: System detects input clipping at Stage 01/02 -> Flags evidential degradation -> Principle 3 applied (uncertainty preserved) -> Generates tone with compensatory gain staging -> Output avoids multiplying distortion into screeching noise -> Passed.
+
+SCENARIO 7: High Background Noise & Electromagnetic Hum Rejection
+A vintage single-coil guitar track contains heavy 60 Hz mains hum and 120 Hz buzz.
+Validation Flow: Evaluated against pathological noise fixture -> System reasons over noise floor vs. musical signal -> Applies targeted notch filtering / noise gate parameters in Stage 09 without cutting guitar sustain -> Playability confirmed -> Passed.
+
+SCENARIO 8: Ambiguous or Contradictory User Prompt
+A user requests a tone that is "warm, dark, and vintage, but with razor-sharp piercing modern bite and scoop".
+Validation Flow: Evaluated at Stage 08/10 -> Contradictory requirements identified and surfaced -> Explicit trade-off evaluated -> Balanced solution proposed with explicit uncertainty declaration -> User not presented with hallucinated perfection -> Passed.
+
+SCENARIO 9: Unfamiliar / Rare Gear Constraint Handling
+A prompt demands a rare 1968 Japanese boutique fuzz pedal not present in the AT5 gear catalogue.
+Validation Flow: Stage 09/10 identifies missing exact model -> Analyzes acoustic characteristics (germanium clipping, mid scoop, high impedance) -> Selects best available AT5 substitute with compensatory EQ -> Reasoning trace documents exact substitution rationale -> Passed.
+
+SCENARIO 10: Legacy Divergence Triage — Smoother High End vs. Legacy Fizz
+New architecture removes an aggressive 5 kHz peak that was present in the legacy Tone Translator output.
+Validation Flow: Differential comparison detects 4.2 dB divergence at 5 kHz -> Trace shows new architecture identified peak as unwanted aliasing/fizz, whereas legacy was a hardcoded boost -> Blind listening panel overwhelmingly prefers new tone -> Divergence classified as INTENTIONAL IMPROVEMENT -> Passed.
+
+SCENARIO 11: Single-Coil vs. Humbucker Impedance Adaptation
+The same high-gain lead preset request is run with a low-output Stratocaster single-coil and a high-output Gibson Les Paul humbucker.
+Validation Flow: Evaluated on twin fixtures -> System recognizes distinct pickup resonance and output level -> Automatically adjusts input pad, preamp gain, and presence to achieve optimal saturation for both -> Passed.
+
+SCENARIO 12: Stereo Phase Cancellation & Width Evaluation
+A spacious stereo tone utilizing dual cabinets with different microphones is rendered.
+Validation Flow: Stereo phase correlation meter evaluated across 20 Hz to 20 kHz -> Correlation remains positive (> +0.6) throughout -> Mono collapse test reveals zero loss of core guitar energy or tonal hollow out -> Passed.
+
+SCENARIO 13: AT5 DSP Parameter Ceiling & Inter-Parameter Clamping
+Reasoning engine recommends extreme preamp gain combined with maximum master volume and an overdrive pedal boost.
+Validation Flow: Stage 12 translation checks AT5 DSP ceiling -> Identifies catastrophic digital clipping risk -> Clamps parameters according to headroom rules -> Output sounds aggressive without harsh digital overs -> AT5 loads cleanly -> Passed.
+
+SCENARIO 14: Latency Spike Under Complex Multi-Stage Reasoning
+An extraordinarily complex user prompt triggers an extensive 14-stage reasoning chain with 12 candidate interventions.
+Validation Flow: Pipeline execution monitored -> Latency reaches 3.2 seconds (within 3.5s SLA) -> Token usage bounded -> No recursive looping -> Performance SLA verified -> Passed.
+
+SCENARIO 15: Expert Panel Disagreement Resolution Protocol
+In a listening test, the Mix Engineer persona rates a tone 4.5, but the Guitarist persona rates it 3.2, complaining of "stiff feel under the fingers".
+Validation Flow: Split outcome triggered -> Tone denied immediate Gate 8 cutover -> Dynamic touch analysis re-opened -> Power-amp sag parameter increased to restore touch feel -> Re-tested -> Both evaluators score >= 4.2 -> Passed.
+
+SCENARIO 16: Automated Canary Degradation & Rollback Triggering
+During a 5% canary rollout, a minor regression in an AT5 cabinet impulse response causes a 0.2% preset crash rate.
+Validation Flow: Real-time telemetry detects anomaly -> Automated circuit breaker trips within 12 seconds -> Traffic deterministically reverted to legacy baseline (PATH-ROLLBACK) -> Incident logged -> Zero customer impact -> Rollback verified.
+
+SCENARIO 17: Extreme Down-Tuning Sub-Bass Intermodulation
+An 8-string guitar tuned to drop-E (41 Hz) is processed with high-gain distortion.
+Validation Flow: Evaluated against low-tuning fixture -> High-pass filter reasoning engaged to prevent intermodulation between sub-bass fundamentals and overdrive harmonics -> Notes remain articulate; kick drum space preserved -> Passed.
+
+SCENARIO 18: Vintage Fuzz Interaction with Buffer & Impedance
+A user places a vintage germanium fuzz pedal after a modern buffered bypass tuner in the signal chain.
+Validation Flow: System detects impedance mismatch in Stage 08/10 -> Warns of acoustic consequences (loss of dynamic cleanup, harsh top end) -> Recommends optimal signal chain order or applies compensatory input impedance modeling -> Passed.
+
+SCENARIO 19: Blind ABX Listening Test Against Human Master Engineer
+A suite of 20 challenging tone matching tasks is executed by both the AI Sound Engineer and a Grammy-winning mix engineer.
+Validation Flow: Double-blind ABX listening tests conducted with an independent panel of 10 professional producers -> Statistical analysis demonstrates AI Sound Engineer achieves parity on 18/20 tasks and superior consistency on 2 -> UAT Milestone certified -> Passed.
+
+SCENARIO 20: Full End-to-End Migration Package Gate 8 Cutover Authorization
+Phase 1C.5g delivers a complete MigrationHandoffPackageRecord covering the complete British High-Gain Amp family.
+Validation Flow: All 12 handoff requirements audited -> GAFL benchmarks executed (100% pass) -> Four UAT personas complete evaluations (avg score: 4.65) -> Rollback simulation verified (reversion in 8.4 seconds) -> AdoptionDecisionRecord signed and sealed -> Gate 8 Cutover Authorized -> Phase 1C.5g executes PATH-ADOPT cutover -> Passed.
+
+
+21. TECHNOLOGY-NEUTRALITY REQUIREMENTS
+
+21.1 Architecture Over Implementation
+Phase 1C.5h is a constitutional architectural mandate and must remain strictly technology-neutral.
+It defines governance requirements, evaluation dimensions, quality thresholds, operational states, and verification fences, not low-level software libraries or vendor platforms.
+
+21.2 Prohibited Premature Mandates
+Phase 1C.5h must NOT prematurely mandate:
+  - Specific programming languages or test runner frameworks (e.g., Jest, Vitest, PyTest, Mocha);
+  - Specific audio analysis DSP libraries (e.g., Librosa, Essentia, Aubio, JUCE);
+  - Specific automated browser or API testing tools (e.g., Cypress, Playwright, Postman);
+  - Specific listening test web UI frameworks;
+  - Specific database technologies for storing test runs (e.g., Firestore, PostgreSQL, DynamoDB, SQLite);
+  - Specific metric storage or dashboard vendors (e.g., Datadog, Prometheus, Grafana, CloudWatch);
+  - Specific cryptographic signature algorithms (e.g., RSA-4096, ECDSA, Ed25519);
+  - Specific cloud compute infrastructure or container platforms (e.g., GCP Cloud Run, AWS ECS, Kubernetes);
+  - Specific message queues or workflow runners for batch testing;
+  - Specific audio file storage backends (e.g., S3, Google Cloud Storage).
+
+21.3 Status of Technical References
+Any code snippets, audio DSP calculations, test scripts, or configuration schemas appearing in later Phase 1C.5h documents must be explicitly marked as NON-NORMATIVE ILLUSTRATIONS.
+
+
+22. VOCABULARY POLICY
+
+22.1 Strict Vocabulary Classification
+All domain terms utilized in Phase 1C.5h documentation must be categorized into one of four governance tiers:
+
+  TIER 1: INHERITED
+  Terms inherited unchanged from frozen upstream phases (1C.5a–1C.5g).
+  Examples: 21 Principles of Sound Engineering Reasoning, Stage 01–14, 27 Frozen Lifecycle Statuses, EvidenceRecord, EngineeringDecisionRecord, Uncertainty Must Survive The Decision, Traceability Record, Candidate Lesson Quarantine, Migration Disposition, RETAIN, REMAP, TRANSFORM, QUARANTINE, DEPRECATE, RETIRE, DEFER, Coexistence Paths (PATH-PROD, PATH-SHADOW, PATH-COMPARE, PATH-ADOPT, PATH-ROLLBACK), Gates 1–7, MigrationHandoffPackageRecord.
+  Status: Immutable.
+
+  TIER 2: PHASE_1C5H_PROPOSED
+  Terms introduced by Phase 1C.5h to govern empirical validation, UAT, and production cutover.
+  Examples: Golden Acoustic Fixture Library (GAFL), Multi-Dimensional Acoustic Evaluation, Dual-Perspective Evaluation, Gate 8 Cutover Authorization, AdoptionDecisionRecord, UAT Evaluator Personas (Master Engineer, Guitarist, Producer, Operator), MUSHRA Audio Protocol, Tripartite Differential Comparison, Pre-Cutover Rollback Simulation, Canary Slicing Schedule, Validation Failure Concepts (VAL-FAIL-01 through VAL-FAIL-15).
+  Status: Governed by Phase 1C.5h; must not leak into reasoning lifecycle statuses.
+
+  TIER 3: ILLUSTRATIVE
+  Terms used purely for concrete explanation and scenario walkthroughs.
+  Examples: Headless AT5 Host, Spectral Waterfall Plot, LUFS Loudness Matcher, ABX Blind Listening Box, Canary Circuit Breaker Switch.
+  Status: Non-normative.
+
+  TIER 4: DEFERRED
+  Terms whose final naming or technical representation is deliberately postponed to detailed testing harness implementations.
+  Status: Provisional.
+
+22.2 Preservation of Lifecycle Purity
+Phase 1C.5h proposed vocabulary MUST NOT be merged into, confused with, or substituted for the 27 frozen reasoning lifecycle statuses established in Phase 1C.5a.
+
+
+23. EXPLICIT PROHIBITIONS
+
+Phase 1C.5h explicitly and strictly PROHIBITS:
+
+  1. BIG-BANG PRODUCTION CUTOVER: Mandating or attempting an immediate, un-canaried, all-at-once replacement of production tone generation.
+  2. MIGRATION AS VALIDATION: Treating Phase 1C.5g migration completeness (Gates 1–7) as a substitute for empirical acoustic testing.
+  3. SCALAR COLLAPSE: Collapsing acoustic quality into a single composite metric, average score, or synthetic benchmark.
+  4. SUBJECTIVE-FREE VALIDATION: Authorizing production readiness without qualified expert human listening and playability evaluation.
+  5. OBJECTIVE-FREE VALIDATION: Approving tones based purely on subjective impressions without objective acoustic and platform verification.
+  6. FIXTURE CONTAMINATION: Using golden validation fixtures for model training, prompt tuning, or rule heuristic optimization.
+  7. REGRESSION BLINDNESS: Ignoring or downplaying detected acoustic degradations relative to the legacy commercial baseline.
+  8. SILENT ROLLBACK REMOVAL: Authorizing cutover without an empirically tested, functional, sub-minute rollback mechanism.
+  9. REASONING BYPASS: Validating tones that sound acceptable but were produced by hallucinated, unprincipled, or trace-free reasoning.
+  10. SELF-AUTHORIZATION: Permitting Phase 1C.5g, developers, or automated scripts to grant Gate 8 Cutover Authorization.
+  11. UNCERTAINTY SUPPRESSION: Forcing ambiguous or edge-case validation results into artificially definitive passing scores.
+  12. UPSTREAM RULE MUTATION: Modifying the frozen 21 Principles or 14 reasoning lifecycle stages to accommodate validation convenience.
+  13. UNAPPROVED LESSON INGESTION: Directly promoting empirical failure findings into authoritative engineering knowledge without Stage 14 quarantine review.
+  14. PLATFORM EXPORT ASSUMPTION: Assuming an AT5 preset is valid without test-loading and rendering it in the actual target environment.
+  15. ADVERSARIAL OMISSION: Omitting clipped, noisy, or pathological fixtures from the validation test battery.
+
+
+24. MANDATE COMPLIANCE CHECKLIST
+
+Before any future Phase 1C.5h architectural specification, validation plan, or UAT protocol document may be accepted, it must pass this 16-point compliance checklist:
+
+[ ] 1. Does the architecture strictly subordinate itself to the frozen Phase 1C.5a–1C.5g architecture?
+[ ] 2. Does the architecture enforce empirical primacy, requiring real audio evaluation beyond unit tests?
+[ ] 3. Does the architecture enforce a multidimensional acoustic evaluation model, preventing scalar collapse?
+[ ] 4. Does the architecture mandate a dual-perspective evaluation combining objective metrics and expert human listening?
+[ ] 5. Does the architecture define a versioned, immutable, independently governed Golden Acoustic Fixture Library?
+[ ] 6. Does the architecture include diverse archetypes, DI signals, multitrack mix stems, and pathological fixtures?
+[ ] 7. Does the architecture define formal UAT protocols across four professional evaluator personas?
+[ ] 8. Does the architecture enforce double-blind listening protocols (MUSHRA / ABX) with statistical significance?
+[ ] 9. Does the architecture mandate rigorous regression detection against legacy baselines and human master engineers?
+[ ] 10. Does the architecture require empirical verification of AmpliTube 5 preset serialization, DSP stability, and rendering?
+[ ] 11. Does the architecture enforce operational performance and latency SLAs (< 3.5s for interactive guitar tone generation)?
+[ ] 12. Does the architecture mandate empirical pre-cutover rollback simulation and sub-minute reversion verification?
+[ ] 13. Does the architecture establish Gate 8 Cutover Authorization as an independent gateway owned solely by Phase 1C.5h?
+[ ] 14. Does the architecture require an immutable, cryptographically verifiable AdoptionDecisionRecord?
+[ ] 15. Does the architecture enforce a progressive canary rollout schedule with automated circuit breakers?
+[ ] 16. Does the architecture remain strictly technology-neutral, avoiding premature implementation lock-in?
+
+
+25. ARCHITECTURAL STATUS DECLARATION
+
+STATUS: DRAFT — ARCHITECTURAL REVIEW REQUIRED
+
+This document is the authoritative Phase 1C.5h Design Mandate.
+It defines the governing boundaries, invariants, models, protocols, and constraints within which the detailed Phase 1C.5h architecture must be drafted.
+
+This document MUST NOT be interpreted as declaring that Phase 1C.5h is:
+  - implemented;
+  - tested;
+  - UAT-passed;
+  - production-ready;
+  - or frozen.
+
+Detailed Phase 1C.5h architectural specifications may now proceed, strictly governed by this mandate.
+
+================================================================================
+END OF MANDATE: TT_Phase_1C.5h_Design_Mandate_v0.1.txt
+================================================================================

@@ -7,8 +7,8 @@
 1C.5b  ██████████  FROZEN — v0.2f  
 1C.5c  ██████████  FROZEN — v0.1d  
 1C.5d  ██████████  FROZEN — v0.1l  
-1C.5e  ░░░░░░░░░░  NEXT  
-1C.5f  ░░░░░░░░░░  PLANNED  
+1C.5e  ██████████  FROZEN — v0.1m  
+1C.5f  ░░░░░░░░░░  NEXT (MANDATE ACTIVE)  
 1C.5g  ░░░░░░░░░░  PLANNED  
 1C.5h  ░░░░░░░░░░  PLANNED  
 
@@ -18,8 +18,8 @@
 | 1C.5b | Evidence Interpretation & Hypothesis Formation | v0.2f | FROZEN |
 | 1C.5c | Diagnosis & Causal Reasoning | v0.1d | FROZEN |
 | 1C.5d | Intervention, Alternatives & Trade-Off Reasoning | v0.1l | FROZEN |
-| 1C.5e | Outcome Prediction / Iteration / Engineering Review | — | NEXT |
-| 1C.5f | Traceability / Explainability / Governance | — | PLANNED |
+| 1C.5e | Outcome Evaluation, Iteration & Engineering Review | v0.1m | FROZEN |
+| 1C.5f | Reasoning Traceability, Explainability & Governance Architecture | — | NEXT |
 | 1C.5g | Current TT Reasoning Migration Specification | — | PLANNED |
 | 1C.5h | UAT / Validation / Sign-off | — | PLANNED |
 

@@ -1,0 +1,1682 @@
+================================================================================
+TONE TRANSLATOR (TT) AI SOUND ENGINEER
+PHASE 1C.5g — ARCHITECTURAL SPECIFICATION
+Title: PHASE 1C.5g — KNOWLEDGE MIGRATION, REMAPPING & CONTROLLED ADOPTION ARCHITECTURE
+Version: v0.1e — Formal Freeze Certification & Architectural Adoption
+Immediate Prior Version: TT_Knowledge_Migration_Remapping_and_Controlled_Adoption_Architecture_v0.1d.txt [Preserved Unchanged]
+Status: FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE
+Authority Level: Governed Technical Architecture Specification
+================================================================================
+
+1. DOCUMENT IDENTITY & AUTHORITY
+
+1.1 Document Identification
+Artifact: TT_Knowledge_Migration_Remapping_and_Controlled_Adoption_Architecture_v0.1e.txt
+Title: PHASE 1C.5g — KNOWLEDGE MIGRATION, REMAPPING & CONTROLLED ADOPTION ARCHITECTURE
+Version: v0.1e — Formal Freeze Certification & Architectural Adoption
+Immediate Prior Version: TT_Knowledge_Migration_Remapping_and_Controlled_Adoption_Architecture_v0.1d.txt [Preserved Unchanged]
+Phase: Phase 1C.5g (Knowledge Migration, Remapping & Controlled Adoption)
+Status: FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE
+Authority Level: Governed Technical Architecture Specification
+Governing Mandate: TT_Phase_1C.5g_Design_Mandate_v0.1a.txt
+
+1.2 Scope and Role
+This document is the authoritative architectural specification for Phase 1C.5g.
+It defines the complete architectural model for discovering, cataloguing, classifying, remapping, transforming, quarantining, retiring, shadowing, and adopting the legacy Tone Translator (TT) knowledge, heuristics, rules, prompts, configuration, and runtime logic into the frozen AI Sound Engineer reasoning architecture.
+
+This specification is strictly governed by the binding design fence established in TT_Phase_1C.5g_Design_Mandate_v0.1a.txt.
+If any section, model, or rule in this specification is found to conflict with the Design Mandate, the Design Mandate is authoritative and overrides this specification without exception.
+
+This document is an architectural specification, NOT a runtime implementation.
+It establishes data requirements, governance rules, architectural boundaries, and operational paths while remaining strictly technology-neutral.
+
+
+2. EXECUTIVE SUMMARY & PURPOSE
+
+2.1 The Architectural Transition Challenge
+The existing Tone Translator application possesses an extensive collection of acoustic heuristics, prompt templates, hardcoded parameter clamps, gear catalogues, alias dictionaries, IK Multimedia AmpliTube 5 (AT5) export mappings, and deterministic helper services.
+While this legacy system currently produces viable commercial guitar presets, much of its operational logic was developed organically prior to the formalization of the 14-stage sound engineering reasoning lifecycle and the 21 Principles of Sound Engineering Reasoning.
+
+Specifically, the legacy estate contains:
+  - Monolithic prompts that collapse evidence intake, diagnosis, requirements, and intervention selection into single, untraceable LLM generation steps;
+  - Hardcoded heuristic rules and "magic numbers" that bypass causal reasoning;
+  - Upstream platform leakage, where target-platform AT5 parameter IDs and GUI constraints dictate acoustic requirements;
+  - Unverified heuristics with lost or undocumented historical provenance;
+  - Implicit error-handling fallbacks that silently fabricate acoustic decisions;
+  - Hidden dependencies between UI components and deep audio processing services.
+
+2.2 Purpose of Phase 1C.5g
+Phase 1C.5g exists to build the governed, reversible, and auditable bridge from this legacy estate into the frozen AI Sound Engineer architecture defined in Phases 1C.5a through 1C.5f.
+Its mission is to ensure that:
+  1. No valid domain knowledge is discarded simply because it was written in legacy form;
+  2. No invalid, unprovenanced, or monolithic legacy heuristic is promoted into authoritative reasoning simply because it exists in the codebase;
+  3. Current production tone generation and AT5 export remain 100% stable, protected, and operational while migration proceeds in parallel;
+  4. Migration progresses through structured shadow execution and differential comparison without big-bang risk;
+  5. Empirical validation and final production sign-off remain strictly under the authority of Phase 1C.5h.
+
+
+3. ARCHITECTURAL POSITION & THE THREE DIMENSIONS
+
+To eliminate architectural conflation, Phase 1C.5g establishes an explicit separation across three distinct operational dimensions:
+
+3.1 Dimension A — The Reasoning Lifecycle (Phases 1C.5a through 1C.5e)
+  - Scope: The cognitive and engineering lifecycle through which an AI Sound Engineer reasons from raw evidence to final review.
+  - Ownership: Exact authoritative Stage 01 through Stage 14 lifecycle sequence established in frozen Phase 1C.5a v0.3c (§8, §9, §10):
+      Stage 01: Engineering Intent (EngineeringIntentRecord completion)
+      Stage 02: Case Evidence Assessment (CaseEvidenceAssessmentRecord completion)
+      Stage 03: Observation (ObservationRecord completion)
+      Stage 04: Hypothesis Generation (Hypothesis Engine)
+      Stage 05: Hypothesis Workspace / Evaluation (HypothesisWorkspaceRecord completion)
+      Stage 06: Discriminating Evidence Check / Stage 06A: Discriminating Evidence Request (DiscriminatingEvidenceRequestRecord emission)
+      Stage 07: Causal Diagnosis (CausalDiagnosisRecord completion)
+      Stage 08: Engineering Requirement (EngineeringRequirementRecord completion)
+      Stage 09: Candidate Intervention Generation (Intervention Generator)
+      Stage 10: Constraint & Trade-Off Evaluation (CandidateInterventionRecord & ConstraintAndTradeOffEvaluationRecord completion)
+      Stage 11: Engineering Decision & Prediction (EngineeringDecisionRecord & PredictedOutcomeRecord completion)
+      Stage 12: Semantic Tone Design Handoff (Semantic Tone Design layer / Downstream Platform Translation)
+      Stage 13: Actual Outcome Evidence (ActualOutcomeEvidenceRecord completion)
+      Stage 14: Engineering Review (EngineeringReviewRecord completion)
+  - Lifecycle Statuses: The 27 immutable reasoning lifecycle statuses.
+  - Position of 1C.5g: Phase 1C.5g does NOT own, modify, rename, or extend Dimension A. Migration activities are NOT reasoning lifecycle stages.
+
+3.2 Dimension B — Traceability, Lineage & Governance (Phase 1C.5f)
+  - Scope: The cross-cutting audit, provenance, tamper-evident sealing, and explainability architecture that records the history of reasoning runs.
+  - Ownership: RunTrace, TraceRecord, LineageGraph, CandidateLessonQuarantine, TamperEvidentEnvelope.
+  - Position of 1C.5g: Phase 1C.5g consumes Dimension B standards to record migration history. Phase 1C.5g does not create a competing traceability model.
+
+3.3 Dimension C — Migration, Remapping & Controlled Adoption (Phase 1C.5g)
+  - Scope: The discovery, classification, remapping, transformation, quarantine, parallel shadowing, comparison, adoption gating, and rollback governance applied to legacy assets.
+  - Ownership: LegacyEstateInventory, MigrationDispositions, KnowledgeMigrationFirewall, CoexistencePaths (PATH-PROD, PATH-SHADOW, PATH-COMPARE, PATH-ADOPT, PATH-ROLLBACK), AdoptionReadinessGates, and HandoffPackages.
+  - Nature: A transition governance discipline that operates outside the runtime reasoning loop.
+
+
+4. BINDING UPSTREAM AUTHORITIES & SUBORDINATION HIERARCHY
+
+Phase 1C.5g operates in strict constitutional subordination to the frozen upstream architectural baselines:
+
+4.1 Hierarchy of Authority
+  1. The 21 Principles of Sound Engineering Reasoning (Phase 1C.5a v0.3c) [Highest Authority]
+  2. The 14 Lifecycle Stages & 27 Lifecycle Statuses (Phase 1C.5a v0.3c)
+  3. Evidence Interpretation & Hypothesis Formation Architecture (Phase 1C.5b v0.2f)
+  4. Diagnosis & Causal Reasoning Architecture (Phase 1C.5c v0.1d)
+  5. Intervention Alternatives & Trade-Off Reasoning Architecture (Phase 1C.5d v0.1l)
+  6. Outcome Evaluation, Iteration & Review Architecture (Phase 1C.5e v0.1m)
+  7. Reasoning Traceability, Explainability & Governance Architecture (Phase 1C.5f v0.1j)
+  8. Phase 1C.5g Design Mandate v0.1a (TT_Phase_1C.5g_Design_Mandate_v0.1a.txt)
+  9. This Document: Phase 1C.5g Architectural Specification v0.1e
+
+4.2 Subordination Invariants
+  - No rule in this specification may alter, renumber, reinterpret, or bypass any concept in Phases 1C.5a through 1C.5f.
+  - Any tension between legacy backwards compatibility and upstream architectural purity MUST be resolved in favor of the upstream frozen architecture.
+  - Legacy convenience must never dilute sound engineering reasoning.
+
+
+5. CORE ARCHITECTURAL IDENTITY & GOVERNING PRINCIPLES
+
+Phase 1C.5g is anchored by three cardinal governing statements established in Design Mandate v0.1a:
+
+STATEMENT 1:
+"PHASE 1C.5g ADAPTS THE EXISTING TONE TRANSLATOR TO THE FROZEN AI SOUND ENGINEER ARCHITECTURE. IT DOES NOT ADAPT THE FROZEN ARCHITECTURE TO PRESERVE LEGACY TONE TRANSLATOR BEHAVIOUR."
+
+STATEMENT 2:
+"MIGRATION IS A GOVERNED TRANSFORMATION OF EXISTING KNOWLEDGE AND BEHAVIOUR, NOT A PRESUMPTION THAT LEGACY BEHAVIOUR IS CORRECT."
+
+STATEMENT 3:
+"CURRENT PRODUCTION TONE GENERATION AND AT5 EXPORT MUST REMAIN PROTECTED AND OPERATIONALLY AVAILABLE WHILE THE NEW ARCHITECTURE IS DEVELOPED, MAPPED, TESTED AND VALIDATED IN PARALLEL."
+
+In addition, Phase 1C.5g inherits and enforces the foundational uncertainty invariant:
+"UNCERTAINTY MUST SURVIVE THE DECISION."
+For Phase 1C.5g, this invariant governs all migration activities:
+"UNCERTAINTY MUST ALSO SURVIVE MIGRATION."
+Where legacy provenance, evidential basis, or acoustic scope is incomplete or ambiguous, that uncertainty must remain explicitly documented. Migration must never coerce uncertainty into false certainty.
+
+
+6. GOVERNING MIGRATION INVARIANTS
+
+Every architectural mechanism, workflow, and data structure defined in Phase 1C.5g must strictly enforce the ten governing invariants:
+
+6.1 Invariant 1 — Frozen Architecture Wins
+Where legacy Tone Translator behaviour conflicts with the frozen Phase 1C.5a–f architecture, the frozen architecture is authoritative without exception.
+Migration must never distort or dilute the frozen architecture to maintain backwards compatibility with flawed legacy behaviour.
+
+6.2 Invariant 2 — Existing Production Capability Must Be Protected
+Current production Tone Translator tone generation, signal-chain construction, and AT5 configuration/export capabilities must remain fully functional and operationally available throughout the migration process.
+Migration work must never require destructive in-place replacement of the operational production path before thorough validation.
+
+6.3 Invariant 3 — No Big-Bang Migration
+Migration must proceed via incremental, staged, and reversible transitions.
+No architectural plan, release design, or deployment strategy may mandate an all-or-nothing cutover of the complete reasoning system.
+
+6.4 Invariant 4 — Legacy Provenance Must Survive Migration
+Every legacy asset—whether retained, remapped, transformed, quarantined, or retired—must retain full provenance documenting:
+  - its exact legacy source location and identifier;
+  - its historical behaviour and operational context;
+  - the migration disposition assigned to it;
+  - the technical rationale behind the disposition;
+  - its target destination in the frozen architecture (if applicable);
+  - whether its semantic meaning was altered during migration;
+  - the governance approval metadata where approval is required.
+
+6.5 Invariant 5 — Migration Must Not Manufacture Validity
+Historical existence or operational longevity does not constitute architectural correctness.
+The fact that a legacy prompt or heuristic historically produced acceptable tones is empirical evidence of prior utility, not proof of architectural validity or causal truth.
+
+6.6 Invariant 6 — Uncertainty Must Survive Migration
+If the correctness, scope, evidential basis, or architectural fit of a legacy asset is uncertain, that uncertainty must remain explicitly recorded and visible.
+Uncertain legacy assets must NEVER be forced into RETAIN or REMAP dispositions solely to satisfy migration milestones or give an illusion of completeness.
+
+6.7 Invariant 7 — Migration Must Be Reversible Until Validated
+Every cutover, remapping, and adoption step executed prior to formal Phase 1C.5h empirical sign-off must possess an operational, deterministic rollback path.
+
+6.8 Invariant 8 — Historical Behaviour Must Remain Reconstructable
+When legacy rules are transformed, deprecated, or retired, their original code, prompts, configurations, and behavioural traces must remain archived and accessible for regression testing, historical audit, and post-mortem analysis.
+
+6.9 Invariant 9 — Shadow Results Are Not Production Authority
+Outputs, parameter maps, and signal chains generated by the new AI Sound Engineer architecture during shadow-mode execution must never silently override, replace, or pollute live production outputs prior to governed validation and cutover approval.
+
+6.10 Invariant 10 — Migration Completion Is Not UAT Success
+Technical completion of asset remapping or code migration does not constitute empirical success.
+Only Phase 1C.5h holds the authority to certify acoustic fidelity, behavioural equivalence, regression resistance, and operational readiness.
+
+7. MIGRATION ESTATE DISCOVERY & ASSET IDENTITY MODEL
+
+7.1 Discovery Architecture & Imperative
+Migration governance cannot control what has not first been discovered.
+The architecture establishes a comprehensive Legacy Estate Discovery framework designed to audit and index all existing Tone Translator assets across the codebase, configuration files, prompt repositories, and documentation.
+
+7.2 Conceptual Migration Asset Identity (migration_asset_id)
+Every legacy asset identified during discovery is assigned a stable, unique, technology-neutral migration asset identity:
+  `migration_asset_id` (PHASE_1C5G_PROPOSED conceptual vocabulary)
+
+This identity is immutable once assigned. It persists across all migration stages, tracking the asset through remapping, transformation, shadowing, validation, and final disposition.
+The architecture does NOT prescribe a specific technical implementation for this identity (such as UUIDv4, UUIDv7, ULID, or database auto-increment keys). Any implementation that guarantees uniqueness, stability, and referential integrity is architecturally compliant.
+
+7.3 Conceptual LegacyEstateInventory
+The discovery process populates the conceptual `LegacyEstateInventory`.
+Each inventory entry conceptually maintains the following governance metadata:
+  1. migration_asset_id: Unique conceptual migration asset identifier;
+  2. legacy_source_identifier: Exact codebase file path, function name, prompt template name, or data key;
+  3. asset_name: Human-readable descriptive name of the legacy asset;
+  4. asset_type: Syntactic category (e.g., system prompt, heuristic function, lookup table, clamp constant, error handler);
+  5. migration_object_class: Formal assignment to one of the six migration object classes (Section 8);
+  6. discovered_version: Historical version, Git commit hash, or modification date where known;
+  7. source_provenance: Authorship, documentation reference, historical commit message, or origin notes;
+  8. operational_owner_domain: Current subsystem domain (e.g., amplifier modeling, mic placement, catalog normalization);
+  9. current_production_dependency: Boolean flag and dependency details indicating whether PATH-PROD actively relies on this asset;
+  10. runtime_criticality: Qualitative assessment of operational failure impact (HIGH, MEDIUM, LOW);
+  11. known_consumers: List of services, components, or UI views that invoke or reference this asset;
+  12. known_dependencies: Upstream libraries, files, globals, or assumptions required by this asset;
+  13. current_behaviour_summary: Exact description of what the asset does at runtime in current TT;
+  14. known_assumptions: Implicit acoustic or runtime assumptions embedded within the asset;
+  15. known_fallbacks: Hidden defaults, catch-block returns, or fail-soft behaviours in the asset;
+  16. known_platform_coupling: Direct couplings to IK Multimedia AmpliTube 5 IDs, XML structures, or DAW quirks;
+  17. known_reasoning_stage_coupling: Legacy mixing of distinct reasoning stage concerns;
+  18. evidential_basis: Acoustic or engineering evidence supporting the asset's existence;
+  19. known_uncertainty: Explicit documentation of gaps in knowledge, missing provenance, or unverified claims;
+  20. historical_usage_info: Empirical frequency of execution, user feedback, or preset usage if known;
+  21. candidate_disposition: Proposed initial migration disposition (Section 9);
+  22. inventory_completeness_state: Degree of discovery audit completion (DISCOVERED, AUDITED, VERIFIED);
+  23. discovery_notes: Contextual notes and annotations recorded by the discovery auditor.
+
+These metadata fields represent conceptual architectural requirements, NOT a frozen JSON schema or TypeScript interface.
+
+
+8. SIX MIGRATION OBJECT CLASSES
+
+To prevent the catastrophic mistake of treating all code, data, and prompts as interchangeable entities, Phase 1C.5g categorizes all legacy assets into six distinct Migration Object Classes:
+
+8.1 MIG-OBJ-KNOW: Migrated Knowledge
+  - Scope: Domain understanding of acoustics, psychoacoustics, electrical engineering, guitar amplifier circuits, speaker cone break-up, room acoustics, and microphone polar patterns.
+  - Nature: Declarative, empirical, or theoretical audio engineering principles.
+  - Target Architectural Home: Stages 01–07 (Evidence, Observation, Interpretation, Hypothesis, Diagnosis) and Stage 10 (Constraint and Trade-Off Models).
+  - Migration Treatment: Must be verified against sound engineering physics. Monolithic knowledge must be decomposed into explicit observation-interpretation-hypothesis chains.
+
+8.2 MIG-OBJ-CONF: Migrated Configuration
+  - Scope: Static datasets, gear metadata catalogs, hardware physical specifications, parameter ranges, visual UI knob ranges, and component lists.
+  - Nature: Factual, descriptive reference data.
+  - Target Architectural Home: Reference catalogs, gear manifests, and platform definition databases.
+  - Migration Treatment: Normalized and validated for completeness and accuracy. Never allowed to masquerade as reasoning rules.
+
+8.3 MIG-OBJ-DET: Migrated Deterministic Logic
+  - Scope: Deterministic mathematical algorithms, coordinate conversions (e.g., VIR 3D coordinates to polar angles), unit conversions (dB to linear, Hz to Bark), and physical boundary clamps.
+  - Nature: Pure, reproducible computational logic.
+  - Target Architectural Home: Deterministic utility services, platform translation helpers, and pre-action validation checks.
+  - Migration Treatment: Unit-tested for mathematical precision. Barred from replacing subjective or contextual engineering judgement.
+
+8.4 MIG-OBJ-GEN: Migrated Generative / Prompted Reasoning
+  - Scope: LLM prompts, system instructions, few-shot examples, chain-of-thought instructions, and prompt formatting templates.
+  - Nature: Generative linguistic instructions previously used to drive single-pass or multi-pass reasoning.
+  - Target Architectural Home: Governed prompts modularized strictly within individual reasoning stages (e.g., discrete Stage 04 hypothesis generation prompts or Stage 09 intervention candidate prompts).
+  - Migration Treatment: Monolithic prompts must be dismantled. Platform-specific instructions must be stripped out. Implicit reasoning must be converted into explicit governed contracts.
+
+8.5 MIG-OBJ-RUN: Migrated Runtime Behaviour
+  - Scope: Session persistence, run lifecycle coordination, error handling, cancellation tokens, user interaction flows, and retry policies.
+  - Nature: Operational and execution infrastructure.
+  - Target Architectural Home: Execution controllers, shadow orchestrators, and session managers.
+  - Migration Treatment: Rebuilt to support Phase 1C.5f run identity and immutable trace preservation.
+
+8.6 MIG-OBJ-PLAT: Migrated Platform-Specific Logic
+  - Scope: AT5 XML serialization, IKMPAK archive generation, AT5 parameter index mappings, GUI knob step scaling, and platform-specific workarounds.
+  - Nature: Target delivery technology logic.
+  - Target Architectural Home: Downstream Platform Translation (Stage 12 Platform Translation Plan) and export engines.
+  - Migration Treatment: Strictly quarantined downstream of Stage 11. Forbidden from influencing upstream acoustic reasoning, diagnosis, or decision-making.
+
+
+9. SEVEN MIGRATION DISPOSITIONS
+
+Every discovered asset must be formally assigned exactly one of seven mutually exclusive migration dispositions:
+
+9.1 RETAIN (PHASE_1C5G_PROPOSED)
+  - Definition: The legacy asset conforms cleanly to the frozen Phase 1C.5a–f architecture, has verified provenance, exhibits no architectural conflicts, and can be adopted directly into the target system without substantive semantic or structural change.
+  - Governance Threshold: Very high. Requires positive proof of conformity, verified origin, and full compatibility.
+
+9.2 REMAP (PHASE_1C5G_PROPOSED)
+  - Definition: The underlying engineering substance of the asset is sound, but its architectural location, taxonomy, record type, or stage boundary is incorrect. The asset is moved to its proper architectural location without changing its core meaning.
+  - Example: Moving an acoustic cabinet resonance rule from an AT5 export helper into Stage 10 Constraint Evaluation.
+
+9.3 TRANSFORM (PHASE_1C5G_PROPOSED)
+  - Definition: The engineering intent or domain insight is valuable, but its representation, structure, or scope is incompatible with frozen contracts (e.g., a prompt that combines diagnosis and intervention). The asset is fundamentally restructured while preserving historical lineage.
+  - Governance Requirement: Mandatory transformation record documenting removed assumptions and added constraints.
+
+9.4 QUARANTINE (PHASE_1C5G_PROPOSED)
+  - Definition: The asset's correctness, evidential foundation, provenance, or compatibility cannot currently be determined or verified. The asset is safely isolated, preserved in history, but strictly barred from execution in the authoritative path.
+  - Governance Rule: Quarantine is not permanent rejection; it is an active protective isolation holding the asset until resolved or retired.
+
+9.5 DEPRECATE (PHASE_1C5G_PROPOSED)
+  - Definition: The asset is maintained temporarily in the legacy production path for backwards compatibility during phased migration, but is marked as obsolete and barred from target architecture development.
+  - Governance Requirement: Must have an explicit retirement trigger and replacement plan.
+
+9.6 RETIRE (PHASE_1C5G_PROPOSED)
+  - Definition: The asset is permanently deactivated from active use because it conflicts irreconcilably with the 21 Principles, duplicates modern functionality, or represents invalid engineering practices.
+  - Governance Rule: Retirement does NOT mean deletion. The historical asset remains permanently archived for audit and regression comparison.
+
+9.7 DEFER (PHASE_1C5G_PROPOSED)
+  - Definition: A migration determination cannot yet be responsibly reached due to missing upstream information, unbuilt downstream runtime dependencies, or pending empirical evidence.
+  - Governance Rule: DEFER is not failure; it is the governed postponement of a decision until required dependencies or evidence become available.
+
+9.8 The Zero-Entitlement Mandate
+Governing Rule:
+"NO LEGACY ASSET IS AUTOMATICALLY ENTITLED TO RETENTION."
+The default disposition for any legacy asset upon initial discovery is DEFER or QUARANTINE.
+An asset moves to RETAIN, REMAP, or TRANSFORM only upon positive, auditable verification against the disposition decision process.
+
+
+10. DISPOSITION DECISION PROCESS & DECISION TREES
+
+10.1 Structured Multi-Factor Assessment
+The assignment of a migration disposition is governed by a rigorous, multi-factor decision tree.
+The architecture strictly rejects arbitrary confidence percentages, weighted heuristic scores, or automated probabilistic disposition assignments. Every disposition decision must be explicitly reasoned and documented.
+
+10.2 Decision Tree Walkthrough
+For each discovered asset in `LegacyEstateInventory`:
+
+Step 1: Provenance and Purpose Verification
+  - Is the original source, author, commit, or acoustic derivation known?
+  - Is the operational purpose and runtime behavior clearly understood?
+  -> If NO: Assign QUARANTINE (if potential value exists) or DEFER (if investigation pending). Stop.
+  -> If YES: Proceed to Step 2.
+
+Step 2: Upstream Architectural Conflict Analysis
+  - Does the asset contradict any of the 21 Principles of Sound Engineering Reasoning?
+  - Does it erase uncertainty, fabricate missing evidence, or assert unearned certainty?
+  - Does it use an arbitrary hardcoded clamp to override engineering reasoning?
+  -> If YES (Irreconcilable Conflict): Assign RETIRE. Archive historical record. Stop.
+  -> If YES (Valuable intent trapped inside flawed rule): Proceed to Step 4 (Transformation).
+  -> If NO: Proceed to Step 3.
+
+Step 3: Structural & Boundary Analysis
+  - Does the asset cleanly map 1:1 to an existing frozen Stage 01–14 record, catalog, or utility?
+  - Is it completely free from platform leakage (AT5-specific logic in upstream reasoning)?
+  - Is it completely free from stage-monolithic mixing (e.g., diagnosis mixed with intervention)?
+  -> If YES: Assign RETAIN. Register destination mapping. Stop.
+  -> If NO: Proceed to Step 4.
+
+Step 4: Remapping vs. Transformation Determination
+  - Can the asset's structural mismatch be resolved solely by re-attaching it to the correct stage or record type without altering its internal logic?
+  -> If YES: Assign REMAP. Document source and destination. Stop.
+  -> If NO: Proceed to Step 5.
+
+Step 5: Feasibility of Governed Transformation
+  - Can the core engineering intent be cleanly extracted and restructured into compliant 1C.5a–f records (e.g., splitting a prompt into Stage 04 and Stage 09)?
+  - Does a target architecture home exist for the transformed components?
+  -> If YES: Assign TRANSFORM. Initiate transformation pipeline. Stop.
+  -> If target component not yet built: Assign DEFER. Stop.
+
+Step 6: Production Compatibility & Deprecation
+  - Is the legacy asset actively required by PATH-PROD to prevent operational downtime?
+  - Has an alternative target capability been validated in Phase 1C.5h?
+  -> If required by production but obsolete for target architecture: Assign DEPRECATE. Stop.
+
+
+11. KNOWLEDGE MIGRATION FIREWALL ARCHITECTURE
+
+11.1 The Firewall Mandate
+"LEGACY KNOWLEDGE MUST NOT BE PROMOTED INTO FROZEN REASONING STRUCTURES SOLELY BECAUSE IT EXISTS IN CURRENT TT."
+
+11.2 Architectural Position of the Firewall
+The Knowledge Migration Firewall is a formal governance checkpoint separating:
+  THE UNVERIFIED LEGACY ESTATE (Code, Prompts, Configs, Overrides)
+  from
+  THE AUTHORITATIVE FROZEN AI SOUND ENGINEER SYSTEM (Phases 1C.5a–f Records)
+
+No asset, rule, prompt fragment, or parameter table may cross the firewall into authoritative reasoning without passing all eleven firewall checkpoints:
+  1. Provenance Verification: Source origin, commit, or extraction lineage is fully established;
+  2. Object Class Assignment: Formal classification into MIG-OBJ-KNOW/CONF/DET/GEN/RUN/PLAT;
+  3. Governed Disposition Approval: Formal assignment of RETAIN, REMAP, or TRANSFORM;
+  4. Target Destination Binding: Explicit binding to a validated frozen schema or service;
+  5. Compatibility Certification: Documented verification of semantic and structural fit;
+  6. Zero Principles Conflict: Proven absence of conflict with the 21 Principles;
+  7. Transformation Audit (if applicable): Complete transformation record with no unrecorded loss of meaning;
+  8. Preserved Uncertainty: Full documentation of residual doubts, limitations, and caveats;
+  9. Authorized Governance Decision: Formally recorded migration governance decision for the asset class;
+  10. Candidate-Lesson Ingestion Proof (if applicable): Independent Knowledge Governance promotion approval;
+  11. Validation Package Readiness: Complete specification of validation criteria for Phase 1C.5h.
+
+11.3 Firewall Failure Handling
+Any asset that fails to clear the firewall is immediately stopped.
+The asset receives a governed failure disposition:
+  - QUARANTINE: When provenance is missing, evidence is ambiguous, or potential value requires isolation;
+  - DEFER: When target dependencies are unimplemented or validation fixtures are unavailable;
+  - TRANSFORM: When engineering substance is sound but structure requires redesign;
+  - RETIRE: When the asset irreconcilably violates frozen architecture.
+Binary forcing (accept or discard) is strictly prohibited.
+
+12. TARGET DESTINATION MAPPING MODEL & CARDINALITY HANDLING
+
+12.1 Destination Mapping Architecture
+Every migrated asset must bind to an explicit target destination within the frozen AI Sound Engineer architecture.
+Phase 1C.5g establishes the `MigrationDestinationMapping` concept, which pairs an inventoried legacy asset with its authorized destination class and specific target schema.
+
+12.2 Target Destination Classes
+A target destination must belong to one of twelve authorized destination classes:
+  1. DEST-1C5B-EVID: Inherited Phase 1C.5b Evidence Intake, Observation, Interpretation, or Hypothesis structures;
+  2. DEST-1C5C-DIAG: Inherited Phase 1C.5c Causal Reasoning, Diagnostic Hypothesis, or Specificity structures;
+  3. DEST-1C5D-DECIS: Inherited Phase 1C.5d Engineering Requirement, Candidate Intervention, Constraint/Trade-Off, or Decision structures;
+  4. DEST-1C5E-EVAL: Inherited Phase 1C.5e Pre-Action Validation, Prediction Consumption, Outcome Evaluation, or Review structures;
+  5. DEST-1C5F-TRACE: Phase 1C.5f RunTrace, Lineage, Audit, or Integrity structures;
+  6. DEST-PLAT-TRANS: Downstream Platform Translation Plan (Stage 12) or serialization services;
+  7. DEST-DET-CONF: Deterministic gear manifests, parameter catalogs, or reference configuration databases;
+  8. DEST-RUN-ORCH: Runtime execution controllers, shadow dispatchers, or session managers;
+  9. DEST-COMPAT-ADAPT: Temporary compatibility adapters bridging legacy interfaces to target APIs;
+  10. DEST-QUARANTINE: Isolated historical quarantine repository;
+  11. DEST-LEGACY-PATH: Legacy-only production path (PATH-PROD) maintaining backwards compatibility;
+  12. DEST-RETIRE-ARCH: Sealed historical retirement archive.
+
+12.3 Governing Non-Conflation Rules
+  - Gear metadata (knob ranges, GUIDs, models) does NOT map to reasoning stages (Stages 01–11). It maps strictly to DEST-DET-CONF or DEST-PLAT-TRANS.
+  - UI state and user toggles do NOT map to acoustic evidence unless verified by physical or perceptual intake contracts.
+  - Fallback error handlers do NOT map to engineering knowledge; they map to runtime orchestration (DEST-RUN-ORCH).
+
+12.4 Mapping Cardinality Models
+The architecture supports five distinct mapping cardinalities:
+  1. 1:1 Clean Mapping:
+     A single legacy asset maps directly to a single target structure (e.g., a verified transformer impedance table mapping to Stage 10 Constraint Reference).
+  2. 1:N Decomposition:
+     A monolithic legacy asset is split into multiple distinct target structures across different stages (e.g., a monolithic prompt split into a Stage 04 Hypothesis template, a Stage 09 Intervention rule, and a Stage 12 AT5 parameter mapping).
+  3. N:1 Consolidation:
+     Multiple redundant, overlapping, or conflicting legacy rules are harmonized and consolidated into a single unified target structure (e.g., three separate British amplifier EQ rules consolidated into one Stage 10 trade-off model).
+  4. N:M Complex Mapping:
+     A network of interacting legacy heuristics is systematically refactored into a coordinated set of target reasoning records.
+  5. 1:0 Zero Mapping:
+     The legacy asset has no valid target architectural home and is routed to DEST-QUARANTINE or DEST-RETIRE-ARCH.
+
+
+13. TRANSFORMATION GOVERNANCE & SEMANTIC PRESERVATION ARCHITECTURE
+
+13.1 Governed Transformation Model
+When an asset receives the `TRANSFORM` disposition, it enters the governed transformation pipeline.
+Transformation is a formal architectural engineering procedure, never an undocumented code rewrite.
+
+13.2 Mandatory Transformation Invariants
+  1. Source Non-Destruction: The original legacy asset, code, prompt, or configuration is NEVER overwritten or modified in place. It remains permanently archived in its raw historical form.
+  2. Complete Transformation Provenance: Every transformation produces a sealed `MigrationTransformationRecord` capturing:
+     - Original legacy asset identity and independently verifiable integrity evidence;
+     - Original semantic behaviour and operational intent;
+     - Identified architectural defects or boundary violations;
+     - Target architectural destination and structure;
+     - Explicit statement of technical rationale for transformation;
+     - Exhaustive list of removed assumptions, unearned certitudes, or hardcoded constants;
+     - Exhaustive list of added constraints, evidential requirements, or uncertainty declarations;
+     - Verification requirements for Phase 1C.5h testing.
+
+13.3 Three Semantic Transformation Classifications
+Every transformation must be formally categorized into one of three semantic outcomes:
+  1. SEMANTICALLY_PRESERVED (PHASE_1C5G_PROPOSED)
+     The representation, syntax, or stage attachment was restructured, but the underlying engineering intent, acoustic effect, and domain logic remain materially identical.
+  2. SEMANTICALLY_NARROWED (PHASE_1C5G_PROPOSED)
+     The legacy asset claimed overly broad, unearned applicability (e.g., an EQ rule claiming universal validity across all genres). The transformation explicitly constrains its scope to defensible acoustic domains (e.g., heavy rock guitar only).
+  3. SEMANTICALLY_REPLACED (PHASE_1C5G_PROPOSED)
+     The legacy behaviour was flawed, causally ungrounded, or violated core principles. The transformation intentionally replaces it with sound, principled reasoning logic, recording the intentional departure from legacy behaviour.
+
+Semantic equivalence must NEVER be assumed or claimed without empirical comparative evidence.
+
+
+14. CONFLICT DETECTION, CLASSIFICATION & GOVERNANCE
+
+14.1 Systematic Conflict Detection
+Phase 1C.5g enforces mandatory conflict detection across all legacy assets prior to migration approval.
+The architecture defines the `MigrationConflictRecord` to capture and govern discovered incompatibilities.
+
+14.2 Supported Conflict Classes
+The conflict architecture explicitly recognizes and manages fifteen conflict types:
+  1. CONF-PRINCIPLE: Direct contradiction of one of the 21 Principles (e.g., asserting certainty from ambiguous evidence);
+  2. CONF-LIFECYCLE-OWN: Violation of frozen stage ownership boundaries (e.g., an intervention rule executing during Stage 02 observation);
+  3. CONF-EVID-BYPASS: Jumping directly from raw input to intervention, completely bypassing evidence interpretation and causal diagnosis;
+  4. CONF-DIAG-BYPASS: Formulating engineering interventions without establishing a causal diagnosis explaining why the tone requires adjustment;
+  5. CONF-PLAT-LEAK: Upstream reasoning polluted by target platform constraints (e.g., selecting an EQ requirement because AmpliTube 5 has a specific 7-band graphic EQ module);
+  6. CONF-UNCERT-ERASE: Silently discarding, rounding off, or suppressing evidential, diagnostic, or acoustic uncertainty;
+  7. CONF-CAUSAL-FAB: Fabricating causal relationships or physical explanations that have no scientific or acoustic basis;
+  8. CONF-STAGE-MONO: Monolithic prompt or function collapsing multiple distinct reasoning stages into a black-box execution;
+  9. CONF-HARD-OVERRIDE: Hardcoded numerical constant or heuristic overriding reasoned engineering decisions;
+  10. CONF-PROV-VOID: Asset with no historical documentation, origin commit, or engineering justification;
+  11. CONF-INTER-RULE: Two legacy rules giving contradictory commands for the identical acoustic scenario;
+  12. CONF-HIDDEN-DEP: Implicit reliance on global state, side-effects, or hidden UI interaction sequences;
+  13. CONF-TARGET-ABSENT: The destination stage or record schema required in the target architecture has not yet been built;
+  14. CONF-PROD-TENSION: A legacy asset is architecturally invalid but operationally critical to current PATH-PROD;
+  15. CONF-SEM-DRIFT: Transformation logic unintentionally alters domain meaning or distorts acoustic behaviour.
+
+14.3 Conflict Resolution Governance
+When a conflict is recorded:
+  - The legacy artifact is immediately preserved in its existing state;
+  - The conflict is logged with qualitative impact assessment and governing authority reference;
+  - The asset is routed to TRANSFORM, QUARANTINE, DEFER, or RETIRE based on the nature of the conflict:
+    * TRANSFORM: where valuable engineering intent or domain insight survives, but representation, structure, or stage boundary requires correction;
+    * QUARANTINE: where correctness, evidential foundation, or provenance cannot be established;
+    * DEFER: where required evidence or target dependencies are unavailable;
+    * RETIRE: where the asset irreconcilably conflicts with frozen architecture or represents invalid, obsolete engineering behaviour;
+  - History is NEVER rewritten to conceal the conflict.
+
+
+15. MIGRATION PROVENANCE, LINEAGE & AUDIT ARCHITECTURE
+
+15.1 Integration with Phase 1C.5f Traceability
+Phase 1C.5g directly consumes the traceability, provenance, and tamper-evident sealing standards established in Phase 1C.5f.
+It does NOT create a competing traceability framework.
+Migration records are first-class governance artifacts managed under Phase 1C.5f immutable history guidelines.
+
+15.2 Mandatory Separation: Migration Lineage vs. Reasoning-Run Lineage
+To prevent structural conflation, the architecture draws a strict constitutional boundary:
+  - Reasoning-Run Lineage (Phase 1C.5e / 1C.5f):
+    Governs parent/child relationships between successive *reasoning lifecycle runs* (Stages 01–14) exploring acoustic hypotheses, evaluating outcomes, or iterating on tone presets.
+  - Migration Lineage (Phase 1C.5g):
+    Governs the historical evolution, remapping, transformation, and version succession of *knowledge assets, code artifacts, and configuration records* as they transition from legacy to target architecture.
+
+Migration iterations, remappings, and asset version updates MUST NOT be classified as Phase 1C.5e reasoning parent/child runs unless an actual runtime reasoning execution is involved.
+
+15.3 The Twelve Audit Questions of Migration Lineage
+The migration lineage architecture must allow an independent auditor to answer twelve questions for any asset:
+  1. What was the exact legacy asset in its original codebase location?
+  2. What was its historical source provenance, author, and commit?
+  3. What version was audited during legacy estate discovery?
+  4. What migration object class and disposition were formally assigned?
+  5. Who or what governing authority approved the disposition decision?
+  6. What technical and architectural rationale justified the decision?
+  7. What target destination structure in 1C.5a–f was selected?
+  8. If transformed, what specific semantic and structural modifications were made?
+  9. What successor asset or record replaced the legacy asset?
+  10. Was the asset subsequently deprecated, retired, or quarantined?
+  11. What shadow comparison fixtures and Phase 1C.5h UAT packages tested the asset?
+  12. Did the asset complete governed production cutover, or was rollback invoked?
+
+
+16. CONCEPTUAL MIGRATION RECORD FAMILIES
+
+Phase 1C.5g establishes fourteen conceptual record families to govern the end-to-end migration lifecycle.
+All record names are `PHASE_1C5G_PROPOSED` conceptual vocabulary.
+All schema structures are explicitly non-normative architectural illustrations.
+
+16.1 The Fourteen Conceptual Record Families
+  1. LegacyAssetInventoryRecord:
+     Captures the raw discovered asset, source path, syntactic type, and discovery metadata.
+  2. MigrationDispositionRecord:
+     Records the formal disposition decision (RETAIN, REMAP, TRANSFORM, etc.), rationale, and approver.
+  3. MigrationCompatibilityAssessmentRecord:
+     Documents the detailed evaluation of an asset against target schemas and principles.
+  4. MigrationConflictRecord:
+     Formally registers an architectural, evidential, or boundary conflict discovered in legacy logic.
+  5. MigrationDestinationMappingRecord:
+     Defines the explicit architectural binding between a legacy asset and target 1C.5a–f structures.
+  6. MigrationTransformationRecord:
+     Preserves the complete transformation history, removed assumptions, added constraints, and semantic classification.
+  7. MigrationLineageRecord:
+     Maintains the immutable chain of custody, succession, and version history across migration steps.
+  8. ShadowComparisonRecord:
+     Stores the differential analysis comparing legacy PATH-PROD output against PATH-SHADOW output.
+  9. AdoptionReadinessRecord:
+     Tracks an asset's progression through Gates 1 through 7 of the adoption framework.
+  10. MigrationHandoffPackageRecord:
+      Encapsulates the complete delivery payload transmitted to Phase 1C.5h for empirical validation.
+  11. AdoptionDecisionRecord:
+      Records the final cutover authorization (granted by 1C.5h Gate 8) and cutover execution metadata.
+  12. RollbackEventRecord:
+      Captures the operational failure trigger, scope, timestamp, and post-mortem context of a rollback.
+  13. DeprecationRecord:
+      Governs an asset marked as obsolete in the legacy production path, including sunset conditions.
+  14. RetirementRecord:
+      Permanently seals and archives a deactivated asset in the historical repository.
+
+17. PRODUCTION PROTECTION ARCHITECTURE (PATH-PROD)
+
+17.1 Operational Authority of Current TT
+Current Tone Translator production capabilities must remain online, fully functional, and completely stable throughout the entire migration lifecycle.
+The legacy production engine is formally designated as `PATH-PROD` (PHASE_1C5G_PROPOSED).
+
+17.2 The Role and Boundaries of PATH-PROD
+PATH-PROD is responsible for:
+  - Serving active user requests for tone generation and preset creation;
+  - Assembling signal chain topologies using current operational heuristics;
+  - Generating and exporting valid IK Multimedia AmpliTube 5 (.at5p) presets and IKMPAK archives;
+  - Providing stable operational fallback in the event of new architecture anomalies.
+
+17.3 Operational Authority vs. Epistemic Authority
+The architecture establishes a crucial governing distinction:
+  "PATH-PROD IS OPERATIONALLY AUTHORITATIVE UNTIL CUTOVER, BUT NOT EPISTEMICALLY AUTHORITATIVE OVER THE FROZEN REASONING ARCHITECTURE."
+The fact that PATH-PROD is currently live and generating acceptable guitar tones does not mean its internal heuristics represent sound engineering truth.
+PATH-PROD holds operational custody of user tone generation, but possesses ZERO authority to redefine or constrain the frozen AI Sound Engineer reasoning architecture (Phases 1C.5a–f).
+
+
+18. COEXISTENCE & SHADOW ARCHITECTURE (PATH-SHADOW)
+
+18.1 Parallel Shadow Execution Framework
+To validate the new AI Sound Engineer architecture without endangering live production users, Phase 1C.5g establishes `PATH-SHADOW` (PHASE_1C5G_PROPOSED).
+PATH-SHADOW executes the frozen 14-stage reasoning lifecycle in parallel with incoming production workloads or curated benchmark fixtures.
+
+18.2 Invariants of PATH-SHADOW Operation
+  1. Complete Execution Isolation:
+     PATH-SHADOW executes asynchronously and out-of-band. Its execution time, resource consumption, or memory overhead must have zero impact on PATH-PROD response latency.
+  2. Non-Authoritative Output:
+     Outputs generated by PATH-SHADOW (signal chains, parameter maps, explanations) are strictly non-authoritative. They are never returned to live end-users or written to production preset storage.
+  3. Zero State Contamination:
+     PATH-SHADOW has read-only access to input requests and reference catalogs. It is physically and logically prohibited from writing to production databases, mutating active user sessions, or modifying production cache tiers.
+  4. Fault Containment:
+     Any unhandled exception, reasoning timeout, or constraint violation occurring in PATH-SHADOW is trapped, sealed in an error trace, and suppressed. It must NEVER propagate to PATH-PROD or cause user-facing request failure.
+  5. Shadow Success is Not UAT Success:
+     A successful, error-free run in PATH-SHADOW demonstrates that the new architecture can execute without crashing. It does NOT prove that the generated tone is acoustically superior or equivalent. Acoustic validation belongs strictly to Phase 1C.5h.
+
+
+19. DIFFERENTIAL COMPARISON & COMPARABILITY ARCHITECTURE (PATH-COMPARE)
+
+19.1 Objective Differential Evaluation Framework
+To understand how the new AI Sound Engineer behaves relative to legacy Tone Translator, Phase 1C.5g defines `PATH-COMPARE` (PHASE_1C5G_PROPOSED).
+PATH-COMPARE captures outputs from both PATH-PROD and PATH-SHADOW for the same input stimulus and performs an automated, multi-dimensional differential analysis.
+
+19.2 The Prohibition of Legacy Truth
+Governing Rule:
+"PATH-COMPARE STRICTLY PROHIBITS THE ASSUMPTION: LEGACY OUTPUT = EXPECTED TRUTH."
+Legacy output is merely historical baseline data, not the target acoustic ground truth.
+A difference between PATH-PROD and PATH-SHADOW does not automatically indicate an error in the new architecture. Often, the difference represents the correction of a legacy acoustic defect or the removal of an arbitrary heuristic.
+
+19.3 The Comparability Gate
+Before PATH-COMPARE may evaluate a run pair, it must pass the Comparability Gate to ensure comparison is scientifically valid:
+  - Input Identity: Both paths consumed the exact same reference audio or semantic prompt;
+  - User Intent: The target acoustic intent and genre constraints are identical;
+  - Platform Target: Both paths are configured for the identical target delivery platform (e.g., AmpliTube 5);
+  - Gear Catalog Parity: Both paths operated against compatible gear model definitions;
+  - Calibration Parity: Input audio gain staging and calibration assumptions match.
+If comparability cannot be verified, PATH-COMPARE records `COMPARABILITY_NOT_ESTABLISHED`, logs the limitation, preserves uncertainty, and aborts differential scoring.
+
+19.4 Suggested Conceptual Divergence Classes
+When comparability is established, PATH-COMPARE classifies differences into eight conceptual categories (PHASE_1C5G_PROPOSED):
+  1. STRUCTURAL_DIVERGENCE: Variations in block order, split routing, or bus topology;
+  2. GEAR_SELECTION_DIVERGENCE: Differences in selected amplifier, cabinet, microphone, or pedal models;
+  3. PARAMETER_DIVERGENCE: Differences in specific knob values (e.g., gain, bass, mid, treble, bias);
+  4. REASONING_DIVERGENCE: Variations in identified hypotheses, acoustic requirements, or trade-off evaluations;
+  5. CONSTRAINT_DIVERGENCE: Differences in physical or electrical constraint evaluations;
+  6. UNCERTAINTY_DIVERGENCE: Differences in declared uncertainty bounds (e.g., new path explicitly captures doubt that legacy ignored);
+  7. PLATFORM_TRANSLATION_DIVERGENCE: Variations in final parameter ID mapping or XML formatting;
+  8. EXECUTION_OUTPUT_DIVERGENCE: Audio waveform or spectral differences between exported presets.
+
+Divergence is empirical evidence for analysis. It must NEVER be automatically categorized as a "regression" without Phase 1C.5h acoustic evaluation.
+
+
+20. ADOPTION READINESS ARCHITECTURE & GATES 1–7
+
+20.1 Gated Progression Framework
+To prevent premature release of unverified components, Phase 1C.5g establishes an objective, seven-stage readiness framework.
+An asset, component, or capability must pass Gates 1 through 7 before it is eligible for handoff to Phase 1C.5h.
+
+20.2 The Seven Phase 1C.5g Adoption Readiness Gates
+  - Gate 1: Structural Mapping Complete
+    The asset is formally catalogued in `LegacyEstateInventory` and bound to an authorized target destination in 1C.5a–f.
+  - Gate 2: Architectural Compatibility Verified
+    Automated and architectural review confirms zero conflicts with the 21 Principles, stage boundaries, or frozen contracts.
+  - Gate 3: Provenance & Lineage Sealed
+    The asset's complete migration provenance, transformation rationale, and lineage chain are recorded and sealed under Phase 1C.5f standards.
+  - Gate 4: Shadow Execution Exercised
+    The asset has executed successfully within PATH-SHADOW across a representative battery of benchmark workloads without runtime errors.
+  - Gate 5: Differential Analysis Documented
+    PATH-COMPARE has captured and catalogued all divergences between legacy and new behaviour, with engineering rationales provided for all intentional departures.
+  - Gate 6: Rollback Path Operational
+    Deterministic, automated reversion to the legacy PATH-PROD implementation has been tested and verified under failure simulation.
+  - Gate 7: Handoff Package Assembled
+    The complete migration delivery package—including inventory data, transformation records, shadow diffs, and rollback plans—is sealed and transmitted to Phase 1C.5h.
+
+
+21. CONTROLLED ADOPTION ARCHITECTURE (PATH-ADOPT) & PHASE 1C.5h GATE 8 AUTHORITY
+
+21.1 Activation of PATH-ADOPT
+Once a capability satisfies Gates 1 through 7, it stands ready for production consideration.
+However, it CANNOT be deployed to live users until it passes Gate 8:
+  "GATE 8: CUTOVER AUTHORIZATION — EXCLUSIVELY OWNED BY PHASE 1C.5h."
+
+21.2 The Role of PATH-ADOPT
+Upon receipt of formal Gate 8 authorization from Phase 1C.5h, Phase 1C.5g activates `PATH-ADOPT` (PHASE_1C5G_PROPOSED).
+PATH-ADOPT is the governed production routing path that channels live user traffic to the validated AI Sound Engineer architecture.
+
+21.3 Controlled Adoption Granularities
+The architecture rejects monolithic, all-or-nothing deployments.
+PATH-ADOPT supports controlled, incremental cutover across multiple orthogonal dimensions:
+  - By Capability: Migrating microphone placement reasoning while keeping amplifier selection on PATH-PROD;
+  - By Subsystem: Migrating post-amp rack EQ while keeping pre-amp stompboxes on PATH-PROD;
+  - By Domain / Genre: Migrating high-gain metal tone crafting while keeping vintage jazz tones on PATH-PROD;
+  - By Gear Family: Migrating British lead amplifiers while keeping American clean amplifiers on PATH-PROD;
+  - By User Cohort: Channeling beta-opted users to the new path while general users remain on PATH-PROD;
+  - By Workload Class: Routing single-track guitar tasks to the new path while complex multi-track stems remain on PATH-PROD.
+
+21.4 Handling Phase 1C.5h Rejection
+If Phase 1C.5h fails an asset during empirical UAT, Gate 8 is DENIED.
+A Phase 1C.5h rejection may cause Phase 1C.5g to change the migration disposition or route the asset for corrective work, but any substantive engineering correction must occur under the applicable frozen reasoning authority.
+Phase 1C.5g updates the asset's migration records and routes the asset accordingly:
+  - Remanded to TRANSFORM: If the failure was due to acoustic tuning or constraint formulation defects; substantive reformulation of requirements, interventions, or constraints must occur under the applicable frozen reasoning authorities (Phases 1C.5b–1C.5d);
+  - Remanded to REMAP: If the failure revealed stage boundary or classification errors;
+  - Remanded to QUARANTINE: If the failure exposed unverified acoustic assumptions or ungrounded heuristics;
+  - Remanded to DEFER: If target execution engines were unable to fulfill the reasoning plan;
+  - Remanded to RETIRE: If empirical testing proved the underlying engineering premise is acoustically invalid.
+Phase 1C.5g does NOT itself reformulate acoustic requirements, re-diagnose causes, redesign interventions, alter trade-off evaluations, or select new engineering decisions.
+
+
+22. ROLLBACK & REVERSION GOVERNANCE (PATH-ROLLBACK)
+
+22.1 Immediate Fail-Safe Reversion
+If an adopted capability operating under PATH-ADOPT exhibits operational anomalies, unexpected latency spikes, unhandled exceptions, or user-reported acoustic degradations, the architecture immediately invokes `PATH-ROLLBACK` (PHASE_1C5G_PROPOSED).
+
+22.2 Invariants of PATH-ROLLBACK Execution
+  1. Deterministic Reversion:
+     Traffic is immediately and deterministically rerouted from PATH-ADOPT back to the proven legacy PATH-PROD implementation.
+  2. Multi-Level Granularity:
+     Rollback can be executed at the system level (100% reversion), subsystem level, genre level, or on an isolated transaction level (instant fallback for a single failing request).
+  3. History and Trace Preservation:
+     Rollback restores operational stability without destroying history. The full execution trace, error context, input stimulus, and diagnostic state of the failing run must be preserved in accordance with Phase 1C.5f.
+  4. Technology-Neutral Performance:
+     Rollback must occur within an operationally safe time interval. The architecture does not prescribe arbitrary numeric millisecond targets; exact latency SLAs are deferred to deployment infrastructure contracts and Phase 1C.5h validation.
+  5. Rollback is Not Architectural Falsification:
+     A rollback event means that operational execution failed or acoustic performance degraded. It does NOT mean the entire target architecture is invalid. Rollback triggers structured engineering post-mortem analysis.
+
+
+23. DEPRECATION, RETIREMENT, QUARANTINE & DEFER LIFE CYCLES
+
+23.1 Life Cycle of DEPRECATE
+  - Purpose: Accommodates legacy components that are operationally necessary for current PATH-PROD stability but are designated for permanent obsolescence in the target architecture.
+  - Governance Contract: Every deprecated asset must possess a `DeprecationRecord` detailing:
+    - Deprecation trigger and technical rationale;
+    - Reference to the replacement target capability under development (where replacement reasoning must conform to the applicable Phase 1C.5d architecture and be produced through the appropriate governed reasoning process);
+    - Permitted operational boundary (e.g., "PATH-PROD only, strictly barred from PATH-SHADOW");
+    - Explicit retirement conditions (e.g., "Full retirement upon Phase 1C.5h Gate 8 sign-off of replacement logic").
+
+23.2 Life Cycle of RETIRE
+  - Purpose: Formal deactivation of assets that violate the 21 Principles, duplicate target capabilities, or represent obsolete code.
+  - Invariant: Retirement is NOT deletion. The asset, its source code, its historical performance data, and its retirement rationale are sealed in `DEST-RETIRE-ARCH`. Historical runs that used the asset remain 100% reconstructable.
+
+23.3 Life Cycle of QUARANTINE
+  - Purpose: Safe containment of assets whose acoustic validity, provenance, or compatibility cannot be verified.
+  - Governance Rule: Quarantined assets are locked in `DEST-QUARANTINE`. They cannot be referenced by PATH-SHADOW or PATH-ADOPT.
+  - Release Pathway: A quarantined asset may only be released if new provenance is discovered or formal acoustic investigation resolves the ambiguity, allowing re-classification to TRANSFORM or REMAP.
+
+23.4 Life Cycle of DEFER
+  - Purpose: Governed postponement of migration decisions when external dependencies (such as an unbuilt target stage or missing UAT test fixtures) prevent immediate assessment.
+  - Invariant: DEFER is a normal, healthy governance state, not a failure. When the blocking dependency is delivered, the asset is automatically re-evaluated under the disposition decision tree.
+
+24. TONE TRANSLATOR SPECIFIC MIGRATION DOMAINS
+
+To ensure exhaustive coverage of the existing codebase, Phase 1C.5g identifies fourteen concrete migration domains across Tone Translator.
+These domains must be comprehensively inventoried during legacy discovery:
+
+Domain A: Tone-Generation Prompts & Generative Reasoning
+  - Includes current single-pass generation prompts, multi-pass recipe builders, and perceptual tone-shaping templates.
+Domain B: Audio Feature Extraction & Interpretation Logic
+  - Includes frequency centroid analysis, transient detection, RMS energy calculation, and raw spectral heuristics.
+Domain C: Signal-Chain Topology Generation
+  - Includes routing heuristics, serial vs. parallel split determinations, block ordering rules, and stereo bus logic.
+Domain D: Gear Selection Knowledge
+  - Includes heuristic selection logic for stompboxes, amplifiers, cabinets, speakers, microphones, and rack units.
+Domain E: Gear Aliases & Identity Mapping
+  - Includes fuzzy matching tables, historical naming aliases, brand mappings, and hardware cross-references.
+Domain F: Gear Parameter Manifests & Verified Parameter Overrides
+  - Includes parameter index manifests, min/max range limits, verified parameter overrides, and default settings.
+Domain G: Parameter Normalization, Visual Range & Conversion Logic
+  - Includes mathematical functions converting visual UI percentages (0–10) to internal DAW float values (0.0–1.0) and decibel curves.
+Domain H: AT5 .at5p Export & Serialization Logic
+  - Includes XML preset generation, XML node nesting, GUID injection, IKMPAK packaging, and checksum calculations.
+Domain I: VIR Microphone Placement Reasoning & Calibration
+  - Includes 3D volumetric speaker coordinates (X, Y, Z, distance, angle), speaker cone phase alignment, and off-axis high-frequency roll-off heuristics.
+Domain J: Existing Comparison & Tuning Logic
+  - Includes legacy A/B preset comparison logic, error tolerance checking, and iterative parameter tweaking scripts.
+Domain K: Session & Runtime State Persistence
+  - Includes browser localStorage caching, Firebase Firestore session synchronization, and run history logging.
+Domain L: Error Handling, Fallbacks & Missing-Gear Handling
+  - Includes catch-block default presets, missing amplifier fallback substitutions, and silent parameter clamping.
+Domain M: Historical Artist/Album/Genre-Specific Tuning Heuristics
+  - Includes specialized hardcoded rules developed for specific artists (e.g., AC/DC Malcolm Young studio tone heuristics), vintage genres, or album styles.
+Domain N: Reference Presets & Reference Knowledge Assets
+  - Includes curated reference JSON presets, benchmark audio stems, and static curriculum documents.
+
+Governing Rule:
+These fourteen domains define the discovery perimeter. The architecture does NOT assume that all assets in these domains will migrate into reasoning stages, nor does it assign final dispositions in this specification. Dispositions are assigned strictly through the governed discovery and assessment process.
+
+
+25. IK MULTIMEDIA AMPLITUBE 5 PLATFORM-KNOWLEDGE SEPARATION
+
+25.1 The Architectural Separation Mandate
+One of the most critical responsibilities of Phase 1C.5g is untangling valid target-platform knowledge from invalid upstream platform leakage.
+Tone Translator was historically built around IK Multimedia AmpliTube 5 (AT5). Over time, target platform constraints became deeply entangled with acoustic engineering reasoning.
+
+25.2 Valid Downstream Platform Knowledge
+The architecture explicitly recognizes that AmpliTube 5 specific knowledge is highly valuable and must be preserved:
+  - Hardware model identifiers and GUIDs;
+  - Parameter IDs, control indexes, and enumeration maps;
+  - Legitimate parameter ranges and non-linear taper curves;
+  - XML preset schema formatting and IKMPAK bundle serialization;
+  - Volumetric Impulse Response (VIR) speaker cone coordinate systems and microphone capsule orientation limits;
+  - Verified parameter overrides that correct known discrepancies between the AT5 UI and DAW automation.
+Target Architectural Home: All valid AT5 platform knowledge is strictly isolated downstream of Stage 11, residing in DEST-DET-CONF and Stage 12 Platform Translation Plan (DEST-PLAT-TRANS).
+
+25.3 Invalid Upstream Platform Leakage
+The architecture strictly prohibits and eliminates upstream platform leakage:
+  - Formulating an engineering requirement because an AT5 knob exists (violating Principle 15: Platform Translation Operates Downstream of Engineering Reasoning, and Principle 8: Engineering Intent Constrains the Solution);
+  - Restricting causal diagnosis of a muddy tone to only gear models currently present in AT5;
+  - Distorting perceptual acoustic requirements to match AT5 GUI parameter limitations;
+  - Treating AT5 parameter numbers (e.g., "Gain = 6.2") as upstream acoustic requirements.
+Target Architectural Action: All upstream platform leakage must be stopped at the Knowledge Migration Firewall and assigned to TRANSFORM or RETIRE.
+
+
+26. PROMPT DECOMPOSITION & GENERATIVE REASONING MIG-OBJ-GEN
+
+26.1 Dismantling the Monolithic Prompt
+Legacy Tone Translator relies heavily on large generative prompts that ask a language model to take a user prompt (e.g., "Give me a punchy 80s hard rock guitar tone") and output complete amplifier, cabinet, and pedal parameters in a single pass.
+This monolithic structure is completely incompatible with the frozen 14-stage reasoning architecture. It bypasses evidence parsing, obliterates hypothesis discrimination, conceals causal diagnosis, and erases uncertainty.
+
+26.2 Systematic Decomposition Procedure
+When a generative prompt enters the migration pipeline (MIG-OBJ-GEN):
+  1. Semantic Decomposition Audit:
+     The prompt is analyzed to extract embedded cognitive functions:
+     - Evidence Assumptions: What input acoustic cues does the prompt assume?
+     - Perceptual Interpretations: What acoustic adjectives does it translate?
+     - Diagnostic Hypotheses: What causal assumptions does it make about frequency problems?
+     - Engineering Requirements: What targets does it define (e.g., harmonic saturation, bandwidth)?
+     - Candidate Interventions: What gear types and settings does it recommend?
+     - Platform Formatting: What XML, JSON, or parameter templates does it generate?
+  2. Structural Extraction & Isolation:
+     - Embedded physical knowledge is extracted to Stage 08–10 constraint models;
+     - Platform-specific XML templates are moved to Stage 12 translation helpers;
+     - The monolithic prompt is decommissioned and assigned to RETIRE;
+     - Clean, modular prompts are constructed, each constrained strictly to a single lifecycle stage (e.g., a prompt dedicated exclusively to Stage 04 Hypothesis Formation or Stage 09 Intervention Generation).
+  3. Preservation of Explicit Governance:
+     Private, unguided LLM "chain-of-thought" is never accepted as an architectural substitute for explicit, governed reasoning records. Only verifiable Stage 01–14 records cross the boundary.
+
+
+27. DETERMINISTIC LOGIC MIGRATION & PHYSICAL CONSTRAINT VALIDATION
+
+27.1 Role of Deterministic Code in the Frozen Architecture
+Deterministic code (MIG-OBJ-DET) provides mathematical precision, reproducible conversions, and rigid physical boundary checks.
+However, in the legacy codebase, deterministic code was frequently used to bypass sound engineering judgement.
+
+27.2 Permitted Roles for Migrated Deterministic Logic
+Deterministic logic is welcomed and retained when performing:
+  - Physical and electrical constraint validation (e.g., verifying amplifier impedance load against cabinet impedance);
+  - Unit conversions (e.g., converting milliseconds of pre-delay to beat divisions based on BPM);
+  - Coordinate conversions (e.g., transforming VIR cartesian coordinates into polar microphone angles);
+  - Reference lookup (e.g., mapping a gear name to its physical component topology);
+  - Platform serialization (e.g., building valid XML trees).
+
+27.3 Prohibited Roles for Deterministic Logic
+In accordance with Principle 17 (Deterministic Code Validates Constraints; It Does Not Replace Sound Engineering Judgement), deterministic code is strictly PROHIBITED from:
+  - Silently selecting an engineering intervention without a causal diagnosis;
+  - Applying hardcoded "magic clamps" that override reasoned engineering trade-offs;
+  - Overriding explicit acoustic uncertainty with arbitrary default values;
+  - Silently mutating user-specified requirements.
+Deterministic code that violates these rules must be assigned to TRANSFORM or RETIRE.
+
+
+28. MIGRATION DEPENDENCY GRAPH, UNITS, PACKAGES & SEQUENCING
+
+28.1 The Conceptual Migration Unit
+The architecture defines the `MigrationUnit` as the smallest atom of migration governance that can independently:
+  - Be discovered and inventoried;
+  - Receive an approved disposition;
+  - Be mapped to a target structure;
+  - Be exercised in PATH-SHADOW;
+  - Be validated in Phase 1C.5h;
+  - Be adopted in PATH-ADOPT;
+  - Be reverted in PATH-ROLLBACK.
+
+28.2 Migration Packages for Co-Dependent Assets
+Where two or more legacy assets exhibit tight circular dependencies (e.g., an amplifier model definition, its verified parameter overrides, and its bias calculation heuristic), migrating them individually would cause runtime inconsistency.
+In such cases, assets are bundled into a `MigrationPackage` (PHASE_1C5G_PROPOSED). The entire package progresses through the adoption gates as a cohesive, atomic unit.
+
+28.3 The Migration Dependency Graph
+Phase 1C.5g constructs a formal Migration Dependency Graph.
+This graph tracks:
+  - Prerequisite configuration dependencies;
+  - Downstream platform translation requirements;
+  - Cross-asset heuristic couplings;
+  - Target runtime engine availability dependencies.
+The Migration Dependency Graph is completely distinct from the runtime reasoning DAG (Phase 1C.5a) and sealed trace graphs (Phase 1C.5f).
+
+28.4 Recommended Migration Sequencing Principles
+To minimize operational risk, migration sequencing follows an incremental, dependency-first hierarchy:
+  Phase 1: Static catalogs, gear manifests, and parameter definitions (low risk, high stability);
+  Phase 2: Deterministic mathematical utilities and coordinate converters;
+  Phase 3: Downstream platform serialization and export adapters;
+  Phase 4: Bounded, domain-specific acoustic knowledge assets;
+  Phase 5: Decomposed generative prompts and modular reasoning templates;
+  Phase 6: Multi-stage reasoning orchestration and shadow execution;
+  Phase 7: Gated capability-by-capability production cutover.
+
+
+29. CANDIDATE-LESSON INGESTION BOUNDARY & GOVERNANCE INTEGRATION
+
+29.1 Strict Authority Boundaries
+The architecture preserves the constitutional boundary established in Phases 1C.5e and 1C.5f:
+  "PHASE 1C.5g DOES NOT APPROVE THE PROMOTION OF CANDIDATE LESSONS INTO AUTHORITATIVE KNOWLEDGE."
+
+29.2 The Governed Promotion Lifecycle
+  1. Generation: Candidate lessons are generated during Stage 14 Engineering Review (Phase 1C.5e) following empirical runs;
+  2. Containment: Candidate lessons are immediately placed into quarantine under Phase 1C.5f governance;
+  3. Authoritative Review: Independent Knowledge Governance evaluates the lesson against acoustic theory, empirical evidence, and regression risk;
+  4. Governance Approval: Knowledge Governance records explicit, independently verifiable approval evidence authorizing promotion;
+  5. Ingestion by 1C.5g: Phase 1C.5g migration tooling verifies the approval record and executes the technical remapping and ingestion into the target knowledge base;
+  6. Empirical Handoff: The promoted lesson is delivered to Phase 1C.5h for empirical regression verification.
+
+29.3 Firewall Rejection of Unapproved Lessons
+Any automated script, runtime process, or developer attempt to ingest a candidate lesson that lacks independently verifiable Knowledge Governance approval evidence is instantly blocked by the Knowledge Migration Firewall and remanded to QUARANTINE. No particular cryptographic algorithm is mandated, but evidence must be tamper-evident and auditable.
+
+
+30. PHASE 1C.5h HANDOFF ARCHITECTURE & DELIVERABLES
+
+30.1 Clear Demarcation of Phase 1C.5h Authority
+Phase 1C.5g prepares, maps, and packages migrated assets.
+Phase 1C.5h alone possesses the authority to:
+  - Design empirical UAT test protocols;
+  - Curate golden acoustic audio fixtures and multi-track stems;
+  - Execute automated and blind listening tests;
+  - Score perceptual fidelity, dynamic responsiveness, and frequency balance;
+  - Certify regression resistance;
+  - Authorize Gate 8 Production Cutover.
+Phase 1C.5g is strictly prohibited from declaring an asset "validated" or "acoustically certified."
+
+30.2 The Migration Handoff Package
+Upon satisfying Gates 1 through 7, Phase 1C.5g compiles and seals a formal `MigrationHandoffPackageRecord` containing:
+  1. Migration Asset Identity & Version Metadata;
+  2. Legacy Source Identifiers & Historical Execution Context;
+  3. Formal Migration Disposition & Technical Rationale;
+  4. Target Destination Mapping Schema;
+  5. Transformation Provenance & Removed Assumptions Log;
+  6. Active Migration Conflict Log (certifying zero unresolved conflicts);
+  7. Explicit Uncertainty Declarations;
+  8. PATH-SHADOW Execution Logs across benchmark suites;
+  9. PATH-COMPARE Differential Analysis & Divergence Catalogue;
+  10. Expected Intentional Behavioural Departures (explaining why new output differs from legacy);
+  11. Operational Rollback Specification & Verification Proof;
+  12. Recommended Phase 1C.5h Validation Criteria and Focus Areas.
+
+
+31. PRODUCTION CUTOVER AUTHORITY & POST-AUTHORIZATION EXECUTION
+
+31.1 The Authority Chain
+The governance sequence for production deployment is absolute and irreversible:
+  [Phase 1C.5g Prepares & Seals Gates 1–7]
+              │
+              ▼
+  [Phase 1C.5h Executes Empirical UAT]
+              │
+              ▼
+  [Phase 1C.5h Grants Gate 8 Cutover Authorization]
+              │
+              ▼
+  [Phase 1C.5g Executes Governed PATH-ADOPT Cutover]
+
+31.2 Post-Authorization Cutover Execution
+Only after Phase 1C.5h issues a formally authorized and independently verifiable AdoptionDecisionRecord granting Gate 8 authorization may Phase 1C.5g execute production cutover:
+  - PATH-ADOPT routing rules are updated to channel the specified traffic slice to the validated architecture;
+  - Health checks and latency monitors are activated;
+  - PATH-ROLLBACK triggers are primed and armed;
+  - Active legacy production paths are marked as DEPRECATED if fully superseded;
+  - Production deployment status is recorded in the immutable audit log.
+
+
+32. MIGRATION FAILURE & DEGRADATION GOVERNANCE
+
+The architecture provides deterministic, fail-safe handling for the fifteen migration failure conditions defined in the Design Mandate:
+
+32.1 MIG-FAIL-01: Unidentified Legacy Dependency
+An asset relies on an undocumented global variable or legacy helper.
+Governance Action: Migration halted immediately; asset assigned to QUARANTINE; discovery audit re-opened.
+
+32.2 MIG-FAIL-02: Unresolved Provenance
+An asset has no verifiable origin, documentation, or author.
+Governance Action: Asset barred from RETAIN; assigned to QUARANTINE or DEFER; origin investigated.
+
+32.3 MIG-FAIL-03: Ambiguous Migration Destination
+An asset addresses multiple overlapping concepts without a clear target.
+Governance Action: Asset assigned to TRANSFORM for mandatory decomposition; direct mapping blocked.
+
+32.4 MIG-FAIL-04: Frozen Architecture Conflict
+An asset violates the 21 Principles or frozen stage boundaries.
+Governance Action: Immediate rejection; assigned to RETIRE; historical copy preserved.
+
+32.5 MIG-FAIL-05: Conflicting Legacy Rules
+Two historical rules give contradictory instructions for the same condition.
+Governance Action: Both assets assigned to QUARANTINE; referred to Knowledge Governance.
+
+32.6 MIG-FAIL-06: Semantic Information Loss
+A proposed transformation strips away critical acoustic nuances or physical constraints.
+Governance Action: Transformation rejected; asset remanded to TRANSFORM for redesign.
+
+32.7 MIG-FAIL-07: Scope Expansion / Semantic Drift
+A remapped asset broadens its applicability beyond its valid domain.
+Governance Action: Mapping rejected; scope strictly constrained; remanded to TRANSFORM.
+
+32.8 MIG-FAIL-08: Shadow Comparison Infrastructure Failure
+PATH-COMPARE fails to capture or compare differential outputs.
+Governance Action: Shadow runs marked UNVERIFIED; advancement through Gates 4 and 5 blocked.
+
+32.9 MIG-FAIL-09: Rollback Mechanism Failure
+Automated rollback testing fails or exceeds safe operational windows.
+Governance Action: Gate 6 failed; all cutover preparations locked until rollback reliability is restored.
+
+32.10 MIG-FAIL-10: Target Dependency Unimplemented
+The target stage or service in 1C.5a–f is not yet available in runtime.
+Governance Action: Asset assigned to DEFER; held safely until target is deployed.
+
+32.11 MIG-FAIL-11: Downstream Validation Unavailable
+Phase 1C.5h testing harness or golden audio stems are unavailable.
+Governance Action: Gate 7 handoff held in staging; production cutover prohibited.
+
+32.12 MIG-FAIL-12: Production-Critical but Architecturally Incompatible
+A legacy heuristic is vital to live production but fundamentally flawed architecturally.
+Governance Action: Retained strictly in PATH-PROD; assigned to DEPRECATE; replacement reasoning must conform to the applicable Phase 1C.5d architecture and be produced through the appropriate governed reasoning process.
+
+32.13 MIG-FAIL-13: Material Unexplained Divergence
+PATH-SHADOW produces radically divergent parameters without causal justification in the trace.
+Governance Action: Flagged for diagnostic triage; Gate 5 blocked; asset investigated.
+
+32.14 MIG-FAIL-14: Missing Evidential Foundation
+A transformed rule requires structured evidence that frontend intake cannot supply.
+Governance Action: Asset assigned to DEFER or constrained to conditional execution.
+
+32.15 MIG-FAIL-15: Unapproved Candidate Lesson Ingestion Attempt
+An attempt is made to ingest an unapproved Stage 14 candidate lesson.
+Governance Action: Knowledge Migration Firewall blocks ingestion; lesson quarantined; governance alert generated.
+
+Governing Rule: Missing information must remain explicitly missing. The architecture strictly prohibits fabricating missing provenance, rationale, or test data.
+
+33. ARCHITECTURAL WALKTHROUGHS OF THE TWENTY STRESS SCENARIOS
+
+33.0 Illustrative Architecture Disclaimer
+ALL ASSETS, FILENAMES, CODE LOCATIONS, BEHAVIOURS, PARAMETERS, MIGRATION DECISIONS, SHADOW RESULTS, COMPARISON RESULTS, GATE OUTCOMES, TEST RESULTS, AND VALIDATION RESULTS IN SECTION 33 ARE ILLUSTRATIVE ARCHITECTURAL WALKTHROUGHS UNLESS INDEPENDENTLY ESTABLISHED BY AN EXECUTED PHASE 1C.5g LEGACY INVENTORY OR PHASE 1C.5h VALIDATION PROCESS.
+
+SECTION 33 MUST NOT BE USED AS EVIDENCE THAT ANY DESCRIBED LEGACY ASSET, FILE, RULE, FAILURE, TEST RESULT, OR VALIDATION RESULT ACTUALLY EXISTS IN THE CURRENT TT CODEBASE.
+
+The twenty walkthroughs below exercise the Phase 1C.5g architecture against the stress scenarios mandated by Design Mandate v0.1a.
+Each walkthrough illustrates how an asset would conceptually transition through Discovery, Classification, Disposition, Conflict Detection, Mapping/Transformation, Shadow Execution, Validation Readiness, and Rollback Handling.
+
+
+33.1 Scenario 1: Clean 1:1 Mapping
+Illustrative Asset: Tube amplifier reactive load impedance curve calculation conceptually located in `at5AmplifierKnowledge.ts`.
+ILLUSTRATIVE DISCOVERY PATH: In this scenario, the asset is treated as though discovered during estate inventory as a verified physical model calculating cabinet impedance curves.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-DET (Deterministic physical calculation).
+ILLUSTRATIVE CONFLICT ANALYSIS: Zero conflicts. Grounded in electrical engineering and physical acoustics.
+ILLUSTRATIVE DISPOSITION DECISION: RETAIN. Provenance verified; logic conforms directly to target requirements.
+ILLUSTRATIVE DESTINATION MAPPING: Bound 1:1 to Stage 10 Constraint and Trade-Off Evaluation (`DEST-1C5D-DECIS`).
+ILLUSTRATIVE SHADOW OUTCOME: The walkthrough assumes execution in PATH-SHADOW against reactive load test vectors, producing identical mathematical curves to PATH-PROD.
+ILLUSTRATIVE GATE PATH: If the described conditions were established, the asset would be eligible to progress through Gates 1–6 and assemble a handoff package for Phase 1C.5h verification.
+ILLUSTRATIVE ROLLBACK IMPLICATIONS: Standard capability rollback; if a numerical edge-case occurs, reverts deterministically to the legacy function.
+
+
+33.2 Scenario 2: Monolithic Rule Decomposition
+Illustrative Asset: Complex rule conceptually located in `at5CabinetKnowledge.ts` that calculates preamp gain, power tube sag, and microphone distance in a single compound function.
+ILLUSTRATIVE DISCOVERY PATH: Treated as discovered during inventory audit of cabinet services.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-KNOW / MIG-OBJ-DET (Mixed acoustic knowledge and parameter assignment).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-STAGE-MONO. Collapses Stage 08 Engineering Requirements (power amp saturation), Stage 09 Candidate Interventions (gain staging), and Stage 12 Platform Translation (mic distance parameter) into one block.
+ILLUSTRATIVE DISPOSITION DECISION: TRANSFORM. Raw asset cannot be mapped directly, but underlying engineering insights are valuable.
+ILLUSTRATIVE MAPPING & TRANSFORMATION: Decomposed into three distinct target structures:
+  1. Stage 08 Acoustic Target: Target power section compression dynamic ratio;
+  2. Stage 09 Candidate Intervention: Preamp gain vs. master volume trade-off model;
+  3. Stage 12 Platform Translation: Conversion of physical distance into AT5 VIR distance parameter index.
+Transformation Record: Created with `SEMANTICALLY_PRESERVED` classification; monolithic function retired.
+ILLUSTRATIVE SHADOW OUTCOME: The walkthrough assumes execution in PATH-SHADOW, verifying that separated stages produce equivalent acoustic results.
+ILLUSTRATIVE GATE PATH: Eligible for Gates 1–7 progression and delivery to Phase 1C.5h for dynamic range and acoustic evaluation.
+
+
+33.3 Scenario 3: Direct Principle Conflict
+Illustrative Asset: Hardcoded rule in legacy equalization presets asserting: "Always cut 400 Hz by 6 dB on all heavy rock rhythm guitars."
+ILLUSTRATIVE DISCOVERY PATH: Discovered during legacy preset audit.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-KNOW (Flawed acoustic rule-of-thumb).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-PRINCIPLE. Directly contradicts Principle 1 (Evidence Precedes Diagnosis), Principle 4 (A Symptom Does Not Identify Its Cause), Principle 5 (Diagnosis Should Be Causal Where Evidence Permits), and Principle 10 (Intervention Selection Follows Diagnosis), while violating the governing invariant that Uncertainty Must Survive The Decision. Imposes an arbitrary static intervention regardless of recorded evidence or guitar pickup voicing.
+ILLUSTRATIVE DISPOSITION DECISION: RETIRE. Irreconcilably conflicts with frozen reasoning architecture.
+ILLUSTRATIVE ARCHITECTURAL ACTION: Asset deactivated and moved to `DEST-RETIRE-ARCH`. Historical legacy code retained for regression comparison. Target system replaces this rule with dynamic Stage 01–07 evidence interpretation and causal diagnosis of lower-mid buildup.
+ILLUSTRATIVE SHADOW OUTCOME: PATH-SHADOW dynamically assesses 400 Hz energy; cuts only when lower-mid acoustic masking is causally diagnosed. PATH-COMPARE logs `REASONING_DIVERGENCE`.
+ILLUSTRATIVE GATE PATH: Delivered to Phase 1C.5h as an intentional departure with comparative golden audio stems.
+
+
+33.4 Scenario 4: Monolithic Diagnostic/Intervention Prompt
+Illustrative Asset: Single-pass master prompt taking user text description and directly outputting an entire AT5 XML preset.
+ILLUSTRATIVE DISCOVERY PATH: Identified in legacy LLM integration services.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-GEN (Monolithic generative prompt).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-STAGE-MONO, CONF-EVID-BYPASS, CONF-DIAG-BYPASS, CONF-PLAT-LEAK. Bypasses the 14-stage reasoning lifecycle.
+ILLUSTRATIVE DISPOSITION DECISION: RETIRE (Prompt Template) / TRANSFORM (Domain Heuristics).
+ILLUSTRATIVE MAPPING & TRANSFORMATION: Domain knowledge extracted and modularized into discrete stage prompt templates:
+  - Stage 01/02 Perceptual descriptor parsing;
+  - Stage 04 Acoustic hypothesis generation;
+  - Stage 09 Intervention candidate selection;
+  - Stage 12 XML serialization helper.
+The monolithic prompt template is permanently retired to `DEST-RETIRE-ARCH`.
+ILLUSTRATIVE SHADOW OUTCOME: Multi-stage prompt execution runs in PATH-SHADOW; output compared to legacy single-pass output.
+ILLUSTRATIVE GATE PATH: Handed off to Phase 1C.5h for multi-stage reasoning fidelity evaluation.
+
+
+33.5 Scenario 5: Downstream Platform Mapping Isolation
+Illustrative Asset: Table in legacy mapping file directly associating perceptual "Warmth" with AmpliTube 5 parameter ID "Amp.MasterVol".
+ILLUSTRATIVE DISCOVERY PATH: Identified during parameter translation catalog audit.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-PLAT (Entangled perceptual and platform logic).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-PLAT-LEAK. Upstream perceptual acoustic intent is directly tied to a specific hardware plugin knob ID.
+ILLUSTRATIVE DISPOSITION DECISION: REMAP & TRANSFORM.
+ILLUSTRATIVE MAPPING & TRANSFORMATION: Decoupled into two separate layers:
+  1. Upstream (Stage 08 Engineering Requirement): "Warmth" mapped to acoustic requirement for second-harmonic saturation and progressive high-frequency roll-off (platform-neutral);
+  2. Downstream (Stage 12 Platform Translation Plan): Target-platform adapter translates second-harmonic saturation requirement into AT5 MasterVol adjustment based on the selected amplifier's circuit profile.
+ILLUSTRATIVE SHADOW OUTCOME: Evaluated across various amplifier models in PATH-SHADOW.
+ILLUSTRATIVE GATE PATH: Eligible for Gates 1–7. Handoff to Phase 1C.5h verifies that warmth is achieved across different amp models without hardcoded knob bindings.
+
+
+33.6 Scenario 6: Provenance Void
+Illustrative Asset: Heuristic function boosting 3 kHz by 4 dB on all British lead amplifiers, with zero author documentation, commit comments, or acoustic justification.
+ILLUSTRATIVE DISCOVERY PATH: Located during legacy equalization service audit.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-KNOW (Unprovenanced heuristic).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-PROV-VOID. Origin, evidential foundation, and design intent are completely unknown.
+ILLUSTRATIVE DISPOSITION DECISION: QUARANTINE. Prohibited from authoritative knowledge base.
+ILLUSTRATIVE ARCHITECTURAL ACTION: Asset moved to `DEST-QUARANTINE`. Sealed with unverified status. Barred from PATH-SHADOW.
+ILLUSTRATIVE GOVERNANCE ACTION: A formal investigation ticket is opened with Knowledge Governance. If empirical testing demonstrates legitimate acoustic utility, it may later be reconstructed under TRANSFORM. Otherwise, it will transition to RETIRE.
+
+
+33.7 Scenario 7: Mutually Contradictory Legacy Heuristics
+Illustrative Assets:
+  - Module A (`at5MicPlacementReasoning.ts`): "Never place ribbon microphones directly on speaker center cone due to excessive high-frequency harshness."
+  - Module B (`legacyAcousticRules.ts`): "Always place ribbon microphones directly on speaker center cone to compensate for dark ribbon high-frequency roll-off."
+ILLUSTRATIVE DISCOVERY PATH: Discovered during cross-module conflict analysis.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-KNOW (Contradictory expert rules).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-INTER-RULE. Diametrically opposed rules addressing the identical physical scenario.
+ILLUSTRATIVE DISPOSITION DECISION: QUARANTINE (Both Rules).
+ILLUSTRATIVE ARCHITECTURAL ACTION: Both rules locked in `DEST-QUARANTINE`. Neither rule enters PATH-SHADOW.
+ILLUSTRATIVE TARGET SOLUTION: Replaced by principled acoustic modeling in Stage 10 Constraint and Trade-Off Analysis: Ribbon mic frequency response is calculated against speaker cone dispersion characteristics, and capsule placement is derived dynamically based on target brightness requirements and proximity effect modeling.
+ILLUSTRATIVE GATE PATH: Replaced reasoning delivered to Phase 1C.5h for phase alignment and frequency response UAT.
+
+
+33.8 Scenario 8: Commercially Successful but Causally Unjustified Logic
+Illustrative Asset: Proprietary mathematical polynomial calculating amplifier sag from input guitar velocity. It consistently produces popular presets, but has no grounding in valve rectifier or filter capacitance physics.
+ILLUSTRATIVE DISCOVERY PATH: Identified during amplifier dynamics audit.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-DET (Empirical heuristic algorithm).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-CAUSAL-FAB. Creates an artificial sensation of dynamic response, but its parameters cannot be causally explained or reasoned about.
+ILLUSTRATIVE DISPOSITION DECISION: Retained in PATH-PROD; DEPRECATE for Target Architecture.
+ILLUSTRATIVE ARCHITECTURAL ACTION: Rule remains active in PATH-PROD to safeguard ongoing commercial operations (Invariant 2). It is barred from authoritative target reasoning. Principled causal models for power supply sag are developed under Phase 1C.5d in parallel.
+ILLUSTRATIVE GATE PATH: Marked for full retirement once Phase 1C.5h validates that the principled physical sag model equals or exceeds legacy user satisfaction.
+
+
+33.9 Scenario 9: Shadow Divergence Under Identical Input
+Illustrative Stimulus: Identical reference recording of an energetic hard rock rhythm guitar riff provided to both paths.
+ILLUSTRATIVE PATH-PROD BEHAVIOUR: Selects a Marshall JCM800 with a single Shure SM57 on-axis, scooping mids by 3 dB.
+ILLUSTRATIVE PATH-SHADOW BEHAVIOUR: Analyzes input frequency spectrum; diagnoses harsh 3.5 kHz peak in the guitar pickup; selects a Friedman BE-100 with an off-axis Royer R-121 ribbon mic blended with a condenser, maintaining flat mid frequencies to preserve mix punch.
+ILLUSTRATIVE PATH-COMPARE ANALYSIS: Records `GEAR_SELECTION_DIVERGENCE`, `PARAMETER_DIVERGENCE`, and `REASONING_DIVERGENCE`.
+ILLUSTRATIVE GOVERNING RESPONSE: In accordance with Section 19.2, PATH-COMPARE does NOT mark the divergence as a regression. The complete trace, differential spectra, and causal explanations are compiled into an empirical evaluation fixture and delivered to Phase 1C.5h for blind listening tests.
+
+
+33.10 Scenario 10: New Architecture Fails While Production Succeeds
+Illustrative Stimulus: Edge-case input audio containing an unusual extended-range 8-string guitar tuned to Drop-E.
+ILLUSTRATIVE PATH-PROD BEHAVIOUR: Applies standard fallback preset; generates a playable, generic guitar preset without error.
+ILLUSTRATIVE PATH-SHADOW BEHAVIOUR: Stage 02 Case Evidence Assessment detects extreme sub-bass energy (<45 Hz); Stage 10 Constraint and Trade-Off Analysis encounters an unhandled constraint exception because the low-frequency limit of the selected vintage cabinet model is exceeded.
+ILLUSTRATIVE FAULT CONTAINMENT: PATH-SHADOW execution fails, but the exception is cleanly caught and sealed in an error trace. PATH-PROD continues running unaffected; the user receives their preset without interruption (Invariant 2).
+ILLUSTRATIVE ARCHITECTURAL ACTION: Incident logged under `MIG-FAIL-08` / `MIG-FAIL-10`. Asset remanded to TRANSFORM to implement extended-range bass cutoff reasoning in Stage 10. Gate 4 progression blocked until resolved.
+
+
+33.11 Scenario 11: Production Fails While New Architecture Succeeds
+Illustrative Stimulus: User selects a boutique amplifier model whose ID is missing from legacy lookup tables due to an external catalog change.
+ILLUSTRATIVE PATH-PROD BEHAVIOUR: Throws an unhandled exception in parameter mapping service; fails user request.
+ILLUSTRATIVE PATH-SHADOW BEHAVIOUR: Stage 01/02 registers missing specific model metadata; reasoning across missing gear constraints, it identifies the amplifier as an EL34-based British high-gain topology, selects an acoustically equivalent substitute model, and successfully synthesizes the preset.
+ILLUSTRATIVE PATH-COMPARE ANALYSIS: Captures legacy crash and shadow success.
+ILLUSTRATIVE ARCHITECTURAL ACTION: Validates resilience of target architecture. Produces empirical documentation supporting accelerated Phase 1C.5h UAT and adoption staging for missing-gear handling capabilities.
+
+
+33.12 Scenario 12: Semantic Drift in Transformation
+Illustrative Asset: Heuristic designed to ensure "punchy bass" in rock rhythm guitars by filtering out sub-rumble below 80 Hz.
+Illustrative Transformation Attempt: Refactored into Stage 08 Engineering Requirement, but inadvertently defines high-pass filter cutoff at 200 Hz instead of 80 Hz.
+ILLUSTRATIVE DETECTION: Pre-adoption verification and automated spectral regression testing detect severe low-frequency attenuation in shadow output compared to legacy baseline.
+ILLUSTRATIVE CONFLICT LOGGED: CONF-SEM-DRIFT. Transformation altered acoustic scope and destroyed low-end punch.
+ILLUSTRATIVE GOVERNANCE ACTION: Transformation rejected; asset remanded to TRANSFORM for parameter boundary correction. Advancement to Gate 4 blocked until corrected.
+
+
+33.13 Scenario 13: Unimplemented Downstream Stage Dependency
+Illustrative Asset: Heuristic calculating speaker cone cry and intermodulation distortion under extreme volume.
+ILLUSTRATIVE DISCOVERY PATH: Discovered during speaker modeling audit.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-KNOW (Physical acoustic distortion rule).
+ILLUSTRATIVE CONFLICT ANALYSIS: Zero principles conflicts. Clean physical acoustic principle.
+ILLUSTRATIVE TARGET MAPPING: Mapped to Stage 10 Constraint and Trade-Off Analysis (`DEST-1C5D-DECIS`).
+ILLUSTRATIVE DEPENDENCY CHECK: The Stage 10 nonlinear intermodulation engine has not yet been built in the target runtime environment.
+ILLUSTRATIVE DISPOSITION DECISION: DEFER.
+ILLUSTRATIVE ARCHITECTURAL ACTION: Asset catalogued in `LegacyEstateInventory` under `DEFER`. Held safely in staging until Stage 10 runtime engine is deployed. No premature implementation work attempted.
+
+
+33.14 Scenario 14: Unapproved Candidate Lesson Ingestion Attempt
+Illustrative Scenario: An automated optimization script identifies an empirical tuning pattern from a recent test session and attempts to insert it directly into the active knowledge catalog used by PATH-SHADOW.
+ILLUSTRATIVE INGESTION CHECK: The Knowledge Migration Firewall intercepts the payload and requests the governance approval evidence.
+ILLUSTRATIVE RESULT: The lesson carries a Stage 14 tag, but lacks independently verifiable approval evidence from Knowledge Governance.
+ILLUSTRATIVE GOVERNANCE ACTION: Ingestion immediately rejected under `MIG-FAIL-15`. Candidate lesson remanded to quarantine. Security and governance alert logged. Unapproved learning is completely prevented from polluting authoritative architecture.
+
+
+33.15 Scenario 15: Structural Pass but Empirical UAT Failure
+Illustrative Asset: Microphone placement formula in `at5MicPlacementService.ts` calculating dual-microphone phase alignment.
+Illustrative Migration Path: Asset successfully passes legacy discovery, classification (MIG-OBJ-DET), disposition (TRANSFORM), Stage 10 mapping, shadow execution without error, and differential logging. Passes Gates 1 through 7.
+ILLUSTRATIVE PHASE 1C.5h EVALUATION: Delivered in `MigrationHandoffPackageRecord` to Phase 1C.5h. In empirical listening and comb-filtering analysis across physical test fixtures, Phase 1C.5h discovers that the formula creates destructive phase cancellation at 1.8 kHz on open-back cabinets.
+ILLUSTRATIVE PHASE 1C.5h DECISION: Gate 8 Authorization DENIED.
+ILLUSTRATIVE GOVERNANCE ACTION: Asset returned to Phase 1C.5g. Remanded to TRANSFORM with Phase 1C.5h acoustic defect report attached. Deployment blocked.
+
+
+33.16 Scenario 16: Immediate Production Rollback
+Illustrative Operational Context: Phase 1C.5h has authorized Gate 8 for a newly migrated Stage 09 distortion staging capability. It is deployed to a 5% live user canary cohort via PATH-ADOPT.
+Illustrative Incident: On a specific family of high-output active humbucker guitars, the new logic miscalculates digital input headroom, resulting in harsh digital clipping distortion.
+ILLUSTRATIVE MONITORING RESPONSE: Automated telemetry detects unexpected inter-sample clipping spikes.
+ILLUSTRATIVE ROLLBACK TRIGGER: Automated safety monitor triggers `PATH-ROLLBACK`.
+ILLUSTRATIVE EXECUTION: Traffic is deterministically restored to PATH-PROD within an operationally safe rollback interval. Zero further clipped presets are delivered.
+ILLUSTRATIVE POST-MORTEM: Incident context, input audio stems, and failing execution traces are sealed in a `RollbackEventRecord`. Capability remanded for headroom re-evaluation under applicable Phase 1C.5d governing architecture.
+
+
+33.17 Scenario 17: Tightly Coupled AT5 Platform Logic Decoupling
+Illustrative Asset: Function in `at5AmplifierKnowledge.ts` that directly queries AT5 preset XML node structures during generic gain-staging calculations.
+ILLUSTRATIVE DISCOVERY PATH: Discovered during platform separation audit.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-PLAT / MIG-OBJ-KNOW (Tightly coupled hybrid).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-PLAT-LEAK. Upstream engineering reasoning cannot execute without XML parsing libraries and AT5 node structures.
+ILLUSTRATIVE DISPOSITION DECISION: TRANSFORM.
+ILLUSTRATIVE MAPPING & TRANSFORMATION: Cleanly severed into two layers:
+  1. Pure acoustic gain-staging calculation in Stage 08/11 (platform-neutral mathematical logic);
+  2. AT5 XML serialization adapter in Stage 12 Platform Translation Plan (`DEST-PLAT-TRANS`).
+ILLUSTRATIVE SHADOW OUTCOME: Verified that generic gain calculations operate independently across synthetic test rigs before entering XML serialization.
+ILLUSTRATIVE GATE PATH: Passes Gates 1–7; packaged for Phase 1C.5h validation.
+
+
+33.18 Scenario 18: Hardcoded Constant Replacement
+Illustrative Asset: Hardcoded clamp in legacy preamp service: `max_gain = 7.5`.
+ILLUSTRATIVE DISCOVERY PATH: Discovered during code audit of gain heuristics.
+ILLUSTRATIVE CLASSIFICATION: MIG-OBJ-DET (Arbitrary clamp constant).
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-HARD-OVERRIDE. Silently limits amplifier saturation regardless of input signal level or musical style.
+ILLUSTRATIVE DISPOSITION DECISION: RETIRE.
+ILLUSTRATIVE TARGET SOLUTION: Replaced by principled dynamic headroom reasoning in Stage 10: Preamp saturation is determined based on measured input RMS levels, dynamic crest factor, and target harmonic distortion profiles.
+ILLUSTRATIVE GATE PATH: Handed off to Phase 1C.5h for dynamic responsiveness and high-gain sustain evaluation.
+
+
+33.19 Scenario 19: Hidden Fallback Dependency Discovery
+Illustrative Discovery: Systematic audit reveals that when a guitar solo preset request fails to find an exact delay model, a hidden catch-block silently injects an unrequested chorus pedal at 40% wet mix.
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-HIDDEN-DEP, CONF-CAUSAL-FAB. Silent fabrication of acoustic effects completely obscures reasoning and violates user intent.
+ILLUSTRATIVE DISPOSITION DECISION: QUARANTINE (Hidden Fallback) / RETIRE (Silent Injection).
+ILLUSTRATIVE TARGET SOLUTION: Replaced by explicit fallback and contingency reasoning under governed trade-off evaluation: If the preferred delay model is unavailable, alternative delay units meeting the engineering requirement are evaluated, explicitly recording the substitution and declared uncertainty in the reasoning trace.
+
+
+33.20 Scenario 20: Context-Restricted Legacy Validity
+Illustrative Asset: Heuristic specifying aggressive high-frequency shelving boost and mid-range scoop.
+Illustrative Analysis: Found to produce exceptional tones for 1980s Thrash Metal, but unmusical results when applied to Modern Jazz or Acoustic Blues.
+ILLUSTRATIVE CONFLICT ANALYSIS: CONF-SEM-DRIFT if treated as universal.
+ILLUSTRATIVE DISPOSITION DECISION: TRANSFORM (with strict contextual preconditions).
+ILLUSTRATIVE MAPPING & TRANSFORMATION: Remapped to Stage 10 Constraint and Trade-Off Analysis with explicit precondition gates restricting applicability strictly to high-gain thrash metal contexts. Barred from firing in any other musical domain.
+ILLUSTRATIVE SHADOW OUTCOME: Exercised across multi-genre benchmark suites; verified that it fires only when genre constraints match.
+ILLUSTRATIVE GATE PATH: Delivered to Phase 1C.5h for multi-genre cross-validation.
+
+34. VOCABULARY POLICY & MASTER VOCABULARY CONCORDANCE
+
+34.1 Governance Vocabulary Policy
+To prevent semantic dilution or conflicting definitions across project phases, Phase 1C.5g classifies all terminology into four strict governance tiers:
+
+  TIER 1: INHERITED
+  Terms inherited unchanged from frozen upstream reasoning phases (Phases 1C.5a through 1C.5e) or consumed directly from Phase 1C.5f governance architecture with provenance preserved.
+  Status: Upstream-Authoritative. Must not be redefined, altered, or renumbered by Phase 1C.5g.
+
+  Authoritative Entities from Frozen Reasoning Architecture (Phases 1C.5a–1C.5e):
+    - The 21 Principles of Sound Engineering Reasoning (Phase 1C.5a v0.3c §4.1);
+    - Stages 01 through 14 (Stage 01: Engineering Intent through Stage 14: Engineering Review, Phase 1C.5a v0.3c §8, §9, §10);
+    - The 27 Frozen Reasoning Lifecycle Statuses (Phase 1C.5a v0.3c §10);
+    - Governing Invariant: "Uncertainty Must Survive The Decision" (Phase 1C.5a v0.3c);
+    - Exact Frozen Contracts from Phase 1C.5a v0.3c:
+        * EngineeringIntentRecord (Contract 1)
+        * CaseEvidenceAssessmentRecord (Contract 2)
+        * ObservationRecord (Contract 3)
+        * HypothesisWorkspaceRecord (Contract 4)
+        * DiscriminatingEvidenceRequestRecord (Contract 5)
+        * CausalDiagnosisRecord (Contract 6)
+        * EngineeringRequirementRecord (Contract 7)
+        * CandidateInterventionRecord & ConstraintAndTradeOffEvaluationRecord (Contract 8)
+        * EngineeringDecisionRecord (Contract 9)
+        * PredictedOutcomeRecord (Contract 10)
+        * ActualOutcomeEvidenceRecord (Contract 11)
+        * EngineeringReviewRecord (Contract 12)
+        * EngineeringReasoningTrace (Contract 13 / Container);
+    - Execution & Outcome Boundaries from Frozen Phase 1C.5e v0.1m:
+        * The Exact Eight-Step Boundary Sequence (§4.1);
+        * Outcome Evidence Firewall (§7);
+        * Translation Fidelity vs. Engineering Acceptability decoupling (§4.1, §9).
+
+  Phase 1C.5f Traceability & Governance Entities (Phase 1C.5f-Origin Provenance Preserved):
+    - Terms and structures originating in Phase 1C.5f (governed under Phase 1C.5f vocabulary policy as PHASE_1C5F_PROPOSED / Traceability & Governance entities):
+        * RunTrace, TraceRecord, LineageGraph, TamperEvidentEnvelope, CandidateLesson Quarantine;
+        * Eight-Tier Provenance Taxonomy (ORIGIN_1 through ORIGIN_8);
+        * Relationship Edge Type Family (PRODUCED_FROM, JUSTIFIED_BY, PREDICTS_FOR, OUTCOME_OF, etc.);
+        * Six Trace Audit Dispositions (TRACE_AUDIT_PASS, TRACE_AUDIT_FAIL_INTEGRITY, etc.);
+        * Four Quarantined Candidate Lesson States (STATE_QUARANTINED, etc.);
+        * Ten Governance Degradation Conditions.
+    - Provenance Preservation Invariant: These entities retain their Phase 1C.5f origin provenance and must not be collapsed into generic frozen reasoning architecture or reclassified without acknowledging their Phase 1C.5f architectural source.
+
+  TIER 2: PHASE_1C5G_PROPOSED
+  Governed architectural terms introduced specifically by Phase 1C.5g to manage migration, remapping, coexistence, and controlled adoption.
+  Status: Governed within Phase 1C.5g.
+  Invariants:
+    - Migration dispositions are NOT reasoning lifecycle statuses;
+    - Coexistence paths are NOT reasoning lifecycle stages;
+    - Adoption readiness gates are NOT reasoning lifecycle statuses;
+    - Migration failure concepts are NOT reasoning lifecycle statuses.
+  Examples:
+    - migration_asset_id, LegacyEstateInventory;
+    - MIG-OBJ-KNOW, MIG-OBJ-CONF, MIG-OBJ-DET, MIG-OBJ-GEN, MIG-OBJ-RUN, MIG-OBJ-PLAT;
+    - RETAIN, REMAP, TRANSFORM, QUARANTINE, DEPRECATE, RETIRE, DEFER;
+    - Knowledge Migration Firewall, Comparability Gate;
+    - PATH-PROD, PATH-SHADOW, PATH-COMPARE, PATH-ADOPT, PATH-ROLLBACK;
+    - Gates 1 through 7 (Adoption Readiness Gates);
+    - SEMANTICALLY_PRESERVED, SEMANTICALLY_NARROWED, SEMANTICALLY_REPLACED;
+    - MigrationUnit, MigrationPackage, MigrationDependencyGraph;
+    - Fourteen Conceptual Migration Record Families (Section 16).
+
+  TIER 3: ILLUSTRATIVE
+  Terms, parameter names, or code identifiers utilized purely for concrete walkthroughs, examples, and scenario illustrations.
+  Status: Non-normative. Bind no architectural requirements.
+  Examples:
+    - at5AmplifierKnowledge, at5CabinetKnowledge, VIR 3D coordinates, Royer R-121, Shure SM57, Marshall JCM800.
+
+  TIER 4: DEFERRED
+  Terms whose final operational names or low-level technical parameters are intentionally postponed to implementation or Phase 1C.5h testing.
+  Status: Provisional.
+  Examples:
+    - Exact millisecond rollback latency SLAs, database collection path naming, binary wire serialization encodings.
+
+
+35. NON-NORMATIVE CONCEPTUAL SCHEMAS & DATA STRUCTURES
+
+All schemas presented in this section are EXPLICITLY NON-NORMATIVE ILLUSTRATIONS.
+They illustrate the required conceptual relationships and metadata completeness without prescribing TypeScript interfaces, JSON schemas, SQL tables, or database technologies.
+
+35.1 Illustrative LegacyAssetInventoryRecord Schema
+```json
+{
+  "_record_type": "LegacyAssetInventoryRecord",
+  "_conceptual_tier": "PHASE_1C5G_PROPOSED",
+  "migration_asset_id": "MIG-AST-2026-AMP-0042",
+  "legacy_source_identifier": "src/services/at5AmplifierKnowledge.ts::calculatePowerSag",
+  "asset_name": "Power Tube Sag Calculation Heuristic",
+  "asset_type": "HEURISTIC_FUNCTION",
+  "migration_object_class": "MIG-OBJ-DET",
+  "discovered_version": "v1.1b",
+  "source_provenance": "Authored 2024-03-12 for British 100W Lead modeling",
+  "operational_owner_domain": "AMPLIFIER_DYNAMICS",
+  "current_production_dependency": true,
+  "runtime_criticality": "HIGH",
+  "known_consumers": ["AT5PresetImporter", "TopologyMap"],
+  "known_dependencies": ["at5Catalog.ts"],
+  "current_behaviour_summary": "Applies a polynomial compression curve to simulated B+ supply voltage based on input peak amplitude",
+  "known_assumptions": ["Assumes fixed 50W output transformer load"],
+  "known_fallbacks": ["Defaults to 5.0 sag if input signal is below -40 dBFS"],
+  "known_platform_coupling": ["Directly references AmpliTube 5 'Sag' parameter ID 104"],
+  "known_reasoning_stage_coupling": ["Combines Stage 08 target dynamics with Stage 12 parameter translation"],
+  "evidential_basis": "Empirical listening tests against vintage 1978 amplifier",
+  "known_uncertainty": "Uncertain dynamic behavior when paired with solid-state rectifiers",
+  "historical_usage_info": "Invoked on approximately 68% of all high-gain preset generations",
+  "candidate_disposition": "TRANSFORM",
+  "inventory_completeness_state": "AUDITED",
+  "discovery_notes": "Requires decoupling of physical B+ voltage curve from AT5 parameter ID 104"
+}
+```
+
+35.2 Illustrative MigrationDispositionRecord Schema
+```json
+{
+  "_record_type": "MigrationDispositionRecord",
+  "_conceptual_tier": "PHASE_1C5G_PROPOSED",
+  "disposition_id": "DISP-2026-AMP-0042",
+  "migration_asset_id": "MIG-AST-2026-AMP-0042",
+  "assigned_disposition": "TRANSFORM",
+  "decision_timestamp": "2026-10-11T03:30:00Z",
+  "governing_authority": "Phase 1C.5g Migration Governance Panel",
+  "decision_rationale": "Engineering intent regarding power supply sag is valid, but the rule mixes Stage 08 requirements with Stage 12 platform parameters and contains an arbitrary -40 dBFS clamp.",
+  "target_destination_class": "DEST-1C5D-DECIS",
+  "conflicts_identified": ["CONF-STAGE-MONO", "CONF-PLAT-LEAK", "CONF-HARD-OVERRIDE"],
+  "firewall_pass_status": "BLOCKED_PENDING_TRANSFORMATION",
+  "approval_evidence_ref": "GOV-DEC-1C5G-2026-088"
+}
+```
+
+35.3 Illustrative MigrationTransformationRecord Schema
+```json
+{
+  "_record_type": "MigrationTransformationRecord",
+  "_conceptual_tier": "PHASE_1C5G_PROPOSED",
+  "transformation_id": "TRANS-2026-AMP-0042",
+  "migration_asset_id": "MIG-AST-2026-AMP-0042",
+  "source_integrity_evidence": "verified_historical_ast_hash_or_token",
+  "target_records_created": [
+    {
+      "target_stage": "STAGE_08_ENGINEERING_REQUIREMENT",
+      "target_record_type": "EngineeringRequirementRecord",
+      "description": "Dynamic compression ratio and recovery time constant for power supply sag"
+    },
+    {
+      "target_stage": "STAGE_12_PLATFORM_TRANSLATION",
+      "target_record_type": "PlatformTranslationPlanRecord",
+      "description": "Mapping of calculated sag dynamic curve to AT5 Sag knob parameter ID 104"
+    }
+  ],
+  "semantic_classification": "SEMANTICALLY_NARROWED",
+  "removed_assumptions": ["Removed hardcoded fixed 50W transformer load; load is now derived dynamically from cabinet impedance model"],
+  "removed_clamps": ["Removed arbitrary -40 dBFS default clamp; system now models low-level linear transfer function"],
+  "added_constraints": ["Explicit validation of tube vs. solid-state rectifier circuits"],
+  "preserved_uncertainties": ["Declared uncertainty regarding sag behavior under fluctuating mains voltage"],
+  "transformation_engineer": "AI Sound Engineer Architecture Working Group"
+}
+```
+
+35.4 Illustrative ShadowComparisonRecord Schema
+```json
+{
+  "_record_type": "ShadowComparisonRecord",
+  "_conceptual_tier": "PHASE_1C5G_PROPOSED",
+  "comparison_id": "SHAD-COMP-2026-RUN-9921",
+  "production_run_ref": "PROD-RUN-2026-10-11-7721",
+  "shadow_run_ref": "SHAD-RUN-2026-10-11-7721",
+  "comparability_assessment": {
+    "status": "COMPARABILITY_ESTABLISHED",
+    "input_stimulus_hash": "non_normative_hash_or_id_token",
+    "genre_intent": "Hard Rock Rhythm",
+    "target_platform": "IK Multimedia AmpliTube 5"
+  },
+  "divergences_detected": [
+    {
+      "divergence_class": "PARAMETER_DIVERGENCE",
+      "parameter_name": "Amp.MasterVol",
+      "production_value": 7.5,
+      "shadow_value": 6.2,
+      "divergence_rationale": "Shadow path diagnosed excessive intermodulation distortion in Stage 05; Stage 10 trade-off evaluation favored lower power amp drive to preserve transient articulation."
+    },
+    {
+      "divergence_class": "REASONING_DIVERGENCE",
+      "production_reasoning": "None (hardcoded clamp)",
+      "shadow_reasoning": "Explicit EngineeringDecisionRecord backed by Stage 04 dynamic range hypothesis and Stage 10 trade-off evaluation."
+    }
+  ],
+  "unexplained_divergences": [],
+  "candidate_uat_fixture_ref": "FIXTURE-1C5H-HARMONIC-SAG-04"
+}
+```
+
+35.5 Illustrative MigrationHandoffPackageRecord Schema
+```json
+{
+  "_record_type": "MigrationHandoffPackageRecord",
+  "_conceptual_tier": "PHASE_1C5G_PROPOSED",
+  "handoff_package_id": "HANDOFF-1C5G-PKG-2026-AMP-SAG",
+  "package_name": "Power Section Sag & Dynamics Migration Package",
+  "contained_migration_units": ["MIG-AST-2026-AMP-0042", "MIG-AST-2026-AMP-0043"],
+  "gate_readiness_attestations": {
+    "gate_1_structural_mapping": "PASSED",
+    "gate_2_architectural_compatibility": "PASSED",
+    "gate_3_provenance_sealed": "PASSED",
+    "gate_4_shadow_exercised": "PASSED",
+    "gate_5_differential_documented": "PASSED",
+    "gate_6_rollback_operational": "PASSED",
+    "gate_7_handoff_assembled": "PASSED"
+  },
+  "operational_rollback_ref": "ROLLBACK-PROC-AMP-SAG-v1",
+  "expected_behavioral_departures": "Transformed logic reduces power amp saturation at high velocity to eliminate digital inter-sample clipping.",
+  "recommended_uats": ["Blind A/B dynamic feel tests with professional guitarists", "Comb-filtering and dynamic crest factor analysis"],
+  "sealing_metadata": {
+    "sealed_by": "Phase 1C.5g Architecture Lead",
+    "timestamp": "2026-10-11T03:35:00Z"
+  }
+}
+```
+
+
+36. ARCHITECTURAL COMPLETION CRITERIA FOR PHASE 1C.5g
+
+The Phase 1C.5g architecture shall be considered formally complete only when all of the following architectural specifications are fully defined:
+  1. Complete Legacy Estate Discovery and Inventory Model;
+  2. The Six Migration Object Classes and their distinct processing pathways;
+  3. The Seven Migration Dispositions and their multi-factor decision trees;
+  4. The Knowledge Migration Firewall and its 11-point entry validation rules;
+  5. The Target Destination Mapping model and its cardinality rules (1:1, 1:N, N:1, N:M);
+  6. The Governed Transformation framework and semantic outcome classification;
+  7. The Conflict Detection architecture covering all 15 conflict types;
+  8. The Migration Provenance and Lineage framework integrating Phase 1C.5f standards;
+  9. The 14 Conceptual Migration Record Families;
+  10. The Production Protection model safeguarding current TT and AT5 export (PATH-PROD);
+  11. The Coexistence and Shadow architecture (PATH-SHADOW);
+  12. The Differential Comparison engine and Comparability Gate (PATH-COMPARE);
+  13. Adoption Readiness Gates 1 through 7;
+  14. The Controlled Adoption architecture (PATH-ADOPT) governed by Phase 1C.5h Gate 8;
+  15. The Multi-Level Deterministic Rollback framework (PATH-ROLLBACK);
+  16. Deprecation, Retirement, Quarantine, and Defer lifecycle governance;
+  17. Architectural coverage of the fourteen Tone Translator specific migration domains;
+  18. The separation of valid AT5 platform knowledge from invalid upstream platform leakage;
+  19. The Prompt Decomposition framework for dismantling monolithic generative prompts;
+  20. Deterministic Logic migration boundaries enforcing Principle 17 (Deterministic Code Validates Constraints; It Does Not Replace Sound Engineering Judgement);
+  21. The Candidate-Lesson Ingestion boundary enforcing Knowledge Governance promotion authority;
+  22. The Phase 1C.5h Handoff architecture;
+  23. Deterministic handling for the 15 migration failure and degradation conditions;
+  24. Full architectural walkthroughs of all twenty stress scenarios;
+  25. Strict technology-neutrality, vocabulary concordance, and design mandate compliance.
+
+Meeting these architectural completion criteria signifies that the Phase 1C.5g *architecture* is complete. It does NOT mean legacy code migration has executed or that UAT has passed.
+
+
+37. DESIGN-MANDATE COMPLIANCE AUDIT
+
+A rigorous self-audit of this specification against the sixteen compliance checklist items established in `TT_Phase_1C.5g_Design_Mandate_v0.1a.txt` confirms full architectural compliance:
+
+Checklist Item 1: Preserves and subordinates to frozen Phase 1C.5a–f architecture?
+  - Architectural Mechanism: Formal Subordination Hierarchy and Invariant 1.
+  - Section Reference: Section 3, Section 4, Section 6.1.
+  - Unresolved Dependency: None.
+
+Checklist Item 2: Enforces comprehensive legacy asset discovery and inventory?
+  - Architectural Mechanism: Conceptual LegacyEstateInventory and 23 discovery metadata fields.
+  - Section Reference: Section 7.
+  - Unresolved Dependency: None.
+
+Checklist Item 3: Explicitly assigns governed migration dispositions to every asset?
+  - Architectural Mechanism: Seven Dispositions and Multi-Factor Decision Tree.
+  - Section Reference: Section 9, Section 10.
+  - Unresolved Dependency: None.
+
+Checklist Item 4: Preserves full, unbroken legacy provenance and decision rationale?
+  - Architectural Mechanism: MigrationLineageRecord and 12-question audit framework.
+  - Section Reference: Section 15.
+  - Unresolved Dependency: None.
+
+Checklist Item 5: Cleanly separates the six distinct Migration Object Classes?
+  - Architectural Mechanism: MIG-OBJ-KNOW/CONF/DET/GEN/RUN/PLAT definitions and distinct processing paths.
+  - Section Reference: Section 8.
+  - Unresolved Dependency: None.
+
+Checklist Item 6: Guarantees continuous operational protection of current TT and AT5 export?
+  - Architectural Mechanism: PATH-PROD architecture and Invariant 2.
+  - Section Reference: Section 6.2, Section 17.
+  - Unresolved Dependency: None.
+
+Checklist Item 7: Mandates fully isolated parallel/shadow execution and differential logging?
+  - Architectural Mechanism: PATH-SHADOW, PATH-COMPARE, and Comparability Gate.
+  - Section Reference: Section 18, Section 19.
+  - Unresolved Dependency: None.
+
+Checklist Item 8: Rejects big-bang replacement in favor of staged, gated adoption?
+  - Architectural Mechanism: Invariant 3, Adoption Readiness Gates 1–7, PATH-ADOPT orthogonal slicing.
+  - Section Reference: Section 6.3, Section 20, Section 21.
+  - Unresolved Dependency: None.
+
+Checklist Item 9: Defines multi-level, deterministic rollback mechanisms?
+  - Architectural Mechanism: PATH-ROLLBACK architecture, granular scoping, and RollbackEventRecord.
+  - Section Reference: Section 22.
+  - Unresolved Dependency: None.
+
+Checklist Item 10: Keeps uncertainty explicitly visible and refuses coerced certainty?
+  - Architectural Mechanism: Invariant 6, Inherited Uncertainty Invariant, and QUARANTINE/DEFER states.
+  - Section Reference: Section 5, Section 6.6, Section 9.4, Section 9.7.
+  - Unresolved Dependency: None.
+
+Checklist Item 11: Enforces rigorous conflict detection against 21 Principles?
+  - Architectural Mechanism: MigrationConflictRecord and 15 Conflict Classes.
+  - Section Reference: Section 14.
+  - Unresolved Dependency: None.
+
+Checklist Item 12: Prevents unapproved candidate lessons entering authoritative knowledge?
+  - Architectural Mechanism: Firewall Rule 10, MIG-FAIL-15 handling, and Knowledge Governance boundary.
+  - Section Reference: Section 11.2, Section 29, Section 32.15.
+  - Unresolved Dependency: None.
+
+Checklist Item 13: Leaves empirical UAT and production sign-off strictly to Phase 1C.5h?
+  - Architectural Mechanism: Invariant 10, Gate 8 Cutover Ownership, and Handoff Package framework.
+  - Section Reference: Section 6.10, Section 21.1, Section 30, Section 31.
+  - Unresolved Dependency: None.
+
+Checklist Item 14: Remains strictly technology-neutral, avoiding premature lock-in?
+  - Architectural Mechanism: Non-normative conceptual schemas and explicit prohibition of tech mandates.
+  - Section Reference: Section 1.2, Section 34, Section 35.
+  - Unresolved Dependency: None.
+
+Checklist Item 15: Refrains from creating new lifecycle stages or altering 27 frozen statuses?
+  - Architectural Mechanism: Three Dimensions separation and Master Vocabulary Policy.
+  - Section Reference: Section 3, Section 34.
+  - Unresolved Dependency: None.
+
+Checklist Item 16: Maintains an immutable, independently auditable migration history?
+  - Architectural Mechanism: Fourteen Conceptual Record Families and Phase 1C.5f integration.
+  - Section Reference: Section 15, Section 16.
+  - Unresolved Dependency: None.
+
+
+38. REVISION REGISTER
+
+  - Version: v0.1
+    Release Date: 2026-10-11
+    Author: Tone Translator Architectural Working Group
+    Governing Mandate: TT_Phase_1C.5g_Design_Mandate_v0.1a.txt
+    Status: SUPERSEDED BY v0.1a
+    Description: Initial baseline architectural specification for Phase 1C.5g establishing discovery models, object classes, disposition trees, the Knowledge Migration Firewall, 5-path coexistence, adoption readiness gates, rollback governance, conflict management, and handoff to Phase 1C.5h.
+
+  - Version: v0.1a
+    Release Date: 2026-10-11
+    Author: Tone Translator Architectural Working Group
+    Governing Mandate: TT_Phase_1C.5g_Design_Mandate_v0.1a.txt
+    Status: SUPERSEDED BY v0.1b
+    Description: v0.1a — Frozen-Authority Fidelity & Boundary Correction: restores exact frozen lifecycle-stage vocabulary and Principle references; reconciles inherited vocabulary provenance; restores TRANSFORM eligibility in conflict handling; tightens Phase 1C.5g ownership after Phase 1C.5h rejection; removes normative checksum/signature technology assumptions; and explicitly classifies all Section 33 walkthroughs and results as illustrative. No change to the core migration architecture, dispositions, paths, adoption gates, or governing invariants.
+
+  - Version: v0.1b
+    Release Date: 2026-10-11
+    Author: Tone Translator Architectural Working Group
+    Governing Mandate: TT_Phase_1C.5g_Design_Mandate_v0.1a.txt
+    Status: SUPERSEDED BY v0.1c
+    Description: v0.1b — Frozen Constitutional Vocabulary Reconciliation: reconciles Phase 1C.5g wording with authoritative frozen upstream vocabulary across exactly three authorized tasks: (1) copies exact Stage 01–14 vocabulary directly from frozen Phase 1C.5a v0.3c (§8, §9, §10); (2) corrects and aligns all Principle attributions using the exact frozen 21 Principles of Sound Engineering Reasoning from Phase 1C.5a v0.3c (§4.1); and (3) explicitly preserves Phase 1C.5f-origin vocabulary provenance in the Master Vocabulary Concordance rather than reclassifying it as generic inherited reasoning vocabulary. All core migration models, object classes, dispositions, coexistence paths, adoption gates, and invariants preserved unchanged.
+
+  - Version: v0.1c
+    Release Date: 2026-10-11
+    Author: Tone Translator Architectural Working Group
+    Governing Mandate: TT_Phase_1C.5g_Design_Mandate_v0.1a.txt
+    Status: SUPERSEDED BY v0.1d
+    Description: v0.1c — Final Vocabulary & Current-Version Metadata Reconciliation: corrects the stale current-document version reference from v0.1a to v0.1b; restores the Phase 1C.5g Tier 1 vocabulary class name to exact INHERITED while preserving Phase 1C.5f-origin provenance; and replaces shortened TradeOffEvaluationRecord references with the authoritative ConstraintAndTradeOffEvaluationRecord name. No change to migration architecture, principles, lifecycle stages, dispositions, coexistence paths, adoption gates, or governing invariants.
+
+  - Version: v0.1d
+    Release Date: 2026-10-11
+    Author: Tone Translator Architectural Working Group
+    Governing Mandate: TT_Phase_1C.5g_Design_Mandate_v0.1a.txt
+    Status: SUPERSEDED BY v0.1e
+    Description: v0.1d — Final Current-Version Metadata Correction: corrects the stale current-document self-reference in Section 4.1 from v0.1b to v0.1d so that it accurately identifies this specification artifact. No change to migration architecture, vocabulary, lifecycle stages, Principle references, migration dispositions, coexistence paths, adoption gates, stress scenarios, or any substantive wording.
+
+  - Version: v0.1e
+    Release Date: 2026-10-11
+    Author: Tone Translator Architectural Working Group
+    Governing Mandate: TT_Phase_1C.5g_Design_Mandate_v0.1a.txt
+    Status: FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE
+    Description: v0.1e — Formal Freeze Certification & Architectural Adoption: formally adopts and freezes the reviewed Phase 1C.5g Knowledge Migration, Remapping & Controlled Adoption Architecture following PASS — FREEZE APPROVED review of v0.1d. Establishes v0.1e as the immutable authoritative Phase 1C.5g architectural baseline and formal downstream boundary to Phase 1C.5h. No substantive migration architecture, lifecycle, Principle, vocabulary, disposition, coexistence, adoption, rollback, scenario, or governance changes.
+
+
+39. ARCHITECTURAL STATUS DECLARATION
+
+STATUS: FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE
+
+Phase 1C.5g architecture has completed architectural review and is formally frozen.
+TT_Knowledge_Migration_Remapping_and_Controlled_Adoption_Architecture_v0.1e.txt is the authoritative Phase 1C.5g baseline for all downstream migration planning, implementation, shadow operation, comparison, adoption preparation, rollback design, and Phase 1C.5h handoff.
+No downstream implementation may silently redefine this architecture.
+Any contradiction between downstream implementation and this frozen baseline must be resolved in favor of the frozen baseline unless a future formally governed architecture revision explicitly supersedes it.
+
+39.1 FORMAL FREEZE DECLARATION
+  - PHASE 1C.5g v0.1e IS THE FROZEN AUTHORITATIVE ARCHITECTURAL BASELINE FOR KNOWLEDGE MIGRATION, REMAPPING & CONTROLLED ADOPTION.
+  - THE SUBSTANTIVE ARCHITECTURE DEFINED IN THIS BASELINE MUST NOT BE MODIFIED, REINTERPRETED, WEAKENED, BYPASSED, OR SILENTLY EXTENDED BY DOWNSTREAM IMPLEMENTATION.
+  - ANY FUTURE CHANGE TO THE FROZEN PHASE 1C.5g ARCHITECTURE REQUIRES EXPLICIT ARCHITECTURAL GOVERNANCE AND A NEW FORMALLY REVIEWED REVISION.
+  - IMPLEMENTATION DETAIL MAY BE ADDED DOWNSTREAM ONLY WHERE IT CONFORMS TO THIS FROZEN ARCHITECTURE AND DOES NOT ALTER ITS SEMANTICS, AUTHORITY BOUNDARIES, GOVERNING INVARIANTS, MIGRATION DISPOSITIONS, OR ADOPTION MODEL.
+
+39.2 ARCHITECTURAL ADOPTION DECLARATION
+Phase 1C.5g is formally adopted as the governing architecture for:
+  - legacy estate discovery;
+  - migration asset identity;
+  - migration object classification;
+  - migration dispositions;
+  - Knowledge Migration Firewall;
+  - destination mapping;
+  - transformation governance;
+  - migration conflicts;
+  - migration provenance and lineage;
+  - PATH-PROD protection;
+  - PATH-SHADOW;
+  - PATH-COMPARE;
+  - comparability assessment;
+  - Gates 1–7;
+  - PATH-ADOPT;
+  - PATH-ROLLBACK;
+  - deprecation;
+  - retirement;
+  - quarantine;
+  - defer;
+  - candidate-lesson migration mechanics;
+  - Phase 1C.5h handoff preparation.
+This architectural adoption certifies the governing design model; it does NOT mean runtime mechanisms are already implemented.
+ARCHITECTURAL ADOPTION ≠ RUNTIME IMPLEMENTATION COMPLETION.
+
+39.3 PHASE 1C.5h BOUNDARY & AUTHORITY PRESERVATION
+This freeze pass strictly preserves the constitutional demarcation between Phase 1C.5g and Phase 1C.5h:
+  - Phase 1C.5g defines migration architecture, prepares migrated assets, establishes Gates 1–7, assembles handoff packages, and executes adoption mechanics only after authorization.
+  - Phase 1C.5h owns empirical validation, UAT, acoustic evaluation, regression acceptance, production-readiness determination, and Gate 8 Cutover Authorization.
+  - FREEZING PHASE 1C.5g DOES NOT AUTHORIZE PRODUCTION CUTOVER.
+  - PHASE 1C.5g FREEZE ≠ PHASE 1C.5h VALIDATION.
+
+39.4 CURRENT PRODUCTION PROTECTION & BOUNDARY DECLARATIONS
+Freezing Phase 1C.5g does NOT alter current production Tone Translator (TT) operation:
+  - PATH-PROD remains operationally authoritative until governed cutover;
+  - Current production tone generation remains protected;
+  - Current AT5 export remains protected;
+  - No automatic migration begins merely because architecture is frozen;
+  - No asset receives a migration disposition solely because the architecture is frozen;
+  - No production routing changes occur;
+  - No PATH-SHADOW / PATH-COMPARE / PATH-ADOPT deployment is implied.
+THE FREEZE CERTIFIES THE ARCHITECTURE. IT DOES NOT EXECUTE THE MIGRATION.
+
+39.5 IMMUTABILITY CERTIFICATION
+The complete Phase 1C.5g architecture is certified frozen without modification:
+  - Constitutional dependencies: Phase 1C.5a–f authority hierarchy; 21 Principles; 14 lifecycle stages; 27 lifecycle statuses; UNCERTAINTY MUST SURVIVE THE DECISION; Phase 1C.5f provenance classifications.
+  - Phase 1C.5g architecture: all 10 migration invariants; six migration object classes; seven migration dispositions; Zero-Entitlement Mandate; disposition decision architecture; Knowledge Migration Firewall; all 11 firewall checkpoints; destination mapping architecture; mapping cardinalities; transformation governance; semantic transformation classifications; 15 conflict classes; migration provenance and lineage; migration/reasoning-lineage separation; 14 conceptual migration record families; PATH-PROD; PATH-SHADOW; PATH-COMPARE; Comparability Gate; eight divergence classes; Gates 1–7; Phase 1C.5h ownership of Gate 8; PATH-ADOPT; PATH-ROLLBACK; rollback granularity; DEPRECATE / RETIRE / QUARANTINE / DEFER governance; TT migration Domains A–N; AT5 platform-knowledge separation; prompt decomposition architecture; deterministic logic boundaries; migration units/packages/dependency graph; candidate-lesson boundary; Phase 1C.5h handoff architecture; 15 migration failure/degradation concepts; all 20 illustrative stress scenarios; four-tier vocabulary policy; technology-neutrality; architectural completion criteria; Design Mandate compliance audit.
+
+39.6 PHASE 1C.5h DOWNSTREAM HANDOFF DECLARATION
+PHASE 1C.5g ARCHITECTURE IS COMPLETE.
+THE NEXT ARCHITECTURAL PHASE IS PHASE 1C.5h — EMPIRICAL VALIDATION, USER ACCEPTANCE TESTING, VERIFICATION & PRODUCTION-READINESS GOVERNANCE.
+
+================================================================================
+END OF SPECIFICATION: TT_Knowledge_Migration_Remapping_and_Controlled_Adoption_Architecture_v0.1e.txt
+================================================================================

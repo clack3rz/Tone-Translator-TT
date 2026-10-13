@@ -1,0 +1,2025 @@
+================================================================================
+TONE TRANSLATOR (TT) AI SOUND ENGINEER
+PHASE 1C.5f — REASONING TRACEABILITY, EXPLAINABILITY & GOVERNANCE ARCHITECTURE
+ARCHITECTURAL SPECIFICATION (v0.1j)
+FREEZE CERTIFICATION METADATA & ILLUSTRATIVE CLASSIFICATION CORRECTION
+================================================================================
+DOCUMENT IDENTIFIER: TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1j.txt
+PHASE: Phase 1C.5f (Reasoning Traceability, Explainability & Governance Architecture)
+STATUS: DRAFT — ARCHITECTURAL REVIEW REQUIRED
+DATE: October 2026
+REVISION TYPE: Freeze Certification Metadata & Illustrative Classification Correction
+PREVIOUS VERSIONS:
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1a.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1b.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1c.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1d.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1e.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1f.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1g.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1h.txt [Preserved Unchanged]
+  - TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1i.txt [Preserved Unchanged]
+
+BINDING DESIGN FENCE:
+  - TT_Phase_1C.5f_Design_Mandate.txt [AUTHORITATIVE BINDING MANDATE]
+
+AUTHORITATIVE UPSTREAM INPUTS (IMMUTABLE FROZEN BASELINES):
+  - Phase 1C.5a v0.3c: TT_Engineering_Reasoning_Architecture_and_Decision_Lifecycle_v0.3c.txt [FROZEN]
+  - Phase 1C.5b v0.2f: TT_Engineering_Evidence_Interpretation_and_Hypothesis_Formation_v0.2f.txt [FROZEN]
+  - Phase 1C.5c v0.1d: TT_Engineering_Diagnosis_and_Causal_Reasoning_v0.1d.txt [FROZEN]
+  - Phase 1C.5d v0.1l: TT_Engineering_Intervention_Alternatives_and_Tradeoff_Reasoning_v0.1l.txt [FROZEN]
+  - Phase 1C.5e v0.1m: TT_Engineering_Outcome_Evaluation_Iteration_and_Review_v0.1m.txt [FROZEN]
+
+LIFECYCLE & CONSTITUTIONAL CONTROLLING AUTHORITIES:
+  - Phase 1C.5a v0.3c is the sole controlling authority for:
+    * The 21 Principles of Sound Engineering Reasoning (verbatim text, numbers, meanings);
+    * The 14 lifecycle stages;
+    * The 27 frozen lifecycle statuses;
+    * Lifecycle record-presence semantics;
+    * Lifecycle transition semantics;
+    * Governing invariant: "UNCERTAINTY MUST SURVIVE THE DECISION."
+  - Phase 1C.5b v0.2f is the sole controlling authority for:
+    * Evidence intake, observation, interpretation, hypothesis formation;
+    * Evidence sufficiency, uncertainty, discriminating evidence;
+    * Separation between observation and interpretation.
+  - Phase 1C.5c v0.1d is the sole controlling authority for:
+    * Causal reasoning, causal diagnosis, surviving hypotheses, causal exclusions;
+    * Diagnostic specificity, unresolved mechanisms, causal uncertainty.
+  - Phase 1C.5d v0.1l is the sole controlling authority for:
+    * Stage 08 Engineering Requirement (EngineeringRequirementRecord);
+    * Stage 09 Candidate Intervention (CandidateInterventionRecord);
+    * Stage 10 Constraint and Trade-Off Evaluation (ConstraintAndTradeOffEvaluationRecord);
+    * Stage 11 Engineering Decision (EngineeringDecisionRecord) and Predicted Outcome (PredictedOutcomeRecord).
+  - Phase 1C.5e v0.1m is the sole controlling authority for:
+    * Pre-action consequence elaboration and simulation lane;
+    * Exact eight-step execution boundary sequence (Stages 11 -> 12 -> 13);
+    * Prediction consumption and the Outcome Evidence Firewall;
+    * Stage 13 Actual Outcome Evidence (ActualOutcomeEvidenceRecord);
+    * Multi-dimensional delta evaluation, causal attribution, confounder governance;
+    * Checkpoint-aware iteration and reversion discipline;
+    * Stage 14 Retrospective Engineering Review (EngineeringReviewRecord);
+    * Candidate lesson quarantine and promotion eligibility criteria.
+
+CRITICAL ARCHITECTURAL IDENTITY & BOUNDARY:
+  "PHASES 1C.5a–1C.5e DEFINE HOW THE TT AI SOUND ENGINEER REASONS.
+   PHASE 1C.5f DEFINES HOW THAT REASONING HISTORY CAN BE TRUSTED, UNDERSTOOD, RECONSTRUCTED AND GOVERNED."
+  Phase 1C.5f is a cross-cutting architecture, NOT a new reasoning stage.
+  It does NOT replace, alter, or create an alternative reasoning lifecycle.
+
+GOVERNING ARCHITECTURAL AXIOMS:
+  1. TRACEABILITY PRESERVES HISTORY; IT DOES NOT REWRITE IT.
+  2. INTEGRITY PRESERVES RECORDS; IT DOES NOT PROVE THEY ARE CORRECT.
+  3. PROVENANCE IDENTIFIES ORIGIN; IT DOES NOT PROVE EVIDENTIAL VALIDITY.
+  4. EXPLAINABILITY EXPOSES THE ENGINEERING BASIS; IT DOES NOT CREATE CERTAINTY.
+  5. MISSING HISTORY REMAINS MISSING.
+  6. UNCERTAINTY MUST SURVIVE THE DECISION.
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+Phase 1C.5f establishes the comprehensive reasoning traceability, explainability,
+and governance architecture for the Tone Translator (TT) AI Sound Engineer. Operating
+strictly within the binding design fence established by TT_Phase_1C.5f_Design_Mandate.txt
+and subordinate to the immutable frozen upstream baselines (Phases 1C.5a v0.3c through
+1C.5e v0.1m), Phase 1C.5f addresses fourteen core architectural capability areas:
+
+  1. TRACE IDENTITY & RUN LINEAGE: Defining immutable run, record, and relationship
+     identity structures that link parent runs, child iteration cycles, and downstream
+     artifacts across multi-session lifecycles without UUID technology lock-in.
+  2. EVIDENCE & RECORD PROVENANCE: Architecting a rigorous origin-classification
+     taxonomy (user-supplied, measured, system-derived, human-engineer, reference,
+     telemetry, illustrative, and external platform) to trace where every input originated,
+     preserving the distinct authority between user/client inputs and professional engineering actions.
+  3. CROSS-STAGE DEPENDENCY TRACING: Constructing a traversable dependency graph for
+     sealed records that preserves valid causal and temporal ordering across the frozen reasoning chain.
+  4. RECORD IMMUTABILITY & VERSION GOVERNANCE: Enforcing strict sealing semantics,
+     anti-rewrite protections, tombstoning, and non-destructive successor linking.
+  5. DECISION EXPLAINABILITY ARCHITECTURE: Defining governed engineering explanations
+     assembled strictly from authoritative records without requiring model chain-of-thought.
+  6. UNCERTAINTY TRACEABILITY: Preserving surviving epistemic and aleatoric uncertainty
+     across every transformation without artificial confidence amplification.
+  7. EXECUTION & OUTCOME LINEAGE: Tracing intent through the exact frozen Phase 1C.5e
+     eight-step execution boundary sequence: semantic design, platform translation,
+     engineering acceptability assessment, pre-execution rejection gate, external execution,
+     and actual outcome evidence.
+  8. PARENT / CHILD RUN GOVERNANCE: Formalizing the boundary conditions under which child
+     runs inherit historical records without automatically re-qualifying parent evidence.
+  9. INDEPENDENT RETROSPECTIVE AUDIT RECONSTRUCTION: Enabling peer reviewers and external auditors
+     to audit trace completeness, provenance, lineage, and integrity offline without AI re-execution,
+     strictly decoupled from the substantive acoustic evaluation of Stage 14 Engineering Review.
+  10. CANDIDATE-LESSON GOVERNANCE: Establishing quarantine evaluation, conflict detection,
+      and promotion eligibility criteria for generalizable knowledge, recognizing that
+      promotion approval belongs to the authoritative knowledge-governance authority, while
+      Phase 1C.5g owns migration mechanics.
+  11. INTEGRITY PROTECTION: Defining technology-neutral integrity requirements ensuring
+      independently verifiable tamper detection, while treating specific algorithms
+      (e.g. SHA-256, digital signatures, WORM storage) as non-normative implementation options.
+  12. HUMAN REVIEW & OVERRIDE PROVENANCE: Preserving the distinct provenance of human
+      engineering interventions, approvals, overrides, and escalations.
+  13. FAILURE, MISSING-TRACE & CORRUPTION HANDLING: Defining deterministic degradation
+      protocols when trace data is missing, corrupted, broken, or unverifiable, strictly
+      enforcing that missing history remains missing rather than being synthetically backfilled.
+  14. DOWNSTREAM INTERFACES: Delivering governance metadata to Phase 1C.5g (Knowledge
+      Migration) and verification requirements to Phase 1C.5h (UAT & Verification).
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+SECTION 1  — PURPOSE, SCOPE & GOVERNANCE BOUNDARIES
+SECTION 2  — ARCHITECTURAL POSITION & UPSTREAM DEPENDENCY MAP
+SECTION 3  — CONSTITUTIONAL FOUNDATION & THE 21 FROZEN REASONING PRINCIPLES
+SECTION 4  — TRACE IDENTITY, RUN LINEAGE & SEALED RECORD DEPENDENCY STRUCTURE
+SECTION 5  — EVIDENCE & RECORD PROVENANCE ARCHITECTURE
+SECTION 6  — CROSS-STAGE REASONING DEPENDENCY TRACING
+SECTION 7  — RECORD IMMUTABILITY, SEALING & HISTORICAL PRESERVATION
+SECTION 8  — DECISION EXPLAINABILITY ARCHITECTURE
+SECTION 9  — UNCERTAINTY TRACEABILITY ACROSS THE LIFECYCLE
+SECTION 10 — EXECUTION, PLATFORM TRANSLATION & OUTCOME LINEAGE
+SECTION 11 — PARENT / CHILD RUN GOVERNANCE & HISTORICAL INHERITANCE
+SECTION 12 — INDEPENDENT RETROSPECTIVE AUDIT RECONSTRUCTION
+SECTION 13 — HUMAN REVIEW, COLLABORATION & OVERRIDE PROVENANCE
+SECTION 14 — CANDIDATE-LESSON GOVERNANCE, QUARANTINE & PROMOTION GATES
+SECTION 15 — TRACE INTEGRITY, TAMPER EVIDENCE & VERIFICATION
+SECTION 16 — FAILURE, MISSING-TRACE & CORRUPTION DEGRADATION GOVERNANCE
+SECTION 17 — RECORD ARCHITECTURE & PROPOSED PHASE 1C.5f SCHEMAS
+SECTION 18 — VOCABULARY POLICY & CONCORDANCE REGISTRIES
+SECTION 19 — DOWNSTREAM INTERFACES (PHASE 1C.5g & PHASE 1C.5h)
+SECTION 20 — WORKED ARCHITECTURAL ILLUSTRATIONS (GOVERNANCE SCENARIOS 1 TO 16)
+SECTION 21 — INDEPENDENT-REVIEW CHECKLIST & CONSTITUTIONAL AUDIT
+SECTION 22 — REVISION REGISTER & ARCHITECTURAL STATUS
+
+================================================================================
+SECTION 1 — PURPOSE, SCOPE & GOVERNANCE BOUNDARIES
+================================================================================
+
+1.1 PRIMARY PURPOSE
+Phase 1C.5f establishes the authoritative engineering architecture required for the
+complete Tone Translator (TT) AI Sound Engineer reasoning lifecycle to be:
+  - fully traceable across all 14 lifecycle stages;
+  - attributable to authoritative human, system, or acoustic origins;
+  - provenance-aware across all input evidence and derived deliberations;
+  - lineage-preserving across iterative cycles and parent-child run transitions;
+  - integrity-governed against retroactive modification or accidental tampering;
+  - explainable through governed engineering records rather than opaque AI introspections;
+  - retrospectively auditable by independent peer reviewers without relying on model execution;
+  - version-aware across all algorithm, knowledge, and platform evolutions;
+  - historically non-destructive so that superseded or erroneous records remain preserved;
+  - and suitable for controlled downstream governance in knowledge migration and testing.
+
+Phase 1C.5f ensures that any decision made by the AI Sound Engineer can be independently
+inspected, reconstructed, defended, or falsified by an external sound engineer or auditor.
+
+1.2 THE GOVERNING CONSTITUTIONAL DISTINCTION
+The core architectural boundary of Phase 1C.5f is established by the following rule:
+  "PHASES 1C.5a THROUGH 1C.5e DEFINE HOW THE TT AI SOUND ENGINEER REASONS.
+   PHASE 1C.5f DEFINES HOW THAT REASONING HISTORY CAN BE TRUSTED, UNDERSTOOD,
+   RECONSTRUCTED AND GOVERNED."
+
+Phase 1C.5f is a CROSS-CUTTING GOVERNANCE AND TRACEABILITY ARCHITECTURE.
+It is NOT:
+  - a new reasoning stage;
+  - an alternative reasoning lifecycle running parallel to the frozen lifecycle;
+  - an implementation phase (e.g. database setup, UI design, or DSP code);
+  - a migration execution phase (owned by Phase 1C.5g);
+  - an empirical testing or UAT execution phase (owned by Phase 1C.5h);
+  - an AT5 gear mapping or execution layer (owned by Stage 12 operational platforms).
+
+1.3 SCOPE BOUNDARIES & PROHIBITED OVERREACH
+To protect architectural integrity, Phase 1C.5f operates under strict design prohibitions:
+  1. NO REDEFINITION OF UPSTREAM PRINCIPLES: The 21 Principles of Sound Engineering
+     Reasoning established in Phase 1C.5a v0.3c remain immutable constitutional law.
+  2. NO NEW LIFECYCLE STAGES OR STATUSES: Phase 1C.5f shall NOT invent new lifecycle
+     stages (the 14 stages of Phase 1C.5a are frozen) and shall NOT invent new lifecycle
+     statuses (the 27 statuses of Phase 1C.5a are frozen). Governance conditions,
+     record states, and audit dispositions are record-level and governance-level
+     attributes, never lifecycle statuses.
+  3. NO RETROACTIVE REWRITING: Sealed records are immutable historical artifacts.
+     When subsequent evidence reveals an earlier diagnosis or decision was erroneous,
+     the historical record remains intact, and a linked corrective successor or
+     child record is instantiated.
+  4. NO CONFUSION OF AUDITABILITY WITH REASONING CORRECTNESS: A flawlessly preserved,
+     fully integrity-verified trace can document deeply flawed acoustic reasoning. Traceability
+     proves what occurred; it does not prove the reasoning was sound.
+  5. NO CONFUSION OF PROVENANCE WITH EVIDENTIAL VALIDITY: Correctly identifying that a
+     measurement came from a calibrated RTA does not guarantee that the measurement
+     was uncorrupted by acoustic comb filtering or mic placement error.
+  6. NO EXPLAINABILITY BY MODEL INTROSPECTION: Engineering explainability is defined
+     exclusively through governed engineering records, evidence bindings, and causal
+     justifications. The internal scratchpad, token probabilities, or hidden
+     chain-of-thought of large language models are prohibited as audit fixtures.
+  7. NO ARTIFICIAL UNCERTAINTY REMOVAL: An explanation must never produce false
+     confidence. Where uncertainty existed during deliberation, that uncertainty
+     must be explicitly exposed in the trace and the explanation.
+  8. NO PREMATURE TECHNOLOGY LOCK-IN: Phase 1C.5f is platform-neutral. It defines
+     conceptual integrity, identity, and relational structures without mandating
+     specific database engines, cloud services, hash algorithms, or serialization formats.
+  9. NO OVERREACH INTO SUBSTANTIVE STAGE 14 ENGINEERING REVIEW: Phase 1C.5f defines
+     trace and governance audit (completeness, provenance, lineage, integrity).
+     It does not replace, duplicate, or alter the substantive sound engineering review
+     of diagnostic and intervention quality owned by Phase 1C.5e Stage 14.
+  10. NO REDEFINITION OF DIAGNOSTIC VALIDITY: Phase 1C.5f does not own or invalidate
+      upstream diagnoses (owned by Phase 1C.5c). Where trace support is missing,
+      Phase 1C.5f records the trace limitation while preserving the historical diagnosis record.
+
+================================================================================
+SECTION 2 — ARCHITECTURAL POSITION & UPSTREAM DEPENDENCY MAP
+================================================================================
+
+2.1 UPSTREAM DEPENDENCY MATRIX
+Phase 1C.5f operates in strict subordination to five frozen upstream specifications:
+
++-----------------------------+---------+--------------------------------------------------------+
+| Upstream Baseline           | Status  | Authoritative Substantive Ownership                    |
++-----------------------------+---------+--------------------------------------------------------+
+| Phase 1C.5a v0.3c           | FROZEN  | - 21 Principles of Sound Engineering Reasoning         |
+|                             |         | - 14 Lifecycle Stages (Stage 01 through Stage 14)      |
+|                             |         | - 27 Frozen Lifecycle Statuses (Status 01 to 27)       |
+|                             |         | - Record-presence semantics & state transitions        |
+|                             |         | - Governing Invariant: Uncertainty Must Survive        |
++-----------------------------+---------+--------------------------------------------------------+
+| Phase 1C.5b v0.2f           | FROZEN  | - Stage 01 Evidence Intake & Audio Evidence Records    |
+|                             |         | - Stage 02 Observation Records (FFT, Crest, LUFS)       |
+|                             |         | - Stage 03 Interpretation Records (Psychoacoustic)     |
+|                             |         | - Stage 04 Hypotheses & Stage 05 Evidence Sufficiency  |
+|                             |         | - Strict Observation vs Interpretation Separation      |
++-----------------------------+---------+--------------------------------------------------------+
+| Phase 1C.5c v0.1d           | FROZEN  | - Stage 06 Causal Reasoning & Mechanism Analysis       |
+|                             |         | - Stage 07 Causal Diagnosis (CausalDiagnosisRecord)    |
+|                             |         | - Surviving Hypotheses, Exclusions, Mechanism Bounds   |
+|                             |         | - Diagnostic Specificity & Diagnostic Uncertainty      |
++-----------------------------+---------+--------------------------------------------------------+
+| Phase 1C.5d v0.1l           | FROZEN  | - Stage 08 Engineering Requirements (EngineeringReq)   |
+|                             |         | - Stage 09 Candidate Interventions (CandidateInterv)   |
+|                             |         | - Stage 10 Trade-Off Evaluation (ConstraintTradeOff)   |
+|                             |         | - Stage 11 Decision (EngDecision) & Predicted Outcome  |
++-----------------------------+---------+--------------------------------------------------------+
+| Phase 1C.5e v0.1m           | FROZEN  | - Pre-Action Consequence Elaboration & Simulation Lane |
+|                             |         | - Exact 8-step execution boundary sequence (St 11-13)  |
+|                             |         | - Outcome Evidence Firewall & Stage 13 Outcome Evidence|
+|                             |         | - Multi-Dimensional Delta & Causal Attribution         |
+|                             |         | - Stage 14 Engineering Review (EngineeringReviewRecord)|
+|                             |         | - Candidate-Lesson Quarantine Semantics                |
++-----------------------------+---------+--------------------------------------------------------+
+
+2.2 CROSS-CUTTING ARCHITECTURAL RELATIONSHIP
+Phase 1C.5f does not follow Phase 1C.5e in temporal execution sequence. Rather, Phase 1C.5f
+wraps the ENTIRE lifecycle (Stages 01 through 14), providing the connective tissue that
+binds records together, ensures their immutability, tracks their provenance, generates
+their engineering explanations, and preserves their auditability.
+
+```
+       +-------------------------------------------------------------------+
+       |               PHASE 1C.5f GOVERNANCE & TRACEABILITY LAYER         |
+       |  - Trace Identity     - Record Immutability   - Explainability    |
+       |  - Provenance         - Uncertainty Preserv.  - Audit Reconstruct |
+       +-------------------------------------------------------------------+
+                                         |
+     ====================================v====================================
+     [1C.5b: Stages 01-05] -> [1C.5c: Stages 06-07] -> [1C.5d: Stages 08-11]
+     Evidence/Observation     Causal Diagnosis         Requirement/Decision
+                                                                 |
+     [1C.5e: Stage 14]     <- [1C.5e: Stage 13]     <- [1C.5e/Ops: Stage 12]
+     Engineering Review       Actual Outcome           Semantic Handoff
+     =========================================================================
+```
+
+================================================================================
+SECTION 3 — CONSTITUTIONAL FOUNDATION & THE 21 FROZEN REASONING PRINCIPLES
+================================================================================
+
+Phase 1C.5f strictly incorporates the 21 Principles of Sound Engineering Reasoning
+from Phase 1C.5a v0.3c. Below is the authoritative mapping of each principle to its
+specific Phase 1C.5f operational governance interpretation:
+
+PRINCIPLE 1: Evidence Precedes Diagnosis.
+  - Phase 1C.5f Interpretation: The trace structure must preserve causally and temporally
+    valid dependency ordering where evidence records precede diagnostic records. An audit must
+    flag any run where diagnosis records exist without upstream evidence bindings.
+
+PRINCIPLE 2: Observation Is Not Interpretation.
+  - Phase 1C.5f Interpretation: Provenance architecture must strictly classify raw
+    descriptive observations (e.g. measured spectral energy, dynamic envelope data)
+    separately from inferential interpretations (e.g. psychoacoustic boxiness, harshness).
+    The trace must prevent conflation between objective data and subjective inference.
+
+PRINCIPLE 3: Missing Evidence Is Not Negative Evidence.
+  - Phase 1C.5f Interpretation: When evidence is absent, the trace must record it
+    explicitly as UNKNOWN or MISSING. The explainability layer is strictly forbidden
+    from treating missing evidence as confirmation of absence or proof of health.
+
+PRINCIPLE 4: A Symptom Does Not Identify Its Cause.
+  - Phase 1C.5f Interpretation: Trace lineage must connect an observed acoustic symptom
+    to a causal mechanism graph, not directly to an intervention. The audit trail must
+    expose whether an intervention addressed the underlying root mechanism or merely
+    treated an isolated symptom.
+
+PRINCIPLE 5: Diagnosis Should Be Causal Where Evidence Permits.
+  - Phase 1C.5f Interpretation: Diagnostic records in the trace must capture the causal
+    hypothesis chain, mechanism pathways, and competing hypotheses. The explanation
+    must present the causal rationale justifying why this diagnosis was chosen.
+
+PRINCIPLE 6: Competing Hypotheses Survive Until Evidence Justifies Narrowing Them.
+  - Phase 1C.5f Interpretation: The trace graph must preserve all competing hypotheses
+    that were considered, along with their survival or exclusion statuses. An audit must
+    be able to inspect excluded alternatives and verify the evidential basis of exclusion.
+
+PRINCIPLE 7: Context Informs Reasoning but Does Not Prove Causation.
+  - Phase 1C.5f Interpretation: Provenance records must explicitly identify context inputs
+    (genre priors, track metadata, user intent) as contextual weighting factors rather
+    than direct causal proof. Contextual assumptions must remain auditable.
+
+PRINCIPLE 8: Engineering Intent Constrains the Solution.
+  - Phase 1C.5f Interpretation: Engineering Requirement records establish non-negotiable
+    preservation bounds in the trace. The explainability layer must verify that candidate
+    solutions and actual outcomes were evaluated against these declared intent constraints.
+
+PRINCIPLE 9: Generate Alternatives When the Problem Admits Alternatives.
+  - Phase 1C.5f Interpretation: The lineage graph must record all candidate interventions
+    deliberated in Stage 09. A decision record that failed to consider alternatives when
+    the problem admitted them must be flagged during retrospective audit.
+
+PRINCIPLE 10: Intervention Selection Follows Diagnosis.
+  - Phase 1C.5f Interpretation: Trace dependency edges must link Candidate Intervention
+    records directly to authorized Causal Diagnosis records. Disconnected interventions
+    or "solution-first" actions represent constitutional governance violations.
+
+PRINCIPLE 11: Intervention Should Occur at the Causally Appropriate Point.
+  - Phase 1C.5f Interpretation: The trace must capture the locus of intervention (e.g.
+    source transducer, pre-amp gain staging, EQ before compression, post-effects).
+    The explanation must articulate why the chosen locus was causally appropriate.
+
+PRINCIPLE 12: Predict Consequences Before Acting.
+  - Phase 1C.5f Interpretation: The PredictedOutcomeRecord must be sealed in the trace
+    BEFORE dispatch across the Stage 12 execution boundary. The creation timestamp and
+    integrity verification evidence of the prediction record must demonstrably precede
+    the execution dispatch and receipt.
+
+PRINCIPLE 13: Every Intervention Has Potential Trade-Offs.
+  - Phase 1C.5f Interpretation: The trace must preserve the ConstraintAndTradeOffEvaluationRecord,
+    documenting evaluated side effects, collateral degradation risks, and accepted costs.
+    Explanations must explicitly state accepted trade-offs.
+
+PRINCIPLE 14: Parsimony: Do Not Intervene Without Justified Engineering Purpose.
+  - Phase 1C.5f Interpretation: Audit reconstruction must evaluate whether the minimal
+    necessary intervention was selected. Unnecessary processing blocks or gratuitous
+    parameter shifts must be highlighted in the audit summary.
+
+PRINCIPLE 15: Platform Translation Operates Downstream of Engineering Reasoning.
+  - Phase 1C.5f Interpretation: The trace must enforce a clean separation between the
+    platform-neutral engineering decision (Phase 1C.5d Stage 11) and the target-platform
+    parameter translation (Stage 12). Reasoning must be auditable independently of AT5 gear.
+
+PRINCIPLE 16: Reject Unacceptable Platform Compromises.
+  - Phase 1C.5f Interpretation: Where platform translation truncates or violates core
+    preservation requirements, the trace must record the rejection gate (Status 22)
+    and preserve the specific constraint violation report in the audit trail.
+
+PRINCIPLE 17: Deterministic Code Validates Constraints; It Does Not Replace Judgement.
+  - Phase 1C.5f Interpretation: Algorithmic checks (e.g. clipping detectors, LUFS bounds)
+    must have their execution receipts preserved in the trace, but must be represented as
+    constraint validators rather than replacements for acoustic evaluation.
+
+PRINCIPLE 18: Evaluate Outcomes Honestly Without Circular Justification.
+  - Phase 1C.5f Interpretation: The Outcome Evidence Firewall must be enforced in the trace.
+    Actual outcome evidence records (Stage 13) must derive strictly from empirical post-action
+    audio, never from pre-action predictions. Circular confirmation is a fatal audit failure.
+
+PRINCIPLE 19: Capture Engineering Experience for Governed Review.
+  - Phase 1C.5f Interpretation: Retrospective review records (Stage 14) and quarantined
+    candidate lessons must be immutably recorded in the trace, enabling governed
+    cross-session learning without premature or unverified knowledge promotion.
+
+PRINCIPLE 20: The Deliberation Record Must Support Independent Retrospective Audit.
+  - Phase 1C.5f Interpretation: This is the constitutional cornerstone of Phase 1C.5f.
+    The deliberation record must contain all information necessary for an independent
+    human expert to reconstruct the entire reasoning lifecycle without conversational AI.
+
+PRINCIPLE 21: Where Evidence Is Missing, Seek Discriminating Evidence Rather Than Guessing.
+  - Phase 1C.5f Interpretation: Where uncertainty prevents definitive diagnosis or decision,
+    the trace must record the DiscriminatingEvidenceRequestRecord and the resulting
+    information state rather than fabricating certainty.
+
+================================================================================
+SECTION 4 — TRACE IDENTITY, RUN LINEAGE & SEALED RECORD DEPENDENCY STRUCTURE
+================================================================================
+
+4.1 TRACE IDENTIFIER CONCEPTUAL SPECIFICATION
+To ensure unambiguous reference across the multi-stage reasoning lifecycle, Phase 1C.5f
+establishes conceptual requirements for stable identities.
+
+TECHNOLOGY-NEUTRAL STANCE:
+Phase 1C.5f does not mandate a specific UUID version (e.g. UUIDv4 vs UUIDv7) or binary
+encoding. However, all implementations must satisfy the following architectural criteria:
+  - Universally Unique: Identifiers must be globally unique across time, sessions, and platforms.
+  - Immutable Association: An identifier assigned to a record, run, or relationship
+    must never be reassigned, repurposed, or mutated.
+  - Traceability: Given an identifier, a governance engine must be able to locate the
+    associated record, its parent run, and its integrity verification evidence.
+
+4.2 THE THREE LEVELS OF TRACE IDENTITY
+Phase 1C.5f defines three distinct conceptual levels of identity:
+
+1. RUN IDENTITY (`run_id`):
+   - Represents a single execution cycle through the reasoning lifecycle.
+   - A run begins with evidence intake (or child run instantiation) and terminates at
+     a frozen terminal status (e.g. Status 18, 21, 27) or a review pause / iteration state
+     (Status 25, 26).
+   - Contains a stable run descriptor, session metadata, initialization timestamp,
+     and parent run pointer (null for root runs).
+
+2. RECORD IDENTITY (`record_id`):
+   - Represents a discrete, sealed engineering artifact produced within a lifecycle stage.
+   - Every record across all 14 stages possesses a unique, stable `record_id`.
+   - Examples: `EvidenceRecord_id`, `ObservationRecord_id`, `CausalDiagnosisRecord_id`,
+     `EngineeringRequirementRecord_id`, `EngineeringDecisionRecord_id`,
+     `PredictedOutcomeRecord_id`, `ActualOutcomeEvidenceRecord_id`, `EngineeringReviewRecord_id`.
+
+3. RELATIONSHIP / EDGE IDENTITY (`relationship_id` / `edge_id`):
+   - Represents a directed causal, evidential, or governance dependency between two records.
+   - Unambiguously defines the source record, target record, relationship semantic,
+     and creation metadata.
+
+4.3 PARENT-CHILD RUN LINEAGE & SUCCESSOR SHADOWING
+When an engineering intervention requires refinement, alternative exploration, or upstream
+re-diagnosis, Phase 1C.5e mandates the instantiation of a governed child run (Stage 14 -> Status 26).
+Phase 1C.5f formalizes the lineage between parent and child runs:
+  - Linear Lineage Pointer: Every child run must contain an explicit `parent_run_id`
+    referencing the immediate predecessor run.
+  - Lineage Root Pointer: Every child run retains a `root_run_id` pointing to the initial
+    root problem session, enabling full traversal of the lineage chain.
+  - Iteration Generation Index: An integer counter (`generation_index`) incremented with
+    each child cycle (Root = 0, Child 1 = 1, Child 2 = 2, etc.).
+  - Retrospective Immutability: Instantiating a child run does not reopen or mutate the
+    parent run. The parent run remains permanently sealed.
+
+4.4 SEALED RECORD DEPENDENCY STRUCTURE (BOUNDED DAG MODEL)
+Phase 1C.5f models the dependency structure of SEALED HISTORICAL RECORDS as a directed acyclic
+graph (DAG). This topological rule applies specifically to immutable record artifacts:
+  - Causally and Temporally Valid Ordering: The trace dependency structure for sealed historical
+    records must preserve causally and temporally valid dependency ordering. A sealed record
+    cannot depend on a downstream result that did not yet exist when the record was sealed.
+  - Scope Boundary: The DAG model governs sealed record dependencies; it does NOT claim that the
+    underlying human or automated reasoning process is globally acyclic or linear.
+  - Preservation of Iterative Loops: Legitimate revisitation, iterative evidence gathering,
+    hypothesis refinement, and governed review loops within owning upstream phases (Phases 1C.5b–1C.5e)
+    are fully supported. When feedback or iteration occurs, the trace represents that history
+    without creating impossible downstream-to-upstream dependency claims within the same
+    sealed record lineage.
+  - Child Runs: Where Phase 1C.5e explicitly requires an iteration or return-upstream loop
+    (Status 26), a child run is instantiated in the multi-run lineage tree. The child run's
+    sealed records form a new, forward-directed lineage layer that references the parent run's
+    sealed records without mutating them.
+
+```
+   [Root Run Sealed Record Lineage]
+   (Evidence) -> (Observation) -> (Diagnosis) -> (Decision) -> (Outcome) -> (Review)
+                                                                               |
+                                                   [STATUS 26: REVIEW_COMPLETED_AWAITING_ITER]
+                                                                               |
+                                                                               v
+   [Child Run Sealed Record Lineage]
+   (Re-qualified Evidence) -> (Alternative Decision) -> (New Outcome) -> (Review)
+```
+
+4.5 TRACE COMPLETENESS IS RELATIVE TO VALID LIFECYCLE PATHS
+A foundational governance principle controls trace verification:
+  "TRACE COMPLETENESS IS RELATIVE TO THE VALID LIFECYCLE PATH AND CURRENT STATUS.
+   PHASE 1C.5f MUST TRACE RECORDS ONLY WHERE THOSE RECORDS ARE CREATED, REQUIRED,
+   OPTIONAL OR PERMITTED BY THE FROZEN LIFECYCLE PATH."
+
+Phase 1C.5a v0.3c controls required, optional, and barred/not-yet-created records at every status:
+  - Earlier Terminal Runs: If a run terminates at `STATUS 18: JUSTIFIED_NO_CHANGE`, downstream
+    execution, actual audio, and review records are STRICTLY BARRED. The trace audit must NOT
+    fail trace completeness merely because downstream records do not exist.
+  - Blocked Translation: If execution is halted at `STATUS 21: PLATFORM_TRANSLATION_UNSUPPORTED`,
+    actual outcome records are correctly barred.
+  - Prohibition Against Placeholder Manufacturing: The system must NEVER manufacture artificial
+    empty or placeholder records solely to give the appearance of an all-14-stage trace.
+
+================================================================================
+SECTION 5 — EVIDENCE & RECORD PROVENANCE ARCHITECTURE
+================================================================================
+
+5.1 THE FUNDAMENTAL PROVENANCE QUESTION
+The provenance architecture answers the foundational audit question:
+  "WHERE DID THIS INFORMATION COME FROM, WHO SUPPLIED OR COMPUTED IT, AND UNDER
+   WHAT BOUNDING ASSUMPTIONS WAS IT GENERATED?"
+
+Provenance defines origin, chain of custody, and operational context.
+
+5.2 THE EIGHT-TIER PROVENANCE TAXONOMY
+Phase 1C.5f defines an authoritative origin taxonomy to classify every piece of data,
+metric, assertion, or configuration ingested or generated by the system, rigorously
+distinguishing non-authoritative client/producer inputs from professional engineering actions:
+
+1. `ORIGIN_1_USER_SUPPLIED`:
+   - Information, requests, or constraints supplied by the human musician, artist, client,
+     or producer acting in a non-authoritative engineering capacity.
+   - Examples: Subjective aesthetic goals ("make the vocal warmer"), reference tracks,
+     stylistic preferences, declarations of instrument type ("1960s Stratocaster"),
+     or late context disclosures (e.g. producer noting an unmapped bus compressor).
+   - Epistemic Status: Subjective intent or unverified contextual prior. Informs requirements
+     and context; does not constitute measured acoustic evidence or certified engineering directives (Principle 7).
+
+2. `ORIGIN_2_MEASURED_EVIDENCE`:
+   - Objective physical measurements obtained directly from input audio signals.
+   - Examples: FFT power spectral density, short-term/integrated LUFS, peak-to-average
+     crest factor, stereo inter-channel phase correlation, THD analysis.
+   - Governance Rule: Must specify measurement methodology, calibration reference,
+     window size, and sampling rate.
+
+3. `ORIGIN_3_SYSTEM_DERIVED_OBSERVATION`:
+   - Algorithmic extractions, feature detections, and deterministic pattern matches
+     derived from measured evidence without high-level causal interpretation.
+   - Examples: Detected resonant frequency peak at 680 Hz with Q=8.5; detected dynamic
+     envelope overshoot of 4.2 dB in the 2 kHz to 4 kHz range.
+
+4. `ORIGIN_4_SYSTEM_INTERPRETATION`:
+   - High-level psychoacoustic, musical, or technical inferences formed by the AI engine.
+   - Examples: Inferring that the 680 Hz resonance manifests as "hollow snare boxiness";
+     hypothesizing that high-frequency harshness stems from clipping harmonics.
+   - Governance Rule: Must remain strictly segregated from raw observations (Principle 2).
+
+5. `ORIGIN_5_INHERITED_HISTORICAL_EVIDENCE`:
+   - Evidence, measurements, or observations brought forward from a prior parent run.
+   - Governance Rule: Inherited evidence is labeled with its historical run ID.
+     It is NOT automatically valid for the current child run and must be re-qualified
+     (Section 11).
+
+6. `ORIGIN_6_HUMAN_ENGINEERING_INPUT`:
+   - Explicit engineering specifications, constraints, adjustments, approvals, or manual overrides
+     executed by an authorized professional sound engineer or certified technical reviewer.
+   - Examples: A senior mixing engineer manually overriding an EQ notch frequency, rejecting an
+     intervention, or imposing an explicit low-pass ceiling.
+   - Governance Rule: Must be preserved with distinct human engineering provenance; must never be
+     silently blended into AI-derived reasoning.
+
+7. `ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE`:
+   - Synthetic, pedagogical, illustrative, or mock data utilized strictly for worked examples,
+     system test harnesses, or architectural demonstrations.
+   - Governance Rule: Must be prominently stamped with `[ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE]`.
+     Prohibited from being ingested as empirical production evidence.
+
+8. `ORIGIN_8_EXTERNAL_PLATFORM_TELEMETRY`:
+   - Operational telemetry, parameter readbacks, execution receipts, and error codes
+     emitted by external DSP hardware, DAW hosts, or plugin frameworks (e.g. AmpliTube 5).
+   - Examples: Preset load confirmations, buffer underrun notices, parameter clamping
+     receipts, latency reports.
+
+5.3 PROVENANCE RECORD INTEGRITY & ANTI-FABRICATION INVARIANT
+  "WHERE PROVENANCE IS INCOMPLETE OR UNKNOWN, IT MUST BE RECORDED AS UNRESOLVED.
+   THE ARCHITECTURE STRICTLY PROHIBITS INFERRING OR FABRICATING PROVENANCE WITHOUT EVIDENCE."
+
+If a piece of audio arrives without calibration data, microphone metadata, or track
+identity, the provenance record must state `provenance_resolution_state: "UNRESOLVED_INCOMPLETE"` (classified as PHASE_1C5F_PROPOSED record-level provenance metadata; not a lifecycle status).
+The system must not fabricate plausible origins.
+
+================================================================================
+SECTION 6 — CROSS-STAGE REASONING DEPENDENCY TRACING
+================================================================================
+
+6.1 THE FOURTEEN-STAGE REASONING CHAIN
+Phase 1C.5f maps the complete dependency path connecting all 14 frozen stages of the
+AI Sound Engineer reasoning lifecycle. Where stages are traversed and records are emitted
+in accordance with frozen lifecycle rules, sealed records serve as directed dependency anchors:
+
+```
+  [Stage 01: Evidence Intake]
+          | (evidence_record_ref)
+          v
+  [Stage 02: Acoustic Observation]
+          | (observation_record_ref)
+          v
+  [Stage 03: Psychoacoustic Interpretation]
+          | (interpretation_record_ref)
+          v
+  [Stage 04: Hypothesis Formation]
+          | (hypothesis_set_ref)
+          v
+  [Stage 05: Evidence Sufficiency Evaluation]
+          | (sufficiency_evaluation_ref)
+          v
+  [Stage 06: Causal Reasoning & Mechanism Analysis]
+          | (causal_graph_ref)
+          v
+  [Stage 07: Causal Diagnosis Authorization]
+          | (causal_diagnosis_record_ref)
+          v
+  [Stage 08: Engineering Requirements Formulation]
+          | (engineering_requirement_record_ref)
+          v
+  [Stage 09: Candidate Interventions Deliberation]
+          | (candidate_interventions_set_ref)
+          v
+  [Stage 10: Constraint & Trade-Off Evaluation]
+          | (tradeoff_evaluation_record_ref)
+          v
+  [Stage 11: Engineering Decision & Predicted Outcome]
+          | (decision_record_ref, predicted_outcome_record_ref)
+          v
+  [Stage 12: Semantic Tone Design & Platform Execution Handoff]
+          | (semantic_design_ref, platform_receipt_ref)
+          v
+  [Stage 13: Actual Outcome Evidence Ingestion]
+          | (actual_outcome_evidence_record_ref)
+          v
+  [Stage 14: Retrospective Engineering Review]
+            (engineering_review_record_ref)
+```
+
+6.2 FORMAL RELATIONSHIP EDGE SEMANTICS
+To ensure rigorous cross-stage traversal, Phase 1C.5f defines standard relationship edge types:
+
+  - `PRODUCED_FROM`: Indicates that Record B was derived by applying algorithmic analysis
+    or reasoning to Record A (e.g. Stage 02 Observation `PRODUCED_FROM` Stage 01 Evidence).
+  - `JUSTIFIED_BY`: Indicates that an inferential conclusion, diagnosis, or decision
+    relies upon an upstream evidential or causal claim (e.g. Stage 07 Diagnosis `JUSTIFIED_BY`
+    Stage 06 Causal Graph; Stage 11 Decision `JUSTIFIED_BY` Stage 10 Trade-Off Evaluation).
+  - `CONSTRAINED_BY`: Indicates that an intervention or parameter allocation is bounded
+    by an upstream requirement or preservation rule (e.g. Stage 09 Candidate `CONSTRAINED_BY`
+    Stage 08 Engineering Requirement).
+  - `PREDICTS_FOR`: Indicates that a predicted outcome specifies falsifiable expectations
+    for an engineering decision (Stage 11 Predicted Outcome `PREDICTS_FOR` Stage 11 Decision).
+  - `TRANSLATED_INTO`: Links platform-neutral semantic intent to target-platform parameter
+    instructions (Stage 11 Decision `TRANSLATED_INTO` Stage 12 Execution Command).
+  - `EVALUATED_AGAINST`: Links empirical post-action evidence to pre-action predictions
+    and requirements across the Outcome Evidence Firewall (Stage 13 Actual Outcome
+    `EVALUATED_AGAINST` Stage 11 Predicted Outcome and Stage 08 Requirement).
+  - `AUDITED_BY`: Links the comprehensive deliberation trace of the run to the Stage 14
+    retrospective engineering review (Run Trace `AUDITED_BY` Stage 14 Engineering Review).
+
+6.3 TRACE TRAVERSAL & ORPHAN-RECORD DETECTION
+An audit engine traversing the trace graph must verify that no record is an orphan:
+  - Upstream Reachability: Starting at any sealed record, backwards traversal must successfully
+    reach its prerequisite evidential or requirement inputs.
+  - Forward Completeness: In completed runs, every authorized diagnosis must have
+    corresponding downstream requirement and deliberation paths, or an explicit
+    recorded disposition explaining why deliberation halted (e.g. Status 18 Justified No Change).
+  - Broken Trace Detection: Any gap where an edge references a missing required `record_id`
+    constitutes a trace governance degradation classified as `GOVERNANCE_CONDITION_INCOMPLETE_TRACE`
+    and, where a required prerequisite record is absent, `GOVERNANCE_CONDITION_MISSING_DEPENDENCY`.
+
+================================================================================
+SECTION 7 — RECORD IMMUTABILITY, SEALING & HISTORICAL PRESERVATION
+================================================================================
+
+7.1 THE SEALING PROTOCOL & ANTI-REWRITE ENFORCEMENT
+Once an engineering stage completes its deliberation, its corresponding record is
+FORMALLY SEALED.
+  "A SEALED RECORD IS AN IMMUTABLE HISTORICAL ARTIFACT.
+   IT MUST NEVER BE SILENTLY OVERWRITTEN, RETROACTIVELY EDITED, DELETED,
+   OR MUTATED TO MAKE SUBSEQUENT REASONING APPEAR MORE ACCURATE OR SUCCESSFUL."
+
+NORMATIVE INTEGRITY REQUIREMENT:
+A sealed record must provide independently verifiable integrity evidence sufficient
+to detect unauthorized modification, substitution, loss of ordering, lineage corruption,
+or provenance mutation.
+
+NON-NORMATIVE IMPLEMENTATION OPTIONS:
+The specific mechanisms used to enforce and verify this integrity requirement are
+non-normative implementation choices, including but not limited to:
+  - Cryptographic content hashes (e.g. SHA-256, BLAKE3);
+  - Hash-chained sequence blocks or Merkle trees;
+  - Digitally signed manifests or asymmetric signatures;
+  - Write-Once Read-Many (WORM) storage engines;
+  - Immutable or append-only ledger databases;
+  - Content-addressable storage repositories.
+No single technology is normatively mandated by Phase 1C.5f. Any implementation providing
+independently verifiable tamper detection satisfies this architectural requirement.
+
+State Locking & Anti-Rewrite:
+Upon sealing, the record is marked `RECORD_GOVERNANCE_STATE_SEALED`. Any attempt by an
+API call, model prompt, or database update to modify a sealed record must be rejected
+with a hard governance error.
+
+7.2 HISTORICAL PRESERVATION OF FLAWED OR SUPERSEDED REASONING
+In real-world sound engineering, diagnoses prove wrong, predictions fail, and initial
+interventions cause unexpected side effects. Phase 1C.5f strictly forbids "sanitizing" history:
+  - Preserving the Error: If Stage 13 outcome evidence reveals that an EQ intervention
+    failed because the true cause was acoustic room modes rather than speaker resonance,
+    the original faulty `CausalDiagnosisRecord` and `EngineeringDecisionRecord` MUST
+    REMAIN EXACTLY AS THEY WERE RECORDED.
+  - Corrective Successor Pointers: The subsequent correction is documented by instantiating
+    a new record in a child run, or a corrective review record in Stage 14, which explicitly
+    references the faulty predecessor record via a `SUPERSEDES_WITH_CORRECTION` edge.
+  - Audit Trail Integrity: An auditor must be able to see:
+      (1) Exactly what the system believed at time T1;
+      (2) Why that belief was formed;
+      (3) What evidence arrived at time T2 to disprove it;
+      (4) How the system responded at time T3.
+
+7.3 RECORD GOVERNANCE STATES VS LIFECYCLE STATUSES
+A critical architectural boundary established in the Phase 1C.5f Design Mandate is:
+  "RECORD GOVERNANCE STATES ARE NOT LIFECYCLE STATUSES."
+
+Lifecycle statuses (Statuses 01 to 27) belong strictly to Phase 1C.5a v0.3c and define the
+macro progress of the reasoning lifecycle (e.g. `STATUS 20: DECISION_SEALED_AWAITING_EXEC`,
+`STATUS 24: OUTCOME_EVIDENCE_INGESTED`).
+
+Record Governance States represent the localized lifecycle of individual record artifacts:
+  - `RECORD_GOVERNANCE_STATE_DRAFT`: Record is currently being compiled within the active stage.
+  - `RECORD_GOVERNANCE_STATE_SEALED`: Record is complete, integrity-protected, and locked against modification.
+  - `RECORD_GOVERNANCE_STATE_SUPERSEDED`: A successor record in a child run has updated this artifact.
+  - `RECORD_GOVERNANCE_STATE_QUARANTINED`: Record is isolated pending governed review (e.g. candidate lessons).
+  - `RECORD_GOVERNANCE_STATE_TOMBSTONED`: Record has been marked invalid due to verified data corruption,
+    retaining historical headers while invalidating active operational use.
+
+================================================================================
+SECTION 8 — DECISION EXPLAINABILITY ARCHITECTURE
+================================================================================
+
+8.1 DEFINITION OF GOVERNED ENGINEERING EXPLAINABILITY
+Phase 1C.5f defines explainability not as post-hoc generative storytelling or unrestricted
+AI introspections, but as a GOVERNED ENGINEERING AUDIT TRAIL:
+  "AN EXPLANATION IS A STRUCTURED, VERIFIABLE RECONSTRUCTION OF THE ENGINEERING
+   JUSTIFICATION, DERIVED EXCLUSIVELY FROM SEALED EVIDENCE, DIAGNOSTIC MECHANISMS,
+   EXPLICIT REQUIREMENTS, EVALUATED TRADE-OFFS, AND RECORDED OUTCOMES."
+
+8.2 THE FIVE AUDITABLE EXPLANATION COMPONENT LAYERS
+A complete Phase 1C.5f engineering explanation is assembled from five governed layers:
+
+1. THE EVIDENTIAL LAYER:
+   - What acoustic observations and measurements were present?
+   - What was the gain calibration status and measurement integration window?
+   - What evidence was missing or uncertain? (Explicitly citing Principle 3 & 21).
+
+2. THE DIAGNOSTIC LAYER:
+   - What physical or acoustic mechanisms were identified to explain the observations?
+   - What competing hypotheses were considered, and on what evidential grounds were
+     alternative hypotheses excluded or retained? (Principles 5 & 6).
+   - What surviving diagnostic uncertainty remained?
+
+3. THE REQUIREMENT & INTENT LAYER:
+   - What specific engineering goals were formulated (attenuation targets, preservation
+     bounds, perceptual criteria)? (Principle 8).
+   - What non-negotiable constraints were active (e.g. transient crest factor, mono compatibility)?
+
+4. THE DELIBERATION & TRADE-OFF LAYER:
+   - Why was this candidate intervention selected over credible alternatives? (Principles 9, 10, 11).
+   - What collateral consequences and trade-offs were predicted and consciously accepted? (Principle 13).
+   - Was the intervention parsimonious and causally targeted? (Principle 14).
+
+5. THE OUTCOME & REVIEW LAYER:
+   - What was predicted before action was taken? (Principle 12).
+   - What actually occurred post-execution, and did execution deviate from intent? (Principle 18).
+   - How was causal attribution established, and what retrospective review conclusions were drawn?
+
+8.3 PROHIBITION OF HIDDEN CHAIN-OF-THOUGHT AS AUDIT EVIDENCE
+Modern foundation models generate internal reasoning scratchpads (chain-of-thought tokens).
+Phase 1C.5f establishes an absolute constitutional firewall:
+  "PRIVATE AI CHAIN-OF-THOUGHT TOKENS ARE UNGOVERNED, NON-DETERMINISTIC,
+   AND PROHIBITED AS SUBSTITUTE FOR STRUCTURED DELIBERATION RECORDS."
+
+Reasoning that does not map to a sealed record (such as an `ObservationRecord`,
+`CausalDiagnosisRecord`, or `ConstraintAndTradeOffEvaluationRecord`) DOES NOT EXIST from
+an audit perspective. If an AI system "thought" of a risk but failed to log it in the
+sealed trade-off evaluation record, the risk was unconsidered from a governance perspective.
+
+8.4 AUDIENCE-TARGETED EXPLANATION RECONSTRUCTION
+A governed explanation engine can render the sealed audit trail into different views:
+  - Technical Engineering View: Full acoustic parameters, Q-factors, FFT decibel deltas,
+    mechanisms, and formal schema cross-references.
+  - Musician / Producer View: Translated musical language (e.g. "reduced harshness around
+    3 kHz while preserving vocal bite"), highlighting intent, accepted trade-offs, and listening checks.
+  - Governance & Compliance View: Verification of timestamps, integrity verification evidence,
+    human override approvals, and constitutional checklist alignment.
+
+In all views, the factual claims MUST BE BOUND TO THE SAME SEALED RECORDS.
+
+================================================================================
+SECTION 9 — UNCERTAINTY TRACEABILITY ACROSS THE LIFECYCLE
+================================================================================
+
+9.1 CONSTITUTIONAL INVARIANT: UNCERTAINTY MUST SURVIVE THE DECISION
+Inherited from Phase 1C.5a v0.3c, the governing invariant stands as absolute law:
+  "UNCERTAINTY MUST SURVIVE THE DECISION."
+
+Traceability must preserve uncertainty rather than retrospectively smoothing it away.
+A decision reached under bounded uncertainty does NOT retroactively make the diagnosis
+certain. The trace must permanently record the surviving ambiguity.
+
+9.2 THE UNCERTAINTY CASCADE ACROSS LIFECYCLE STAGES
+Uncertainty must be tracked, classified, and propagated at every stage:
+
+1. EVIDENCE UNCERTAINTY (Stages 01–03):
+   - Measurement noise, room acoustic contamination, uncalibrated monitoring levels,
+     or insufficient performance phrase duration.
+   - Classification: `UNCERTAINTY_TYPE_MEASUREMENT_LIMITATION`.
+
+2. DIAGNOSTIC UNCERTAINTY (Stages 04–07):
+   - Multiple competing causal mechanisms explain the observed symptom equally well
+     (e.g. 680 Hz snare ring caused by bottom head tuning vs top head resonance vs snare wires).
+   - Classification: `UNCERTAINTY_TYPE_COMPETING_CAUSAL_MECHANISMS`.
+
+3. PREDICTIVE UNCERTAINTY (Stages 08–11):
+   - Non-linear interactions, platform approximation tolerances, or unknown downstream
+     master bus processing that could alter the intervention's actual response.
+   - Classification: `UNCERTAINTY_TYPE_PREDICTIVE_NONLINEARITY`.
+
+4. OUTCOME & ATTRIBUTION UNCERTAINTY (Stages 13–14):
+   - Performance variation between takes (e.g. drummer hit harder on take 2), or multi-track
+     leakage masking the isolated result.
+   - Classification: `UNCERTAINTY_TYPE_CONFOUNDED_OBSERVATION`.
+
+9.3 PROHIBITION OF EXPLANATORY CONFIDENCE AMPLIFICATION
+A core anti-pattern in automated systems is "confidence drift," where an explanation
+sounds far more confident than the underlying data justifies.
+  "AN EXPLANATION LAYER MUST NEVER UPGRADE AN UNCERTAIN INFERENCE
+   INTO A CERTAIN FACT MERELY TO PRODUCE A FLUENT OR CONVINCING NARRATIVE."
+
+If a notch filter was applied under `STATUS 19: PROCEED_BOUNDED_UNCERTAINTY`, the
+explanation must explicitly state: "The intervention was applied to test the 680 Hz
+resonance hypothesis while acknowledging surviving uncertainty regarding head interaction."
+
+================================================================================
+SECTION 10 — EXECUTION, PLATFORM TRANSLATION & OUTCOME LINEAGE
+================================================================================
+
+10.1 THE EXACT EIGHT-STEP EXECUTION BOUNDARY SEQUENCE IN TRACEABILITY
+Phase 1C.5f strictly preserves the exact eight-step operational execution boundary
+sequence established in Phase 1C.5a v0.3c (§§19–21) and Phase 1C.5e v0.1m (§4.1):
+
+  STEP 1: SEALED STAGE 11 ENGINEERING DECISION & PREDICTED OUTCOME (PHASE 1C.5d)
+    - Phase 1C.5d completes Frozen Stage 11 by sealing the immutable `EngineeringDecisionRecord`
+      and `PredictedOutcomeRecord`.
+    - These records specify the selected candidate intervention, target locus, platform-neutral
+      parameter allocations, intent priorities, non-negotiable preservation constraints,
+      acceptable approximation boundaries, and falsifiable predicted outcomes.
+    - Upstream records are sealed and immutable historical artifacts.
+
+  STEP 2: PRE-ACTION CONSEQUENCE ELABORATION & SIMULATION LANE (PHASE 1C.5e)
+    - Prior to dispatch across the execution boundary, Phase 1C.5e executes a dedicated
+      Pre-Action Validation Lane.
+    - Responsibilities: Consequence elaboration into multi-dimensional acoustic delta
+      expectations; predictive simulation to evaluate plausibility; verification of preservation
+      constraints; and targeted non-destructive pre-execution test design.
+    - BOUNDARY & IMMUTABILITY LAW: Simulation is a testable expectation, NOT actual outcome
+      evidence (Principle 17, Principle 18). Pre-action simulation validates constraints but
+      does NOT replace the pre-execution rejection gate.
+
+  STEP 3: STAGE 12 SEMANTIC TONE DESIGN LAYER & HANDOFF BOUNDARY
+    - Phase 1C.5e supplies platform-neutral engineering results, constraints, uncertainty,
+      and evaluation requirements to Stage 12 through the Semantic Tone Design handoff.
+    - WHAT CROSSES THE HANDOFF: Engineering decision and requirement IDs; intended semantic
+      behavior (abstract block topology, dynamic curves, target transfer functions); intent
+      priorities; non-negotiable preservation constraints; acceptable approximation boundaries;
+      material assumptions; and escalation triggers.
+    - GOVERNING PRINCIPLE: Semantic Tone Design carries the engineering result, NOT private
+      deliberation, and carries platform-neutral specifications, NOT target-platform executable
+      parameter instructions.
+
+  STEP 4: DOWNSTREAM PLATFORM TRANSLATION
+    - An external platform translator maps the platform-independent Semantic Tone Design into
+      concrete destination-platform parameters, plug-in graphs, or hardware states.
+    - Emits a Translation Report / Manifest that classifies technical translation fidelity into
+      one of four objective categories: `EXACT`, `APPROXIMATED`, `DEFAULTED`, or `UNSUPPORTED`.
+
+  STEP 5: ENGINEERING ACCEPTABILITY ASSESSMENT OF THE PROPOSED TRANSLATION
+    - Professional sound engineering assessment of the translated manifest against engineering intent:
+      * `ACCEPTABLE_FOR_EXECUTION`: Translation achieves the engineering requirement faithfully.
+      * `ACCEPTED_WITH_DOCUMENTED_COMPROMISE`: Translation incurs a mild deviation, but falls
+        strictly within `acceptable_approximation_boundaries`.
+      * `REQUIRES_ENGINEERING_REVIEW`: Translation deviation is material; requires engineering arbitration.
+      * `BLOCKED_FROM_EXECUTION`: Translation violates non-negotiables or exceeds acceptable approximation boundaries.
+    - FROZEN FIDELITY VS ACCEPTABILITY DISTINCTION: Translation fidelity is decoupled from
+      engineering acceptability. An `EXACT` translation is not automatically acceptable, and an
+      `APPROXIMATED` translation is not automatically unacceptable. A `DEFAULTED` mapping is
+      never automatically acceptable.
+
+  STEP 6: PRE-EXECUTION REJECTION GATE (PREVENTION LAYER)
+    - Operates AFTER platform translation and acceptability assessment, but BEFORE audio rendering
+      or hardware execution.
+    - Evaluates the proposed translation manifest directly against non-negotiable preservation
+      constraints and acceptable approximation boundaries.
+    - If a violation is detected: Downstream execution is HALTED BEFORE audio generation,
+      emitting a Block Report and transitioning to `STATUS 22: EXECUTION_BLOCKED_UNACCEPTABLE`.
+
+  STEP 7: EXTERNAL EXECUTION
+    - Approved configurations (`ACCEPTABLE_FOR_EXECUTION` or `ACCEPTED_WITH_DOCUMENTED_COMPROMISE`)
+      are dispatched to external execution engines (DSP processors, DAW automation, hardware controllers).
+    - Status transitions to `STATUS 23: EXECUTION_COMPLETED_AWAITING_OUT` upon execution completion,
+      awaiting audio buffer capture.
+
+  STEP 8: EXECUTION RECEIPTS, TELEMETRY & OUTCOME EVIDENCE INTAKE (STAGE 13)
+    - Captures external execution receipts, runtime telemetry, and detected parameter deviations
+      (`execution_deviations_detected`), distinguishing intended parameters from actually applied
+      parameters and identifying deviation sources.
+    - Post-intervention rendered audio is captured, gain-matched, and ingested into Stage 13
+      (`STATUS 24: OUTCOME_EVIDENCE_INGESTED`) for formal multi-dimensional delta evaluation,
+      causal attribution, and subsequent Stage 14 retrospective review.
+
+10.2 INTENDED VS TRANSLATED VS APPLIED PARAMETER TRACEABILITY
+To isolate whether an unexpected acoustic outcome was caused by poor engineering reasoning,
+translation distortion, or platform execution failure, Phase 1C.5f mandates tracking three
+distinct parameter layers in the execution lineage:
+
+1. INTENDED PARAMETERS (Semantic Intent):
+   - What the abstract engineering decision specified.
+   - Example: Parametric notch at 680 Hz, Q=8.5, Gain=-9.0 dB; Pre-compression locus.
+   - Source: `EngineeringDecisionRecord` (Phase 1C.5d).
+
+2. TRANSLATED PARAMETERS (Platform Mapping):
+   - How the platform translator mapped the abstract intent to concrete gear controls.
+   - Example: AmpliTube 5 EQ 81 model: Band 3 selected at 700 Hz (stepped frequency grid),
+     Gain knob set to position 2.1 (corresponding to -8.8 dB), Q switch set to "Narrow".
+   - Source: `PlatformTranslationRecord` (Stage 12).
+
+3. APPLIED PARAMETERS (Actual Rendered State):
+   - What was actually executed on the DSP engine or DAW track, captured via readback telemetry.
+   - Example: Readback confirms EQ 81 Band 3 at 700 Hz, -8.8 dB; but detects that a master
+     limiter on the channel was accidentally engaged with +3 dB makeup gain.
+   - Source: `ExecutionReceiptRecord` (Stage 12/13).
+
+10.3 EXECUTION DEVIATION TAXONOMY
+Where applied parameters diverge from intended parameters, Phase 1C.5f classifies the divergence:
+  - `DEVIATION_TYPE_PLATFORM_GRID_APPROXIMATION`: Target hardware or plugin uses stepped
+    frequency/gain pots that cannot hit continuous floating-point values exactly.
+  - `DEVIATION_TYPE_TRANSLATOR_CLAMPING`: Target parameter exceeded the legal bounds of
+    the model and was clamped at minimum/maximum.
+  - `DEVIATION_TYPE_USER_MANUAL_INTERVENTION`: Human engineer tweaked a knob in the DAW
+    interface after the automated patch was loaded.
+  - `DEVIATION_TYPE_EXECUTION_ENGINE_FAULT`: DSP buffer drop, plugin crash, or silent failure.
+
+10.4 OUTCOME LINEAGE & THE EVIDENCE FIREWALL
+Once audio renders, post-intervention audio evidence is captured and ingested into Stage 13.
+Phase 1C.5f verifies that:
+  - The `ActualOutcomeEvidenceRecord` binds directly to the `ExecutionReceiptRecord` via an
+    `OUTCOME_OF` edge.
+  - The Outcome Evidence Firewall is enforced: outcome metrics are computed exclusively from
+    the captured post-action audio buffer, never backfilled from `PredictedOutcomeRecord`.
+
+================================================================================
+SECTION 11 — PARENT / CHILD RUN GOVERNANCE & HISTORICAL INHERITANCE
+================================================================================
+
+11.1 THE PROBLEM OF EVIDENCE CONTAMINATION ACROSS RUNS
+When an engineering intervention fails or requires iteration, a child run is launched.
+A critical epistemic danger identified in Phase 1C.5e is EVIDENCE CONTAMINATION:
+  "ASSUMING THAT BECAUSE AN ACOUSTIC PROPERTY WAS MEASURED IN THE PARENT RUN,
+   IT REMAINS UNCHANGED AND DIRECTLY APPLICABLE IN THE CHILD RUN."
+
+For example:
+  - The parent run observed 680 Hz snare ring on Take 1.
+  - An intervention was applied, but the drummer switched sticks or changed performance
+    dynamics on Take 2.
+  - The child run cannot blindly reuse the parent's baseline measurements without re-verifying
+    their comparability.
+
+11.2 GOVERNING RULES FOR CHILD-RUN HISTORICAL INHERITANCE
+Phase 1C.5f formalizes four mandatory rules governing parent-child lineage:
+
+RULE 1: HISTORICAL PRESERVATION OF PARENT RECORDS:
+  The parent run remains permanently sealed. A child run NEVER edits, overwrites, or truncates
+  parent records. The parent run retains its terminal or review pause status (e.g. Status 26).
+
+RULE 2: NO AUTOMATIC EVIDENCE RE-QUALIFICATION:
+  Parent evidence records imported into a child run are tagged as `ORIGIN_5_INHERITED_HISTORICAL_EVIDENCE`.
+  They are treated as HISTORICAL REFERENCES, not current empirical ground truth, until explicitly
+  re-qualified by the child run's Stage 01/05 evidence intake engine.
+
+RULE 3: MANDATORY COMPARABILITY AUDIT:
+  Before an inherited measurement is used to guide child-run decisions, a comparability check
+  must be logged:
+    - Did the audio source, musician performance, or recording take change?
+    - Did intervening processing alter the track gain staging or frequency balance?
+    - If comparability cannot be established, Phase 1C.5f withholds active reliance on the
+      inherited measurement and records the comparability limitation. The applicable Phase 1C.5b
+      evidence-sufficiency and discriminating-evidence rules determine whether fresh or
+      additional evidence is required.
+
+RULE 4: EXPLICIT LINEAGE POINTERS:
+  The child run's header must declare:
+    - `parent_run_id`: The immediate prior run.
+    - `root_run_id`: The originating session run.
+    - `lineage_trigger_action`: The specific Layer B action from the parent run that
+      authorized iteration (e.g. `action_bounded_refinement`, `action_alternate_intervention`,
+      `action_full_reversion_to_checkpoint`, `action_return_to_diagnosis`).
+
+================================================================================
+SECTION 12 — INDEPENDENT RETROSPECTIVE AUDIT RECONSTRUCTION
+================================================================================
+
+12.1 THE INDEPENDENT AUDIT OBJECTIVE & BOUNDARY SEPARATION
+A primary reason for Phase 1C.5f's existence is to satisfy Principle 20:
+  "THE DELIBERATION RECORD MUST SUPPORT INDEPENDENT RETROSPECTIVE AUDIT."
+
+An independent human sound engineer, technical auditor, or regulatory reviewer must be
+able to audit any historical run:
+  - WITHOUT access to the original generative AI model;
+  - WITHOUT re-running complex non-deterministic LLM prompts;
+  - SOLELY by inspecting the sealed deliberation records, evidence bindings, and execution receipts.
+
+CRITICAL ARCHITECTURAL BOUNDARY:
+Phase 1C.5f trace and governance audit is STRICTLY DECOUPLED from the substantive Stage 14
+Engineering Review owned by Phase 1C.5e:
+  - Stage 14 Engineering Review evaluates the substantive acoustic and engineering quality
+    of the diagnosis, intervention suitability, predictive accuracy, and generalizable learnings.
+  - Phase 1C.5f Trace Audit evaluates whether the deliberation record exists, is complete relative
+    to the lifecycle status, has uncorrupted lineage and provenance, is integrity-protected,
+    preserves uncertainty, and complies with anti-rewrite rules.
+  - Phase 1C.5f audit DOES NOT establish a competing sound engineering review taxonomy.
+    It verifies that the Stage 14 review exists where required, is traceable to its inputs,
+    and has not been retroactively altered.
+
+12.2 THE TEN TRACE & GOVERNANCE AUDIT VERIFICATION CHECKS
+An independent audit engine or human auditor evaluates ten standard trace verification criteria:
+
+1. EVIDENCE INTEGRITY & PROVENANCE: Was all ingested evidence properly calibrated, timestamped,
+   and classified by provenance? Was missing evidence explicitly acknowledged?
+2. OBSERVATION/INTERPRETATION PURITY: Were raw acoustic measurements kept unpolluted by
+   interpretive biases?
+3. CAUSAL TRACE REACHABILITY: Does the authorized diagnosis link back to prerequisite causal
+   mechanisms and evidence records in the trace?
+4. INTENT & CONSTRAINT BINDINGS: Are formulated requirements and non-negotiable preservation
+   constraints present and properly bound to decisions?
+5. ALTERNATIVE EXPLORATION TRACE: Does the record demonstrate that alternative interventions
+   were deliberated where the problem admitted alternatives?
+6. TRADE-OFF DISCLOSURE TRACE: Does the record demonstrate that collateral costs and potential
+   side effects were evaluated and explicitly accepted prior to execution?
+7. PREDICTION SEALING TIMESTAMPS: Was the PredictedOutcomeRecord sealed before execution dispatch?
+8. EXECUTION LINEAGE FIDELITY: Are translation manifests, acceptability assessments, rejection
+   gates, and applied receipts properly recorded?
+9. FIREWALL ADHERENCE: Was outcome evidence measured empirically from post-action audio without
+   circular reliance on predictions?
+10. UNCERTAINTY PRESERVATION: Did surviving epistemic uncertainty remain visible throughout the
+    deliberation and in final review records?
+
+12.3 TRACE AUDIT DISPOSITIONS & VERDICTS
+Upon completing an independent trace audit, the audit engine assigns a governance disposition:
+  - `TRACE_AUDIT_PASS`: The run's trace is complete relative to its lifecycle status, with
+    unbroken lineage, verified provenance, intact integrity, and full uncertainty preservation.
+  - `TRACE_AUDIT_PASS_WITH_GAPS`: Non-critical trace gaps exist (e.g. non-essential telemetry missing),
+    but core dependency links and integrity remain intact.
+  - `TRACE_AUDIT_FAIL_INCOMPLETE_LINEAGE`: Required intermediate records or dependency links are
+    missing for the achieved lifecycle status.
+  - `TRACE_AUDIT_FAIL_INTEGRITY_NOT_ESTABLISHED`: Record integrity cannot be independently verified,
+    or verifiable evidence of tampering is detected.
+  - `TRACE_AUDIT_FAIL_PROVENANCE_UNRESOLVED`: Critical evidence lacks provenance classification or
+    exhibits unverified source claims.
+  - `TRACE_AUDIT_FAIL_ANTI_REWRITE_BREACH`: Evidence exists that sealed historical records were
+    modified or overwritten post-sealing.
+
+These dispositions are `PHASE_1C5F_PROPOSED` governance terms, NOT lifecycle statuses.
+
+================================================================================
+SECTION 13 — HUMAN REVIEW, COLLABORATION & OVERRIDE PROVENANCE
+================================================================================
+
+13.1 THE HUMAN-IN-THE-LOOP COEXISTENCE MODEL
+Sound engineering is an artistic and technical discipline where human producers, mixing
+engineers, and mastering professionals collaborate with automated systems. Phase 1C.5f
+establishes strict governance rules for human interactions:
+  "HUMAN INTERVENTIONS, MODIFICATIONS, AND OVERRIDES MUST BE PRESERVED AS
+   DISTINCT, FIRST-CLASS PROVENANCE ARTIFACTS.
+   THEY MUST NEVER BE SILENTLY ERASED, NOR MAY AI-GENERATED REASONING BE
+   FALSELY ATTRIBUTED TO HUMAN AUTHORITY."
+
+Phase 1C.5f rigorously distinguishes between:
+  - Non-authoritative human client/producer inputs (e.g. aesthetic goals, musical notes,
+    late contextual disclosures), classified as `ORIGIN_1_USER_SUPPLIED`.
+  - Authoritative engineering actions and certified decisions by a professional sound engineer,
+    classified as `ORIGIN_6_HUMAN_ENGINEERING_INPUT`.
+
+13.2 THE SIX FORMS OF HUMAN INTERACTION
+Phase 1C.5f classifies six discrete types of human involvement:
+
+1. `HUMAN_ACTION_EXPLICIT_APPROVAL`:
+   - An authorized human engineer reviews an AI-generated diagnosis, decision, or patch, and
+     explicitly approves it for execution without modification.
+   - Trace Record: `HumanReviewRecord` storing reviewer ID, timestamp, approval scope, and rationale.
+
+2. `HUMAN_ACTION_PARAMETER_MODIFICATION`:
+   - An authorized human engineer accepts the AI's causal mechanism and strategy, but adjusts
+     specific parameters (e.g. shifts EQ center frequency from 680 Hz to 710 Hz, or reduces compression ratio).
+   - Trace Record: Documents both the AI proposal and the human modification, highlighting
+     the delta and preserving the human's stated engineering rationale.
+
+3. `HUMAN_ACTION_FULL_OVERRIDE`:
+   - An authorized human engineer completely rejects the AI's proposed diagnosis or intervention
+     and substitutes their own distinct strategy (e.g. AI suggested notch filtering; human engineer
+     substitutes transient shaping or dynamic gating).
+   - Governance Rule: The original AI proposal record remains preserved and sealed unchanged;
+     the trace records the human-interaction governance disposition as REJECTED_BY_HUMAN and the
+     active human directive as ACTIVE_HUMAN_DIRECTIVE (both classified as PHASE_1C5F_PROPOSED
+     governance metadata; neither is a lifecycle status). The AI must not take credit for the human's decision.
+
+4. `HUMAN_ACTION_AESTHETIC_VETO`:
+   - A human client or artist rejects an intervention on purely subjective aesthetic grounds
+     ("I prefer the raw, un-notched sound; the ring gives it character"), overriding technical optimality.
+   - Trace Record: Documented as an intentional aesthetic preference (`ORIGIN_1_USER_SUPPLIED`),
+     preventing the system from treating the rejection as a technical diagnostic failure.
+
+5. `HUMAN_ACTION_ESCALATION_REQUEST`:
+   - The AI encounters ambiguity or safety risks that exceed its confidence bounds, pausing
+     deliberation and requesting human expert guidance.
+   - Trace Record: Logs the escalation trigger, surviving options, and the human expert's resolution.
+
+6. `HUMAN_ACTION_POST_HOC_AUDIT_VERDICT`:
+   - A qualified peer reviewer or auditor inspects a completed historical run and logs formal
+     trace and governance audit findings.
+
+13.3 ANTI-COLLUSION & PROVENANCE PURITY INVARIANT
+Under no circumstances may an automated system:
+  - Falsely claim that a human engineer reviewed an intervention when no human was present.
+  - Present an AI-generated diagnosis or decision as human-approved without verifiable human approval evidence or an auditable approval receipt. Possible implementation mechanisms may include authenticated approval actions, digital signatures, signed approval manifests, approval receipts, or equivalent verifiable mechanisms [ILLUSTRATIVE — non-normative implementation mechanisms].
+  - Overwrite human manual tweaks in the DAW without explicit user confirmation.
+
+================================================================================
+SECTION 14 — CANDIDATE-LESSON GOVERNANCE, QUARANTINE & PROMOTION GATES
+================================================================================
+
+14.1 THE PROBLEM OF UNGOVERNED LEARNING & ONE-SHOT OVERFITTING
+A severe hazard in automated AI engineering is "one-shot overfitting":
+  "AN INTERVENTION SUCCEEDED ON ONE SPECIFIC SNARE DRUM TRACK,
+   LEAD THE SYSTEM TO PREMATURELY CONCLUDE THAT ALL SNARE DRUMS REQUIRE THE SAME INTERVENTION."
+
+Phase 1C.5e established that Stage 14 retrospective reviews may identify candidate lessons,
+but mandates that ALL candidate lessons must be placed in a QUARANTINE REPOSITORY.
+Phase 1C.5f defines the governance architecture governing this quarantine and the eligibility
+criteria required for potential promotion.
+
+14.2 THE CANDIDATE-LESSON LIFECYCLE & GOVERNANCE BOUNDARY
+A candidate lesson moves through four distinct governance states:
+
+```
+  [Stage 14 Review (Phase 1C.5e)]
+                 |
+                 v
+  [STATE_QUARANTINED] ----(Rejection Gate)----> [STATE_REJECTED]
+                 |
+                 v (Evaluation against Eligibility Criteria)
+  [STATE_PROMOTION_CANDIDATE]
+                 |
+                 v (Authoritative Knowledge-Governance Approval)
+  [STATE_PROMOTED_TO_KNOWLEDGE_BASE]
+                 |
+                 v (Migration Mechanics owned by Phase 1C.5g)
+  [Integrated into Tone Translator Knowledge Structures]
+```
+
+CRITICAL GOVERNANCE AUTHORITY BOUNDARY:
+  "PROMOTION APPROVAL IS PERFORMED BY THE AUTHORITATIVE KNOWLEDGE-GOVERNANCE
+   AUTHORITY / PROCESS. ONCE PROMOTION IS APPROVED, PHASE 1C.5g OWNS MIGRATION,
+   REMAPPING AND ADOPTION INTO CURRENT TT REASONING STRUCTURES."
+
+Phase 1C.5f does NOT assign promotion approval authority to Phase 1C.5g. Phase 1C.5g owns
+the migration and adoption mechanics once promotion is formally approved by governance.
+
+14.3 CONTEXT-SENSITIVE PROMOTION ELIGIBILITY CRITERIA
+Before a quarantined candidate lesson can be submitted to the knowledge-governance authority
+for promotion consideration, Phase 1C.5f requires satisfying context-sensitive criteria:
+
+1. REPEATABILITY & EMPIRICAL SUPPORT: A candidate lesson must have evidential support proportionate
+   to the scope, generality, and consequence of the proposed claim. Broadly general lessons
+   ordinarily require broader supporting evidence than narrowly scoped lessons. Evidence
+   sufficiency is case-relative and question-relative; Phase 1C.5f imposes no universal minimum
+   number of runs, contexts, takes, sessions, or observations.
+2. CAUSAL PLAUSIBILITY: The lesson must be grounded in verified acoustic physics or psychoacoustics,
+   not purely accidental statistical correlation.
+3. CLEAR APPLICABILITY SCOPE: The lesson must explicitly define its boundary conditions
+   (e.g. "Applies only to wooden-shell snare drums recorded with dynamic microphones; invalid for sample-replaced tracks").
+4. CONTRADICTION & COUNTEREXAMPLE ASSESSMENT: The quarantine process must search for,
+   preserve, and evaluate contradictory or counterexample traces relevant to the proposed lesson.
+   The existence of a counterexample does not automatically prohibit promotion; instead,
+   contradictions must be reconciled through narrower applicability boundaries, preserved
+   uncertainty, or rejection where the claim cannot be responsibly bounded.
+5. NON-CONFLICT WITH GOVERNED KNOWLEDGE: The lesson must not contradict the 21 Principles
+   or established Phase 1C.4 knowledge baselines.
+6. EXPLICIT UNCERTAINTY BOUNDS: The lesson must preserve its remaining epistemic limitations
+   and unproven edge cases.
+7. GOVERNANCE REVIEW & AUTHORIZATION: The lesson must be reviewed and certified by the
+   designated knowledge-governance process before adoption.
+
+================================================================================
+SECTION 15 — TRACE INTEGRITY, TAMPER EVIDENCE & VERIFICATION
+================================================================================
+
+15.1 WHAT MUST BE INTEGRITY-PROTECTED (NORMATIVE REQUIREMENTS)
+Phase 1C.5f normatively defines the architectural properties that must be protected:
+  - Record Contents: Acoustic parameters, hypotheses, diagnoses, requirements, decisions,
+    and outcome observations recorded during deliberation.
+  - Creation Timestamps & Temporal Ordering: Verification that predictions preceded execution,
+    and observations preceded diagnoses.
+  - Dependency Edges: Protection against retroactively adding, deleting, or re-pointing dependency links.
+  - Run Headers & Lineage: Protection against altering parent/child pointers or generation indices.
+  - Provenance Classifications: Protection against upgrading synthetic or unverified data
+    to measured or human-engineering status.
+
+15.2 TECHNOLOGY-NEUTRAL INTEGRITY ARCHITECTURE
+A sealed record must provide independently verifiable integrity evidence sufficient to detect
+unauthorized modification, substitution, loss of ordering, lineage corruption, or provenance mutation.
+
+NON-NORMATIVE IMPLEMENTATION OPTIONS:
+The architecture permits any robust technical implementation capable of satisfying this
+verifiability obligation:
+  - Cryptographic Digests: Canonicalized record hashing (e.g. SHA-256, BLAKE3);
+  - Chained Sequence Hashes: Linking sequential records via predecessor digest chains;
+  - Merkle Lineage Trees: Hierarchical digests aggregating run and stage artifacts;
+  - Digital Signatures: Asymmetric cryptographic signing of run manifests;
+  - Immutable Storage Engines: Append-only databases, ledger storage, or WORM volumes;
+  - Content-Addressable Storage: Addressing records by cryptographic digest.
+
+15.3 INTEGRITY FAILURE DETECTION & GOVERNANCE DEGRADATION
+During retrospective audit, the audit engine verifies the integrity evidence of all records
+and dependency links. If integrity evidence is invalid, missing, or mismatched, the run is
+flagged with `TRACE_AUDIT_FAIL_INTEGRITY_NOT_ESTABLISHED`.
+The corrupted record is marked with `RECORD_GOVERNANCE_STATE_TOMBSTONED`, preserving historical
+headers for audit forensics while barring the corrupted artifact from operational reliance.
+
+================================================================================
+SECTION 16 — FAILURE, MISSING-TRACE & CORRUPTION DEGRADATION GOVERNANCE
+================================================================================
+
+16.1 DETERMINISTIC DEGRADATION WHEN TRACEABILITY FAILS
+Real-world systems experience telemetry loss, network disconnects, disk corruption,
+and incomplete inputs. Phase 1C.5f mandates that the AI Sound Engineer MUST NOT FAIL SILENTLY
+or fabricate missing history:
+  "WHEN TRACE INTEGRITY CANNOT BE ESTABLISHED, THE SYSTEM SHALL NOT FABRICATE
+   MISSING RECORDS, INFER UNPROVEN PROVENANCE, OR CLAIM COMPLETE RECONSTRUCTION.
+   THE SYSTEM MUST DEGRADE DETERMINISTICALLY AND EXPOSE THE UNCERTAINTY."
+
+MISSING HISTORY REMAINS MISSING:
+Where hardware telemetry, input metadata, or intermediate records are lost:
+  - Missing data remains recorded as UNKNOWN or UNVERIFIED.
+  - The system is strictly barred from using generative LLMs or post-action acoustic data
+    to "hallucinate what the system probably did."
+  - Inferred parameter states must never be presented as historical fact.
+
+16.2 THE TEN GOVERNANCE DEGRADATION CONDITIONS
+Phase 1C.5f defines ten distinct governance degradation conditions:
+
+1. `GOVERNANCE_CONDITION_INCOMPLETE_TRACE`:
+   - One or more non-critical intermediate records are missing from the trace graph.
+   - Handling: Mark trace as INCOMPLETE. Audit may proceed on available records, but no
+     conclusive claim of end-to-end trace soundness can be rendered.
+
+2. `GOVERNANCE_CONDITION_UNRESOLVED_PROVENANCE`:
+   - Audio or metadata arrived without clear source origin, mic configuration, or calibration.
+   - Handling: Assign `ORIGIN_UNKNOWN`. Prohibit treating data as calibrated measured evidence.
+
+3. `GOVERNANCE_CONDITION_UNVERIFIABLE_LINEAGE`:
+   - A child run's `parent_run_id` points to a run that cannot be located in the repository.
+   - Handling: Preserve the declared `parent_run_id` and existing lineage claim unchanged.
+     Mark the referenced parent artifact as unresolved or unavailable, classify the lineage
+     as unverifiable, and prohibit automatic reliance on inherited parent evidence until
+     the lineage can be resolved or independently verified.
+
+4. `GOVERNANCE_CONDITION_INTEGRITY_VIOLATION`:
+   - A record's integrity evidence fails verification, indicating tampering or corruption.
+   - Handling: Governance fault. Tombstone the corrupted record; bar all downstream
+     records from active deployment.
+
+5. `GOVERNANCE_CONDITION_CONFLICTING_LINEAGE`:
+   - Two runs claim contradictory parent-child lineage or mutually exclusive ancestor states.
+   - Handling: Flag as lineage collision. Freeze both runs pending human engineering review.
+
+6. `GOVERNANCE_CONDITION_MISSING_DEPENDENCY`:
+   - An authorized diagnosis exists, but the prerequisite causal graph or evidence record is missing.
+   - Handling: The historical diagnosis remains preserved. Its evidential basis cannot be
+     independently verified from the available trace, and the audit must record this limitation
+     without rewriting or invalidating the Phase 1C.5c diagnosis.
+
+7. `GOVERNANCE_CONDITION_UNEXPLAINED_MUTATION`:
+   - Parameters applied to the DSP hardware do not match the sealed decision or platform
+     translation, and no deviation receipt was logged.
+   - Handling: Audit failure. Flag as unaccounted execution discrepancy.
+
+8. `GOVERNANCE_CONDITION_PARTIAL_EXPLANATION`:
+   - An explanation can only reconstruct a subset of the decision rationale due to missing
+     deliberation links.
+   - Handling: Explicitly label the explanation as partial; declare missing rationale components.
+
+9. `GOVERNANCE_CONDITION_BROKEN_EXECUTION_CHAIN`:
+   - Execution commands were dispatched, but no execution receipt or telemetry was returned.
+   - Handling: Phase 1C.5f records the broken execution-chain governance condition, preserves
+     the absence of execution receipt or telemetry as UNKNOWN / UNVERIFIED, and exposes the trace
+     limitation. The applicable frozen lifecycle status or transition is determined exclusively
+     by the Phase 1C.5a lifecycle state machine and the owning upstream Phase 1C.5e
+     execution/outcome rules. Prohibit manufacturing fake receipts; missing history remains missing.
+
+10. `GOVERNANCE_CONDITION_FIREWALL_VIOLATION`:
+    - Post-action outcome evaluation records contain direct references to predicted values
+      treated as observed data.
+    - Handling: Fatal audit violation (Principle 18 breach). Preserve the evaluation record
+      as a historical artifact, record the Outcome Evidence Firewall violation explicitly,
+      prohibit authoritative or operational reliance on the contaminated evaluation, and retain
+      full traceability to the improper prediction-derived inputs. Any substantive re-evaluation
+      or lifecycle response remains with the owning upstream reasoning and review authorities.
+
+================================================================================
+SECTION 17 — RECORD ARCHITECTURE & PROPOSED PHASE 1C.5f SCHEMAS
+================================================================================
+
+17.1 NON-NORMATIVE IMPLEMENTATION STANCE
+The schemas defined in this section are illustrative representations of required semantics. Production implementations
+may use different field names, structures, storage models, or serialization formats (e.g. JSON-LD,
+Protocol Buffers, SQL tables, or Firestore documents) provided the architectural information,
+trace relationships, governance boundaries, integrity obligations, provenance semantics,
+and uncertainty constraints remain faithfully representable and auditable.
+
+17.2 PRIMARY PROPOSED SCHEMA 1: `TraceRunManifestRecord` (ILLUSTRATIVE)
+Illustrates conceptual container fields for a single lifecycle run:
+  - `run_id`: Unique stable identifier for this execution cycle;
+  - `session_id`: Broader project or mixing session container;
+  - `parent_run_id`: Reference to parent run (null for root runs);
+  - `root_run_id`: Reference to original root run;
+  - `generation_index`: Integer counter indicating iteration depth;
+  - `lifecycle_status`: Current frozen lifecycle status (Statuses 01 to 27);
+  - `governance_state`: Overall trace governance state (`SEALED`, `ACTIVE`, `DEGRADED`);
+  - `record_manifest`: Array of record references `[{ stage, record_id, record_type, integrity_ref }]`;
+  - `edge_manifest`: Array of dependency edges `[{ edge_id, source_record_id, target_record_id, edge_type }]`;
+  - `run_timestamp_initialized`: Timestamp of initialization;
+  - `run_timestamp_sealed`: Timestamp of sealing;
+  - `run_integrity_evidence`: Verifiable integrity proof for manifest;
+  - `human_signoff_ref`: Reference to optional human approval record.
+
+17.3 PRIMARY PROPOSED SCHEMA 2: `TraceRecordEnvelope` (ILLUSTRATIVE)
+Illustrates wrapping individual records across lifecycle stages:
+  - `record_id`: Unique stable identifier for this artifact;
+  - `run_id`: Reference to the containing run;
+  - `stage_number`: Lifecycle stage (01 through 14);
+  - `record_type`: Authoritative name (e.g. `CausalDiagnosisRecord`, `EngineeringDecisionRecord`);
+  - `provenance_classification`: Origin classification (e.g. `ORIGIN_2_MEASURED_EVIDENCE`);
+  - `governance_state`: `RECORD_GOVERNANCE_STATE_SEALED`, `DRAFT`, etc.;
+  - `created_timestamp`: Creation timestamp;
+  - `sealed_timestamp`: Sealing timestamp;
+  - `content_payload`: The verbatim stage-specific engineering record payload;
+  - `integrity_evidence`: Independently verifiable integrity proof (e.g. digest or signature);
+  - `predecessor_record_refs`: Array of input records directly consumed;
+  - `uncertainty_profile`: Declared epistemic and aleatoric uncertainty attributes.
+
+17.4 PRIMARY PROPOSED SCHEMA 3: `TraceRelationshipEdgeRecord` (ILLUSTRATIVE)
+Illustrates directed dependencies between records:
+  - `edge_id`: Unique identifier for the relationship;
+  - `run_id`: Reference to containing run;
+  - `source_record_id`: Originating record;
+  - `target_record_id`: Dependent downstream record;
+  - `relationship_type`: Semantic edge type (`PRODUCED_FROM`, `JUSTIFIED_BY`, `CONSTRAINED_BY`, etc.);
+  - `qualitative_dependency_annotation`: Optional qualitative descriptive note on the relationship
+    (no false numerical precision or arbitrary scoring);
+  - `created_timestamp`: Timestamp when edge was instantiated.
+
+17.5 PRIMARY PROPOSED SCHEMA 4: `GovernedExplanationRecord` (ILLUSTRATIVE)
+Illustrates complete assembled engineering explanations:
+  - `explanation_id`: Unique identifier;
+  - `run_id`: Reference to audited run;
+  - `decision_record_ref`: Reference to target `EngineeringDecisionRecord`;
+  - `evidential_summary`: Structured reconstruction of input measurements and observations;
+  - `diagnostic_justification`: Physical mechanisms, competing hypotheses, and exclusions;
+  - `intent_alignment`: Mapping of selected action to declared requirements;
+  - `tradeoff_disclosure`: Explicit statement of accepted collateral consequences;
+  - `predicted_vs_actual_outcome`: Comparative audit across the Outcome Evidence Firewall;
+  - `surviving_uncertainty`: Explicit declaration of uneliminated ambiguity;
+  - `audience_view_type`: `VIEW_TECHNICAL_ENGINEERING`, `VIEW_MUSICIAN_PRODUCER`, etc.;
+  - `explanation_integrity_ref`: Verifiable integrity link binding explanation to underlying records.
+
+17.6 PRIMARY PROPOSED SCHEMA 5: `QuarantinedCandidateLessonRecord` (ILLUSTRATIVE)
+Illustrates generalizable insights isolated for governed review:
+  - `candidate_lesson_id`: Unique identifier;
+  - `originating_run_id`: Run where lesson was observed;
+  - `originating_review_record_ref`: Stage 14 review record reference;
+  - `acoustic_domain`: Target instrument, genre, or processing category;
+  - `empirical_observation`: Observed intervention outcome correlation;
+  - `proposed_causal_mechanism`: Acoustic physics rationale;
+  - `applicability_boundary_conditions`: Strict operational scope and constraints;
+  - `counter_examples_observed`: Historical records contradicting the lesson;
+  - `quarantine_governance_state`: `STATE_QUARANTINED`, `STATE_PROMOTION_CANDIDATE`, `STATE_REJECTED`, `STATE_PROMOTED_TO_KNOWLEDGE_BASE` (PHASE_1C5F_PROPOSED record governance states; not lifecycle statuses);
+  - `supporting_run_refs`: Array of distinct runs where correlation was observed;
+  - `governance_review_disposition`: Record of review by the authoritative knowledge-governance authority.
+
+================================================================================
+SECTION 18 — VOCABULARY POLICY & CONCORDANCE REGISTRIES
+================================================================================
+
+18.1 VOCABULARY CLASSIFICATION POLICY
+To prevent linguistic drift and maintain absolute subordination to frozen upstream baselines,
+Phase 1C.5f enforces an explicit vocabulary classification policy:
+  - `INHERITED`: Terms, statuses, stages, or principles formally defined in upstream frozen
+    specifications (Phases 1C.5a through 1C.5e). These MUST NOT be altered.
+  - `PHASE_1C5F_PROPOSED`: Terms, conceptual entities, governance states, or audit dispositions
+    introduced by Phase 1C.5f. These are explicitly marked and MUST NOT be represented as
+    frozen lifecycle statuses.
+  - `ILLUSTRATIVE`: Pedagogical labels, example field names, or mock data tags.
+  - `DEFERRED`: Concepts reserved for future implementation or downstream phases.
+
+18.2 MASTER VOCABULARY CONCORDANCE TABLE
+
++---------------------------------------+--------------------------+-------------------------------------------------------------+
+| Term / Concept                        | Classification           | Authoritative Definition & Governance Scope                 |
++---------------------------------------+--------------------------+-------------------------------------------------------------+
+| 21 Principles of Sound Engineering    | INHERITED                | Constitutional axioms from Phase 1C.5a v0.3c (§4.1).        |
+| 14 Lifecycle Stages                   | INHERITED                | Macro stages from Phase 1C.5a v0.3c (§8).                   |
+| 27 Frozen Lifecycle Statuses          | INHERITED                | Exact statuses from Phase 1C.5a v0.3c (§10, §§19-21).       |
+| "Uncertainty Must Survive"            | INHERITED                | Governing constitutional invariant from 1C.5a (§4.1).       |
+| Exact 8-Step Execution Boundary Seq.  | INHERITED                | Operational sequence from Phase 1C.5e v0.1m (§4.1).         |
+| Outcome Evidence Firewall             | INHERITED                | Separation between predictions and evidence (1C.5e §7).     |
+| Layer A Findings / Layer B Actions    | INHERITED                | Two-layer outcome evaluation model (1C.5e §13).             |
+| `run_id` / `record_id`                | PHASE_1C5F_PROPOSED      | Stable conceptual trace identifiers (§4.2).                 |
+| Eight-Tier Provenance Taxonomy        | PHASE_1C5F_PROPOSED      | Origin classification taxonomy (ORIGIN_1 to ORIGIN_8; §5.2).|
+| Record Governance States              | PHASE_1C5F_PROPOSED      | Artifact lifecycle states (DRAFT, SEALED, etc.; §7.3).      |
+| Ten Governance Degradation Conditions | PHASE_1C5F_PROPOSED      | Failure and trace-gap classifications (§16.2).              |
+| Ten Trace Audit Checks                | PHASE_1C5F_PROPOSED      | Independent trace verification inspection criteria (§12.2).|
+| Six Trace Audit Dispositions          | PHASE_1C5F_PROPOSED      | Governance audit verdicts (TRACE_AUDIT_PASS, etc.; §12.3).  |
+| Quarantined Candidate Lesson          | PHASE_1C5F_PROPOSED      | Isolated empirical knowledge awaiting governance (§14.2).   |
+| `ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE`| ILLUSTRATIVE            | Explicit tag for synthetic pedagogical data (§5.2, §20).    |
+| Technology-Neutral Integrity Options  | ILLUSTRATIVE             | Illustrative implementation mechanisms (§15.2); non-        |
+|                                       |                          | normative implementation options only.                      |
+| `REJECTED_BY_HUMAN` / Human Overrides | PHASE_1C5F_PROPOSED      | Human review governance dispositions / metadata (§13.2, §20).|
+| Quarantined Candidate Lesson States   | PHASE_1C5F_PROPOSED      | Four canonical states (`STATE_QUARANTINED`, etc.; §14.2).   |
+| Provenance Resolution States          | PHASE_1C5F_PROPOSED      | Record-level provenance flags (`UNRESOLVED_INCOMPLETE`; §5.2)|
+| Human Interaction Action Family       | PHASE_1C5F_PROPOSED      | Human-interaction governance/action tokens only; NOT        |
+|                                       |                          | lifecycle statuses (`HUMAN_ACTION_EXPLICIT_APPROVAL`, etc.) |
+| Execution Deviation Family            | PHASE_1C5F_PROPOSED      | Execution-lineage governance classifications only; NOT      |
+|                                       |                          | lifecycle statuses (`DEVIATION_TYPE_PLATFORM_GRID_*`, etc.) |
+| `COMPARABILITY_FAILED_PERFORMANCE_*`  | ILLUSTRATIVE             | Scenario-specific illustrative comparability result label;  |
+|                                       |                          | not an inherited upstream token; NOT a lifecycle status.    |
+| Relationship Edge Type Family         | PHASE_1C5F_PROPOSED      | Trace relationship semantics only; not lifecycle statuses   |
+|                                       |                          | and not substantive reasoning conclusions (`PRODUCED_FROM`, |
+|                                       |                          | `JUSTIFIED_BY`, `PREDICTS_FOR`, `OUTCOME_OF`, etc.; §6.2).  |
+| Uncertainty Trace Classification Fam. | PHASE_1C5F_PROPOSED      | Trace-layer labels for preserving and exposing upstream     |
+|                                       |                          | uncertainty; do not redefine substantive epistemic meaning  |
+|                                       |                          | or sufficiency rules owned by upstream phases (§9.2).       |
+| Phase 1C.5f Proposed Trace Records    | PHASE_1C5F_PROPOSED      | Trace-layer governance and metadata records introduced by   |
+|                                       |                          | Phase 1C.5f (`PlatformTranslationRecord`, §17;              |
+|                                       |                          | `HumanReviewRecord`, `ExecutionReceiptRecord`, etc.).       |
++---------------------------------------+--------------------------+-------------------------------------------------------------+
+
+18.3 PROHIBITION AGAINST LIFECYCLE STATUS INVENTIONS
+Phase 1C.5f strictly enforces:
+  "GOVERNANCE CONDITIONS (SUCH AS `INCOMPLETE_TRACE` OR `INTEGRITY_VIOLATION`),
+   RECORD STATES (SUCH AS `RECORD_SEALED`), HUMAN REVIEW DISPOSITIONS (SUCH AS
+   `REJECTED_BY_HUMAN`), CANDIDATE-LESSON STATES (SUCH AS `STATE_REJECTED`),
+   AND AUDIT DISPOSITIONS (SUCH AS `TRACE_AUDIT_PASS`) MUST NEVER BE USED AS,
+   OR CONVERTED INTO, LIFECYCLE STATUS TOKENS."
+
+Lifecycle statuses remain strictly the 27 frozen tokens of Phase 1C.5a v0.3c.
+
+================================================================================
+SECTION 19 — DOWNSTREAM INTERFACES (PHASE 1C.5g & PHASE 1C.5h)
+================================================================================
+
+19.1 DOWNSTREAM INTERFACE TO PHASE 1C.5g (KNOWLEDGE MIGRATION)
+Phase 1C.5g owns the formal migration, remapping, and adoption of current Tone Translator
+knowledge into the frozen reasoning architecture.
+Phase 1C.5f defines the exact governance interface delivered to Phase 1C.5g:
+  - Provenance Records: Establishing the origin, source track, author, and date of historical rules.
+  - Lineage Trails: Providing verifiable links between historical engineering actions and outcomes.
+  - Quarantined Candidate-Lesson Metadata: Supplying Phase 1C.5g with candidate lessons that have
+    been approved for promotion by the authoritative knowledge-governance process.
+  - Conflict Audit Reports: Flagging where proposed migrated rules contradict the 21 Principles
+    or existing causal graphs.
+
+BOUNDARY ENFORCEMENT:
+Phase 1C.5f DOES NOT decide which legacy Tone Translator rules are migrated or rewritten.
+That substantive migration responsibility belongs exclusively to Phase 1C.5g.
+Furthermore, Phase 1C.5g DOES NOT act as the promotion approval authority; promotion is
+approved by the authoritative knowledge-governance process, while Phase 1C.5g executes
+the resulting migration mechanics into current TT reasoning structures.
+
+19.2 DOWNSTREAM INTERFACE TO PHASE 1C.5h (UAT & VERIFICATION)
+Phase 1C.5h owns formal User Acceptance Testing (UAT), empirical test execution, verification
+fixtures, and final program sign-off.
+Phase 1C.5f defines the verification contracts that Phase 1C.5h must validate:
+  - Trace Completeness Contract: Verifying that active stages emit compliant sealed envelopes
+    consistent with their lifecycle path.
+  - Provenance Integrity Contract: Testing that simulated, measured, and user inputs retain
+    distinct origin classifications.
+  - Firewall Enforcement Contract: Validating that pre-action predictions cannot bypass the
+    Outcome Evidence Firewall.
+  - Anti-Rewrite Contract: Attempting deliberate modification of sealed historical records to
+    verify that the governance engine throws hard rejection faults.
+  - Audit Reproducibility Contract: Verifying that an external auditor can reconstruct runs offline.
+  - Degradation Contract: Injecting missing records or corrupted hashes to verify deterministic
+    degradation without synthetic fabrication.
+
+BOUNDARY ENFORCEMENT:
+Phase 1C.5f DOES NOT execute UAT or claim validation sign-off. The scenarios in Section 20 are
+architectural illustrations, NOT executed UAT test runs.
+
+================================================================================
+SECTION 20 — WORKED ARCHITECTURAL ILLUSTRATIONS (GOVERNANCE SCENARIOS 1 TO 16)
+================================================================================
+
+To stress-test and exercise the architecture across diverse real-world edge cases,
+Phase 1C.5f provides sixteen worked architectural scenarios. Substantive engineering actions
+are explicitly attributed to their owning phases (Phase 1C.5b Evidence/Observation,
+Phase 1C.5c Diagnosis, Phase 1C.5d Requirements/Decisions, Phase 1C.5e Evaluation/Review).
+Phase 1C.5f defines trace and governance tracking around these actions.
+All numeric values and track data are explicitly designated:
+  `[ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE]`
+
+--------------------------------------------------------------------------------
+SCENARIO 1: CHILD RUN CREATED AFTER FAILED INTERVENTION (LINEAGE & RE-QUALIFICATION)
+--------------------------------------------------------------------------------
+1. CONTEXT (Parent Run `run_root_001`):
+   - Snare drum track exhibited resonant ringing at 680 Hz [ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE].
+   - Phase 1C.5d Decision: Narrow notch filter at 680 Hz, -9 dB.
+   - Outcome evidence (Phase 1C.5e Stage 13): Ringing persisted; transient attack lost 3.5 dB crest factor.
+   - Phase 1C.5e Stage 14 Review: Action authorized `action_alternate_intervention`. Parent run sealed at
+     `STATUS 26: REVIEW_COMPLETED_AWAITING_ITER`.
+2. CHILD RUN INITIALIZATION (`run_child_002`):
+   - Phase 1C.5f Trace Engine records: `parent_run_id`: `run_root_001`; `generation_index`: 1.
+   - Inherited Evidence: Parent 680 Hz FFT observation imported as `ORIGIN_5_INHERITED_HISTORICAL_EVIDENCE`.
+3. RE-QUALIFICATION AUDIT:
+   - Phase 1C.5b Evidence Intake verifies Take 2 audio: 680 Hz resonance remains present, but level is +1.2 dB higher.
+   - Measurement is formally re-qualified for Child Run 2.
+4. CHILD REASONING & RESOLUTION (OWNING PHASES):
+   - Phase 1C.5c Re-diagnosis: Ringing originates from bottom head sympathetic snare buzz, not top head resonance.
+   - Phase 1C.5d Decision: High-pass gating sidechain on snare bottom mic; transient shaper on top snare.
+   - Phase 1C.5e Outcome: Ringing resolved; attack punch preserved. Run sealed at `STATUS 27: CYCLE_COMPLETED_SATISFIED`.
+5. GOVERNANCE VERIFICATION (Phase 1C.5f):
+   - Parent run `run_root_001` remains permanently intact and unmutated; parent mistake
+     is fully visible; child lineage correctly points to parent review record.
+
+--------------------------------------------------------------------------------
+SCENARIO 2: PARENT EVIDENCE NO LONGER COMPARABLE (COMPARABILITY FAILURE)
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Acoustic guitar recording in parent run had baseline dynamic range of 14 dB [ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE].
+   - Compression intervention failed due to pumping; Phase 1C.5e Stage 14 ordered iteration.
+2. CHILD RUN INTAKE:
+   - Musician re-tracked the guitar part between runs (Take 2 instead of Take 1).
+   - Parent evidence imported as `ORIGIN_5_INHERITED_HISTORICAL_EVIDENCE`.
+3. COMPARABILITY AUDIT:
+   - Child-run evidence is re-qualified under the applicable Phase 1C.5b evidence intake, evidence sufficiency, and uncertainty rules within the parent/child iteration context inherited from Phase 1C.5e.
+   - Musician played fingerstyle instead of heavy strumming; dynamic profile, spectral centroid, and tempo differ fundamentally, so comparability is not established.
+   - Illustrative comparability result: `COMPARABILITY_FAILED_PERFORMANCE_MISMATCH` [ILLUSTRATIVE — scenario-specific label; not an inherited upstream token and not a lifecycle status].
+4. GOVERNANCE RESOLUTION (Phase 1C.5f):
+   - Inherited parent evidence remains historical, but active operational reliance on that inherited evidence is withheld; child run QUARANTINES parent baseline evidence.
+   - Current child-run evidence is acquired, assessed, or re-qualified as required under the applicable upstream Phase 1C.5b evidence-sufficiency and discriminating-evidence rules.
+   - Trace logs explicit rationale for withholding operational reliance from parent baseline.
+
+--------------------------------------------------------------------------------
+SCENARIO 3: HUMAN ENGINEER OVERRIDES AI RECOMMENDATION (OVERRIDE PROVENANCE)
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Lead vocal track has sibilance at 5.8 kHz [ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE].
+   - Phase 1C.5d AI Deliberation: Proposed dynamic de-esser notch at 5.8 kHz with -6 dB threshold.
+2. HUMAN INTERVENTION:
+   - Senior mixing engineer reviews proposal in DAW: "The mic capsule has a peak at 8.2 kHz,
+     not 5.8 kHz; the de-esser is grabbing the wrong frequency."
+   - Human manually configures split-band de-esser at 8.2 kHz, Gain -4.5 dB.
+3. TRACE RECORDING (Phase 1C.5f):
+   - The AI EngineeringDecisionRecord remains preserved and sealed unchanged. A separate Phase 1C.5f human-interaction governance disposition records that the AI proposal was rejected by the authorized human engineer (disposition: REJECTED_BY_HUMAN, classified as PHASE_1C5F_PROPOSED governance metadata; not a lifecycle status).
+   - `HumanReviewRecord` instantiated: Action `HUMAN_ACTION_FULL_OVERRIDE`, Reviewer ID `ENG_402`.
+   - Active execution command binds to human record with provenance `ORIGIN_6_HUMAN_ENGINEERING_INPUT`.
+4. OUTCOME & REVIEW:
+   - Sibilance successfully attenuated.
+   - Phase 1C.5e Stage 14 review evaluates outcome as successful, but explicitly credits human engineer
+     for diagnosis and decision. AI does not take credit.
+
+--------------------------------------------------------------------------------
+SCENARIO 4: PLATFORM CLAMPING & PARAMETER APPROXIMATION IN EXECUTION
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Master bus leveling decision (Phase 1C.5d) specifies pre-limiter ceiling at -0.3 dB True Peak and
+     high-pass filter at 28.5 Hz [ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE].
+2. PLATFORM TRANSLATION (Stage 12 Platform Translator):
+   - Target plugin only supports high-pass filter frequency steps of [20 Hz, 30 Hz, 40 Hz].
+   - Platform translator clamps 28.5 Hz to 30.0 Hz (`DEVIATION_TYPE_PLATFORM_GRID_APPROXIMATION`).
+   - True Peak limiter ceiling clamped to -0.5 dB due to fixed plugin safety margins.
+3. TRACE CAPTURE (Phase 1C.5f):
+   - `PlatformTranslationRecord` documents both intended (28.5 Hz, -0.3 dB) and translated
+     (30.0 Hz, -0.5 dB) values.
+   - Step 5 Engineering Acceptability Assessment logs `ACCEPTED_WITH_DOCUMENTED_COMPROMISE`.
+   - Step 6 Rejection Gate allows execution.
+   - `ExecutionReceiptRecord` logs telemetry confirmation of applied state.
+4. OUTCOME EVALUATION (Phase 1C.5e):
+   - Outcome evaluation detects slight 1.5 Hz difference in low-end roll-off.
+   - Causal attribution engine verifies that deviation was caused by platform discretization,
+     not engineer error.
+
+--------------------------------------------------------------------------------
+SCENARIO 5: SOUND REASONING WITH EXECUTION ENGINE FAULT
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Phase 1C.5d decided: Tape saturation drive at 3.2 dB, mix 40%.
+2. EXECUTION FAILURE (Stage 12):
+   - DAW plugin host crashed during audio render; output buffer returned as digital silence (0.0 RMS).
+3. OUTCOME INTAKE (Phase 1C.5e Stage 13):
+   - Stage 13 Evidence Intake detects null buffer (`RMS = -inf dBFS`).
+4. GOVERNANCE RESOLUTION:
+   - Phase 1C.5e Review Engine assigns `STATUS 25: OUTCOME_UNEVALUABLE`.
+   - Phase 1C.5f Trace flags `GOVERNANCE_CONDITION_BROKEN_EXECUTION_CHAIN`.
+   - Crucial Rule: Upstream diagnosis and decision are NOT penalized or marked invalid;
+     trace explicitly attributes failure to DSP host crash.
+
+--------------------------------------------------------------------------------
+SCENARIO 6: FLAWED REASONING WITH FORTUITOUS OUTCOME (AUDIT CATCH)
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Drum room mic exhibited harsh cymbal splash.
+   - Flawed Reasoning: Hypothesized that kick drum bleed was causing intermodulation distortion
+     at 4 kHz (flawed acoustic mechanism).
+   - Applied broad high-shelf cut of -6 dB at 4 kHz.
+2. OUTCOME EVIDENCE (Phase 1C.5e Stage 13):
+   - Cymbal harshness was attenuated; listener noted track sounded smoother.
+   - Superficial outcome was "acceptable."
+3. INDEPENDENT RETROSPECTIVE AUDIT:
+   - Phase 1C.5e Stage 14 Review notes poor causal alignment: high-shelf cut fixed symptom purely
+     by brute-force attenuation, while kick-bleed mechanism was unverified.
+   - Phase 1C.5f Trace Audit verdict: `TRACE_AUDIT_PASS` (records are complete, sealed, and unaltered).
+   - Governance Rule: A positive acoustic outcome does not validate flawed causal reasoning.
+     Knowledge-governance quarantine rejects candidate lesson promotion.
+
+--------------------------------------------------------------------------------
+SCENARIO 7: MISSING REQUIRED TRACE RECORD (BROKEN TRACE DEGRADATION)
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Historical run completed in 2025 submitted for compliance audit.
+   - Trace contains Evidence, Observation, Requirements, Decision, and Outcome.
+   - DEFECT: `CausalDiagnosisRecord` (Stage 07) is missing from the database repository.
+2. TRACE AUDIT EVALUATION (Phase 1C.5f):
+   - Dependency edge traversal detects missing node between Stage 06 and Stage 08.
+   - Trace engine assigns `GOVERNANCE_CONDITION_MISSING_DEPENDENCY`.
+   - Audit Disposition: `TRACE_AUDIT_FAIL_INCOMPLETE_LINEAGE`.
+3. RESOLUTION:
+   - Anti-Fabrication Law enforced: System DOES NOT use generative AI to guess what the diagnosis was.
+   - Missing record remains recorded as MISSING.
+   - Diagnosis evidential basis cannot be independently verified from available trace;
+     historical records preserved unchanged.
+
+--------------------------------------------------------------------------------
+SCENARIO 8: TAMPERED RECORD DETECTED (INTEGRITY VIOLATION)
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Mixing run completed with extreme EQ cut (-15 dB).
+   - External script attempted to edit the sealed `EngineeringDecisionRecord` in the database,
+     changing the gain field to -6 dB to make the action look conservative.
+2. INTEGRITY VERIFICATION (Phase 1C.5f):
+   - Audit engine verifies integrity evidence against record content.
+   - Integrity proof fails verification.
+3. RESOLUTION:
+   - Governance alarm: `GOVERNANCE_CONDITION_INTEGRITY_VIOLATION`.
+   - Audit Disposition: `TRACE_AUDIT_FAIL_INTEGRITY_NOT_ESTABLISHED`.
+   - Record is TOMBSTONED in the audit report.
+   - Run is marked completely invalid for active operational reliance or candidate lesson extraction.
+
+--------------------------------------------------------------------------------
+SCENARIO 9: CANDIDATE LESSON LACKS SUFFICIENT REPEATABILITY SUPPORT
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Run applied an unusual 1.2 kHz resonant boost with Q=12 to a vintage Rickenbacker guitar,
+     producing an unexpectedly pleasing jangle tone.
+   - Stage 14 review tagged this as a candidate lesson.
+2. QUARANTINE EVALUATION (Phase 1C.5f):
+   - Quarantine engine inspects promotion eligibility criteria:
+     * Repeatability: The single observed case does not provide evidential support proportionate to the breadth of the proposed general lesson.
+     * Boundary Conditions: Applicability scope unspecified.
+3. RESOLUTION:
+   - Promotion consideration deferred until sufficient evidence exists for the scope of the proposed claim; no fixed minimum number of sessions or runs is imposed.
+   - Lesson remains in `STATE_QUARANTINED`.
+   - Cannot be proposed to knowledge governance without evidential support proportionate to the proposed generalization.
+
+--------------------------------------------------------------------------------
+SCENARIO 10: CANDIDATE LESSON CONFLICTS WITH GOVERNED PRINCIPLES
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Aggressive automated mastering run applied heavy multiband clipping.
+   - Stage 14 review generated candidate lesson: "Always clip master bus by 2.5 dB."
+2. GOVERNANCE AUDIT (Phase 1C.5f):
+   - Conflict engine evaluates lesson against Phase 1C.5a v0.3c.
+   - Conflict Detected: Directly violates Principle 14 (Parsimony) and Principle 13 (Trade-Offs),
+     destroying dynamic range without acoustic justification.
+3. RESOLUTION:
+   - Candidate-lesson quarantine governance state: `STATE_REJECTED` (classified as PHASE_1C5F_PROPOSED record governance state; not a lifecycle status).
+   - Explicit conflict report logged; lesson permanently barred from promotion.
+
+--------------------------------------------------------------------------------
+SCENARIO 11: ARTISTIC INTENT EVOLVES ACROSS ITERATIONS (AESTHETIC PIVOT)
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Parent run aimed for "ultra-clean, transparent jazz acoustic guitar."
+   - After hearing the clean result, the artist decides: "Actually, let's make it gritty,
+     distorted lo-fi indie rock."
+2. TRACE RESOLUTION:
+   - This is NOT an engineering failure; it is an INTENT SHIFT (`ORIGIN_1_USER_SUPPLIED`).
+   - Parent run is sealed with status `STATUS 27: CYCLE_COMPLETED_SATISFIED` (clean intent achieved).
+   - New root run instantiated for lo-fi aesthetic, referencing prior session.
+   - Trace prevents treating the artistic change of mind as a diagnostic defect.
+
+--------------------------------------------------------------------------------
+SCENARIO 12: PLATFORM SHIFT WHILE SEMANTIC INTENT REMAINS CONSTANT
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Engineering decision (Phase 1C.5d) specifies optical compression leveling: 2:1 ratio, smooth 40 ms attack.
+   - Initially executed on AmpliTube 5 compressor block.
+   - User subsequently switches execution platform to Universal Audio Teletronix LA-2A plugin.
+2. TRACE SEPARATION (Phase 1C.5f):
+   - Upstream records (Stages 01–11) remain 100% UNCHANGED and sealed (Principle 15).
+   - New `PlatformTranslationRecord` instantiated for LA-2A in Stage 12.
+   - Lineage demonstrates that semantic engineering intent survived the platform migration.
+
+--------------------------------------------------------------------------------
+SCENARIO 13: UNRESOLVED PROVENANCE IN THIRD-PARTY SAMPLE
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Client uploads drum track labeled "Kick Drum" downloaded from an unknown internet sample pack.
+   - No microphone metadata, pre-processing history, or room recording data available.
+2. TRACE CAPTURE (Phase 1C.5f):
+   - `EvidenceRecord` created with `provenance_classification: ORIGIN_UNKNOWN`.
+   - `provenance_resolution_state`: "UNRESOLVED_INCOMPLETE" (classified as PHASE_1C5F_PROPOSED record-level provenance metadata; not a lifecycle status).
+3. REASONING GOVERNANCE:
+   - Diagnostic engine (Phase 1C.5c) is prohibited from assuming acoustic microphone placement physics
+     (e.g. proximity effect).
+   - Trace enforces that inferences remain bounded strictly to observed waveform properties.
+
+--------------------------------------------------------------------------------
+SCENARIO 14: PARTIAL EXPLANATION UNDER TELEMETRY LOSS
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - Hardware DSP outboard processor executed an analog EQ change, but MIDI telemetry
+     link dropped during parameter readback.
+2. TRACE GOVERNANCE (Phase 1C.5f):
+   - Decision and post-action audio captured; intermediate hardware telemetry missing.
+   - Applied parameter state remains UNKNOWN / UNVERIFIED.
+   - Explanation engine generates `GovernedExplanationRecord` with flag
+     `GOVERNANCE_CONDITION_PARTIAL_EXPLANATION`.
+   - Explanation states: "Hardware execution telemetry was unavailable. The actual applied parameter
+     state could not be independently verified. Post-action audio observations remain valid only
+     as outcome evidence and must not be converted into reconstructed execution history."
+   - System strictly refrains from reconstructing execution receipts from post-action audio.
+
+--------------------------------------------------------------------------------
+SCENARIO 15: TRACE INTEGRITY UNVERIFIABLE DUE TO LEGACY STORAGE
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - An archived run from an early development prototype lacks verifiable integrity proofs.
+2. AUDIT HANDLING (Phase 1C.5f):
+   - Audit engine assigns `TRACE_AUDIT_FAIL_INTEGRITY_NOT_ESTABLISHED`.
+   - System permits human inspection of records, but displays prominent warning:
+     "Historical record tamper-evidence cannot be independently verified."
+   - Run cannot be used as authoritative ground truth for regression testing.
+
+--------------------------------------------------------------------------------
+SCENARIO 16: LATE CONTEXTUAL EVIDENCE SUPPLIED BY PRODUCER
+--------------------------------------------------------------------------------
+1. CONTEXT:
+   - After a run was completed and sealed, the producer reveals: "By the way, there was a
+     secret sidechain compressor on the vocal bus that was active during your test."
+2. GOVERNANCE RESOLUTION (Phase 1C.5f):
+   - Sealed run CANNOT be retroactively edited (Anti-Rewrite Law).
+   - Producer input logged as contextual user information (`ORIGIN_1_USER_SUPPLIED`).
+     (Not classified as engineering input, as the producer was supplying factual context rather
+     than acting in an authorized engineering authority role).
+   - New child run instantiated to evaluate the confounder with full historical linkage.
+
+================================================================================
+SECTION 21 — INDEPENDENT-REVIEW CHECKLIST & CONSTITUTIONAL AUDIT
+================================================================================
+
+21.1 21-PRINCIPLE CONSTITUTIONAL ALIGNMENT AUDIT
+External sound engineering and architectural peer reviewers must verify that Phase 1C.5f
+remains in strict alignment with the 21 Principles of Sound Engineering Reasoning (v0.3c):
+
+  [ ] Principle 1: Evidence Precedes Diagnosis — Trace graphs enforce temporal and dependency
+      precedence of evidence over diagnosis.
+  [ ] Principle 2: Observation Is Not Interpretation — Provenance strictly separates objective
+      acoustic measurements from subjective psychoacoustic interpretations.
+  [ ] Principle 3: Missing Evidence Is Not Negative Evidence — Missing trace data is recorded
+      as UNKNOWN; treating absence of proof as proof of absence is prohibited.
+  [ ] Principle 4: A Symptom Does Not Identify Its Cause — Traces connect symptoms to causal
+      graphs, auditing root mechanism resolution.
+  [ ] Principle 5: Diagnosis Should Be Causal Where Evidence Permits — Causal mechanisms and
+      competing hypotheses are preserved in diagnostic traces.
+  [ ] Principle 6: Competing Hypotheses Survive Until Evidence Justifies Narrowing Them — Excluded
+      hypotheses remain inspectable with recorded evidential grounds.
+  [ ] Principle 7: Context Informs Reasoning but Does Not Prove Causation — Context inputs are
+      tagged as weighting priors, not deterministic causal proof.
+  [ ] Principle 8: Engineering Intent Constrains the Solution — Requirements establish non-negotiable
+      bounds audited in trade-off and outcome evaluation.
+  [ ] Principle 9: Generate Alternatives When the Problem Admits Alternatives — Retrospective
+      audit verifies that alternative interventions were deliberated.
+  [ ] Principle 10: Intervention Selection Follows Diagnosis — Dependency edges link Candidate
+      Interventions directly to authorized Causal Diagnoses.
+  [ ] Principle 11: Intervention Should Occur at the Causally Appropriate Point — Trace captures
+      processing locus and justifies causal placement.
+  [ ] Principle 12: Predict Consequences Before Acting — PredictedOutcomeRecord is sealed and
+      integrity-verified prior to execution handoff.
+  [ ] Principle 13: Every Intervention Has Potential Trade-Offs — ConstraintAndTradeOffEvaluationRecord
+      preserves accepted collateral costs.
+  [ ] Principle 14: Parsimony: Do Not Intervene Without Justified Purpose — Retrospective review
+      verifies minimal necessary processing.
+  [ ] Principle 15: Platform Translation Operates Downstream of Engineering Reasoning — Semantic
+      intent is decoupled from target DSP hardware mapping.
+  [ ] Principle 16: Reject Unacceptable Platform Compromises — Rejection gate (Status 22) logs
+      violations before audio execution.
+  [ ] Principle 17: Deterministic Code Validates Constraints; It Does Not Replace Judgement —
+      Algorithmic metrics are preserved as bounds validators.
+  [ ] Principle 18: Evaluate Outcomes Honestly Without Circular Justification — Outcome Evidence
+      Firewall is strictly enforced.
+  [ ] Principle 19: Capture Engineering Experience for Governed Review — Quarantined candidate
+      lessons are preserved for governed promotion.
+  [ ] Principle 20: The Deliberation Record Must Support Independent Retrospective Audit — The core
+      constitutional mandate of Phase 1C.5f is fulfilled.
+  [ ] Principle 21: Where Evidence Is Missing, Seek Discriminating Evidence Rather Than Guessing —
+      Information requests and surviving uncertainty are explicitly preserved.
+
+21.2 FIRST-PASS GOVERNANCE AUDIT CHECKLIST FOR PEER AUDITORS
+To certify Phase 1C.5f v0.1j as an acceptable architectural baseline, reviewers must confirm:
+  [ ] 1. Are Phases 1C.5a through 1C.5e explicitly recognized as immutable frozen baselines?
+  [ ] 2. Are the 21 Principles preserved verbatim without alteration?
+  [ ] 3. Are all 14 lifecycle stages and 27 frozen lifecycle statuses strictly preserved without
+         inventing any new lifecycle tokens?
+  [ ] 4. Are governance conditions (e.g. INCOMPLETE_TRACE), record states (e.g. RECORD_SEALED),
+         and audit dispositions (e.g. TRACE_AUDIT_PASS) clearly distinguished from lifecycle statuses?
+  [ ] 5. Does the provenance architecture cover user, measured, system, human, telemetry, and
+         synthetic data, properly distinguishing user/client inputs from professional engineering actions?
+  [ ] 6. Does the sealed record dependency structure preserve causally and temporally valid ordering
+         without claiming that the underlying reasoning process is globally acyclic?
+  [ ] 7. Is trace completeness recognized as relative to the valid lifecycle path, avoiding
+         artificial manufacturing of placeholder records for earlier terminal statuses?
+  [ ] 8. Does the parent/child run governance forbid automatic re-qualification of parent evidence?
+  [ ] 9. Is the anti-rewrite law strictly enforced for sealed historical records?
+  [ ] 10. Does Phase 1C.5f strictly refrain from invalidating upstream diagnoses, recording trace
+          gaps without altering the Phase 1C.5c diagnosis?
+  [ ] 11. Is trace and governance audit clearly decoupled from the substantive acoustic evaluation
+          of Phase 1C.5e Stage 14 Engineering Review?
+  [ ] 12. Does candidate-lesson governance recognize that promotion approval belongs to the
+          authoritative knowledge-governance process, while Phase 1C.5g owns migration mechanics?
+  [ ] 13. Are integrity requirements normative and technology-neutral, with specific cryptographic
+          or storage mechanisms classified as non-normative implementation options?
+  [ ] 14. Is the exact Phase 1C.5e eight-step execution boundary sequence restored verbatim?
+  [ ] 15. Is the principle "Missing history remains missing" strictly enforced, ensuring lost
+          hardware telemetry remains unknown rather than inferred from acoustic outcomes?
+  [ ] 16. Are schema representations designated as truly non-normative illustrative examples?
+  [ ] 17. Does the document avoid arbitrary numerical confidence scoring or ungrounded epistemic weights?
+  [ ] 18. Are substantive engineering actions in all scenarios attributed to their owning phases?
+  [ ] 19. Does the specification leave empirical test execution and sign-off to Phase 1C.5h?
+  [ ] 20. Does the document status remain `DRAFT — ARCHITECTURAL REVIEW REQUIRED` without premature
+          claims of certification or freeze?
+
+================================================================================
+SECTION 22 — REVISION REGISTER & ARCHITECTURAL STATUS
+================================================================================
+
+22.1 REVISION REGISTER
+
++---------+--------------------+----------------+------------------------------------------------------------+
+| Version | Date               | Author         | Summary of Changes / Revision Rationale                    |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1    | October 2026       | Sound Engineer | Initial Architectural Design Baseline.                     |
+|         |                    | AI Architect   | Establishes initial Phase 1C.5f specification strictly      |
+|         |                    |                | within TT_Phase_1C.5f_Design_Mandate.txt; incorporates     |
+|         |                    |                | all 21 Principles; defines 14 capability areas: trace      |
+|         |                    |                | identity, 8-tier provenance, 14-stage lineage, sealing     |
+|         |                    |                | immutability, explainability, uncertainty survival,        |
+|         |                    |                | execution tracking, parent/child governance, independent   |
+|         |                    |                | audit, candidate-lesson quarantine, integrity mechanisms,  |
+|         |                    |                | human override tracking, degradation protocols, and        |
+|         |                    |                | downstream boundaries; includes 16 worked scenarios.       |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1a   | October 2026       | Sound Engineer | Bounded Architectural Correction.                          |
+|         |                    | AI Architect   | Applies 12 bounded architectural corrections:              |
+|         |                    |                | 1. Removes premature cryptographic/storage lock-in;        |
+|         |                    |                |    establishes technology-neutral integrity requirements   |
+|         |                    |                |    with non-normative implementation options.              |
+|         |                    |                | 2. Restores exact frozen Phase 1C.5e 8-step execution      |
+|         |                    |                |    boundary sequence (§10.1).                              |
+|         |                    |                | 3. Removes Phase 1C.5f authority to invalidate upstream    |
+|         |                    |                |    diagnosis; preserves historical diagnosis record.       |
+|         |                    |                | 4. Decouples trace/governance audit from Stage 14          |
+|         |                    |                |    substantive Engineering Review; adopts governance       |
+|         |                    |                |    audit dispositions (TRACE_AUDIT_PASS, etc.).            |
+|         |                    |                | 5. Corrects candidate-lesson promotion authority:          |
+|         |                    |                |    governance process approves promotion; Phase 1C.5g      |
+|         |                    |                |    owns migration mechanics; removes arbitrary quotas.     |
+|         |                    |                | 6. Bounds DAG model to sealed record dependencies,         |
+|         |                    |                |    preserving iterative reasoning loops in owning phases.  |
+|         |                    |                | 7. Establishes that trace completeness is relative to      |
+|         |                    |                |    valid lifecycle path; bars placeholder manufacturing.   |
+|         |                    |                | 8. Enforces "missing history remains missing" in §16.1     |
+|         |                    |                |    and Scenario 14 (lost telemetry remains unknown).       |
+|         |                    |                | 9. Refines provenance taxonomy: ORIGIN_1 covers user/     |
+|         |                    |                |    producer inputs; ORIGIN_6 reserved for engineering.     |
+|         |                    |                | 10. Clarifies schemas as truly non-normative examples.     |
+|         |                    |                | 11. Removes arbitrary epistemic dependency weights.        |
+|         |                    |                | 12. Corrects scenario-level phase ownership leaks across   |
+|         |                    |                |     all 16 scenarios, attributing actions to 1C.5b-1C.5e.  |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1b   | October 2026       | Sound Engineer | Narrow Governance Vocabulary & Ownership Consistency       |
+|         |                    | AI Architect   | Correction:                                                |
+|         |                    |                | 1. Corrects Scenario 3 and §13.2 to ensure original AI     |
+|         |                    |                |    EngineeringDecisionRecord remains preserved and sealed  |
+|         |                    |                |    unchanged; records human rejection as a separate        |
+|         |                    |                |    Phase 1C.5f human-interaction governance disposition    |
+|         |                    |                |    (REJECTED_BY_HUMAN), classified as PHASE_1C5F_PROPOSED  |
+|         |                    |                |    and not as a lifecycle status.                          |
+|         |                    |                | 2. Corrects Scenario 10 to ensure candidate-lesson         |
+|         |                    |                |    quarantine state is explicitly recorded as a record-    |
+|         |                    |                |    level governance state (STATE_REJECTED), classified as  |
+|         |                    |                |    PHASE_1C5F_PROPOSED and not as a lifecycle status.      |
+|         |                    |                | 3. Reconciles Section 11.2 multi-run lineage diagram to    |
+|         |                    |                |    use exact frozen upstream status token                  |
+|         |                    |                |    STATUS 26: REVIEW_COMPLETED_AWAITING_ITER, eliminating  |
+|         |                    |                |    pseudo-status label Iteration Action Authorized.        |
+|         |                    |                | 4. Reconciles record-level metadata field names in         |
+|         |                    |                |    Section 17.6 (quarantine_governance_state,              |
+|         |                    |                |    governance_review_disposition) and Section 5.2 /        |
+|         |                    |                |    Scenario 13 (provenance_resolution_state), eliminating  |
+|         |                    |                |    misleading _status field suffixes on non-lifecycle data.|
+|         |                    |                | 5. Updates Master Vocabulary Concordance Table in          |
+|         |                    |                |    Section 18.2 to explicitly classify all Phase 1C.5f     |
+|         |                    |                |    governance dispositions and record states as            |
+|         |                    |                |    PHASE_1C5F_PROPOSED, reinforcing the absolute           |
+|         |                    |                |    prohibition against lifecycle status invention in §18.3.|
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1c   | October 2026       | Sound Engineer | Four-Item Narrow Governance Consistency Correction:        |
+|         |                    | AI Architect   | v0.1c partially completed the intended four-item           |
+|         |                    |                | correction: technology-neutral human-approval wording      |
+|         |                    |                | and missing token-family classification were completed;    |
+|         |                    |                | Scenario 2 ownership wording and Section 21.2 current-     |
+|         |                    |                | version metadata remained unresolved and were deferred to  |
+|         |                    |                | v0.1d.                                                     |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1d   | October 2026       | Sound Engineer | Three Surgical Consistency Corrections:                    |
+|         |                    | AI Architect   | 1. Corrects Scenario 2 ownership wording tying child-run   |
+|         |                    |                |    evidence re-qualification to applicable Phase 1C.5b     |
+|         |                    |                |    rules within Phase 1C.5e parent/child context; marks    |
+|         |                    |                |    COMPARABILITY_FAILED_PERFORMANCE_MISMATCH inline as     |
+|         |                    |                |    ILLUSTRATIVE; eliminates invented comparability engine. |
+|         |                    |                | 2. Corrects Section 21.2 current-review version reference  |
+|         |                    |                |    to v0.1d, resolving stale v0.1a reference.              |
+|         |                    |                | 3. Reconciles revision-history accuracy so v0.1c and v0.1d |
+|         |                    |                |    accurately describe the actual correction sequence.     |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1e   | October 2026       | Sound Engineer | Final Freeze-Readiness Consistency Correction:             |
+|         |                    | AI Architect   | 1. Purges undefined broken-trace condition token from §6.3 |
+|         |                    |                |    and Scenario 7; relies strictly upon existing           |
+|         |                    |                |    GOVERNANCE_CONDITION_INCOMPLETE_TRACE and               |
+|         |                    |                |    GOVERNANCE_CONDITION_MISSING_DEPENDENCY without         |
+|         |                    |                |    expanding the authoritative ten-condition taxonomy.     |
+|         |                    |                | 2. Normalizes ORIGIN_7 provenance taxonomy to single exact |
+|         |                    |                |    token ORIGIN_7_SCENARIO_ILLUSTRATIVE_VALUE across §5.2, |
+|         |                    |                |    concordance table (§18.2), and worked scenarios.        |
+|         |                    |                | 3. Eliminates universal numerical evidence quotas for      |
+|         |                    |                |    candidate-lesson promotion in §14.3 and Scenario 9,     |
+|         |                    |                |    enforcing case-relative, claim-proportionate evidential |
+|         |                    |                |    sufficiency without fixed run/session minimums.         |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1f   | October 2026       | Sound Engineer | Final Current-Version Metadata Reconciliation:             |
+|         |                    | AI Architect   | Corrects the stale Section 21.2 current-review reference   |
+|         |                    |                | from v0.1d to v0.1f. No substantive architecture,          |
+|         |                    |                | governance, lifecycle, scenario, vocabulary, or reasoning  |
+|         |                    |                | changes.                                                   |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1g   | October 2026       | Sound Engineer | Freeze-Certification Reconciliation:                       |
+|         |                    | AI Architect   | 1. Preserves declared parent lineage in §16.2 when parent  |
+|         |                    |                |    artifact is missing; bars rewriting child as root run.  |
+|         |                    |                | 2. Removes Phase 1C.5f lifecycle transition choice in      |
+|         |                    |                |    §16.2; returns status control to Phase 1C.5a / 1C.5e.   |
+|         |                    |                | 3. Replaces voiding of firewall-violating evaluations in   |
+|         |                    |                |    §16.2 with historical preservation and reliance bar.    |
+|         |                    |                | 4. Decouples evidence acquisition in §11.2 and Scenario 2, |
+|         |                    |                |    returning acquisition decisions to Phase 1C.5b.         |
+|         |                    |                | 5. Completes §18.2 concordance for edge types, uncertainty |
+|         |                    |                |    trace types, and proposed records; uses valid classes.  |
+|         |                    |                | 6. Replaces absolute falsifying-instance rule in §14.3     |
+|         |                    |                |    with contradiction and counterexample assessment.       |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1h   | October 2026       | Sound Engineer | Freeze Vocabulary Reconciliation:                          |
+|         |                    | AI Architect   | 1. Normalizes candidate-lesson governance states in §14.2, |
+|         |                    |                |    §17.6, and §18.2 to one canonical family:               |
+|         |                    |                |    STATE_QUARANTINED, STATE_PROMOTION_CANDIDATE,           |
+|         |                    |                |    STATE_REJECTED, STATE_PROMOTED_TO_KNOWLEDGE_BASE;       |
+|         |                    |                |    retains non-lifecycle status prohibition.               |
+|         |                    |                | 2. Classifies NON_NORMATIVE_IMPLEMENTATION_OPTIONS and     |
+|         |                    |                |    NON_NORMATIVE_ILLUSTRATIVE_SCHEMA in §18.2 table as     |
+|         |                    |                |    PHASE_1C5F_PROPOSED; confirms technology-neutral        |
+|         |                    |                |    options and non-normative trace schema classification.  |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1i   | October 2026       | Sound Engineer | Final Freeze Vocabulary Correction:                        |
+|         |                    | AI Architect   | 1. Deletes prohibited tokens NON_NORMATIVE_IMPLEMENTATION_ |
+|         |                    |                |    OPTIONS (§13.3) and NON_NORMATIVE_ILLUSTRATIVE_SCHEMA   |
+|         |                    |                |    (§17.1) along with their concordance entries (§18.2).   |
+|         |                    |                | 2. Corrects Scenario 9 quarantine state token from         |
+|         |                    |                |    RECORD_GOVERNANCE_STATE_QUARANTINED to canonical        |
+|         |                    |                |    STATE_QUARANTINED.                                      |
++---------+--------------------+----------------+------------------------------------------------------------+
+| v0.1j   | October 2026       | Sound Engineer | Freeze Certification & Classification Correction:          |
+|         |                    | AI Architect   | Applies explicit non-normative classification tag          |
+|         |                    |                | [ILLUSTRATIVE — non-normative implementation mechanisms]   |
+|         |                    |                | to illustrative approval mechanisms in §13.3; updates      |
+|         |                    |                | current-release metadata to v0.1j.                         |
++---------+--------------------+----------------+------------------------------------------------------------+
+
+22.2 ARCHITECTURAL STATUS DECLARATION
+ARCHITECTURAL STATUS:
+  DRAFT — ARCHITECTURAL REVIEW REQUIRED
+
+GOVERNANCE DECLARATION:
+  This document represents the Freeze Certification Metadata & Illustrative Classification Correction release (v0.1j) for Phase 1C.5f
+  (Reasoning Traceability, Explainability & Governance Architecture).
+  It operates in strict compliance with TT_Phase_1C.5f_Design_Mandate.txt and subordinate to
+  frozen upstream baselines Phases 1C.5a v0.3c through 1C.5e v0.1m.
+  It is submitted for independent peer review by qualified sound engineering and software
+  architecture authorities.
+  It is NOT marked frozen, certified, approved, UAT-passed, implementation-complete, or production-ready.
+  Runtime implementation, physical database creation, and empirical UAT remain outside this
+  design specification and retain their downstream ownership.
+
+================================================================================
+END OF SPECIFICATION: TT_Engineering_Reasoning_Traceability_Explainability_and_Governance_v0.1j.txt
+================================================================================
+

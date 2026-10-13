@@ -1,0 +1,612 @@
+================================================================================
+TONE TRANSLATOR (TT) AI SOUND ENGINEER
+PHASE 1C.5f — FORMAL DESIGN MANDATE
+Working Scope: Reasoning Traceability, Explainability & Governance Architecture
+================================================================================
+
+1. PURPOSE OF THIS MANDATE
+
+This mandate defines the authoritative design boundaries for Phase 1C.5f before drafting the Phase 1C.5f architectural specification.
+
+It exists to prevent Phase 1C.5f from:
+  - redefining frozen upstream reasoning architecture;
+  - inventing new lifecycle semantics;
+  - assuming ownership of responsibilities assigned to adjacent phases;
+  - prematurely freezing implementation technologies;
+  - confusing auditability with reasoning correctness;
+  - confusing explainability with unrestricted internal model reasoning;
+  - converting incomplete provenance or uncertainty into fabricated certainty.
+
+Phase 1C.5f shall operate as a cross-cutting governance and traceability architecture around the already-frozen AI Sound Engineer reasoning lifecycle.
+Its role is to preserve, connect, explain, verify and govern the history of reasoning.
+It does not redefine how the reasoning itself works.
+
+2. WORKING PHASE IDENTITY
+
+Working title:
+  Phase 1C.5f — Reasoning Traceability, Explainability & Governance Architecture
+
+This title is provisional until architectural drafting confirms that it accurately represents the complete Phase 1C.5f scope.
+The title shall not constrain the architecture if the frozen source material supports a more precise final name.
+
+3. PRIMARY ARCHITECTURAL PURPOSE
+
+Phase 1C.5f shall define the architecture required for the complete TT AI Sound Engineer lifecycle to be:
+  - traceable;
+  - attributable;
+  - provenance-aware;
+  - lineage-preserving;
+  - integrity-governed;
+  - explainable through governed engineering records;
+  - retrospectively auditable;
+  - version-aware;
+  - historically non-destructive;
+  - and suitable for controlled downstream governance.
+
+The phase shall enable an independent reviewer to determine:
+  - what evidence existed at each material decision point;
+  - where that evidence came from;
+  - what observations and interpretations were formed;
+  - what hypotheses remained viable;
+  - what diagnosis was actually authorized;
+  - what uncertainty remained;
+  - what engineering requirement was active;
+  - what alternatives were considered;
+  - what trade-offs were known;
+  - what decision was selected;
+  - what was predicted before execution;
+  - what actually occurred after execution;
+  - whether execution differed from intent;
+  - what review concluded;
+  - whether subsequent runs inherited or re-qualified previous evidence;
+  - and whether historical records were altered after being sealed.
+
+4. CORE ARCHITECTURAL IDENTITY
+
+Phase 1C.5f shall be governed by the following distinction:
+  Phases 1C.5a–1C.5e define how the TT AI Sound Engineer reasons. Phase 1C.5f defines how that reasoning history can be trusted, understood, reconstructed and governed.
+
+Phase 1C.5f is therefore a cross-cutting architecture, not a new reasoning stage.
+It shall not create an alternative reasoning lifecycle parallel to the frozen architecture.
+
+5. AUTHORITATIVE SOURCE HIERARCHY
+
+Phase 1C.5f shall operate in strict subordination to the frozen upstream architecture.
+
+5.1 Phase 1C.5a
+Phase 1C.5a v0.3c remains the constitutional authority for:
+  - the 21 Principles of Sound Engineering Reasoning;
+  - the 14 lifecycle stages;
+  - the 27 frozen lifecycle statuses;
+  - lifecycle record-presence semantics;
+  - lifecycle transition semantics;
+  - the governing invariant: UNCERTAINTY MUST SURVIVE THE DECISION.
+Phase 1C.5f shall not redefine, renumber, reinterpret or replace these authorities.
+
+5.2 Phase 1C.5b
+Phase 1C.5b v0.2f remains authoritative for:
+  - evidence intake;
+  - observation;
+  - interpretation;
+  - hypothesis formation;
+  - evidence sufficiency;
+  - uncertainty;
+  - discriminating evidence;
+  - and the separation between observation and interpretation.
+Phase 1C.5f may preserve provenance and trace relationships for these artifacts but shall not redefine their reasoning semantics.
+
+5.3 Phase 1C.5c
+Phase 1C.5c v0.1d remains authoritative for:
+  - causal reasoning;
+  - causal diagnosis;
+  - surviving hypotheses;
+  - causal exclusions;
+  - diagnostic specificity;
+  - unresolved mechanisms;
+  - and causal uncertainty.
+Phase 1C.5f may trace and explain diagnostic lineage but shall not independently revise diagnoses.
+
+5.4 Phase 1C.5d
+Phase 1C.5d v0.1l remains authoritative for:
+  - Engineering Requirements;
+  - Candidate Interventions;
+  - Constraint and Trade-Off Evaluation;
+  - Engineering Decisions;
+  - Predicted Outcomes;
+  - and Stages 08–11 ownership.
+Phase 1C.5f may preserve the lineage and auditability of these records but shall not select or alter interventions.
+
+5.5 Phase 1C.5e
+Phase 1C.5e v0.1m remains authoritative for:
+  - pre-action validation;
+  - prediction consumption;
+  - outcome evidence;
+  - outcome evaluation;
+  - iteration;
+  - reversion;
+  - return-upstream logic;
+  - parent/child run relationships;
+  - Stage 13 outcome evidence;
+  - Stage 14 engineering review;
+  - candidate lesson quarantine;
+  - and downstream handoff boundaries.
+Phase 1C.5f shall consume the traceability, provenance, lineage, integrity, explainability and governance requirements inherited from these frozen structures.
+
+6. PHASE 1C.5f OWNERSHIP
+
+Phase 1C.5f may define architecture in the following areas:
+
+6.1 Trace Identity
+Define how runs, records and governed artifacts maintain stable identities across the reasoning lifecycle.
+This includes architectural requirements for:
+  - stable record identity;
+  - stable run identity;
+  - relationship identity;
+  - parent-child lineage;
+  - successor relationships;
+  - historical reference;
+  - and record-version association.
+The architecture shall not prematurely require a particular UUID format or identifier technology unless independently justified.
+
+6.2 Cross-Stage Reasoning Lineage
+Define how a reviewer can reconstruct the dependency path linking:
+  Evidence
+  -> Observation
+  -> Interpretation
+  -> Hypothesis
+  -> Diagnosis
+  -> Engineering Requirement
+  -> Candidate Intervention
+  -> Trade-Off Evaluation
+  -> Engineering Decision
+  -> Predicted Outcome
+  -> Semantic / Execution Handoff
+  -> Actual Outcome Evidence
+  -> Engineering Review
+  -> Iteration, Closure or Child Run.
+Phase 1C.5f shall preserve these relationships without recomputing the reasoning itself.
+
+6.3 Provenance Architecture
+Define the architectural requirements needed to answer: Where did this information come from?
+Provenance distinctions may include, where applicable:
+  - user-supplied information;
+  - measured evidence;
+  - system-derived observations;
+  - system interpretation;
+  - inherited historical evidence;
+  - human engineering input;
+  - reference knowledge;
+  - execution telemetry;
+  - scenario-illustrative data;
+  - external platform information.
+Any vocabulary proposed for provenance shall be explicitly classified as inherited, proposed or illustrative.
+No proposed provenance vocabulary shall be represented as an existing frozen lifecycle status.
+
+6.4 Record Relationship Architecture
+Define how records reference other records while preserving authoritative ownership.
+Phase 1C.5f may define relationships such as:
+  - produced-from;
+  - derived-from;
+  - evaluated-against;
+  - supersedes;
+  - references;
+  - parent-of;
+  - child-of;
+  - execution-of;
+  - outcome-of;
+  - review-of.
+These concepts shall describe lineage and governance only.
+They shall not silently alter upstream record definitions.
+
+6.5 Explainability Architecture
+Phase 1C.5f shall define explainability as a governed engineering explanation assembled from authoritative records, evidence references, decisions, uncertainty and outcomes.
+Explainability shall support reconstruction of:
+  - what was observed;
+  - what was interpreted;
+  - what hypotheses survived;
+  - what diagnosis was authorized;
+  - what requirement followed;
+  - what alternatives were considered;
+  - why an intervention was selected;
+  - what trade-offs were accepted;
+  - what was predicted;
+  - what evidence was later observed;
+  - what review concluded;
+  - and what uncertainty remained.
+Explainability shall not require disclosure of unrestricted internal model scratch reasoning or hidden chain-of-thought.
+The architecture shall prefer auditable engineering justification over opaque model introspection.
+
+6.6 Uncertainty Traceability
+Phase 1C.5f shall ensure uncertainty remains traceable across:
+  - evidence acquisition;
+  - interpretation;
+  - hypothesis comparison;
+  - diagnosis;
+  - engineering decision;
+  - prediction;
+  - execution;
+  - outcome evaluation;
+  - review;
+  - and child-run inheritance.
+The architecture shall prohibit explanation layers from presenting uncertain reasoning as certain merely because the system is capable of producing a fluent explanation.
+
+6.7 Record Immutability & Historical Preservation
+Phase 1C.5f shall define the governance rules required to preserve sealed historical records.
+A sealed record shall not be silently rewritten to improve the appearance of previous reasoning.
+Where later evidence shows that an earlier record was incomplete, incorrect or outdated:
+  - the historical record shall remain preserved;
+  - a successor, corrective, review or child record may be created;
+  - the relationship shall be traceable;
+  - the later correction shall not erase the earlier state.
+Phase 1C.5f shall not invent new lifecycle statuses to represent record-governance states.
+Record state and lifecycle state must remain distinct architectural concepts.
+
+6.8 Parent / Child Run Governance
+Phase 1C.5f shall formalize traceability requirements for linked parent and child runs.
+The architecture shall preserve the frozen Phase 1C.5e rule that:
+  - parent evidence remains historically preserved;
+  - parent evidence is not automatically re-qualified as current child-run evidence;
+  - child-run evidence must be reassessed for relevance and comparability;
+  - parent records remain immutable;
+  - lineage remains explicit.
+
+6.9 Execution & Outcome Lineage
+Phase 1C.5f shall define how intended engineering action can be traced to:
+  - semantic design;
+  - platform translation;
+  - actual applied configuration;
+  - execution receipts;
+  - execution deviations;
+  - observed outcome evidence;
+  - and retrospective review.
+This must preserve the distinction between:
+  - what was intended;
+  - what was translated;
+  - what was actually applied;
+  - and what was observed afterwards.
+
+6.10 Integrity Requirements
+Phase 1C.5f shall define what must be integrity-protected before selecting how it is protected.
+Integrity requirements may apply to:
+  - record identity;
+  - record ordering;
+  - record version;
+  - provenance;
+  - parent/child relationships;
+  - sealed history;
+  - decision/prediction immutability;
+  - evidence separation;
+  - execution lineage;
+  - review history.
+Possible implementation mechanisms may be considered later, including:
+  - hashes;
+  - content fingerprints;
+  - immutable snapshots;
+  - append-only stores;
+  - chained references;
+  - digital signatures;
+  - signed manifests;
+  - content-addressed records.
+No specific technology shall be declared mandatory unless the architectural requirement cannot otherwise be satisfied.
+
+6.11 Independent Audit Reconstruction
+Phase 1C.5f shall support independent reconstruction of the engineering lifecycle.
+An auditor shall be able to determine:
+  - what evidence was available;
+  - what evidence was unavailable;
+  - what reasoning artifacts existed at the time;
+  - what decision was made;
+  - what uncertainty existed;
+  - whether the decision was justified by the recorded evidence;
+  - what predictions preceded execution;
+  - what actually occurred;
+  - whether execution deviated;
+  - whether post-hoc rewriting occurred;
+  - and how later runs relate to the reviewed run.
+The audit architecture shall not require trusting the same system that originally generated the reasoning.
+
+6.12 Human Review & Override Provenance
+Where a human engineer, user or authorized reviewer:
+  - accepts;
+  - rejects;
+  - modifies;
+  - overrides;
+  - escalates;
+  - or supplements
+a system-generated decision or explanation, Phase 1C.5f shall preserve that intervention as explicit provenance.
+Human involvement shall not be silently merged into AI-originated reasoning.
+AI-originated reasoning shall not be silently presented as human-authorized judgment.
+
+6.13 Candidate Learning Governance
+Phase 1C.5f may define the governance architecture used to evaluate whether a quarantined Stage 14 candidate lesson is eligible for promotion.
+This may include requirements for:
+  - evidence provenance;
+  - supporting cases;
+  - contradictory cases;
+  - applicability scope;
+  - uncertainty;
+  - review history;
+  - reviewer authority;
+  - conflict detection;
+  - rollback or revocation governance.
+However:
+Phase 1C.5f shall not itself perform current-TT reasoning migration.
+Migration remains owned by Phase 1C.5g.
+
+7. NON-OWNERSHIP / OUT-OF-SCOPE BOUNDARIES
+
+Phase 1C.5f MUST NOT:
+  - redefine the 21 Principles;
+  - create lifecycle stages;
+  - create lifecycle statuses;
+  - redefine record-presence semantics;
+  - redefine evidence interpretation;
+  - create new diagnostic rules;
+  - revise causal diagnoses;
+  - formulate Engineering Requirements;
+  - select Candidate Interventions;
+  - perform Trade-Off Evaluation;
+  - make Engineering Decisions;
+  - author Predicted Outcomes;
+  - redefine Stage 13 outcome evaluation;
+  - redefine Stage 14 review semantics;
+  - alter checkpoint/reversion logic;
+  - perform AT5 gear mapping;
+  - perform AT5 parameter translation;
+  - implement target-platform execution;
+  - perform current-TT reasoning migration;
+  - execute formal UAT;
+  - promote a candidate lesson solely because one outcome was successful;
+  - expose unrestricted private model chain-of-thought as an audit requirement.
+
+8. ARCHITECTURAL INVARIANTS
+
+Phase 1C.5f shall preserve the following governing invariants:
+
+8.1 Uncertainty Survival
+  UNCERTAINTY MUST SURVIVE THE DECISION.
+  Traceability shall preserve uncertainty rather than retrospectively smoothing it away.
+
+8.2 Trace Integrity Does Not Prove Reasoning Correctness
+  A complete and intact trace can faithfully preserve bad reasoning.
+  Integrity demonstrates historical preservation, not technical correctness.
+
+8.3 Provenance Integrity Does Not Prove Evidence Validity
+  Correctly attributed evidence may still be inadequate, confounded or wrong.
+  Provenance describes source and history, not truth.
+
+8.4 Explainability Does Not Create Certainty
+  A well-formed explanation must not make a conclusion appear stronger than its evidence supports.
+  Explanation confidence must remain bounded by underlying evidential confidence.
+
+8.5 Trace Completeness Does Not Authorize Missing Inference
+  Missing history shall remain missing.
+  Phase 1C.5f shall not invent intermediate reasoning steps merely to make a trace appear complete.
+
+8.6 Historical Preservation
+  Later correction shall not erase earlier engineering history.
+  Correction occurs through linked successor or child records, not retroactive rewriting.
+
+9. FAILURE AND DEGRADATION GOVERNANCE
+
+Phase 1C.5f shall define explicit behavior when traceability cannot be fully established.
+Architectural failure concepts may include:
+  - incomplete trace;
+  - unresolved provenance;
+  - unverifiable lineage;
+  - integrity not established;
+  - conflicting lineage;
+  - missing parent record;
+  - missing dependency;
+  - unexplained mutation;
+  - partial explanation;
+  - broken execution chain.
+Any vocabulary used for such conditions shall be explicitly labelled as Phase 1C.5f governance vocabulary unless inherited elsewhere.
+Such labels MUST NOT be represented as frozen lifecycle statuses.
+When trace integrity cannot be established:
+  - the system shall not fabricate missing records;
+  - the system shall not infer provenance without evidence;
+  - the system shall not claim complete reconstruction;
+  - the system shall retain and expose the uncertainty.
+
+10. RECORD / SCHEMA DESIGN STANCE
+
+Phase 1C.5f may define conceptual record requirements.
+Examples:
+  - stable identity;
+  - provenance reference;
+  - parent reference;
+  - predecessor/successor relationship;
+  - version association;
+  - sealing state;
+  - evidence reference;
+  - governing run reference;
+  - explanation reference;
+  - review reference.
+However, Phase 1C.5f shall not prematurely freeze implementation details such as:
+  - TypeScript interfaces;
+  - Firestore collections;
+  - SQL schemas;
+  - database vendors;
+  - JSON serialization formats;
+  - UUID versions;
+  - hash algorithms;
+  - signature algorithms;
+  - cloud platforms;
+  - message buses;
+  - storage engines.
+Implementation technologies may be recommended or illustrated where useful, but must be explicitly classified as non-normative unless architecture genuinely requires otherwise.
+
+11. PROPOSED VS INHERITED VOCABULARY POLICY
+
+Every architectural term introduced in Phase 1C.5f shall be classified as one of:
+  - INHERITED
+  - PHASE_1C5F_PROPOSED
+  - ILLUSTRATIVE
+  - DEFERRED
+  - IMPLEMENTATION-NORMATIVE, only where explicitly justified
+Phase 1C.5f shall not describe proposed vocabulary as frozen upstream terminology.
+Phase 1C.5f shall not invent exact lifecycle status tokens.
+
+12. ARCHITECTURAL CAPABILITY AREAS
+
+The first Phase 1C.5f draft should provide sufficient architecture to cover at least the following capability areas:
+  - Trace Identity & Run Lineage
+  - Evidence and Record Provenance
+  - Cross-Stage Dependency Trace
+  - Record Immutability & Version Governance
+  - Decision Explainability
+  - Uncertainty Traceability
+  - Execution & Outcome Lineage
+  - Parent / Child Run Governance
+  - Independent Audit Reconstruction
+  - Candidate-Lesson Governance
+  - Integrity Requirements
+  - Human Review / Override Provenance
+  - Failure, Missing-Trace & Corruption Handling
+  - Downstream Interfaces
+
+These are required capability areas, not mandatory section numbers.
+The document must be organized according to the clearest architecture rather than mechanically producing exactly fourteen sections.
+
+13. GOVERNANCE STRESS SCENARIOS
+
+Phase 1C.5f shall include worked architectural illustrations sufficient to test the architecture across materially different governance cases.
+Scenario coverage should include cases such as:
+  - child run created after failed intervention;
+  - parent evidence no longer comparable;
+  - human engineer overrides AI recommendation;
+  - execution platform clamps or alters parameters;
+  - engineering decision proves correct but reasoning quality was poor;
+  - reasoning was sound but execution failed;
+  - required trace record is missing;
+  - record appears modified after sealing;
+  - conflicting lineage claims occur;
+  - candidate lesson lacks sufficient support;
+  - candidate lesson conflicts with governed knowledge;
+  - artistic intent changes between runs;
+  - platform implementation changes while semantic engineering intent remains constant;
+  - explanation is only partially reconstructable;
+  - trace integrity cannot be established;
+  - user or human engineer supplies late corrective evidence.
+Scenario count shall be driven by architectural coverage.
+No arbitrary minimum or maximum number shall be imposed unless justified during design.
+Scenario data shall be explicitly identified as synthetic or illustrative unless based on actual verified evidence.
+
+14. DOWNSTREAM BOUNDARY — PHASE 1C.5g
+
+Phase 1C.5f may provide Phase 1C.5g with governance information such as:
+  - origin of candidate knowledge;
+  - supporting evidence;
+  - lineage;
+  - review state;
+  - approval state;
+  - applicability constraints;
+  - known conflicts;
+  - uncertainty;
+  - deprecation state;
+  - and promotion eligibility.
+Phase 1C.5f shall NOT decide how existing TT reasoning logic is migrated, remapped or adopted.
+That responsibility belongs to Phase 1C.5g.
+
+15. DOWNSTREAM BOUNDARY — PHASE 1C.5h
+
+Phase 1C.5f may define requirements that later UAT should validate, including:
+  - trace completeness;
+  - provenance preservation;
+  - lineage reconstruction;
+  - immutable-history behavior;
+  - explanation fidelity;
+  - missing-trace handling;
+  - parent/child consistency;
+  - integrity failure handling;
+  - audit reproducibility.
+However:
+Phase 1C.5h owns UAT fixtures, acceptance criteria, scenario selection, empirical execution and final validation/sign-off.
+Phase 1C.5f shall not claim UAT has been executed merely because scenarios are architecturally illustrated.
+
+16. FIRST-DRAFT ACCEPTANCE CRITERIA
+
+The Phase 1C.5f v0.1 architectural draft shall not be considered suitable for substantive review unless it satisfies all of the following:
+  - It explicitly identifies 1C.5a–e as frozen upstream authorities.
+  - It does not redefine the 21 Principles.
+  - It does not invent lifecycle stages or statuses.
+  - It clearly distinguishes reasoning semantics from trace/governance semantics.
+  - It defines provenance architecture.
+  - It defines lineage architecture.
+  - It defines parent/child trace governance.
+  - It defines immutable-history requirements.
+  - It distinguishes integrity from correctness.
+  - It distinguishes provenance from evidential validity.
+  - It defines explainability without requiring hidden chain-of-thought.
+  - It preserves uncertainty explicitly.
+  - It defines behavior for missing or unverifiable trace history.
+  - It defines independent audit reconstruction.
+  - It addresses human override provenance.
+  - It defines candidate-learning governance without taking over 1C.5g migration.
+  - It leaves UAT execution to 1C.5h.
+  - It avoids premature implementation lock-in.
+  - It labels proposed vocabulary explicitly.
+  - It contains sufficient worked governance scenarios to exercise the architecture.
+  - It does not claim runtime implementation or UAT has occurred.
+  - It remains platform-neutral.
+  - It does not silently redefine existing upstream records.
+  - It does not convert governance labels into lifecycle statuses.
+  - It preserves the governing invariant: UNCERTAINTY MUST SURVIVE THE DECISION.
+
+17. PROHIBITED ARCHITECTURAL SHORTCUTS
+
+Phase 1C.5f shall explicitly reject the following shortcuts:
+  - “If it has a hash, it is trustworthy.”
+  - “If the trace is complete, the reasoning was correct.”
+  - “If the explanation sounds coherent, the decision was justified.”
+  - “If the source is known, the evidence is valid.”
+  - “If a parent run used evidence, the child run may automatically reuse it.”
+  - “If a record is wrong, rewrite it.”
+  - “If lineage is missing, reconstruct what probably happened.”
+  - “If a candidate lesson worked once, promote it.”
+  - “If a human overrides the AI, merge the result into AI provenance.”
+  - “If a system status is needed, invent a new lifecycle state.”
+  - “If implementation details are convenient, freeze them architecturally.”
+
+18. FIRST-PASS GOVERNANCE TEST
+
+Before Phase 1C.5f v0.1 is accepted for architecture review, reviewers shall be able to answer YES to the following:
+  - Can a reasoning run be reconstructed without changing it?
+  - Can every major conclusion be traced to its authoritative inputs?
+  - Can uncertainty remain visible throughout the trace?
+  - Can historical mistakes remain visible after correction?
+  - Can a human override be distinguished from an AI decision?
+  - Can intended execution be distinguished from actual execution?
+  - Can a child run reuse history without silently treating it as current evidence?
+  - Can missing trace information remain explicitly unknown?
+  - Can an independent reviewer audit the run without relying solely on the original model?
+  - Can candidate lessons remain quarantined until governed review?
+  - Can downstream migration and UAT remain clearly outside 1C.5f ownership?
+If any answer is NO, the architecture is incomplete.
+
+19. WORKING DESIGN AXIOMS
+
+Phase 1C.5f shall be developed around the following working axioms:
+  - TRACEABILITY PRESERVES HISTORY; IT DOES NOT REWRITE IT.
+  - INTEGRITY PRESERVES RECORDS; IT DOES NOT PROVE THEY ARE CORRECT.
+  - PROVENANCE IDENTIFIES ORIGIN; IT DOES NOT PROVE VALIDITY.
+  - EXPLAINABILITY EXPOSES THE ENGINEERING BASIS; IT DOES NOT CREATE CERTAINTY.
+  - MISSING HISTORY REMAINS MISSING.
+  - UNCERTAINTY MUST SURVIVE THE DECISION.
+
+20. MANDATE STATUS
+
+This document is a Phase 1C.5f Design Mandate, not the Phase 1C.5f architectural specification itself.
+It governs the preparation and review of the initial Phase 1C.5f architecture.
+It shall not be treated as having:
+  - implemented production traceability;
+  - selected production storage mechanisms;
+  - defined final runtime schemas;
+  - executed validation;
+  - modified upstream frozen architecture;
+  - or completed Phase 1C.5f.
+Its purpose is to establish the architectural fence within which Phase 1C.5f may now be designed.
+================================================================================
+END OF MANDATE: TT_Phase_1C.5f_Design_Mandate.txt
+================================================================================
