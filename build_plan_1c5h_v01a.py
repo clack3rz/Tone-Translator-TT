@@ -1,0 +1,1677 @@
+#!/usr/bin/env python3
+"""
+Builder script for:
+TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1a.txt
+
+Revision Title:
+Frozen-Architecture Fidelity, Threshold-Neutrality & Dependency Correction
+
+Immediate Source:
+TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1.txt [Preserved Unchanged]
+
+Governing Authorities:
+TT_Phase_1C.5h_Design_Mandate_v0.1d.txt [FROZEN]
+TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1j.txt [FROZEN]
+"""
+
+import os
+import sys
+
+def build():
+    output_path = "TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1a.txt"
+
+    parts = []
+
+    # --------------------------------------------------------------------------
+    # HEADER & DOCUMENT IDENTITY
+    # --------------------------------------------------------------------------
+    parts.append("""================================================================================
+TONE TRANSLATOR (TT) AI SOUND ENGINEER
+PHASE 1C.5h — IMPLEMENTATION & BUILD PLAN
+Title: PHASE 1C.5h — EMPIRICAL VALIDATION, USER ACCEPTANCE TESTING, VERIFICATION & PRODUCTION-READINESS GOVERNANCE IMPLEMENTATION & BUILD PLAN
+Version: v0.1a — Frozen-Architecture Fidelity, Threshold-Neutrality & Dependency Correction
+Immediate Prior Version: TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1.txt [Preserved Unchanged]
+Source Architecture: TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1j.txt [FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE]
+Source Status: FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE
+Plan Status: DRAFT — IMPLEMENTATION PLANNING
+Governing Mandate: TT_Phase_1C.5h_Design_Mandate_v0.1d.txt [FROZEN — AUTHORITATIVE CONSTITUTIONAL DESIGN MANDATE]
+================================================================================
+
+1. DOCUMENT IDENTITY, PURPOSE & SCOPE
+--------------------------------------------------------------------------------
+1.1 Document Identification
+Artifact: TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1a.txt
+Title: PHASE 1C.5h — EMPIRICAL VALIDATION, USER ACCEPTANCE TESTING, VERIFICATION & PRODUCTION-READINESS GOVERNANCE IMPLEMENTATION & BUILD PLAN
+Phase: Phase 1C.5h (Empirical Validation, User Acceptance Testing, Verification & Production-Readiness Governance)
+Version: v0.1a — Frozen-Architecture Fidelity, Threshold-Neutrality & Dependency Correction
+Immediate Prior Version: TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1.txt [Preserved Unchanged — SUPERSEDED BY v0.1a]
+Source Architecture: TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1j.txt [FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE]
+Governing Mandate: TT_Phase_1C.5h_Design_Mandate_v0.1d.txt [FROZEN — AUTHORITATIVE CONSTITUTIONAL DESIGN MANDATE]
+Status: DRAFT — IMPLEMENTATION PLANNING
+Authority Level: Authoritative Implementation & Engineering Programme Specification (Draft Status — Subject to Formal Review and Adoption)
+
+1.2 Purpose of This Plan
+This DRAFT Implementation & Build Plan is the current proposed engineering programme specification for Phase 1C.5h and remains subject to implementation-plan review and formal adoption.
+It operationalizes the frozen Phase 1C.5h architecture (v0.1j) and constitutional mandate (v0.1d) into an executable, phased engineering programme.
+It does NOT redesign, reinterpret, simplify, or modify the frozen Phase 1C.5h architecture.
+It defines:
+  - the technical implementation work packages (WPs);
+  - the technical sequencing and strict dependency topology;
+  - the minimum viable validation infrastructure (MVVI);
+  - the integration boundaries and inter-phase contracts with Phases 1C.5f, 1C.5g, and upstream reasoning (Phases 1C.5a-e);
+  - the concrete, testable deliverables for every subsystem;
+  - the rigorous implementation acceptance criteria;
+  - the shadow and test-only deployment isolation rules;
+  - the orderly progression toward empirical validation and initial Gate 8 cutover operation.
+
+1.3 Cardinal Implementation Rules
+Every engineering team member, component builder, and test harness author is bound by two cardinal rules:
+  CARDINAL IMPLEMENTATION RULE 1:
+  "THE FROZEN ARCHITECTURE DEFINES WHAT MUST EXIST. THIS PLAN DEFINES THE ORDER IN WHICH WE BUILD IT."
+
+  CARDINAL IMPLEMENTATION RULE 2:
+  "IMPLEMENTATION MUST CONFORM TO THE FROZEN ARCHITECTURE. IMPLEMENTATION CONVENIENCE MUST NOT SUBVERT ARCHITECTURAL GOVERNANCE."
+
+Under no circumstances may implementation difficulty, third-party library limitations, or timeline pressures be used to:
+  - collapse orthogonal evidence classes (e.g. replacing human listening panels with an FFT metric);
+  - bypass multi-layer version binding;
+  - merge authorization state changes into operational routing switches;
+  - allow un-quarantined candidate lessons to alter authoritative knowledge;
+  - grant Gate 8 cutover without four-pillar synthesis and rollback verification.
+
+1.4 Scope and Subordination Hierarchy
+This implementation plan is strictly subordinate to:
+  1. The 21 Principles of Sound Engineering Reasoning (Phase 1C.5a v0.3c) [Highest Authority];
+  2. The 14 Lifecycle Stages & 27 Immutable Lifecycle Statuses (Phase 1C.5a v0.3c);
+  3. Evidence Interpretation & Hypothesis Formation Architecture (Phase 1C.5b v0.2f);
+  4. Diagnosis & Causal Reasoning Architecture (Phase 1C.5c v0.1d);
+  5. Intervention Alternatives & Trade-Off Reasoning Architecture (Phase 1C.5d v0.1l);
+  6. Outcome Evaluation, Iteration & Review Architecture (Phase 1C.5e v0.1m);
+  7. Reasoning Traceability, Explainability & Governance Architecture (Phase 1C.5f v0.1j);
+  8. Knowledge Migration, Remapping & Controlled Adoption Architecture (Phase 1C.5g v0.1e);
+  9. Phase 1C.5h Design Mandate v0.1d (TT_Phase_1C.5h_Design_Mandate_v0.1d.txt) [FROZEN CONSTITUTIONAL FENCE];
+  10. Phase 1C.5h Architectural Specification v0.1j (TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1j.txt) [FROZEN ARCHITECTURAL BASELINE].
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 2: ARCHITECTURAL BASELINE & BINDING CONSTRAINTS
+    # --------------------------------------------------------------------------
+    parts.append("""2. ARCHITECTURAL BASELINE & BINDING CONSTRAINTS
+--------------------------------------------------------------------------------
+2.1 Source Architecture Baseline (v0.1j)
+The authoritative baseline for all work packages in this plan is frozen specification v0.1j.
+All data models, interfaces, algorithms, matrices, and workflows must correspond 1:1 with the forty-two sections, twenty-two records, twenty matrices, twenty failure conditions, and twenty stress scenarios established in v0.1j.
+
+2.2 The Seven Governing Axioms
+Implementation must instantiate and preserve the exact identities and meanings of the seven frozen Phase 1C.5h axioms from architectural specification v0.1j:
+  AXIOM 1: CONFORMANCE IS NOT SUFFICIENCY
+    "ARCHITECTURAL CONFORMANCE IS NECESSARY BUT NOT SUFFICIENT FOR PRODUCTION READINESS."
+    "A SYSTEM MAY BE ARCHITECTURALLY CORRECT AND STILL FAIL EMPIRICAL VALIDATION."
+    Schema validation proves that data fits the contract. Empirical validation proves that the tone does not degrade transient response, introduce unmusical resonances, destroy mix clarity, or crash the target platform.
+    [Implementation Commentary: Code builds must require passing audio rendering tests, not merely JSON schema/unit test passes, before advancing candidate status.]
+  AXIOM 2: LEGACY IS A BASELINE, NOT THE TRUTH
+    "LEGACY OUTPUT != EXPECTED TRUTH."
+    "LEGACY OUTPUT IS AN OPERATIONAL COMPARATOR AND REGRESSION BASELINE, NEVER UNQUESTIONED ACOUSTIC PERFECTION."
+    Phase 1C.5h compares candidate output against legacy production output (PATH-PROD) to detect unintended acoustic regression. However, where legacy produced unmusical, harsh, or muffled tones due to crude heuristics, candidate divergence that improves musicality is an Intentional Architectural Correction, not a regression.
+    [Implementation Commentary: Differential auditing logic must support three-way comparison against studio references rather than flagging every delta from legacy as a defect.]
+  AXIOM 3: FIT-FOR-PURPOSE EVIDENCE
+    "VALIDATION EVIDENCE MUST BE FIT FOR THE QUESTION BEING EVALUATED."
+    "WHAT CAN BE MEASURED SHOULD BE MEASURED. WHAT MUST BE HEARD SHOULD BE HEARD."
+    Deterministic questions (schema validity, parameter clamp bounds, syntax, export structure) require objective computational proof; they do not require human listening panels. Perceptual questions (tone feel, pick attack, musical warmth, aesthetic balance, mix context) require qualified human evaluation and listening panels.
+    [Implementation Commentary: Test runners must decouple objective metric execution from human listening pipelines, executing each where methodologically appropriate.]
+  AXIOM 4: UNCERTAINTY SURVIVAL
+    "UNCERTAINTY AND CONFLICT MUST BE PRESERVED, NEVER SYNTHETICALLY AVERAGED."
+    "A SYSTEM CANNOT FORCE FALSE CERTAINTY AT THE COST OF ACOUSTIC REALITY."
+    Where measurements diverge, reviewers disagree, or candidate tone exhibits borderline behavior, the architecture preserves the conflict and quantifies residual uncertainty, rather than forcing artificial consensus.
+    [Implementation Commentary: Persistence schemas must store conflicting evaluator scores and out-of-band metrics as explicit conflict records, prohibiting mathematical smoothing.]
+  AXIOM 5: SEPARATION OF AUTHORITY AND EXECUTION
+    "PHASE 1C.5h AUTHORIZES. PHASE 1C.5g EXECUTES."
+    "VALIDATION GOVERNANCE DETERMINES PRODUCTION READINESS. COEXISTENCE INFRASTRUCTURE CONTROLS PRODUCTION TRAFFIC."
+    Phase 1C.5h possesses sole authority to declare Gate 8 authorization state (AUTHORIZED, CONDITIONALLY_AUTHORIZED, REJECTED, BLOCKED, SUSPENDED, RESTRICTED, WITHDRAWN), while Phase 1C.5g exclusively executes traffic routing, slicing, and rollback toggles.
+    [Implementation Commentary: Phase 1C.5h emits signed authorization decision records; it contains zero networking, routing, or traffic manipulation code.]
+  AXIOM 6: STRICTLY SCOPED AUTHORIZATION
+    "GATE 8 AUTHORIZATION IS NEVER BLANKET OR UNIVERSAL."
+    "AUTHORIZATION APPLIES SOLELY TO THE EXPLICITLY TESTED AND VERIFIED SCOPE."
+    Authorization is granted strictly per gear family, amp topology, musical genre, and declared operational boundary. Untested units remain un-authorized.
+    [Implementation Commentary: Scope records must enforce explicit whitelists; the authorization engine rejects wildcard authorizations.]
+  AXIOM 7: VERSION-BOUND VALIDITY
+    "A PASS IS VALID ONLY FOR THE EXACT SEALED VERSION MATRIX UNDER WHICH IT WAS EARNED."
+    "ANY MATERIAL CHANGE TO CODE, PROMPTS, MODELS, RULES, FIXTURES, OR PLATFORMS MANDATES REVALIDATION."
+    Validation outcomes and Gate 8 authorizations are bound to exact immutable versions of code, models, rules, catalogs, fixtures, and target platforms.
+    [Implementation Commentary: Every validation execution record and gate decision seals a composite multi-layer version hash; any version drift triggers revalidation.]
+
+2.3 The Ten Constitutional Invariants
+Implementation of all test runners and gatekeepers must hard-code enforcement of the exact Ten Constitutional Invariants from Phase 1C.5h architecture v0.1j:
+  INVARIANT 1: EMPIRICAL PRIMACY INVARIANT
+    Structural compliance, schema validity, and passing unit tests are necessary prerequisites, but NEVER constitute sufficient proof of validation. An asset or reasoning engine is validated if and only if it demonstrates acoustic excellence and sound reasoning under empirical audio testing.
+    [Implementation Implication: Syntactic verification passing cannot mark a validation package as PASS without executing assigned acoustic profiles.]
+  INVARIANT 2: MULTI-DIMENSIONAL ACOUSTIC EVALUATION INVARIANT (ANTI-SCALAR COLLAPSE)
+    Acoustic quality, musical fidelity, and tone validity shall NEVER be collapsed into a single scalar score, average metric, or simplistic threshold. Evaluation must occur across orthogonal dimensions (spectral, dynamic, harmonic, phase, mix context, and playability feel), where failure in any critical dimension constitutes validation rejection.
+    [Implementation Implication: Prohibits universal scalar acoustic scores; dimensions are independently asserted against governed tolerance profiles.]
+  INVARIANT 3: PRINCIPLE COMPLIANCE INVARIANT
+    Empirical success achieved via unprincipled shortcuts, hardcoded cheats, or violations of the frozen 21 Principles of Sound Engineering Reasoning is invalid. Every validated run must exhibit strict adherence to the 21 Principles across its full decision trace.
+    [Implementation Implication: Automated audit of Phase 1C.5f decision trace must confirm principle adherence before granting readiness eligibility.]
+  INVARIANT 4: GOLDEN FIXTURE IMMUTABILITY & INDEPENDENCE INVARIANT
+    The golden acoustic fixture library used for validation must be independently governed, versioned, and immutable. Test fixtures must never be used as training data, prompt engineering tuning sets, or heuristic fitment sets for the candidate engine.
+    [Implementation Implication: Test fixtures are read-only mounted with cryptographic payload references; candidate model training/tuning pipelines have zero access to the fixture corpus.]
+  INVARIANT 5: MATERIAL REGRESSION PROTECTION INVARIANT
+    The new architecture shall not introduce unresolved material regressions into commercial guitar tone generation capability, AT5 preset compatibility, or operational stability within the authorized production scope relative to the established baseline. Intentional architectural corrections and verified neutral divergences do not constitute regressions.
+    [Implementation Implication: Regression classifier marks candidate as BLOCKED if any unresolved material genuine regression exists in requested scope.]
+  INVARIANT 6: GATE 8 EXCLUSIVITY & INDEPENDENCE INVARIANT
+    Gate 8 Production Cutover Authorization can be granted solely by Phase 1C.5h through an independently verifiable AdoptionDecisionRecord. Gate 8 is exclusive, explicit, non-bypassable, scoped, traceable, and subject to governed revalidation or withdrawal where material change or new evidence invalidates the authorization basis. Neither Phase 1C.5g, operational engineering, nor automated test scripts may self-authorize production cutover.
+    [Implementation Implication: Cutover authorization requires an explicit, signed AdoptionDecisionRecord from Phase 1C.5h.]
+  INVARIANT 7: FIT-FOR-PURPOSE EVIDENCE INVARIANT
+    VALIDATION EVIDENCE MUST BE FIT FOR THE QUESTION BEING EVALUATED. "WHAT CAN BE MEASURED SHOULD BE MEASURED. WHAT MUST BE HEARD SHOULD BE HEARD." Objective evidence is required where the validation question is objectively measurable; perceptual/human evidence is required where musical quality, feel, preference, usability, or other perceptual questions are materially at issue. Deterministic metrics shall never substitute for perceptual evaluation where musical quality or feel is materially at issue, nor may subjective opinion bypass objective acoustic and platform compliance. Gate 8 readiness as a whole must reconcile all materially relevant evidence classes.
+    [Implementation Implication: Test profile assigner enforces objective metrics for deterministic questions and human panels for psychoacoustic questions.]
+  INVARIANT 8: ADVERSARIAL & EDGE-CASE SUFFICIENCY INVARIANT
+    Validation cannot be granted based solely on "happy-path" scenarios. Every candidate component, rule, and workflow must be rigorously evaluated against applicable pathological, degraded, noisy, clipped, ambiguous, and contradictory edge-case inputs within its operational domain to verify robust handling, graceful degradation, and explicit uncertainty preservation.
+    [Implementation Implication: Profile-12 (Adversarial / Edge-Case) must be included for all component suites seeking production cutover.]
+  INVARIANT 9: REVERSIBILITY & ROLLBACK VERIFICATION INVARIANT
+    No component or path may receive Gate 8 Cutover Authorization without prior empirical verification that its operational rollback mechanism (PATH-ROLLBACK) executes reliably, cleanly, and within governed operational recovery objectives under simulated failure conditions.
+    [Implementation Implication: Rollback rehearsal must be executed and certified before Pillar 4 readiness can pass.]
+  INVARIANT 10: COMPLETE EVIDENTIAL LINEAGE INVARIANT
+    Every validation decision, score, audit result, and sign-off must possess an unbroken, tamper-evident Phase 1C.5f provenance trail linking the input audio stem, candidate model version, execution parameters, raw measurements, human evaluator identities, and resulting records into an auditable ledger.
+    [Implementation Implication: Graph edge model must strictly link all execution and evidence records to upstream Phase 1C.5f RunTrace references.]
+
+2.4 Eight Non-Ownership Fences
+Builders must instantiate the exact frozen eight non-ownership fences from Phase 1C.5h architecture v0.1j without alteration:
+  1. Redefining Upstream Reasoning Architecture: Phase 1C.5h does not alter Stages 01–14, the 21 Principles, or the 27 statuses;
+  2. Substantive Sound Engineering Execution: Phase 1C.5h does not generate guitar presets, diagnose raw audio, or select tone interventions;
+  3. Legacy Estate Discovery & Classification: Phase 1C.5h does not scan legacy source repositories or assign initial migration dispositions;
+  4. Migration Disposition Assignment: Phase 1C.5h NEVER assigns RETAIN, REMAP, TRANSFORM, QUARANTINE, RETIRE, DEPRECATE, or DEFER;
+  5. Coexistence Routing Execution: Phase 1C.5h does not route production traffic, execute PATH-SHADOW, or flip production switches (PATH-ADOPT);
+  6. Operational Rollback Execution: Phase 1C.5h tests rollback reliability and declares authorization suspension/revocation, but does not execute the operational toggle (PATH-ROLLBACK);
+  7. Unilateral Candidate Lesson Promotion: Phase 1C.5h identifies candidate lessons but cannot promote them into authoritative knowledge;
+  8. DAW / Engine Implementation: Phase 1C.5h does not build audio DSP code, VST/AU wrappers, or GUI components.
+
+Required Governing Rule:
+`IMPLEMENTATION MAY INSTANTIATE THE FROZEN FENCES. IT MAY NOT REWRITE THEM.`
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 3: TECHNICAL SEQUENCING, BUILD TRACKS & MILESTONES
+    # --------------------------------------------------------------------------
+    parts.append("""3. TECHNICAL SEQUENCING, BUILD TRACKS & MILESTONES
+--------------------------------------------------------------------------------
+3.1 Engineering Track Architecture
+The implementation is organized into six parallel and staggered engineering tracks:
+  TRACK A: CORE FOUNDATIONS & IMMUTABLE DATA INFRASTRUCTURE
+    - Schema definitions, type systems, validation graph edge model (14 governed edges), immutable audit ledger, integrity verification abstractions.
+  TRACK B: INTAKE, SCOPE & PRE-FLIGHT READINESS GATEKEEPER
+    - Sealed handoff ingestion, scope boundary enforcement, multi-layer version binding, Phase 1C.5g 7-gate auditing.
+  TRACK C: FIXTURE CURATION & TEST HARNESS EXECUTION
+    - Golden acoustic stem corpus governance, bootstrap fixtures, sandboxed execution runner, abstract platform validation adapter interface.
+  TRACK D: TRIPARTITE EVIDENCE COLLECTION ENGINES
+    - Objective signal processing / FFT analyzer, double-blind perceptual listening harness, multi-perspective UAT engine.
+  TRACK E: ACOUSTIC EVALUATION, DIFFERENTIAL AUDITING & DEFECT ROUTING
+    - Multi-dimensional acoustic model, regression classifier, root-cause failure attribution, defect remand packaging and routing.
+  TRACK F: PRODUCTION READINESS, GATE 8 ADJUDICATION & TELEMETRY
+    - Four-pillar readiness synthesizer, Gate 8 decision engine, post-cutover state machine, canary quality telemetry monitor, full AmpliTube 5 adapter completion.
+
+3.2 Milestone Roadmap (M0 through M6 — Seven Milestones)
+[NOTE: All calendar week and sprint ranges below are PLANNING ESTIMATES — NON-GOVERNING. They represent engineering sequencing estimates and do not constitute architectural readiness conditions or compliance gates.]
+The implementation proceeds across seven sequential milestones:
+  +---------------------------------------------------------------------------------------------------+
+  | MILESTONE M0: ARCHITECTURAL ALIGNMENT & DATA MODEL BASELINE (Weeks 1-2 [PLANNING ESTIMATE])        |
+  | Deliverables: Complete TypeScript/JSON schemas for Records 1-22, 14-Edge Graph Model, Hash Engine.|
+  | Exit Gate: 100% schema validation passing; round-trip serialization tests green.                  |
+  +---------------------------------------------------------------------------------------------------+
+                                                   |
+                                                   v
+  +---------------------------------------------------------------------------------------------------+
+  | MILESTONE M1: INTAKE, SCOPE BOUNDARY & VERSION-BINDING (Weeks 3-4 [PLANNING ESTIMATE])            |
+  | Deliverables: ValidationIntakeRecord parser, Scope Validator, Version Binding Matrix, Gate Auditor|
+  | Exit Gate: Ingestion of mock MigrationHandoffPackageRecord with 7-gate pre-flight audit.           |
+  +---------------------------------------------------------------------------------------------------+
+                                                   |
+                                                   v
+  +---------------------------------------------------------------------------------------------------+
+  | MILESTONE M2: MINIMUM VIABLE VALIDATION INFRASTRUCTURE (MVVI) (Weeks 5-6 [PLANNING ESTIMATE])      |
+  | Deliverables: Sandboxed audio runner, initial illustrative bootstrap fixture corpus, basic harness|
+  | Exit Gate: End-to-end execution of a synthetic ValidationCase producing raw measurements.         |
+  +---------------------------------------------------------------------------------------------------+
+                                                   |
+                                                   v
+  +---------------------------------------------------------------------------------------------------+
+  | MILESTONE M3: TRIPARTITE EVIDENCE COLLECTION INFRASTRUCTURE (Weeks 7-9 [PLANNING ESTIMATE])       |
+  | Deliverables: Objective Metric Engine (FFT/THD), Perceptual Listening Harness, UAT Persona Engine.|
+  | Exit Gate: Simultaneous generation of Objective, Perceptual, and UAT records for a test case.     |
+  +---------------------------------------------------------------------------------------------------+
+                                                   |
+                                                   v
+  +---------------------------------------------------------------------------------------------------+
+  | MILESTONE M4: DIFFERENTIAL AUDITING, REGRESSION CLASSIFICATION & DEFECT REMAND (Wks 10-12 [EST])  |
+  | Deliverables: Tripartite differential comparator, regression classifier, failure attribution engine|
+  | Exit Gate: Accurate detection and remand routing of genuine regressions and deliberate shifts.     |
+  +---------------------------------------------------------------------------------------------------+
+                                                   |
+                                                   v
+  +---------------------------------------------------------------------------------------------------+
+  | MILESTONE M5: FOUR-PILLAR PRODUCTION READINESS & GATE 8 ADJUDICATION (Wks 13-14 [EST])             |
+  | Deliverables: Readiness synthesizer, Gate 8 decision generator, conditional authorization manager.|
+  | Exit Gate: Production of sealed AdoptionDecisionRecord under mock candidate evaluations.          |
+  +---------------------------------------------------------------------------------------------------+
+                                                   |
+                                                   v
+  +---------------------------------------------------------------------------------------------------+
+  | MILESTONE M6: POST-CUTOVER GOVERNANCE, TELEMETRY MONITOR & FULL VERIFICATION (Wks 15-16 [EST])    |
+  | Deliverables: Gate 8 state machine (Suspension/Withdrawal), telemetry circuit breaker, 20 Scenarios|
+  | Exit Gate: Full verification suite passing all 20 stress scenarios and 20 degradation conditions. |
+  +---------------------------------------------------------------------------------------------------+
+
+3.3 Dependency Topology & Platform Adapter Sequencing
+  - Track A (Data Models) is a hard prerequisite for all tracks.
+  - Track B (Intake & Scope) depends on Track A.
+  - Abstract `PlatformValidationAdapter` Interface: Introduced in Track A/C so that MVVI, deterministic export checks (WF-07), and target-platform load testing consume a common abstraction without duplicating vendor-specific logic.
+  - Track C (Fixtures & Harness) depends on Track A and B.
+  - Track D (Evidence Engines) depends on Track C.
+  - Track E (Evaluation & Regression) depends on Track D.
+  - Track F (Readiness & Gate 8) depends on Track E and Track B.
+  - WP-24 (Gate 8 State Machine) defines core governance state transitions and does NOT depend on WP-28.
+  - WP-28 (Quality Telemetry Monitor) consumes WP-24 interfaces to trigger governed state evaluation.
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 4: WORK PACKAGES (WP-01 to WP-15)
+    # --------------------------------------------------------------------------
+    parts.append("""4. COMPREHENSIVE WORK PACKAGE (WP) SPECIFICATION
+--------------------------------------------------------------------------------
+This section defines the thirty-one technical work packages required to implement Phase 1C.5h in strict conformance with frozen architecture v0.1j.
+
+================================================================================
+WP-01: Foundational Schemas, Record Catalogue (Records 1-22) & Type System
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the authoritative TypeScript types, interfaces, Zod runtime validators, and JSON schemas for all twenty-two governed Phase 1C.5h records.
+2. Architectural Binding:
+   - Section 33: COMPLETE PHASE 1C.5h RECORD CATALOGUE (Records 01 to 22).
+   - Table 02: Validation Record Catalogue.
+   - Table 20: Technology-Neutrality Classification Matrix.
+   - Section 38: VOCABULARY POLICY & CONCORDANCE.
+3. Inputs & Dependencies:
+   - Upstream schema exports from Phase 1C.5f (RunTraceRecord, DecisionRecord) and Phase 1C.5g (MigrationHandoffPackageRecord).
+4. Technical Implementation Specification:
+   - Create `src/sound-engineer/validation/schemas/` directory.
+   - Define exact schemas for Records 01 through 22 matching Section 33 fields and enums.
+   - Abstract integrity metadata: Use `record_integrity_metadata` and `version_integrity_reference` abstractions rather than hardcoded cryptographic requirements.
+   - [CURRENT IMPLEMENTATION CHOICE — NON-CONSTITUTIONAL / REPLACEABLE]: Default initial integrity provider implements SHA-256 / HMAC algorithms, encapsulated behind the `integrity_provider` interface.
+   - Enforce immutability with strict TypeScript `readonly` modifiers and Zod `.strict()` parsers.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/schemas/records.ts`
+   - `src/sound-engineer/validation/schemas/enums.ts`
+   - Comprehensive test suite validating valid/invalid fixtures for all 22 records.
+6. Acceptance Criteria:
+   - 100% field parity with Section 33.
+   - Rejection of unknown properties.
+   - Pluggable integrity reference verification utility embedded in schema metadata.
+7. Failure Modes & Mitigations:
+   - Schema drift between phases: mitigate via CI contract compatibility test against Phase 1C.5g and 1C.5f exports.
+
+================================================================================
+WP-02: Graph Edge Model & Immutable Validation Audit Ledger
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the directed acyclic graph (DAG) relationship model linking validation records, and construct the append-only, tamper-evident audit ledger.
+2. Architectural Binding:
+   - Section 34: RELATIONSHIP EDGE MODEL (The Exact 14 Governed Edges).
+   - Table 19: Record Lineage / Relationship Matrix.
+   - Section 32: TRACEABILITY & EXPLAINABILITY ARCHITECTURE.
+3. Inputs & Dependencies:
+   - WP-01 (Foundational Schemas).
+4. Technical Implementation Specification:
+   - Implement `ValidationRelationshipGraph` managing exactly the fourteen frozen Phase 1C.5h edges:
+     1. `VALIDATES` (ValidationCase -> validation subject / component)
+     2. `TESTED_WITH` (ValidationCase -> ValidationFixtureRecord)
+     3. `BOUND_TO` (ValidationPackage -> ValidationScopeRecord & ValidationVersionBindingRecord)
+     4. `EVIDENCED_BY` (ValidationExecutionRecord -> ObjectiveEvidenceRecord | PerceptualEvaluationRecord | UATEvaluationRecord)
+     5. `COMPARED_AGAINST` (ValidationExecutionRecord -> baseline / reference fixtures)
+     6. `EVALUATED_BY` (PerceptualEvaluationRecord | UATEvaluationRecord -> qualified evaluator / persona)
+     7. `CONFLICTS_WITH` (EvidenceRecord -> competing EvidenceRecord, logged in EvidenceConflictRecord)
+     8. `UNCERTAIN_OF` (ValidationOutcomeRecord -> ValidationUncertaintyRecord)
+     9. `SUPERSEDES_VALIDATION` (Retest ExecutionRecord -> prior failed/invalidated ExecutionRecord)
+     10. `INVALIDATED_BY` (Prior ValidationRecord -> RevalidationTriggerRecord)
+     11. `REQUIRES_RETEST` (RevalidationTriggerRecord -> RetestPlanRecord)
+     12. `AUTHORIZES_SCOPE` (AdoptionDecisionRecord -> ValidationScopeRecord)
+     13. `REMANDS_TO` (ValidationFailureRecord -> upstream remand destination)
+     14. `DERIVED_FROM_HANDOFF` (ValidationIntakeRecord -> MigrationHandoffPackageRecord)
+   - [IMPLEMENTATION-INTERNAL — NON-ARCHITECTURAL]: Any internal persistence mechanics (e.g. database foreign keys or ledger block linkage) exist solely as private persistence plumbing and do not constitute architectural relationship edges.
+   - Implement `ValidationAuditLedger` providing cryptographic hash chaining where every record references the previous block's integrity reference via `integrity_provider`.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/graph/relationshipGraph.ts`
+   - `src/sound-engineer/validation/storage/auditLedger.ts`
+   - Audit verification utility verifying cryptographic chain integrity.
+6. Acceptance Criteria:
+   - Exact implementation of the 14 frozen edges with zero invented edges.
+   - Cycle detection rejecting non-DAG edge insertions.
+   - Tamper-detection: any modification to a historical record immediately breaks ledger validation.
+7. Failure Modes & Mitigations:
+   - Orphan records: graph builder must reject record insertion without required parent edge.
+
+================================================================================
+WP-03: Validation Intake & Sealed Handoff Package Verification Subsystem (Record 1)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the validation intake interface that receives, cryptographically verifies, and unpacks sealed `MigrationHandoffPackageRecord` artifacts from Phase 1C.5g.
+2. Architectural Binding:
+   - Section 8: VALIDATION INTAKE ARCHITECTURE.
+   - Table 04: Validation Workflow Matrix.
+   - Activity WF-01: Intake & Envelope Verification.
+3. Inputs & Dependencies:
+   - WP-01 (Schemas), WP-02 (Audit Ledger), Phase 1C.5g handoff export.
+4. Technical Implementation Specification:
+   - Implement `ValidationIntakeService`:
+     * Verify integrity reference of incoming MigrationHandoffPackageRecord via `integrity_provider`;
+     * Verify digital signature and authorizing role of Phase 1C.5g official;
+     * Unpack declared migration scope, gear targets, and model bindings;
+     * Audit presence of Phase 1C.5g Gates 1 through 7 completion tokens;
+     * Generate `ValidationIntakeRecord` (Record 1) with status `RECEIVED`, `VERIFIED`, or `REJECTED`;
+     * Link via `DERIVED_FROM_HANDOFF` edge to MigrationHandoffPackageRecord;
+     * Commit Record 1 to the audit ledger.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/intake/intakeService.ts`
+   - Automated tests for valid handoff, corrupted checksum, missing Phase 1C.5g gate, and invalid signature.
+6. Acceptance Criteria:
+   - Instant rejection of corrupted, tampered, or incomplete handoff packages.
+   - Processing within operational budget defined by `operational_budget_ref`.
+7. Failure Modes & Mitigations:
+   - Partial handoff data: atomic rollback of intake transaction on any validation error.
+
+================================================================================
+WP-04: Validation Scope Boundary & Inflation Protection Subsystem (Record 2)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the scope isolation boundary engine that strictly limits validation cases, fixtures, and evaluations to the declared scope, preventing scope inflation.
+2. Architectural Binding:
+   - Section 9: SCOPE & VERSION BINDING ARCHITECTURE.
+   - Activity WF-02: Scope & Version Binding.
+   - Table 18: Gate 8 Authorization Scope Matrix.
+   - Invariant 5: Material Regression Protection Invariant.
+   - Invariant 6: Gate 8 Exclusivity & Independence Invariant.
+3. Inputs & Dependencies:
+   - WP-03 (Intake Subsystem).
+4. Technical Implementation Specification:
+   - Implement `ValidationScopeManager`:
+     * Parse declared scope into explicit included units (gear IDs, genres, routing topologies, sample rates);
+     * Define explicit excluded units and negative boundary fences;
+     * Generate `ValidationScopeRecord` (Record 2);
+     * Implement `ScopeEnforcer` interceptor that blocks any test case, stem, or evaluation attempting to evaluate gear or topologies outside `included_units`.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/scope/scopeManager.ts`
+   - `src/sound-engineer/validation/scope/scopeEnforcer.ts`
+   - Test suite verifying rejection of test profiles referencing out-of-scope gear.
+6. Acceptance Criteria:
+   - Strict rejection of out-of-scope test cases with Condition 20 (Requested Production Authorization Scope Exceeds Tested Scope).
+   - Immutable binding of scope ID to intake ID.
+7. Failure Modes & Mitigations:
+   - Ambiguous boundary definitions: force intake rejection if scope boundaries contain wildcards.
+
+================================================================================
+WP-05: Strict Multi-Layer Version Binding Subsystem (Record 3)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the multi-layer version locking engine that seals the exact versions of all seven system layers into an immutable `ValidationVersionBindingRecord`.
+2. Architectural Binding:
+   - Section 9.2: Strict Version-Binding Protocol.
+   - Activity WF-02: Scope & Version Binding.
+   - Invariant 10: Complete Evidential Lineage Invariant.
+3. Inputs & Dependencies:
+   - WP-04 (Scope Subsystem).
+4. Technical Implementation Specification:
+   - Implement `VersionBindingService` that samples and hashes seven orthogonal system layers:
+     1. Architecture Specification Version (v0.1j hash);
+     2. Runtime Implementation Version (Git commit SHA / artifact digest);
+     3. Model Configuration & Prompts Version (LLM configuration digest);
+     4. Deterministic Rules Version (rule engine manifest digest);
+     5. Gear Catalog Version (gear catalog digest);
+     6. Target Platform Exporter Version (Stage 12 translator digest);
+     7. Fixture Library Version (Golden stem corpus manifest digest);
+     8. Host Environment & Audio Driver Version (runtime environment digest).
+   - Generate composite `version_integrity_reference` governed by `integrity_policy_ref`.
+   - Produce `ValidationVersionBindingRecord` (Record 3).
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/binding/versionBindingService.ts`
+   - Automated test verifying that modifying a single prompt or rule breaks the composite hash.
+6. Acceptance Criteria:
+   - Deterministic composite hash generation across identical environments.
+   - 100% failure on missing layer hash.
+7. Failure Modes & Mitigations:
+   - Non-deterministic environment hashing: pin container base image and library versions strictly.
+
+================================================================================
+WP-06: Pre-Validation Readiness Assessment & Phase 1C.5g Gate Auditor (Record 4)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the pre-flight readiness gatekeeper that verifies the candidate's eligibility for validation across all seven Phase 1C.5g prerequisite gates and fixture coverage.
+2. Architectural Binding:
+   - Section 10: VALIDATION READINESS ASSESSMENT ARCHITECTURE.
+   - Activity WF-03: Validation Readiness Assessment.
+   - Table 04: Validation Workflow Matrix.
+   - Table 12: Gate 8 Eligibility Matrix.
+3. Inputs & Dependencies:
+   - WP-05 (Version Binding), WP-03 (Intake).
+4. Technical Implementation Specification:
+   - Implement `ReadinessAssessmentAuditor`:
+     * Audit Gate 1: Legacy Extraction Verification;
+     * Audit Gate 2: Semantic Integrity Verification;
+     * Audit Gate 3: Translation Equivalence Verification;
+     * Audit Gate 4: Conflict Reconciliation Verification;
+     * Audit Gate 5: Reasoning Traceability Verification;
+     * Audit Gate 6: Sandbox & Compatibility Verification;
+     * Audit Gate 7: Regression Baseline Verification;
+     * Verify fixture coverage ratio against declared scope requirements;
+     * Verify test environment health.
+   - Produce `ValidationReadinessAssessmentRecord` (Record 4) with outcome `READY`, `BLOCKED_NOT_EVALUABLE`, or `READY_WITH_DECLARED_LIMITATIONS`.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/readiness/readinessAuditor.ts`
+   - Test cases simulating missing Gate 5 (reasoning unverified) and insufficient fixtures.
+6. Acceptance Criteria:
+   - `BLOCKED_NOT_EVALUABLE` outcome halts validation pipeline immediately before execution.
+   - Detailed deficiency log generated for every unmet prerequisite.
+7. Failure Modes & Mitigations:
+   - Partial gate evidence: enforce strict schema validation on Phase 1C.5g gate tokens.
+
+================================================================================
+WP-07: Test Profile Template Repository & Applicability Rules Engine (Record 7)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the repository of fourteen standardized, orthogonal `TestProfileRecord` templates and the rules engine that assigns them to validation cases based on gear topology.
+2. Architectural Binding:
+   - Section 13: TEST PROFILE ARCHITECTURE (The Exact Fourteen Profiles 01 to 14).
+   - Activity WF-04: Test Profile & Dimension Selection.
+   - Table 05: Test Profile Applicability Matrix.
+3. Inputs & Dependencies:
+   - WP-01 (Schemas), WP-04 (Scope).
+4. Technical Implementation Specification:
+   - Implement `TestProfileRepository` containing the fourteen frozen profile families:
+     * PROFILE-01: STRUCTURAL / SCHEMA PROFILE
+     * PROFILE-02: DETERMINISTIC PARAMETER PROFILE
+     * PROFILE-03: TARGET-PLATFORM EXPORT PROFILE
+     * PROFILE-04: OBJECTIVE ACOUSTIC PROFILE
+     * PROFILE-05: DYNAMIC RESPONSE PROFILE
+     * PROFILE-06: PERCEPTUAL LISTENING PROFILE
+     * PROFILE-07: PLAYABILITY PROFILE
+     * PROFILE-08: MIX-CONTEXT PROFILE
+     * PROFILE-09: REGRESSION PROFILE
+     * PROFILE-10: OPERATIONAL STABILITY PROFILE
+     * PROFILE-11: ROLLBACK PROFILE
+     * PROFILE-12: ADVERSARIAL / EDGE-CASE PROFILE
+     * PROFILE-13: TRACEABILITY / GOVERNANCE PROFILE
+     * PROFILE-14: USER-WORKFLOW / UAT PROFILE
+   - Implement `ProfileApplicabilityEngine` mapping component classes (high-gain amp, optical compressor, tape echo) to required profiles.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/profiles/profileRepository.ts`
+   - `src/sound-engineer/validation/profiles/applicabilityEngine.ts`
+   - Unit tests verifying profile assignment logic.
+6. Acceptance Criteria:
+   - Exact adherence to the 14 frozen profile IDs and definitions.
+   - Profiles are immutable objects with frozen tolerance profiles.
+7. Failure Modes & Mitigations:
+   - Unknown component class: defaults to comprehensive superset profile.
+
+================================================================================
+WP-08: Golden Acoustic Fixture Corpus & Benchmark Stem Management (Record 8)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the storage, provenance verification, and lifecycle management engine for golden acoustic DI stems, re-amp fixtures, and baseline presets.
+2. Architectural Binding:
+   - Section 18: GOLDEN ACOUSTIC FIXTURE LIBRARY & BENCHMARK STEM MANAGEMENT.
+   - Activity WF-05: Fixture Corpus Association.
+   - Table 08: Fixture Governance Matrix.
+   - Invariant 4: Golden Fixture Immutability & Independence Invariant.
+3. Inputs & Dependencies:
+   - WP-01 (Schemas), storage subsystem.
+4. Technical Implementation Specification:
+   - Implement `FixtureCorpusManager`:
+     * Catalog golden DI stems across 8 classes: Dry DI, Clean Chords, Crunch Riffs, High-Gain Solos, Bass Lines, Acoustic Guitar, Impulse Responses, Synthetic Calibration Chirps;
+     * Verify WAV audio metadata: uncompressed PCM audio;
+     * Store and verify `payload_integrity_ref` via `integrity_provider`;
+     * Verify complete chain-of-custody provenance;
+     * Generate `ValidationFixtureRecord` (Record 8);
+     * Implement anti-contamination lock preventing test code from modifying fixture files.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/fixtures/fixtureManager.ts`
+   - Fixture manifest verification CLI tool.
+   - Test suite testing corrupt audio headers, modified audio bits, and missing provenance.
+6. Acceptance Criteria:
+   - Rejection of any audio file with modified bits or missing provenance.
+   - Read-only filesystem permissions enforced at container mount.
+7. Failure Modes & Mitigations:
+   - Storage corruption: automated integrity verification before every test execution run.
+
+================================================================================
+WP-09: Validation Case & Validation Package Composition Engine (Records 5, 6)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the authoring and composition engine that constructs bounded, falsifiable `ValidationCase` records and aggregates them into a sealed `ValidationPackage`.
+2. Architectural Binding:
+   - Section 11: VALIDATION CASE ARCHITECTURE.
+   - Section 12: VALIDATION PACKAGE ARCHITECTURE.
+   - Activity WF-04: Test Profile & Dimension Selection.
+   - Activity WF-05: Fixture Corpus Association.
+   - Activity WF-06: Deterministic & Schema Verification.
+   - Table 04: Validation Workflow Matrix.
+3. Inputs & Dependencies:
+   - WP-04 (Scope), WP-05 (Version Binding), WP-07 (Profiles), WP-08 (Fixtures).
+4. Technical Implementation Specification:
+   - Implement `ValidationCaseBuilder`:
+     * Formulate clear validation questions;
+     * Associate scoped gear, test dimensions, required evidence classes, and fixtures;
+     * Specify deterministic acceptance thresholds and remand destinations;
+     * Link cases to fixtures via `TESTED_WITH` edge;
+     * Produce `ValidationCase` (Record 5).
+   - Implement `ValidationPackageComposer`:
+     * Aggregate all cases for a requested scope;
+     * Bind intake ID, scope ID, and version binding ID via `BOUND_TO` edge;
+     * Generate `ValidationPackage` (Record 6);
+     * Seal package with `record_integrity_metadata`.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/cases/caseBuilder.ts`
+   - `src/sound-engineer/validation/packages/packageComposer.ts`
+   - Unit tests verifying case completeness and package sealing.
+6. Acceptance Criteria:
+   - Package contains at least one case per applicable profile.
+   - Immutability enforced after sealing.
+7. Failure Modes & Mitigations:
+   - Incomplete case coverage: package composer validates coverage matrix before allowing sealing.
+
+================================================================================
+WP-10: Sandboxed Validation Execution Harness & Audio Runner (Record 9)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the sandboxed, isolated test harness that executes validation cases, renders audio through candidate and baseline engines, and logs execution telemetry.
+2. Architectural Binding:
+   - Section 14: EVIDENCE MODEL & VALIDATION EXECUTION ARCHITECTURE.
+   - Execution of Branches WF-06 through WF-10.
+   - Section 31: PRODUCTION PROTECTION ARCHITECTURE.
+3. Inputs & Dependencies:
+   - WP-08 (Fixtures), WP-09 (Cases & Packages), WP-05 (Version Binding), Abstract `PlatformValidationAdapter` Interface.
+4. Technical Implementation Specification:
+   - Implement `ValidationExecutionRunner`:
+     * Run in dedicated, unprivileged sandbox with zero access to live production database or routing;
+     * Consume abstract `PlatformValidationAdapter` contract for platform preset rendering;
+     * Load golden fixture DI audio stream;
+     * Feed audio through Candidate Tone Translator pipeline and render processed WAV;
+     * Simultaneously feed audio through PATH-PROD (legacy baseline) to generate reference WAV;
+     * Capture execution telemetry within `operational_budget_ref`;
+     * Verify rendered audio integrity;
+     * Generate `ValidationExecutionRecord` (Record 9);
+     * Attach Phase 1C.5f `run_trace_ref` for complete causal auditability.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/execution/executionRunner.ts`
+   - `src/sound-engineer/validation/execution/sandboxIsolation.ts`
+   - Test suite verifying crash isolation, timeout handling, and memory leakage detection.
+6. Acceptance Criteria:
+   - Sub-process crash does not crash the validation harness.
+   - Zero side-effects on host or production state.
+7. Failure Modes & Mitigations:
+   - Audio rendering hang: timeout enforcement governed by `operational_budget_ref` with process kill.
+
+================================================================================
+WP-11: Objective Acoustic & Signal-Processing Measurement Engine (Record 10)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the mathematical, DSP, and signal processing measurement suite that extracts deterministic acoustic metrics from rendered audio stems.
+2. Architectural Binding:
+   - Section 15: OBJECTIVE EVIDENCE ARCHITECTURE.
+   - Activity WF-08: Objective Acoustic Signal Analysis.
+   - Profiles: PROFILE-04 (Objective Acoustic), PROFILE-05 (Dynamic Response), PROFILE-10 (Operational Stability).
+   - Table 06: Evidence-Class Matrix.
+   - Table 07: Objective vs Perceptual Applicability Matrix.
+3. Inputs & Dependencies:
+   - WP-10 (Execution Harness).
+4. Technical Implementation Specification:
+   - Implement `ObjectiveMeasurementEngine`:
+     * Spectral Analysis: FFT frequency response deltas, Spectral Centroid, Spectral Tilt, Rolloff;
+     * Harmonic Distortion: Total Harmonic Distortion (THD%), THD+N, Individual Harmonics, Harmonic Energy Ratio;
+     * Dynamic Response: Dynamic Range, Crest Factor, Compression Envelope Delta;
+     * Spatial & Phase: Phase Correlation Coefficient, Stereo Width;
+     * Noise & Artifacts: Signal-to-Noise Ratio, Aliasing Energy Ratio;
+     * Evaluate measurements against `tolerance_criteria_spec` and `measurement_precision_profile_ref`;
+     * Execution within `operational_budget_ref`;
+     * Produce `ObjectiveEvidenceRecord` (Record 10) linked via `EVIDENCED_BY` edge;
+     * Evaluation outcome: `MET`, `OUT_OF_TOLERANCE`, `BORDERLINE`, `NOT_APPLICABLE`.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/evidence/objectiveMeasurementEngine.ts`
+   - DSP test suite verifying FFT accuracy against synthetic calibration waves.
+6. Acceptance Criteria:
+   - Measurement reproducibility within `measurement_precision_profile_ref`.
+   - Execution performance within `operational_budget_ref`.
+7. Failure Modes & Mitigations:
+   - Numerical instability: clamp NaN/Inf values, throw explicit measurement error.
+
+================================================================================
+WP-12: Perceptual Evaluation, Blind Listening & Psychoacoustic Harness (Record 11)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the human psychoacoustic listening evaluation subsystem, supporting blind ABX, MUSHRA, and expert panel rating across tonal and musical dimensions.
+2. Architectural Binding:
+   - Section 16: PERCEPTUAL EVIDENCE ARCHITECTURE.
+   - Activity WF-09: Perceptual Expert Listening Evaluation.
+   - Profiles: PROFILE-06 (Perceptual Listening), PROFILE-08 (Mix-Context).
+   - Table 06: Evidence-Class Matrix.
+   - Table 07: Objective vs Perceptual Applicability Matrix.
+3. Inputs & Dependencies:
+   - WP-10 (Rendered Audio), WP-01 (Schemas).
+4. Technical Implementation Specification:
+   - Implement `PerceptualListeningHarness`:
+     * Support standardized listening methodologies (Blind ABX, MUSHRA, Degradation Category Rating, Expert Heuristic Panel, etc.) governed by `listening_methodology_profile_ref`;
+     * Automated double-blind stimulus presentation (randomizing Candidate vs Baseline vs Hidden Anchor);
+     * Capture evaluations across standardized dimensions governed by `rating_scale_profile_ref`:
+       - Tonal Balance, Dynamic Feel & Sag, Warmth & Low-End Body, Presence & Bite, Touch Sensitivity & Cleanup, Acoustic Fatigue;
+     * Capture evaluator qualifications, listening environment;
+     * Calculate inter-rater reliability governed by `listening_methodology_profile_ref`;
+     * Produce `PerceptualEvaluationRecord` (Record 11) linked via `EVIDENCED_BY` edge.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/evidence/perceptualListeningHarness.ts`
+   - Blinded presentation interface / test utility.
+   - Unit tests for stimulus randomization and double-blind integrity.
+6. Acceptance Criteria:
+   - Zero leakage of stimulus identity to evaluator UI.
+   - Invalidation of sessions where hidden anchor check fails.
+7. Failure Modes & Mitigations:
+   - Reviewer fatigue/bias: automated enforcement of session duration limits and sanity anchors.
+
+================================================================================
+WP-13: User Acceptance Testing (UAT) Multi-Persona Workflow Engine (Record 12)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the task-based UAT evaluation framework measuring workflow friction, musician satisfaction, and cognitive fit across the four canonical engineering personas.
+2. Architectural Binding:
+   - Section 17: USER ACCEPTANCE TESTING (UAT) ARCHITECTURE.
+   - Activity WF-10: Multi-Perspective User Acceptance Testing.
+   - Profiles: PROFILE-07 (Playability), PROFILE-14 (User-Workflow / UAT).
+   - Table 06: Evidence-Class Matrix.
+3. Inputs & Dependencies:
+   - WP-09 (Packages), WP-10 (Execution).
+4. Technical Implementation Specification:
+   - Implement `UATEvaluationEngine` supporting the four canonical Phase 1C.5h UAT personas:
+     1. Persona 1: Recording / Mix Engineer (`RECORDING_ENGINEER`)
+     2. Persona 2: Performing / Session Guitarist (`SESSION_GUITARIST`)
+     3. Persona 3: Creative Producer / Songwriter (`PRODUCER`)
+     4. Persona 4: Tone-Platform / Preset Architect (`PLATFORM_ARCHITECT`)
+     [NOTE: Any specific musician sub-types, such as touring guitarists or bedroom producers, are strictly non-normative illustrative examples, not replacements for the four canonical personas.]
+   - Track task scenarios and capture canonical fields:
+     * `evaluator_persona`: RECORDING_ENGINEER | SESSION_GUITARIST | PRODUCER | PLATFORM_ARCHITECT
+     * `task_completion_status`: COMPLETED_SUCCESSFULLY | COMPLETED_WITH_FRICTION | FAILED
+     * `task_duration_seconds`: number
+     * `workflow_satisfaction_rating`: governed by `uat_metric_profile_ref`
+     * `cognitive_friction_notes`: string
+     * `musical_fitness_verdict`: ACCEPTED | REJECTED | CONDITIONALLY_ACCEPTED
+     * `uat_blockers_identified`: string[]
+   - Produce `UATEvaluationRecord` (Record 12) linked via `EVIDENCED_BY` edge.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/evidence/uatEvaluationEngine.ts`
+   - Task scenario execution runner.
+   - Test suite validating scoring algorithms.
+6. Acceptance Criteria:
+   - Exact schema enum parity with Section 17.3 and Section 33 Record 12.
+   - Captures qualitative notes and blocker flags without loss.
+7. Failure Modes & Mitigations:
+   - Persona evaluation omission: require appropriate persona evaluations for all user-facing workflows.
+
+================================================================================
+WP-14: Multi-Dimensional Acoustic Evaluation & Orthogonal Tolerance Engine
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the multi-dimensional evaluation synthesizer that evaluates objective and perceptual evidence against circuit-specific acoustic tolerance specifications without scalar collapse.
+2. Architectural Binding:
+   - Section 19: MULTI-DIMENSIONAL ACOUSTIC EVALUATION MODEL.
+   - Table 06: Evidence-Class Matrix.
+   - Table 07: Objective vs Perceptual Applicability Matrix.
+   - Invariant 2: Multi-Dimensional Acoustic Evaluation Invariant (Anti-Scalar Collapse).
+3. Inputs & Dependencies:
+   - WP-11 (Objective), WP-12 (Perceptual), WP-07 (Profiles).
+4. Technical Implementation Specification:
+   - Implement `AcousticEvaluationSynthesizer`:
+     * Evaluate orthogonal dimensions independently (Spectral, Dynamic, Harmonic, Phase, Playability, Mix Context);
+     * Prohibit universal synthetic scalar acoustic score collapse (e.g. no fixed 25%/25%/20%/15%/15% scalar averaging formula);
+     * Consume profile-specific `tolerance_criteria_spec` defined per gear family;
+     * Ensure failure in any critical dimension triggers validation failure, preventing masking of severe defects.
+   - Governing Rule:
+     `NO UNIVERSAL SYNTHETIC ACOUSTIC SCORE.`
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/evaluation/acousticEvaluationSynthesizer.ts`
+   - Unit tests covering distinct amplifier and pedal circuit classes.
+6. Acceptance Criteria:
+   - Strict adherence to orthogonal dimension evaluation without scalar collapse.
+   - No masking of high-frequency aliasing or harshness by passing spectral balance scores.
+7. Failure Modes & Mitigations:
+   - Unrecognized gear topology: fallback to strictest conservative tolerance limits.
+
+================================================================================
+WP-15: Tripartite Differential Comparison & Regression Detection Engine (Record 13)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the tripartite differential comparator that analyzes Candidate vs Baseline (PATH-PROD) vs Benchmark differences and classifies regressions into canonical categories.
+2. Architectural Binding:
+   - Section 20: REGRESSION DETECTION & DIFFERENTIAL AUDITING ARCHITECTURE.
+   - Activity WF-11: Differential Auditing & Regression Analysis.
+   - Profile: PROFILE-09: REGRESSION PROFILE.
+   - Table 10: Regression Classification Matrix.
+   - Invariant 5: Material Regression Protection Invariant.
+3. Inputs & Dependencies:
+   - WP-11 (Objective Evidence), WP-12 (Perceptual Evidence), WP-10 (Dual-Run Audio).
+4. Technical Implementation Specification:
+   - Implement `DifferentialAuditingEngine`:
+     * Tripartite comparison:
+       (A) Candidate vs PATH-PROD (Legacy Production Baseline);
+       (B) Candidate vs Golden Studio Reference Benchmark;
+       (C) PATH-PROD vs Golden Studio Reference Benchmark;
+     * Classify divergences into the exact four canonical categories:
+       1. Intentional Architectural Correction (`INTENTIONAL_ARCHITECTURAL_CORRECTION`)
+       2. Neutral Divergence (`NEUTRAL_DIVERGENCE`)
+       3. Genuine Regression (`GENUINE_REGRESSION`)
+       4. Unresolved Divergence (`UNRESOLVED_DIVERGENCE`)
+     * Calculate materiality score governed by `materiality_profile_ref`;
+     * Set `blocks_gate_8 = true` ONLY for unresolved material Genuine Regressions or unresolved material divergences;
+     * Produce `RegressionAssessmentRecord` (Record 13).
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/regression/differentialAuditor.ts`
+   - `src/sound-engineer/validation/regression/regressionClassifier.ts`
+   - Test suite simulating intentional bugfixes, neutral variations, and genuine regressions.
+6. Acceptance Criteria:
+   - Zero false positives on verified intentional architectural corrections.
+   - Detection of genuine regressions exceeding materiality thresholds governed by `materiality_profile_ref`.
+7. Failure Modes & Mitigations:
+   - Borderline regressions: classify as UNRESOLVED_DIVERGENCE, forcing governed adjudication.
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 4 (Cont.): WORK PACKAGES (WP-16 to WP-31)
+    # --------------------------------------------------------------------------
+    parts.append("""================================================================================
+WP-16: Root-Layer Failure Attribution & Diagnostic Isolation Engine (Record 14)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the forensic failure isolation engine that attributes validation failures to their exact root architectural layer.
+2. Architectural Binding:
+   - Section 21: FAILURE ATTRIBUTION ARCHITECTURE.
+   - Activity WF-12: Failure Attribution & Root-Layer Isolation.
+   - Table 09: Failure Attribution Matrix.
+   - Table 17: Remand Routing Matrix.
+3. Inputs & Dependencies:
+   - WP-10 (Execution Records), WP-11 (Objective), WP-15 (Regressions).
+4. Technical Implementation Specification:
+   - Implement `FailureAttributionEngine`:
+     * Forensic decision tree classifying failure symptoms into nine orthogonal root classes:
+       1. MIGRATION_MAPPING
+       2. REASONING
+       3. PLATFORM_TRANSLATION
+       4. RUNTIME_IMPLEMENTATION
+       5. TEST_FIXTURE
+       6. VALIDATION_ENVIRONMENT
+       7. TARGET_PLATFORM
+       8. OPERATIONAL_INFRASTRUCTURE
+       9. UNKNOWN
+     * Attach Phase 1C.5f execution trace and raw measurement anomalies;
+     * Link via `REMANDS_TO` edge to upstream destination;
+     * Produce `ValidationFailureRecord` (Record 14).
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/attribution/failureAttributionEngine.ts`
+   - Test suite verifying accurate attribution across 9 simulated failure scenarios.
+6. Acceptance Criteria:
+   - Clear, reproducible attribution with supporting evidence links.
+   - Unambiguous remand destination assignment matching Table 17.
+7. Failure Modes & Mitigations:
+   - Confounded failures: classify as UNKNOWN, triggering joint diagnostic review.
+
+================================================================================
+WP-17: Evidence Conflict Preservation & Resolution Accounting (Record 15)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the subsystem that detects, explicitly logs, and preserves contradictory evidence without artificial scalar averaging.
+2. Architectural Binding:
+   - Section 22: EVIDENCE CONFLICT & UNCERTAINTY ARCHITECTURE.
+   - Activity WF-13: Evidence Reconciliation & Uncertainty Logging.
+   - Table 15: Evidence Conflict Resolution Matrix.
+   - Invariant 7: Evidence Conflict Preservation Invariant.
+3. Inputs & Dependencies:
+   - WP-11 (Objective Evidence), WP-12 (Perceptual Evidence).
+4. Technical Implementation Specification:
+   - Implement `EvidenceConflictDetector`:
+     * Detect conflicts:
+       - Type A: Objective measurements pass, but human listening panel fails.
+       - Type B: Human listening panel passes, but objective measurements violate technical thresholds.
+       - Type C: Inter-rater disagreement.
+       - Type D: Metric vs Metric divergence.
+     * Thresholds governed by `conflict_detection_profile_ref` (prohibiting hardcoded universal percentages);
+     * Prohibit synthetic averaging or scalar smoothing;
+     * Link competing records via `CONFLICTS_WITH` edge;
+     * Produce `EvidenceConflictRecord` (Record 15).
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/conflicts/conflictDetector.ts`
+   - Test suite simulating metrics-pass/listening-fail scenarios.
+6. Acceptance Criteria:
+   - Strict preservation of raw conflicting scores.
+   - Generation of explicit conflict records for significant divergences governed by profile.
+7. Failure Modes & Mitigations:
+   - Concealed conflict: automated audit checking for metric/perceptual score divergence.
+
+================================================================================
+WP-18: Explicit Uncertainty Modeling & Production Risk Accounting (Record 16)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the explicit uncertainty accounting subsystem that catalogs unverified edge-cases, sample size limitations, and potential production risks.
+2. Architectural Binding:
+   - Section 22.2: Validation Uncertainty Accounting.
+   - Activity WF-13: Evidence Reconciliation & Uncertainty Logging.
+   - Axiom 4: Uncertainty Survival.
+3. Inputs & Dependencies:
+   - WP-09 (Cases), WP-10 (Executions), WP-17 (Conflicts).
+4. Technical Implementation Specification:
+   - Implement `ValidationUncertaintyManager`:
+     * Catalog uncertainty sources: Untested sampling rates, boundary volume settings, limited sample size;
+     * Calculate production risk score governed by risk profiles;
+     * Evaluate Gate 8 impact: `ALLOWS_CONDITIONAL`, `FORCES_BLOCK`, `ACCEPTABLE_LOW_RISK`;
+     * Define mandatory telemetry monitoring rules if conditional cutover is considered;
+     * Link via `UNCERTAIN_OF` edge;
+     * Produce `ValidationUncertaintyRecord` (Record 16).
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/uncertainty/uncertaintyManager.ts`
+   - Test cases verifying risk score calculation and gate impact assignment.
+6. Acceptance Criteria:
+   - High uncertainty automatically disqualifies candidate from unconditional Gate 8.
+   - Complete trace linking uncertainty to affected scope.
+7. Failure Modes & Mitigations:
+   - Unstated assumptions: audit checklist forcing explicit declaration of all test boundaries.
+
+================================================================================
+WP-19: Governed Validation Outcome Synthesis & Decision Engine (Record 17)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the outcome synthesis engine that aggregates all evidence, regressions, conflicts, and uncertainties into a governed `ValidationOutcomeRecord`.
+2. Architectural Binding:
+   - Section 23: VALIDATION OUTCOME ARCHITECTURE.
+   - Table 11: Validation Outcome Matrix.
+   - Table 04: Validation Workflow Matrix.
+3. Inputs & Dependencies:
+   - WP-11, WP-12, WP-13, WP-15, WP-17, WP-18.
+4. Technical Implementation Specification:
+   - Implement `ValidationOutcomeSynthesizer`:
+     * Evaluate outcome rules matching Table 11:
+       - PASS: All required cases executed, objective tolerances met, perceptual panel approved, zero unresolved material genuine regressions within scope. (Eligible for Gate 8 adjudication; does not grant cutover automatically).
+       - FAIL: Unresolved material genuine regression, severe objective breach, or perceptual failure. (Ineligible for Gate 8; triggers defect remand).
+       - BLOCKED: Pre-requisite missing, fixture invalid, environment crash, test harness failure. (Testing halted).
+       - CONDITIONAL: Non-critical deviations, minor cosmetic shifts, or acceptable low risks with compensating controls. (Eligible for conditional Gate 8 review).
+     * Produce `ValidationOutcomeRecord` (Record 17);
+     * Bind immutably to package ID and version binding ID.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/outcome/outcomeSynthesizer.ts`
+   - Test suite covering PASS, FAIL, BLOCKED, and CONDITIONAL outcome synthesis.
+6. Acceptance Criteria:
+   - PASS requires 0 unresolved material genuine regressions within scope.
+   - Complete summary verdict with objective, perceptual, UAT, and regression breakdowns.
+7. Failure Modes & Mitigations:
+   - Premature PASS: automated validator checks that all package cases are accounted for.
+
+================================================================================
+WP-20: Revalidation Trigger Detection & Targeted Retest Planning (Records 18, 19)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the change-detection engine that monitors system layers for material changes across the ten frozen revalidation triggers and constructs targeted `RetestPlanRecord` instances preserving valid audit lineage.
+2. Architectural Binding:
+   - Section 24: RETEST & REVALIDATION ARCHITECTURE.
+   - Table 14: Revalidation Trigger Matrix (Exact Triggers 01 to 10).
+3. Inputs & Dependencies:
+   - WP-05 (Version Binding), WP-19 (Outcomes).
+4. Technical Implementation Specification:
+   - Implement `RevalidationTriggerDetector` monitoring the ten frozen triggers:
+     * TRIGGER-01: Upstream reasoning architecture or prompt template update
+     * TRIGGER-02: Deterministic heuristic rule, parameter clamp, or table update
+     * TRIGGER-03: Gear definition catalog or gear alias update
+     * TRIGGER-04: Target-platform parameter manifest or exporter serialization update
+     * TRIGGER-05: Target-platform version update or host OS runtime update
+     * TRIGGER-06: Golden Acoustic Fixture update, recalibration, or contamination invalidation
+     * TRIGGER-07: Runtime execution engine, audio driver, or DSP core codebase update
+     * TRIGGER-08: PATH-ROLLBACK mechanism or operational deployment logic update
+     * TRIGGER-09: Approval and promotion of a new Candidate Lesson affecting the subject domain
+     * TRIGGER-10: Production quality telemetry reporting a significant anomaly or defect spike
+   - Generate `RevalidationTriggerRecord` (Record 18) linked via `INVALIDATED_BY` edge;
+   - Implement `RetestPlanner`:
+     * Link via `REQUIRES_RETEST` edge to RetestPlanRecord;
+     * Preserve intact historical evidence; link retests via `SUPERSEDES_VALIDATION` edge;
+     * Generate `RetestPlanRecord` (Record 19).
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/retest/triggerDetector.ts`
+   - `src/sound-engineer/validation/retest/retestPlanner.ts`
+   - Test suite simulating triggers and retest plan generation.
+6. Acceptance Criteria:
+   - Exact mapping to the 10 frozen triggers.
+   - Targeted retest scope isolation without historical record mutation.
+7. Failure Modes & Mitigations:
+   - Cascading invalidation: explicit dependency graph tracing to prevent over-invalidation.
+
+================================================================================
+WP-21: Four-Pillar Production Readiness Assessment Synthesis (Record 20)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the pre-Gate-8 readiness evaluation engine synthesizing the Four Pillars of Production Readiness and checking for absolute Hard Blockers.
+2. Architectural Binding:
+   - Section 25: PRODUCTION READINESS ASSESSMENT ARCHITECTURE.
+   - Activity WF-15: Production-Readiness Synthesis.
+   - Table 12: Gate 8 Eligibility Matrix.
+   - Table 13: Hard Blocker Matrix.
+3. Inputs & Dependencies:
+   - WP-14, WP-15, WP-19, WP-27 (Rollback Verification).
+4. Technical Implementation Specification:
+   - Implement `ProductionReadinessSynthesizer`:
+     * Evaluate PILLAR 1: Acoustic & Musical Readiness (Signals, Listening, Playability, Defects);
+     * Evaluate PILLAR 2: Reasoning & Governance Readiness (Stages 01-14, 21 Principles, Explainability, Quarantined Lessons);
+     * Evaluate PILLAR 3: Platform & Operational Readiness (Target export, parameter bounds, resource budgets);
+     * Evaluate PILLAR 4: Rollback & Production-Safety Readiness (Isolation, zero unresolved material genuine regressions, verified automated rollback, telemetry stop criteria);
+     * Check for Hard Blockers (Table 13: 1. Unresolved material regression; 2. Target export failure; 3. Unverified rollback; 4. Reasoning non-conformance; 5. Version binding mismatch);
+     * Generate `ProductionReadinessAssessmentRecord` (Record 20) with `gate_8_eligible: boolean`.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/readiness/readinessSynthesizer.ts`
+   - Test suite testing each Hard Blocker and each pillar evaluation.
+6. Acceptance Criteria:
+   - Immediate disqualification if any Hard Blocker is present.
+   - Every pillar requires explicit evidence reference, not synthetic aggregate score.
+7. Failure Modes & Mitigations:
+   - Incomplete pillar assessment: gatekeeper blocks presentation to Gate 8 without 4/4 pillars evaluated.
+
+================================================================================
+WP-22: Gate 8 Production Cutover Adjudication & Scoped Authorization (Record 21)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the formal Gate 8 Production Cutover Authorization engine that issues, cryptographically signs, and seals the authoritative `AdoptionDecisionRecord`.
+2. Architectural Binding:
+   - Section 26: GATE 8 PRODUCTION CUTOVER AUTHORIZATION ARCHITECTURE.
+   - Activity WF-16: Gate 8 Cutover Adjudication.
+   - Table 12: Gate 8 Eligibility Matrix.
+   - Table 18: Gate 8 Authorization Scope Matrix.
+   - Invariant 6: Gate 8 Exclusivity & Independence Invariant.
+3. Inputs & Dependencies:
+   - WP-21 (Readiness Assessment), WP-04 (Scope), WP-05 (Version Binding).
+4. Technical Implementation Specification:
+   - Implement `Gate8AdjudicationEngine`:
+     * Convene formal Gate 8 adjudication;
+     * Verify all prerequisites: `gate_8_eligible == true`, 0 Hard Blockers, verified rollback certificate;
+     * Evaluate requested scope vs authorized scope;
+     * Generate decision outcome: `AUTHORIZED | CONDITIONALLY_AUTHORIZED | REJECTED | BLOCKED`;
+     * Maintain separation: `decision_outcome` is distinct from `governance_status`;
+     * Initial `governance_status = ACTIVE` upon authorization (do NOT automatically map `CONDITIONALLY_AUTHORIZED -> RESTRICTED` unless a specific governed change record later establishes restriction);
+     * Link via `AUTHORIZES_SCOPE` edge to ValidationScopeRecord;
+     * Generate `AdoptionDecisionRecord` (Record 21);
+     * Sign record with authorizing official key via `integrity_provider`;
+     * Return sealed record to Phase 1C.5g for governed adoption execution.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/gate8/gate8AdjudicationEngine.ts`
+   - Test suite simulating approval, rejection, and conditional authorization.
+6. Acceptance Criteria:
+   - Scope in Record 21 cannot exceed Scope in Record 2.
+   - Handback to Phase 1C.5g is strictly an authorization certificate, not an execution toggle.
+7. Failure Modes & Mitigations:
+   - Unauthorized signing: require cryptographic signature validation against authorized public keys.
+
+================================================================================
+WP-23: Conditional Authorization, Scope Restriction & Boundary Subsystem
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the conditional authorization manager that defines strict scope carve-outs, required monitoring, validity conditions, and evidence follow-up requirements while respecting the Phase 1C.5g operational execution boundary.
+2. Architectural Binding:
+   - Section 27: CONDITIONAL AUTHORIZATION ARCHITECTURE.
+   - Activity WF-16: Gate 8 Cutover Adjudication.
+   - Table 18: Gate 8 Authorization Scope Matrix.
+   - Axiom 5: Separation of Authority and Execution.
+3. Inputs & Dependencies:
+   - WP-22 (Gate 8 Adjudication).
+4. Technical Implementation Specification:
+   - Implement `ConditionalAuthorizationManager`:
+     * Enforce strict architectural criteria: Minor edge-case gaps, acceptable low risks with compensating controls;
+     * Formulate mandatory conditions within Phase 1C.5h ownership:
+       - Scope carve-outs (explicitly excluded gear, models, or styles);
+       - Heightened telemetry monitoring rules and tighter alert profiles;
+       - Expiration limits and evidence follow-up requirements;
+       - Governed revalidation prerequisites;
+     * Respect Phase 1C.5g Boundary: Phase 1C.5h does NOT own or execute Canary traffic slicing, traffic percentages, or routing switches; Phase 1C.5g exclusively executes traffic slicing under its own governed architecture;
+     * Governing Rule:
+       `PHASE 1C.5h MAY CONDITION AUTHORIZATION. PHASE 1C.5g OWNS TRAFFIC-SLICING AND CUTOVER EXECUTION.`
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/gate8/conditionalManager.ts`
+   - Unit tests verifying scope carve-outs and condition formulation.
+6. Acceptance Criteria:
+   - Immediate block of conditional authorization if an unresolved material genuine regression is present.
+   - Clean boundary separation with zero traffic manipulation logic.
+7. Failure Modes & Mitigations:
+   - Unmet conditions: trigger revalidation evaluation upon condition expiration.
+
+================================================================================
+WP-24: Post-Cutover Gate 8 Lifecycle State Machine (Record 22)
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the state machine governing post-cutover modification, suspension, restriction, withdrawal, and re-adjudication of Gate 8 authorization.
+2. Architectural Binding:
+   - Section 28: GATE 8 SUSPENSION, RESTRICTION & WITHDRAWAL ARCHITECTURE.
+   - Activity WF-17: Post-Cutover Telemetry Governance.
+   - Table 18: Gate 8 Authorization Scope Matrix.
+   - Table 04: Validation Workflow Matrix.
+   - Invariant 10: Complete Evidential Lineage Invariant.
+3. Inputs & Dependencies:
+   - WP-22 (Adoption Decision), WP-01 (Schemas), WP-02 (Audit Ledger).
+   - [NOTE: WP-24 does NOT depend on WP-28. WP-24 defines the state machine interface; WP-28 consumes this interface.]
+4. Technical Implementation Specification:
+   - Implement `Gate8StateMachine`:
+     * Manage governance status transitions:
+       `ACTIVE` -> `SUSPENDED` (Emergency stop; authorization suspended);
+       `ACTIVE` -> `RESTRICTED` (Carve out failing gear family; remainder remains active);
+       `ACTIVE` | `SUSPENDED` | `RESTRICTED` -> `WITHDRAWN` (Permanent revocation of specific authorization record);
+       `SUSPENDED` | `RESTRICTED` -> `ACTIVE` (Reinstatement via formal governed Gate 8 re-adjudication ONLY; never automatic);
+       `ACTIVE` -> `SUPERSEDED` (Replaced by newly authorized version).
+     * Enforce strict withdrawal semantics:
+       - `WITHDRAWN` permanently closes the specific authorization record;
+       - It cannot be reactivated or reinstated; NO `WITHDRAWN -> ACTIVE` transition exists;
+       - A remediated candidate may return only through a new validation package;
+       - Any future authorization requires a NEW AdoptionDecisionRecord;
+     * Enforce valid `previous_governance_status` schema: `ACTIVE | SUSPENDED | RESTRICTED`;
+     * Generate `Gate8ChangeRecord` (Record 22);
+     * Notify Phase 1C.5g of authorization state change for immediate operational execution.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/gate8/stateMachine.ts`
+   - Test suite testing suspension, restriction, withdrawal, and re-adjudication workflows.
+6. Acceptance Criteria:
+   - Reinstatement requires formal Gate 8 re-adjudication.
+   - Withdrawn records can never be reactivated.
+   - WP-24 core state machine unit tests run independently without WP-28.
+7. Failure Modes & Mitigations:
+   - Stale status: event-driven notification to Phase 1C.5g upon any state change.
+
+================================================================================
+WP-25: Defect Remand Packaging & Multi-Destination Routing Subsystem
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the defect remand packaging and routing engine that bundles failure evidence, version bindings, and reproducible test cases, routing them to authoritative upstream owners.
+2. Architectural Binding:
+   - Section 29: DEFECT REMAND ARCHITECTURE.
+   - Triggered from Activity WF-12: Failure Attribution & Root-Layer Isolation.
+   - Table 17: Remand Routing Matrix.
+3. Inputs & Dependencies:
+   - WP-16 (Failure Attribution), WP-10 (Executions), WP-05 (Version Binding).
+4. Technical Implementation Specification:
+   - Implement `DefectRemandRouter`:
+     * Assemble `DefectRemandPackage`:
+       - ValidationFailureRecord + execution trace;
+       - Exact version binding (code, prompts, platform, fixtures);
+       - Reproducible test case & fixture audio stem;
+       - Observed vs expected measurements;
+     * Route based on failure attribution:
+       - `MIGRATION_MAPPING` -> Phase 1C.5g
+       - `REASONING` -> Upstream Reasoning (Phases 1C.5a-e)
+       - `PLATFORM_TRANSLATION` -> Stage 12 Platform Translation
+       - `RUNTIME_IMPLEMENTATION` -> Core Engineering
+       - `TEST_FIXTURE` -> Fixture Curation Team
+       - `VALIDATION_ENVIRONMENT` -> Infrastructure Team
+       - `TARGET_PLATFORM` -> Vendor Integration Team
+       - `OPERATIONAL_INFRASTRUCTURE` -> SRE/Operations
+       - `UNKNOWN` -> Joint Diagnostic Group
+     * Track remediation lifecycle and handoff return.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/remand/defectRemandRouter.ts`
+   - Defect export packaging CLI tool.
+   - Test suite verifying routing destinations across all attribution types.
+6. Acceptance Criteria:
+   - Zero unilateral code/prompt patching in Phase 1C.5h.
+   - Complete, self-contained reproduction package generated for every failure.
+7. Failure Modes & Mitigations:
+   - Unaddressed remands: remand aging tracker flagging un-remediated defects.
+
+================================================================================
+WP-26: Candidate Lesson Quarantine Handoff & Phase 1C.5e/f Governance Integration
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the candidate lesson boundary engine that formulates potential sound engineering insights from validation evidence and remands them into inherited Phase 1C.5e/f quarantine.
+2. Architectural Binding:
+   - Section 30: CANDIDATE LESSON BOUNDARY & GOVERNANCE.
+   - Formulated from evidence in WF-08 through WF-13.
+   - Invariant 8: Candidate Lesson Quarantine Invariant.
+3. Inputs & Dependencies:
+   - WP-11, WP-12, WP-16, Phase 1C.5e/f governance interface.
+4. Technical Implementation Specification:
+   - Implement `CandidateLessonHandoffGateway`:
+     * Detect generalizable acoustic insights during validation;
+     * Formulate Candidate Lesson evidence package:
+       - Proposed insight text;
+       - Supporting objective & perceptual validation evidence;
+       - Full Phase 1C.5f provenance and run trace ref;
+       - Affected gear scope and uncertainty assessment;
+       - Relevant Stage 14 Engineering Review evidence where applicable;
+     * Explicit fence: Stage 14 is NOT the quarantine authority, knowledge governance, or promotion authority;
+     * Remand into inherited Phase 1C.5e/f Candidate Lesson quarantine;
+     * Strictly prohibit unilateral promotion into authoritative knowledge base.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/lessons/candidateLessonGateway.ts`
+   - Test suite verifying that Candidate Lessons remain quarantined and cannot alter active knowledge.
+6. Acceptance Criteria:
+   - Phase 1C.5h code possesses zero write access to active knowledge store.
+   - Complete lineage from validation evidence to quarantined candidate lesson.
+7. Failure Modes & Mitigations:
+   - Attempted direct promotion: hard permission restriction at filesystem/database layer.
+
+================================================================================
+WP-27: Production Protection, PATH-SHADOW Isolation & Rollback Verification
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the production protection subsystem that enforces complete PATH-SHADOW isolation and conducts empirical pre-cutover rollback (PATH-ROLLBACK) verification.
+2. Architectural Binding:
+   - Section 31: PRODUCTION PROTECTION ARCHITECTURE.
+   - Activity WF-14: Pre-Cutover Rollback Verification.
+   - Profile: PROFILE-11: ROLLBACK PROFILE.
+   - Table 04: Validation Workflow Matrix.
+   - Invariant 9: Reversibility & Rollback Verification Invariant.
+   - Pillar 4: Rollback & Production-Safety Readiness.
+3. Inputs & Dependencies:
+   - WP-10 (Sandbox Execution), Phase 1C.5g rollback interface.
+4. Technical Implementation Specification:
+   - Implement `ProductionProtectionEnforcer`:
+     * Verify complete isolation of test execution from PATH-PROD live traffic;
+     * Run automated pre-cutover rollback rehearsal under simulated peak load;
+     * Measure rollback execution latency, traffic draining time, and acoustic fidelity;
+     * Recovery objectives governed by `recovery_objective_ref` (prohibiting hardcoded universal thresholds);
+     * Generate `RollbackVerificationCertificate` attached to Record 20 and Record 21;
+     * Disqualify candidate from Gate 8 if rollback test fails or is unperformed.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/protection/productionProtectionEnforcer.ts`
+   - `src/sound-engineer/validation/protection/rollbackRehearsalRunner.ts`
+   - Test suite verifying rollback failure detection and hard block behavior.
+6. Acceptance Criteria:
+   - Gate 8 cannot be granted without verified, passing rollback certificate.
+   - Rehearsal meets recovery criteria governed by `recovery_objective_ref`.
+7. Failure Modes & Mitigations:
+   - Rollback flakiness: retry protocol with root-cause diagnostic logging.
+
+================================================================================
+WP-28: Real-Time Quality Telemetry Monitoring & Canary Circuit Breaker
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the real-time quality telemetry evaluator that monitors live audio rendering metrics during Canary rollout and triggers emergency Gate 8 suspension upon degradation.
+2. Architectural Binding:
+   - Section 31.2: Real-Time Quality Telemetry Monitoring.
+   - Activity WF-17: Post-Cutover Telemetry Governance.
+   - Table 16: Failure / Degradation Condition Matrix.
+   - Condition 15: Post-Cutover Quality Telemetry Degradation.
+3. Inputs & Dependencies:
+   - Phase 1C.5g telemetry stream, WP-24 (Gate 8 State Machine).
+4. Technical Implementation Specification:
+   - Implement `QualityTelemetryMonitor`:
+     * Ingest streaming telemetry from Canary traffic slices (PATH-ADOPT);
+     * Monitor real-time anomaly indicators against `telemetry_threshold_profile_ref`:
+       - Acoustic degradation (THD, aliasing, spectral balance shifts);
+       - Buffer dropouts / underruns;
+       - User preset reload / discard rates;
+       - Musician acoustic fatigue feedback;
+     * Apply automated Circuit Breaker rules:
+       - Minor anomaly: emit warning, alert operations;
+       - Major degradation: invoke `Gate8StateMachine.suspendAuthorization()` (WP-24), generating Record 22;
+       - Signal Phase 1C.5g to immediately execute PATH-ROLLBACK.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/telemetry/qualityTelemetryMonitor.ts`
+   - `src/sound-engineer/validation/telemetry/circuitBreaker.ts`
+   - Streaming test simulator feeding degraded audio metrics.
+6. Acceptance Criteria:
+   - Circuit breaker fires within reaction budget governed by `telemetry_threshold_profile_ref`.
+   - Generates valid Gate8ChangeRecord (Record 22) documenting exact trigger.
+7. Failure Modes & Mitigations:
+   - Telemetry stream disruption: failsafe timer pauses Canary rollout if stream is lost.
+
+================================================================================
+WP-29: Comprehensive Audit Trail, Traceability & Reasoning Provenance
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the traceability integration engine linking every validation decision, measurement, and outcome back to upstream Phase 1C.5f reasoning traces and 21 Principles.
+2. Architectural Binding:
+   - Section 32: TRACEABILITY & EXPLAINABILITY ARCHITECTURE.
+   - Table 19: Record Lineage / Relationship Matrix.
+   - Cross-cutting across Activities WF-01 through WF-17.
+   - Invariant 3: Principle Compliance Invariant.
+   - Invariant 10: Complete Evidential Lineage Invariant.
+3. Inputs & Dependencies:
+   - WP-02 (Audit Ledger & Graph), Phase 1C.5f RunTrace interface.
+4. Technical Implementation Specification:
+   - Implement `TraceabilityAuditor`:
+     * Ingest and validate Phase 1C.5f `RunTraceRecord` for every evaluated preset;
+     * Verify unbroken causal chain across Stages 01 through 14;
+     * Confirm 100% compliance with 21 Principles of Sound Engineering Reasoning;
+     * Ensure every acoustic intervention is causally grounded in diagnosed acoustic problems;
+     * Build bidirectional index: ValidationRecord <-> RunTraceRecord <-> Stage Decision.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/traceability/traceabilityAuditor.ts`
+   - Full audit trail visualization / export utility.
+   - Test suite verifying detection of ungrounded interventions and broken causal links.
+6. Acceptance Criteria:
+   - 100% traceability coverage: zero orphaned validation measurements.
+   - Instant queryability of causal rationale behind any preset parameter.
+7. Failure Modes & Mitigations:
+   - Incomplete run trace: marks candidate as `REASONING_UNVERIFIED` and blocks Gate 8.
+
+================================================================================
+WP-30: Target-Platform Adaptation (AmpliTube 5) & Technology Neutrality
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Complete the platform validation adapter implementation for IK Multimedia AmpliTube 5 based on the early abstract adapter contract, while maintaining strict architectural technology neutrality for future target platforms.
+2. Architectural Binding:
+   - Section 37: TECHNOLOGY NEUTRALITY REQUIREMENTS.
+   - Activity WF-07: Target-Platform Integrity Verification.
+   - Profile: PROFILE-03: TARGET-PLATFORM EXPORT PROFILE.
+   - Table 20: Technology-Neutrality Classification Matrix.
+   - Revalidation Triggers: TRIGGER-04 and TRIGGER-05.
+3. Inputs & Dependencies:
+   - Stage 12 AmpliTube 5 exporter, AmpliTube 5 gear catalog, Abstract `PlatformValidationAdapter` Interface (established early in Track A/C).
+4. Technical Implementation Specification:
+   - Complete concrete `AmpliTube5ValidationAdapter` implementing abstract `PlatformValidationAdapter`:
+     * Parse and validate AmpliTube 5 XML/JSON preset serialization;
+     * Validate gear module IDs against official AmpliTube 5 gear catalog;
+     * Verify parameter range normalization;
+     * Test preset loadability in headless AmpliTube 5 runtime or simulated loader;
+     * Maintain clean abstraction fence: core validation engine references only abstract adapter.
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/platform/platformAdapter.ts`
+   - `src/sound-engineer/validation/platform/amplitube5Adapter.ts`
+   - Test suite verifying AmpliTube 5 preset serialization, corrupt XML handling, and illegal gear IDs.
+6. Acceptance Criteria:
+   - 100% detection of invalid AmpliTube 5 module IDs or out-of-range parameters.
+   - Zero vendor-specific types leaking into core validation schemas.
+   - Common adapter interface reused across MVVI and full export verification without duplicate logic.
+7. Failure Modes & Mitigations:
+   - AmpliTube 5 version drift: versioned gear catalog schema updated and verified in WP-05.
+
+================================================================================
+WP-31: End-to-End System Integration, 20 Stress Scenarios & 20 Degradation Suite
+--------------------------------------------------------------------------------
+1. Objective & Scope:
+   Implement the comprehensive integration test harness executing automated governance-response conformance tests for all twenty architectural stress scenarios and all twenty validation failure conditions.
+2. Architectural Binding:
+   - Section 35: THE TWENTY REQUIRED VALIDATION FAILURE & DEGRADATION CONDITIONS.
+   - Section 36: THE TWENTY ARCHITECTURAL STRESS SCENARIOS.
+   - Table 16: Failure / Degradation Condition Matrix.
+   - Section 40: COMPLIANCE AUDIT AGAINST DESIGN MANDATE v0.1d CHECKLIST.
+3. Inputs & Dependencies:
+   - All preceding Work Packages (WP-01 through WP-30).
+4. Technical Implementation Specification:
+   - Implement `ArchitecturalVerificationHarness`:
+     * Automated test suite executing governance-response assertions for frozen Conditions 01 to 20:
+       - Condition 01: Invalid Test Fixture
+       - Condition 02: Fixture Provenance Missing
+       - Condition 03: Calibration Mismatch
+       - Condition 04: Non-Reproducible Result
+       - Condition 05: Objective Metrics Pass but Listening Fails
+       - Condition 06: Listening Passes but Deterministic / Export Validation Fails
+       - Condition 07: PATH-PROD and PATH-SHADOW Not Comparable
+       - Condition 08: Unexplained Material Divergence
+       - Condition 09: Export Succeeds but Target-Platform Playback Fails
+       - Condition 10: Acoustic Result Passes but Runtime Is Unstable
+       - Condition 11: Rollback Validation Fails
+       - Condition 12: Undocumented Test-Environment Dependency
+       - Condition 13: Expert Reviewers Materially Disagree
+       - Condition 14: UAT Result Inconclusive
+       - Condition 15: Critical Domain Remains Untested
+       - Condition 16: Material Implementation Change Occurs After PASS
+       - Condition 17: Test Evidence Corrupted or Unverifiable
+       - Condition 18: Target-Platform Update Invalidates Prior Evidence
+       - Condition 19: Gate 8 Requested With Unresolved Critical Uncertainty
+       - Condition 20: Requested Production Authorization Scope Exceeds Tested Scope
+     * Automated walkthroughs asserting expected governance response for frozen Stress Scenarios 01 to 20:
+       - Scenario 01: Architecture Passes Structural Checks but Sounds Worse
+       - Scenario 02: Candidate Sounds Better than Legacy but Differs Significantly
+       - Scenario 03: Export Fails Despite Good Acoustic Reasoning
+       - Scenario 04: Spectra Similar but Perceptually Different
+       - Scenario 05: Reference Mismatch Caused by Player / Performance
+       - Scenario 06: High-Gain Passes but Clean Fails
+       - Scenario 07: Reviewers Disagree
+       - Scenario 08: Metrics Disagree with Listening
+       - Scenario 09: Edge-Case Crashes New Path but Legacy Survives
+       - Scenario 10: Legacy Fails and Candidate Succeeds
+       - Scenario 11: Rollback Simulation Fails
+       - Scenario 12: Fixture Calibration Later Discovered Wrong
+       - Scenario 13: Target-Platform Update Changes Output
+       - Scenario 14: Validated Gear Family Passes but Adjacent Untested Family Requested
+       - Scenario 15: Independently Validated Features Fail When Combined
+       - Scenario 16: Candidate Lesson Changes Output After Validation
+       - Scenario 17: Code Refactor Claims No Acoustic Impact
+       - Scenario 18: Technically Successful Workflow is Confusing / Unacceptable
+       - Scenario 19: Canary Users Report Issue Not Reproduced in Lab
+       - Scenario 20: Gate 8 Package Contains Conflicting Evidence and Unresolved Uncertainty
+     * Governing Rule:
+       `AUTOMATED CONFORMANCE OF GOVERNANCE RESPONSE != FABRICATED EMPIRICAL VALIDATION RESULT.`
+5. Testable Deliverables:
+   - `src/sound-engineer/validation/tests/stressScenarios.test.ts`
+   - `src/sound-engineer/validation/tests/failureConditions.test.ts`
+   - Automated test runner producing compliance verification report.
+6. Acceptance Criteria:
+   - 40/40 governance-response conformance tests passing across the twenty frozen degradation conditions and twenty frozen architectural stress scenarios.
+   - Complete verification of all twenty design mandate invariants and derived rules.
+7. Failure Modes & Mitigations:
+   - Regressions in test assertions: commit-stage CI gates preventing regressions.
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 5: MINIMUM VIABLE VALIDATION INFRASTRUCTURE (MVVI)
+    # --------------------------------------------------------------------------
+    parts.append("""5. MINIMUM VIABLE VALIDATION INFRASTRUCTURE (MVVI)
+--------------------------------------------------------------------------------
+5.1 Definition & Role of MVVI
+The Minimum Viable Validation Infrastructure (MVVI) is:
+`A MINIMUM BOOTSTRAP VALIDATION CAPABILITY USED TO PROVE THAT THE VALIDATION INFRASTRUCTURE WORKS BEFORE FULL EMPIRICAL COVERAGE EXISTS.`
+It is NOT:
+  - full Phase 1C.5h validation;
+  - Gate 8 evidence sufficiency by itself;
+  - a universal fixture corpus;
+  - permanent Golden truth.
+It enables development teams to prove that harnesses, schemas, runners, and audit ledgers function correctly before the full multi-persona UAT panel and complete enterprise fixture library are assembled.
+
+5.2 Initial Illustrative MVVI Bootstrap Fixture Corpus
+The MVVI utilizes an initial bootstrap fixture corpus:
+[STATUS: ILLUSTRATIVE / INITIAL BOOTSTRAP — SUBJECT TO GOVERNED FIXTURE CURATION]
+The following stem examples illustrate an initial bootstrap set (approximately 10 fixtures):
+  - 2x Clean Chords (dry DI);
+  - 2x Crunch Rhythms (dry DI);
+  - 2x High-Gain Leads (dry DI);
+  - 2x Bass Lines (dry DI);
+  - 2x Synthetic Calibration Signals (sine waves, log chirps).
+[NOTE: Specific guitar brands, pickup models, pickup ratios, clip durations, and exact fixture counts are illustrative implementation examples and do not constitute universal frozen requirements.]
+
+5.3 Golden Fixture Status Governance
+A fixture in the MVVI bootstrap corpus does not automatically become an authoritative Golden Fixture:
+`MVVI MEMBERSHIP DOES NOT AUTOMATICALLY CONFER GOLDEN-FIXTURE STATUS.`
+An MVVI fixture becomes a Golden Fixture if and only if it satisfies the frozen fixture governance lifecycle:
+  1. Complete documented provenance and chain of custody;
+  2. Verified electrical and acoustic calibration;
+  3. Payload integrity reference sealing;
+  4. Explicitly declared applicability boundaries;
+  5. Anti-contamination verification;
+  6. Formal versioning and governed activation.
+
+5.4 Scope- and Evidence-Driven Corpus Growth
+Rather than encoding fixed library-size quotas (such as 10 -> 50 -> 100 stems) as architectural milestones:
+`Fixture corpus expands according to declared validation scope, uncovered evidence domains, regression risk, and fixture-governance requirements.`
+As candidate scope expands to new circuit topologies (e.g. fuzz pedals, acoustic simulators, optical compressors), new calibrated fixtures are curated and activated under governed fixture lifecycle rules.
+
+5.5 Methodological Flexibility in Listening Evaluations
+While MUSHRA, ABX, Degradation Category Rating, and Expert Heuristic Panels are supported methodologies:
+Validation harnesses consume the specific methodology specified by `listening_methodology_profile_ref`.
+No single listening methodology is mandated as universally required for all domains, scopes, or milestones.
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 6: INTER-PHASE INTEGRATION CONTRACTS
+    # --------------------------------------------------------------------------
+    parts.append("""6. INTER-PHASE INTEGRATION CONTRACTS & GOVERNANCE BOUNDARIES
+--------------------------------------------------------------------------------
+Phase 1C.5h operates as an independent validation gateway, but interfaces with multiple adjacent engineering phases through strict, tamper-evident contracts:
+
+6.1 Contract 1: Ingestion from Phase 1C.5g (Migration Handoff Package)
+  - Direction: Phase 1C.5g -> Phase 1C.5h
+  - Transmitted Artifact: Sealed `MigrationHandoffPackageRecord`
+  - Required Enclosures:
+    1. Declared migration scope and gear mappings;
+    2. Audit tokens demonstrating successful completion of Phase 1C.5g Gates 1 through 7;
+    3. Exact version binding of legacy baseline, migrated mappings, and translation rules;
+    4. Authorizing role metadata and signature of Phase 1C.5g Migration Official.
+  - Phase 1C.5h Action:
+    * Ingests via `ValidationIntakeService` (WP-03);
+    * Verifies package integrity and gate completion tokens (WP-06);
+    * Emits `ValidationIntakeRecord` (Record 1) and `ValidationReadinessAssessmentRecord` (Record 4).
+  - Strict Boundary: Phase 1C.5h rejects incomplete handoffs without evaluating audio.
+
+6.2 Contract 2: Gate 8 Handback to Phase 1C.5g (Adoption Decision Record)
+  - Direction: Phase 1C.5h -> Phase 1C.5g
+  - Transmitted Artifact: Sealed `AdoptionDecisionRecord` (Record 21)
+  - Payload:
+    1. Decision outcome (`AUTHORIZED`, `CONDITIONALLY_AUTHORIZED`, `REJECTED`, `BLOCKED`);
+    2. Explicit authorized scope (gear, genres, capabilities);
+    3. Immutably bound version integrity reference;
+    4. Mandatory monitoring rules and conditions (if conditional);
+    5. Verified rollback certificate reference;
+    6. Authorizing official cryptographic signature.
+  - Strict Boundary:
+    * Phase 1C.5h DECLARES authorization status;
+    * Phase 1C.5g EXECUTES production traffic cutover (PATH-ADOPT);
+    * Phase 1C.5h NEVER touches routing switches, load balancers, or traffic splitters.
+  - Governing Rule:
+    `PHASE 1C.5h MAY CONDITION AUTHORIZATION. PHASE 1C.5g OWNS TRAFFIC-SLICING AND CUTOVER EXECUTION.`
+
+6.3 Contract 3: Post-Cutover Telemetry Stream & Emergency State Management
+  - Direction: Phase 1C.5g <-> Phase 1C.5h (Bidirectional)
+  - Phase 1C.5g -> Phase 1C.5h: Streaming real-time telemetry from Canary traffic slices (PATH-ADOPT).
+  - Phase 1C.5h -> Phase 1C.5g: `Gate8ChangeRecord` (Record 22) declaring status change:
+    * `SUSPENDED`: Phase 1C.5g immediately executes PATH-ROLLBACK to legacy baseline.
+    * `RESTRICTED`: Phase 1C.5g carves out specific failing gear from adoption slice.
+    * `WITHDRAWN`: Phase 1C.5g permanently revokes adoption slice.
+  - Strict Boundary: Phase 1C.5h issues the state change record; Phase 1C.5g executes the operational rollback.
+
+6.4 Contract 4: Traceability & Reasoning Audit with Phase 1C.5f
+  - Direction: Phase 1C.5f -> Phase 1C.5h
+  - Transmitted Artifact: `RunTraceRecord` and associated decision records.
+  - Phase 1C.5h Action:
+    * Audits unbroken causal chain across Stages 01 through 14;
+    * Verifies compliance with the 21 Principles of Sound Engineering Reasoning;
+    * Confirms that no parameter was generated without diagnostic hypothesis justification;
+    * Incorporates reasoning compliance into Pillar 2 (Reasoning & Governance Readiness).
+
+6.5 Contract 5: Candidate Lesson Quarantine & Defect Remand with Phase 1C.5e/f
+  - Direction: Phase 1C.5h -> Phase 1C.5e/f
+  - Transmitted Artifact: `CandidateLessonEvidencePackage` and `DefectRemandPackage`
+  - Candidate Lesson Flow:
+    * Phase 1C.5h formulates empirical insight supported by validation evidence;
+    * Remands package into inherited Phase 1C.5e/f Candidate Lesson quarantine;
+    * Stage 14 may provide review evidence, but is NOT the quarantine or promotion authority;
+    * Phase 1C.5h NEVER promotes candidate lessons into authoritative knowledge;
+    * Promotion is performed exclusively by independent Knowledge Governance.
+  - Defect Remand Flow:
+    * Phase 1C.5h packages failure records with full reproduction fixtures;
+    * Routes defect to authoritative upstream owner (1C.5g, 1C.5a-e, Stage 12, Engineering).
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 7: SHADOW & TEST-ONLY DEPLOYMENT ISOLATION RULES
+    # --------------------------------------------------------------------------
+    parts.append("""7. SHADOW & TEST-ONLY DEPLOYMENT ISOLATION RULES
+--------------------------------------------------------------------------------
+7.1 The Prime Isolation Directive
+All validation activities, test executions, UAT sessions, and rehearsal runs must execute under strict, air-gapped isolation from live production systems:
+`VALIDATION TESTING MUST NEVER ALTER LIVE PRODUCTION TRAFFIC, OVERWRITE PRODUCTION PRESETS, OR EXPOSE END USERS TO UNVETTED EXPERIMENTAL AUDIO.`
+
+7.2 PATH-SHADOW Isolation Mechanics
+  1. Sandboxed Process Boundary:
+     Validation runners execute in unprivileged containers with read-only access to source code and golden fixtures, and isolated temporary scratch directories for audio rendering.
+  2. Shadow Traffic Execution:
+     When evaluating live traffic in Phase 1C.5g shadow mode (PATH-SHADOW), candidate models receive asynchronous copies of user input stems; candidate outputs are piped exclusively to validation analysis engines, never to user audio outputs.
+  3. Synthetic Credentialing:
+     Validation harnesses utilize dedicated test credentials with zero permissions to modify production databases, authentication stores, or cloud resources.
+  4. Target Platform Mocking & Headless Isolation:
+     AmpliTube 5 preset testing occurs in headless test environments or isolated virtual machines with dummy audio drivers, preventing interference with running studio software.
+
+7.3 Production Protection Enforcement Checks
+Before launching any validation package execution, the harness automatically executes four pre-flight isolation assertions:
+  - Check 1: Verify output audio sink is routed to temporary sandbox storage, not production streaming pipeline.
+  - Check 2: Verify active database connection strings point to local test or in-memory fixtures.
+  - Check 3: Verify knowledge base mount is mounted in read-only mode (`ro`).
+  - Check 4: Verify network egress is blocked for all external endpoints except designated local test runners.
+If ANY assertion fails, the execution runner aborts immediately with Condition 12 (Undocumented Test-Environment Dependency) / Condition 20 (Scope Exceeds Tested Scope).
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 8: PROGRESSION PATH TOWARD EMPIRICAL VALIDATION & INITIAL GATE 8
+    # --------------------------------------------------------------------------
+    parts.append("""8. PROGRESSION PATH TOWARD EMPIRICAL VALIDATION & INITIAL GATE 8 ADJUDICATION
+--------------------------------------------------------------------------------
+[NOTE: All calendar week and sprint designations below are PLANNING ESTIMATES — NON-GOVERNING.]
+The roadmap from initial codebase deployment to the very first live Gate 8 production cutover follows six disciplined stages:
+
+Stage A: Component & Unit Verification (Weeks 1-4 [PLANNING ESTIMATE])
+  - Build and unit-test all twenty-two record schemas (WP-01);
+  - Implement and verify the relationship DAG graph (14 frozen edges) and audit ledger (WP-02);
+  - Establish abstract `PlatformValidationAdapter` contract (WP-30);
+  - Verify intake, scope boundary, and version binding services (WP-03, WP-04, WP-05);
+  - Verify Phase 1C.5g prerequisite gate auditor (WP-06).
+
+Stage B: Bootstrap Fixture Calibration & MVVI Deployment (Weeks 5-6 [PLANNING ESTIMATE])
+  - Assemble initial illustrative MVVI bootstrap fixture corpus (WP-08, Section 5);
+  - Deploy and verify Minimum Viable Validation Infrastructure;
+  - Execute end-to-end dry-run of synthetic ValidationCase;
+  - Calibrate objective DSP FFT and THD analysis against known references.
+
+Stage C: Synthetic QA & Stress Testing (Weeks 7-10 [PLANNING ESTIMATE])
+  - Execute automated governance-response conformance verification across all twenty failure conditions (WP-31);
+  - Execute automated governance-response conformance verification across all twenty architectural stress scenarios (WP-31);
+  - Verify complete isolation of sandboxed audio runner (WP-10);
+  - Verify double-blind perceptual listening harness with pilot evaluator panel (WP-12).
+
+Stage D: First Target Domain Intake from Phase 1C.5g (Weeks 11-12 [PLANNING ESTIMATE])
+  - Ingest candidate scope from Phase 1C.5g shadow run (e.g. illustrative high-gain lead scope);
+  - Verify 100% completion of Phase 1C.5g Gates 1 through 7;
+  - Lock multi-layer version binding (Record 3);
+  - Generate sealed ValidationPackage (Record 6).
+
+Stage E: Tripartite Empirical Validation Execution (Weeks 13-14 [PLANNING ESTIMATE])
+  - Run objective measurements (Record 10): Frequency response, THD, transient punch, dynamic sag;
+  - Convene double-blind listening panel (Record 11) using methodology governed by `listening_methodology_profile_ref`;
+  - Execute UAT persona workflows (Record 12) across canonical personas;
+  - Run tripartite differential comparison against legacy baseline and studio reference;
+  - Execute automated rollback rehearsal under load;
+  - Synthesize Four Pillars of Production Readiness (Record 20).
+
+Stage F: Initial Formal Gate 8 Adjudication Convening (Weeks 15-16 [PLANNING ESTIMATE])
+  - Convene formal Gate 8 review panel;
+  - Verify zero Hard Blockers and zero unresolved material genuine regressions within scope;
+  - Conduct formal Gate 8 adjudication: The decision outcome SHALL be determined from the evidence and may be `AUTHORIZED`, `CONDITIONALLY_AUTHORIZED`, `REJECTED`, or `BLOCKED`;
+  - Return the sealed `AdoptionDecisionRecord` (Record 21) to Phase 1C.5g for governed adoption execution consistent with the authorized scope and any imposed conditions;
+  - Activate real-time quality telemetry monitor (WP-28) to protect live production.
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 9: DELIVERABLES & ACCEPTANCE CRITERIA MATRIX
+    # --------------------------------------------------------------------------
+    parts.append("""9. TESTABLE DELIVERABLES & IMPLEMENTATION ACCEPTANCE CRITERIA MATRIX
+--------------------------------------------------------------------------------
+The following table establishes the testable deliverables, verifiable acceptance criteria, and automated test commands for each work package:
+
++--------+------------------------------------------+----------------------------------------------------+------------------------------------------------------------+
+| WP ID  | Deliverable Artifact(s)                  | Key Acceptance Criteria                            | Automated Verification Test Command                        |
++--------+------------------------------------------+----------------------------------------------------+------------------------------------------------------------+
+| WP-01  | schemas/records.ts, schemas/enums.ts     | 100% field parity with Section 33; Zod strict parse| npm test -- src/sound-engineer/validation/schemas/         |
+| WP-02  | graph/relationshipGraph.ts, ledger.ts    | Exactly 14 frozen edges; zero cycles; hash chain   | npm test -- src/sound-engineer/validation/graph/           |
+| WP-03  | intake/intakeService.ts                  | Rejects invalid envelope, missing 1C.5g gates      | npm test -- src/sound-engineer/validation/intake/          |
+| WP-04  | scope/scopeManager.ts, scopeEnforcer.ts  | Blocks out-of-scope test cases; enforces boundaries| npm test -- src/sound-engineer/validation/scope/           |
+| WP-05  | binding/versionBindingService.ts         | Composite version hash across all 7 system layers  | npm test -- src/sound-engineer/validation/binding/         |
+| WP-06  | readiness/readinessAuditor.ts            | Audits 7 1C.5g gates; halts on unverified gate     | npm test -- src/sound-engineer/validation/readiness/       |
+| WP-07  | profiles/profileRepository.ts, engine.ts | 14 frozen profiles; correct gear family mapping    | npm test -- src/sound-engineer/validation/profiles/        |
+| WP-08  | fixtures/fixtureManager.ts, manifest     | Payload integrity verification; provenance audit   | npm test -- src/sound-engineer/validation/fixtures/        |
+| WP-09  | cases/caseBuilder.ts, packageComposer.ts | Bounded falsifiable cases; sealed package manifest | npm test -- src/sound-engineer/validation/cases/           |
+| WP-10  | execution/executionRunner.ts, sandbox.ts | Sandboxed sub-process; crash isolation; budgets    | npm test -- src/sound-engineer/validation/execution/       |
+| WP-11  | evidence/objectiveMeasurementEngine.ts   | Precision governed by measurement_precision_profile| npm test -- src/sound-engineer/validation/evidence/obj     |
+| WP-12  | evidence/perceptualListeningHarness.ts   | Double-blind stimulus presentation; anchor check   | npm test -- src/sound-engineer/validation/evidence/percep  |
+| WP-13  | evidence/uatEvaluationEngine.ts          | 4 canonical personas; Section 17.3 enum parity     | npm test -- src/sound-engineer/validation/evidence/uat     |
+| WP-14  | evaluation/acousticSynthesizer.ts        | Orthogonal evaluation; anti-scalar collapse        | npm test -- src/sound-engineer/validation/evaluation/      |
+| WP-15  | regression/differentialAuditor.ts        | Tripartite comparison; canonical 4 classifications | npm test -- src/sound-engineer/validation/regression/      |
+| WP-16  | attribution/failureAttributionEngine.ts  | 9 attribution classes; remand routing to Table 17  | npm test -- src/sound-engineer/validation/attribution/     |
+| WP-17  | conflicts/conflictDetector.ts            | Explicit conflict logging; no scalar smoothing     | npm test -- src/sound-engineer/validation/conflicts/       |
+| WP-18  | uncertainty/uncertaintyManager.ts        | Explicit risk scoring; Gate 8 impact determination | npm test -- src/sound-engineer/validation/uncertainty/     |
+| WP-19  | outcome/outcomeSynthesizer.ts            | Table 11 parity; PASS requires 0 material regr.    | npm test -- src/sound-engineer/validation/outcome/         |
+| WP-20  | retest/triggerDetector.ts, planner.ts    | 10 frozen triggers; targeted retest; lineage intact| npm test -- src/sound-engineer/validation/retest/          |
+| WP-21  | readiness/readinessSynthesizer.ts        | 4 pillars evaluated; Table 13 hard blockers        | npm test -- src/sound-engineer/validation/readiness/four   |
+| WP-22  | gate8/gate8AdjudicationEngine.ts         | Sealed AdoptionDecisionRecord; scope bounded       | npm test -- src/sound-engineer/validation/gate8/adjudicate |
+| WP-23  | gate8/conditionalManager.ts              | Scope carve-outs; 1C.5g owns traffic slicing        | npm test -- src/sound-engineer/validation/gate8/cond       |
+| WP-24  | gate8/stateMachine.ts                    | Governed status transitions; WITHDRAWN permanent   | npm test -- src/sound-engineer/validation/gate8/state      |
+| WP-25  | remand/defectRemandRouter.ts             | Self-contained remand packages; 9 destinations     | npm test -- src/sound-engineer/validation/remand/          |
+| WP-26  | lessons/candidateLessonGateway.ts        | Quarantines insights; zero active write access     | npm test -- src/sound-engineer/validation/lessons/         |
+| WP-27  | protection/productionProtection.ts       | Automated rollback meets recovery_objective_ref    | npm test -- src/sound-engineer/validation/protection/      |
+| WP-28  | telemetry/qualityTelemetryMonitor.ts     | Circuit breaker fires per telemetry_threshold_prof | npm test -- src/sound-engineer/validation/telemetry/       |
+| WP-29  | traceability/traceabilityAuditor.ts      | Unbroken causal link to 1C.5f and 21 Principles     | npm test -- src/sound-engineer/validation/traceability/     |
+| WP-30  | platform/amplitube5Adapter.ts            | Implements abstract adapter; AT5 XML validation    | npm test -- src/sound-engineer/validation/platform/        |
+| WP-31  | tests/stressScenarios.test.ts            | 40/40 governance-response conformance tests pass    | npm test -- src/sound-engineer/validation/tests/stress     |
++--------+------------------------------------------+----------------------------------------------------+------------------------------------------------------------+
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 10: RISK MANAGEMENT & CONTINGENCIES
+    # --------------------------------------------------------------------------
+    parts.append("""10. RISK MANAGEMENT, CONTINGENCY & RECOVERY PROTOCOLS
+--------------------------------------------------------------------------------
+10.1 Technical & Operational Risks
+  Risk 1: Audio Hardware Driver & Buffer Non-Determinism
+    - Impact: Objective measurements vary depending on host audio driver buffer size.
+    - Mitigation: Enforce software-only, non-realtime offline DSP rendering for all objective measurements.
+  Risk 2: Evaluator Fatigue & Psychoacoustic Subjectivity
+    - Impact: Human listening panels produce noisy, contradictory ratings.
+    - Mitigation: Impose session length guidelines, randomized hidden anchors, and inter-rater reliability thresholding governed by `listening_methodology_profile_ref`.
+  Risk 3: Target Platform (AmpliTube 5) Serialization Schema Drift
+    - Impact: Vendor software update modifies preset XML structure or gear IDs, breaking exports.
+    - Mitigation: WP-30 isolates AmpliTube 5 schema parsing; Revalidation TRIGGER-04 and TRIGGER-05 automatically halt export validation upon vendor update until adapter is updated and re-verified.
+  Risk 4: False Sense of Security from Superficial Pass Rates
+    - Impact: High percentage of easy synthetic test cases masks deep tone defects.
+    - Mitigation: Invariant 1 and Invariant 2 enforce that structural pass rates do not influence Gate 8; every critical gear family requires fit-for-purpose evidence.
+
+10.2 Architectural Escalation & Recovery Protocol
+When an architectural impasse or catastrophic validation failure occurs:
+  1. Automated Halt: Harness immediately halts execution and isolates candidate state.
+  2. Failure Packaging: WP-25 packages failure records, execution trace, and audio stems.
+  3. Upstream Remand: Handoff routed directly to authoritative phase (1C.5g or Upstream Reasoning).
+  4. Governance Convening: If failure involves fundamental architectural ambiguity or persistent evaluator disagreement, a Joint Architectural Review is convened between Phase 1C.5h and upstream architects.
+  5. Version Reset: Any upstream fix requires incrementing upstream version and re-sealing handoff package; no hot-patching inside Phase 1C.5h is permitted.
+""")
+
+    # --------------------------------------------------------------------------
+    # SECTION 11: DOCUMENT CONTROL & REVISION REGISTER
+    # --------------------------------------------------------------------------
+    parts.append("""11. DOCUMENT CONTROL, GOVERNANCE STATUS & REVISION REGISTER
+--------------------------------------------------------------------------------
+11.1 Document Revision Register
++---------+--------------+-----------------------+----------------------------------------------------------------+
+| Version | Date         | Author / Custodian    | Description of Changes & Governance Status                     |
++---------+--------------+-----------------------+----------------------------------------------------------------+
+| v0.1    | 2026-10-13   | Lead Sound Architect  | Initial Baseline Implementation & Build Plan for Phase 1C.5h.   |
+|         |              | & Validation Engineer | [SUPERSEDED BY v0.1a — DRAFT IMPLEMENTATION PLAN]              |
++---------+--------------+-----------------------+----------------------------------------------------------------+
+| v0.1a   | 2026-10-13   | Lead Sound Architect  | Frozen-Architecture Fidelity, Threshold-Neutrality &           |
+|         |              | & Validation Engineer | Dependency Correction. Preserves the v0.1 Phase 1C.5h          |
+|         |              |                       | Implementation & Build Plan programme structure while          |
+|         |              |                       | correcting bounded implementation-plan fidelity defects        |
+|         |              |                       | identified during formal review. Restores the exact frozen     |
+|         |              |                       | Phase 1C.5h axioms, ten constitutional invariants, eight       |
+|         |              |                       | non-ownership fences, fourteen relationship edges, WF-01–WF-17 |
+|         |              |                       | activity model, canonical profiles, matrices, UAT personas,    |
+|         |              |                       | enums, regression terminology, revalidation triggers, and      |
+|         |              |                       | twenty degradation conditions; removes premature universal     |
+|         |              |                       | numeric thresholds, cryptographic algorithm assumptions,       |
+|         |              |                       | listening-method assumptions, scalar acoustic weighting and    |
+|         |              |                       | rollout mechanics in favor of governed configuration           |
+|         |              |                       | references; reclassifies MVVI as a bounded bootstrap validation|
+|         |              |                       | capability rather than fixed Golden truth; restores the Phase  |
+|         |              |                       | 1C.5h authorization / Phase 1C.5g execution boundary; removes  |
+|         |              |                       | predetermined Gate 8 and Canary outcomes; resolves the         |
+|         |              |                       | WP-24/WP-28 circular dependency; aligns platform-adapter       |
+|         |              |                       | sequencing; and corrects milestone/document-control            |
+|         |              |                       | inconsistencies. No frozen architecture is changed and no new  |
+|         |              |                       | implementation programme structure is introduced.              |
+|         |              |                       | Status: DRAFT — IMPLEMENTATION PLANNING.                       |
++---------+--------------+-----------------------+----------------------------------------------------------------+
+
+11.2 Architectural Status Declaration
+Artifact: TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1a.txt
+Title: PHASE 1C.5h — EMPIRICAL VALIDATION, USER ACCEPTANCE TESTING, VERIFICATION & PRODUCTION-READINESS GOVERNANCE IMPLEMENTATION & BUILD PLAN
+Version: v0.1a — Frozen-Architecture Fidelity, Threshold-Neutrality & Dependency Correction
+Immediate Prior Version: TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1.txt [Preserved Unchanged]
+Source Architecture: TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1j.txt [FROZEN — AUTHORITATIVE ARCHITECTURAL BASELINE]
+Governing Mandate: TT_Phase_1C.5h_Design_Mandate_v0.1d.txt [FROZEN — AUTHORITATIVE CONSTITUTIONAL DESIGN MANDATE]
+Status: DRAFT — IMPLEMENTATION PLANNING
+Authority Level: Authoritative Implementation & Engineering Programme Specification (Draft Status — Subject to Formal Review and Adoption)
+
+DECLARATION:
+This DRAFT Implementation & Build Plan is the current proposed engineering programme specification for Phase 1C.5h and remains subject to implementation-plan review and formal adoption.
+ALL SUBSYSTEM BUILDS, CODE MODULES, TEST HARNESSES, AND VALIDATION PIPELINES MUST EXECUTE IN STRICT COMPLIANCE WITH THE SEQUENCING, WORK PACKAGES, AND ACCEPTANCE CRITERIA HEREIN.
+
+================================================================================
+END OF IMPLEMENTATION PLAN: TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1a.txt
+================================================================================
+""")
+
+    full_text = "\n".join(parts)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(full_text)
+
+    print(f"Successfully generated {output_path}")
+    print(f"Total size: {len(full_text)} bytes, {len(full_text.splitlines())} lines")
+
+if __name__ == "__main__":
+    build()
