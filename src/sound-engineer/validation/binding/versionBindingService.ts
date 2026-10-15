@@ -2,12 +2,18 @@
 // VersionBindingService: Authoritative engine for Phase 1C.5h WP-05.
 // Implements the strict version binding protocol defined in Section 9.2, Section 9.5, and Section 33.
 // Tamper-evidently locks validation scope to exact upstream architecture specifications and runtime execution dependencies.
+// Updated under WP-05 Corrective Implementation:
+// 1. Integrates canonical 1C.5h_architecture_version directly into architecture_version_matrix (9-entry matrix).
+// 2. Eliminates caller-supplied binding_id override (authoritative identity derived solely from governed state).
+// 3. Eliminates truncated hash prefixes (authoritative identity derives from full version-state digest).
+// 4. Eliminates symbolic placeholder default integrity references; consumes authoritative integrity references via ArchitectureIntegrityReferenceProvider boundary.
+// 5. Enforces fail-closed validation when any architecture integrity reference is missing or empty.
+// 6. Preserves historical version bindings per scope while preventing stale-binding reuse.
 
 import { defensiveClone, deepFreeze } from "../../contracts/immutability";
 import { GOVERNED_ENTITY_KINDS } from "../graph/edgeTypes";
 import { ValidationRelationshipGraph } from "../graph/relationshipGraph";
 import {
-  ArchitectureVersionEntry,
   ArchitectureVersionMatrix,
   canonicalizeJson,
   IntegrityProvider,
@@ -21,7 +27,11 @@ import {
 import { ValidationAuditLedger } from "../storage/auditLedger";
 import { DefaultSha256IntegrityProvider } from "../storage/ledgerTypes";
 import {
-  DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS,
+  ARCHITECTURE_ARTIFACT_KEYS,
+  ArchitectureArtifactKey,
+  ArchitectureIntegrityReferenceProvider,
+  ARTIFACT_KEY_TO_MATRIX_PROP,
+  ExecutionEnvironmentDependencies,
   FROZEN_UPSTREAM_VERSIONS,
   MissingDependencyError,
   VersionBindingDependencies,
@@ -32,55 +42,64 @@ import {
 
 /**
  * Builds the canonical frozen architecture version matrix with individual integrity references.
+ * Contains all nine explicit architecture specifications including the 1C.5h architecture baseline.
+ *
+ * NOTE: WP-05 does NOT invent or supply default fake hashes.
+ * If an integrity source is provided (either an ArchitectureIntegrityReferenceProvider or a mapping),
+ * it populates the integrity_ref fields. If not, integrity_ref defaults to empty string "",
+ * which will fail closed upon validation.
  */
 export function buildCanonicalArchitectureMatrix(
+  integritySource?:
+    | ArchitectureIntegrityReferenceProvider
+    | Partial<Record<ArchitectureArtifactKey, string>>,
   overrides?: Partial<ArchitectureVersionMatrix>
 ): ArchitectureVersionMatrix {
+  const getRef = (key: ArchitectureArtifactKey): string => {
+    if (!integritySource) return "";
+    if (typeof (integritySource as any).getIntegrityReference === "function") {
+      return (integritySource as ArchitectureIntegrityReferenceProvider).getIntegrityReference(key) ?? "";
+    }
+    return (integritySource as Partial<Record<ArchitectureArtifactKey, string>>)[key] ?? "";
+  };
+
   return {
     "1C.5a_version": overrides?.["1C.5a_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5a"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5a"],
+      integrity_ref: getRef("1C.5a"),
     },
     "1C.5b_version": overrides?.["1C.5b_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5b"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5b"],
+      integrity_ref: getRef("1C.5b"),
     },
     "1C.5c_version": overrides?.["1C.5c_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5c"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5c"],
+      integrity_ref: getRef("1C.5c"),
     },
     "1C.5d_version": overrides?.["1C.5d_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5d"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5d"],
+      integrity_ref: getRef("1C.5d"),
     },
     "1C.5e_version": overrides?.["1C.5e_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5e"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5e"],
+      integrity_ref: getRef("1C.5e"),
     },
     "1C.5f_version": overrides?.["1C.5f_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5f"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5f"],
+      integrity_ref: getRef("1C.5f"),
     },
     "1C.5g_version": overrides?.["1C.5g_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5g"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5g"],
+      integrity_ref: getRef("1C.5g"),
     },
     "1C.5h_mandate_version": overrides?.["1C.5h_mandate_version"] ?? {
       version: FROZEN_UPSTREAM_VERSIONS["1C.5h_mandate"],
-      integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5h_mandate"],
+      integrity_ref: getRef("1C.5h_mandate"),
     },
-  };
-}
-
-/**
- * Builds the canonical detailed baseline trace entry for Phase 1C.5h v0.1j architecture specification.
- */
-export function buildCanonicalBaselineTrace(
-  override?: ArchitectureVersionEntry
-): ArchitectureVersionEntry {
-  return override ?? {
-    version: FROZEN_UPSTREAM_VERSIONS["1C.5h_architecture"],
-    integrity_ref: DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5h_architecture"],
+    "1C.5h_architecture_version": overrides?.["1C.5h_architecture_version"] ?? {
+      version: FROZEN_UPSTREAM_VERSIONS["1C.5h_architecture"],
+      integrity_ref: getRef("1C.5h_architecture"),
+    },
   };
 }
 
@@ -92,17 +111,19 @@ export class VersionBindingService {
   private readonly graph?: ValidationRelationshipGraph;
   private readonly ledger?: ValidationAuditLedger;
   private readonly integrityProvider: IntegrityProvider;
+  private readonly architectureIntegrityProvider?: ArchitectureIntegrityReferenceProvider;
 
-  /** Binding records stored by binding_id */
+  /** Binding records stored by unique canonical binding_id */
   private readonly bindingsById: Map<string, ValidationVersionBindingRecord> = new Map();
 
-  /** Binding records indexed by scope_id */
-  private readonly bindingsByScopeId: Map<string, ValidationVersionBindingRecord> = new Map();
+  /** Binding records indexed by scope_id (permits multiple historical version bindings per scope) */
+  private readonly bindingsByScopeId: Map<string, ValidationVersionBindingRecord[]> = new Map();
 
   constructor(
     graph?: ValidationRelationshipGraph,
     ledger?: ValidationAuditLedger,
-    integrityProvider?: IntegrityProvider
+    integrityProvider?: IntegrityProvider,
+    architectureIntegrityProvider?: ArchitectureIntegrityReferenceProvider
   ) {
     this.graph = graph;
     this.ledger = ledger;
@@ -110,13 +131,21 @@ export class VersionBindingService {
       integrityProvider ??
       ledger?.getIntegrityProvider() ??
       new DefaultSha256IntegrityProvider();
+    this.architectureIntegrityProvider = architectureIntegrityProvider;
   }
 
   /**
-   * Returns the active integrity provider.
+   * Returns the active cryptographic integrity provider.
    */
   public getIntegrityProvider(): IntegrityProvider {
     return this.integrityProvider;
+  }
+
+  /**
+   * Returns the configured architecture integrity reference provider, if any.
+   */
+  public getArchitectureIntegrityProvider(): ArchitectureIntegrityReferenceProvider | undefined {
+    return this.architectureIntegrityProvider;
   }
 
   /**
@@ -124,11 +153,14 @@ export class VersionBindingService {
    *
    * Enforces:
    * 1. Scope Existence: scopeRecord must be a valid ValidationScopeRecord.
-   * 2. Complete Architecture Matrix: Binds all eight upstream specifications plus detailed 1C.5h baseline trace.
-   * 3. Frozen Version Conformance: Rejects mismatched upstream versions unless allowNonStandardUpstreamVersions is explicitly true.
-   * 4. 100% Dependency Field Population: Rejects missing, empty, or whitespace-only execution environment dependencies.
-   * 5. Cryptographic Composite Integrity: Generates deterministic composite digest across all bound version references.
-   * 6. Graph & Ledger Persistence: Registers node in relationship graph and appends sealed entry in immutable audit ledger.
+   * 2. Complete Architecture Matrix: Binds all nine explicit architecture specifications (1C.5a through 1C.5h_architecture).
+   * 3. Authoritative Integrity References: Consumes authoritative integrity references from governance boundary; fails closed on omission.
+   * 4. Frozen Version Conformance: Rejects mismatched upstream versions unless allowNonStandardUpstreamVersions is explicitly true.
+   * 5. 100% Dependency Field Population: Rejects missing, empty, or whitespace-only execution environment dependencies.
+   * 6. Acyclic Deterministic Full-State Identity: Derives binding_id from scope_id and the complete, non-truncated version-state digest.
+   * 7. Idempotency & Historical Preservation: Same scope + same dependencies reuses identical binding; same scope + changed dependencies creates new immutable binding without overwriting prior records.
+   * 8. Cryptographic Composite Integrity: Generates deterministic composite digest across all bound version references via canonical serialization.
+   * 9. Graph & Ledger Persistence: Registers node in relationship graph and appends sealed entry in immutable audit ledger once per new binding.
    */
   public bindVersions(
     scopeRecord: ValidationScopeRecord,
@@ -143,44 +175,59 @@ export class VersionBindingService {
     }
 
     const scopeId = scopeRecord.scope_id;
-    const bindingId = options?.bindingId ?? `binding_${scopeId}`;
 
-    // 2. Idempotency Check: Return existing record if already bound
+    // 2. Validate Mandatory Execution Dependencies (100% field population)
+    this.validateExecutionDependencies(dependencies);
+
+    // 3. Assemble and Validate Complete Canonical 9-Entry Architecture Version Matrix
+    const architectureMatrix = this.resolveArchitectureMatrix(dependencies);
+
+    if (!options?.allowNonStandardUpstreamVersions) {
+      this.validateUpstreamArchitectureVersions(architectureMatrix);
+    }
+
+    // 4. Compute Deterministic Full Version-State Digest and Canonical Binding ID
+    // Derivation flow:
+    // scope + canonical governed dependency state -> full version-state digest -> canonical binding_id
+    // Governed state contains scope_id, all nine architecture entries (version + integrity_ref),
+    // and all eight execution environment dependencies.
+    const versionStatePayload = {
+      scope_id: scopeId,
+      architecture_version_matrix: architectureMatrix,
+      runtime_implementation_version: dependencies.runtime_implementation_version.trim(),
+      model_configuration_version: dependencies.model_configuration_version.trim(),
+      deterministic_rules_version: dependencies.deterministic_rules_version.trim(),
+      gear_catalog_version: dependencies.gear_catalog_version.trim(),
+      platform_exporter_version: dependencies.platform_exporter_version.trim(),
+      fixture_library_version: dependencies.fixture_library_version.trim(),
+      target_platform_runtime_version: dependencies.target_platform_runtime_version.trim(),
+      host_environment_version: dependencies.host_environment_version.trim(),
+    };
+    const canonicalVersionState = canonicalizeJson(versionStatePayload);
+    const versionStateDigest = this.integrityProvider.computeDigest(canonicalVersionState);
+
+    // CANONICAL BINDING IDENTITY: Derived strictly from scope + full version-state digest.
+    // Callers cannot supply an arbitrary binding_id.
+    // The digest is NOT truncated for identity equivalence.
+    const bindingId = `binding_${scopeId}_${versionStateDigest}`;
+
+    // 5. Idempotency Check: Return existing record if this exact binding is already bound
     if (this.bindingsById.has(bindingId)) {
       return this.bindingsById.get(bindingId)!;
     }
-    if (this.bindingsByScopeId.has(scopeId)) {
-      return this.bindingsByScopeId.get(scopeId)!;
-    }
 
-    // 3. Validate Mandatory Execution Dependencies
-    this.validateExecutionDependencies(dependencies);
-
-    // 4. Assemble and Validate Complete Architecture Version Matrix
-    const architectureMatrix = buildCanonicalArchitectureMatrix(
-      dependencies.architecture_version_matrix
-    );
-    const baselineTrace = buildCanonicalBaselineTrace(
-      dependencies.detailed_baseline_trace
-    );
-
-    if (!options?.allowNonStandardUpstreamVersions) {
-      this.validateUpstreamArchitectureVersions(architectureMatrix, baselineTrace);
-    }
-
-    // 5. Compute Component Digests and Composite Version Integrity Reference
+    // 6. Compute Component Digests and Composite Version Integrity Reference
     const sealedAt = options?.timestamp ?? new Date().toISOString();
     const versionIntegrityReference = this.computeVersionIntegrityReference(
       bindingId,
       scopeId,
       architectureMatrix,
-      baselineTrace,
       dependencies,
       sealedAt,
       options?.additionalComponentDigests
     );
 
-    // 6. Assemble Canonical Record 3 Payload
+    // 7. Assemble Canonical Record 3 Payload
     const rawRecord = {
       binding_id: bindingId,
       scope_id: scopeId,
@@ -196,12 +243,12 @@ export class VersionBindingService {
       version_integrity_reference: versionIntegrityReference,
     };
 
-    // 7. Validate strictly against frozen Section 9.5 schema
+    // 8. Validate strictly against Section 9.5 Record 3 schema
     const bindingRecord: ValidationVersionBindingRecord = deepFreeze(
       validationVersionBindingRecordSchema.parse(rawRecord)
     );
 
-    // 8. Atomic Graph Integration: Register node
+    // 9. Atomic Graph Integration: Register node (no edges added; edge catalogue remains exactly 14)
     if (this.graph) {
       this.graph.registerNode({
         id: bindingRecord.binding_id,
@@ -209,7 +256,7 @@ export class VersionBindingService {
       });
     }
 
-    // 9. Atomic Ledger Integration: Append immutable audit record
+    // 10. Atomic Ledger Integration: Append immutable audit record once for new binding
     if (this.ledger) {
       this.ledger.appendRecord(
         GOVERNED_ENTITY_KINDS.ValidationVersionBindingRecord,
@@ -219,29 +266,40 @@ export class VersionBindingService {
       );
     }
 
-    // 10. Cache in memory
+    // 11. Cache in memory: Preserve historical bindings per scope
     this.bindingsById.set(bindingRecord.binding_id, bindingRecord);
-    this.bindingsByScopeId.set(bindingRecord.scope_id, bindingRecord);
+    const scopeList = this.bindingsByScopeId.get(bindingRecord.scope_id) ?? [];
+    scopeList.push(bindingRecord);
+    this.bindingsByScopeId.set(bindingRecord.scope_id, scopeList);
 
     return bindingRecord;
   }
 
   /**
-   * Retrieves a ValidationVersionBindingRecord by its binding_id.
+   * Retrieves a ValidationVersionBindingRecord by its canonical binding_id.
    */
   public getBinding(bindingId: string): ValidationVersionBindingRecord | undefined {
     return this.bindingsById.get(bindingId);
   }
 
   /**
-   * Retrieves a ValidationVersionBindingRecord by its associated scope_id.
+   * Retrieves the latest ValidationVersionBindingRecord associated with a scope_id.
    */
   public getBindingByScopeId(scopeId: string): ValidationVersionBindingRecord | undefined {
-    return this.bindingsByScopeId.get(scopeId);
+    const list = this.bindingsByScopeId.get(scopeId);
+    return list && list.length > 0 ? list[list.length - 1] : undefined;
   }
 
   /**
-   * Returns all registered ValidationVersionBindingRecords.
+   * Retrieves all historical ValidationVersionBindingRecords associated with a scope_id.
+   */
+  public getBindingsForScope(scopeId: string): ReadonlyArray<ValidationVersionBindingRecord> {
+    const list = this.bindingsByScopeId.get(scopeId);
+    return list ? deepFreeze([...list]) : [];
+  }
+
+  /**
+   * Returns all registered ValidationVersionBindingRecords across all scopes.
    */
   public getAllBindings(): ReadonlyArray<ValidationVersionBindingRecord> {
     return deepFreeze(Array.from(this.bindingsById.values()));
@@ -262,20 +320,10 @@ export class VersionBindingService {
       return false;
     }
 
-    const baselineTrace: ArchitectureVersionEntry = {
-      version:
-        record.version_integrity_reference.component_digests?.["1C.5h_architecture_version"] ??
-        FROZEN_UPSTREAM_VERSIONS["1C.5h_architecture"],
-      integrity_ref:
-        record.version_integrity_reference.component_digests?.["1C.5h_architecture_integrity"] ??
-        DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS["1C.5h_architecture"],
-    };
-
     const recomputed = this.computeVersionIntegrityReference(
       record.binding_id,
       record.scope_id,
       record.architecture_version_matrix,
-      baselineTrace,
       {
         runtime_implementation_version: record.runtime_implementation_version,
         model_configuration_version: record.model_configuration_version,
@@ -296,12 +344,94 @@ export class VersionBindingService {
   }
 
   /**
+   * Resolves the complete nine-entry architecture version matrix from supplied dependencies or configured provider.
+   */
+  private resolveArchitectureMatrix(
+    dependencies: VersionBindingDependencies
+  ): ArchitectureVersionMatrix {
+    const provider =
+      dependencies.architecture_integrity_provider ??
+      this.architectureIntegrityProvider;
+    const directRefs = dependencies.architecture_integrity_references;
+    const explicitMatrix = dependencies.architecture_version_matrix;
+
+    const resolveRef = (key: ArchitectureArtifactKey): string => {
+      if (directRefs && directRefs[key] !== undefined) {
+        return directRefs[key] ?? "";
+      }
+      if (provider) {
+        return provider.getIntegrityReference(key) ?? "";
+      }
+      return "";
+    };
+
+    if (explicitMatrix) {
+      // If caller passed an explicit matrix object, preserve its exact presence/omission of keys
+      const result: any = {};
+      for (const artifact of ARCHITECTURE_ARTIFACT_KEYS) {
+        const matrixKey = ARTIFACT_KEY_TO_MATRIX_PROP[artifact];
+        if (matrixKey in explicitMatrix) {
+          const entry = explicitMatrix[matrixKey];
+          result[matrixKey] = {
+            version: entry?.version ?? FROZEN_UPSTREAM_VERSIONS[artifact],
+            integrity_ref:
+              entry?.integrity_ref !== undefined
+                ? entry.integrity_ref
+                : resolveRef(artifact),
+          };
+        }
+      }
+      return result as ArchitectureVersionMatrix;
+    }
+
+    // No explicit matrix supplied: resolve all 9 entries from provider / direct refs
+    return {
+      "1C.5a_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5a"],
+        integrity_ref: resolveRef("1C.5a"),
+      },
+      "1C.5b_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5b"],
+        integrity_ref: resolveRef("1C.5b"),
+      },
+      "1C.5c_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5c"],
+        integrity_ref: resolveRef("1C.5c"),
+      },
+      "1C.5d_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5d"],
+        integrity_ref: resolveRef("1C.5d"),
+      },
+      "1C.5e_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5e"],
+        integrity_ref: resolveRef("1C.5e"),
+      },
+      "1C.5f_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5f"],
+        integrity_ref: resolveRef("1C.5f"),
+      },
+      "1C.5g_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5g"],
+        integrity_ref: resolveRef("1C.5g"),
+      },
+      "1C.5h_mandate_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5h_mandate"],
+        integrity_ref: resolveRef("1C.5h_mandate"),
+      },
+      "1C.5h_architecture_version": {
+        version: FROZEN_UPSTREAM_VERSIONS["1C.5h_architecture"],
+        integrity_ref: resolveRef("1C.5h_architecture"),
+      },
+    };
+  }
+
+  /**
    * Validates that all eight mandatory execution environment dependency fields are non-empty strings.
    */
   private validateExecutionDependencies(
     deps: VersionBindingDependencies
   ): void {
-    const mandatoryKeys: (keyof VersionBindingDependencies)[] = [
+    const mandatoryKeys: (keyof ExecutionEnvironmentDependencies)[] = [
       "runtime_implementation_version",
       "model_configuration_version",
       "deterministic_rules_version",
@@ -316,7 +446,7 @@ export class VersionBindingService {
       const val = deps[key];
       if (typeof val !== "string" || val.trim() === "") {
         throw new MissingDependencyError(
-          key,
+          String(key),
           `Expected non-empty string, received ${JSON.stringify(val)}`
         );
       }
@@ -324,11 +454,12 @@ export class VersionBindingService {
   }
 
   /**
-   * Validates that all architecture entries in the matrix match the frozen upstream specification versions.
+   * Validates that all nine architecture entries in the matrix match the frozen upstream specification versions
+   * and contain non-empty, authoritative integrity references.
+   * Fail closed on missing, placeholder, or self-cloned integrity evidence.
    */
   private validateUpstreamArchitectureVersions(
-    matrix: ArchitectureVersionMatrix,
-    baselineTrace: ArchitectureVersionEntry
+    matrix: ArchitectureVersionMatrix
   ): void {
     const expectations: Array<{
       key: keyof ArchitectureVersionMatrix;
@@ -343,6 +474,7 @@ export class VersionBindingService {
       { key: "1C.5f_version", expected: FROZEN_UPSTREAM_VERSIONS["1C.5f"], label: "Phase 1C.5f" },
       { key: "1C.5g_version", expected: FROZEN_UPSTREAM_VERSIONS["1C.5g"], label: "Phase 1C.5g" },
       { key: "1C.5h_mandate_version", expected: FROZEN_UPSTREAM_VERSIONS["1C.5h_mandate"], label: "Phase 1C.5h Mandate" },
+      { key: "1C.5h_architecture_version", expected: FROZEN_UPSTREAM_VERSIONS["1C.5h_architecture"], label: "Phase 1C.5h Architecture Baseline" },
     ];
 
     for (const { key, expected, label } of expectations) {
@@ -351,23 +483,31 @@ export class VersionBindingService {
         throw new MissingDependencyError(`architecture_version_matrix.${key}.version`);
       }
       if (!entry.integrity_ref || typeof entry.integrity_ref !== "string" || entry.integrity_ref.trim() === "") {
-        throw new MissingDependencyError(`architecture_version_matrix.${key}.integrity_ref`);
+        throw new MissingDependencyError(
+          `architecture_version_matrix.${key}.integrity_ref`,
+          `Authoritative architecture integrity reference is required for "${label}" and cannot be omitted or empty.`
+        );
       }
+
+      // Protect against placeholder tokens or version cloning
+      const trimmedRef = entry.integrity_ref.trim();
+      if (trimmedRef === entry.version) {
+        throw new MissingDependencyError(
+          `architecture_version_matrix.${key}.integrity_ref`,
+          `Integrity reference for "${label}" cannot be a clone of the version string ("${entry.version}"). Authoritative cryptographic reference required.`
+        );
+      }
+      const lowerRef = trimmedRef.toLowerCase();
+      if (lowerRef === "unknown" || lowerRef === "pending" || lowerRef === "none" || lowerRef === "null") {
+        throw new MissingDependencyError(
+          `architecture_version_matrix.${key}.integrity_ref`,
+          `Placeholder "${trimmedRef}" is prohibited as an integrity reference for "${label}". Fail closed on missing evidence.`
+        );
+      }
+
       if (entry.version !== expected) {
         throw new VersionMismatchError(label, expected, entry.version);
       }
-    }
-
-    // Baseline trace validation
-    if (!baselineTrace.version || baselineTrace.version !== FROZEN_UPSTREAM_VERSIONS["1C.5h_architecture"]) {
-      throw new VersionMismatchError(
-        "Phase 1C.5h Baseline Trace Architecture",
-        FROZEN_UPSTREAM_VERSIONS["1C.5h_architecture"],
-        baselineTrace.version
-      );
-    }
-    if (!baselineTrace.integrity_ref || baselineTrace.integrity_ref.trim() === "") {
-      throw new MissingDependencyError("detailed_baseline_trace.integrity_ref");
     }
   }
 
@@ -378,12 +518,11 @@ export class VersionBindingService {
     bindingId: string,
     scopeId: string,
     architectureMatrix: ArchitectureVersionMatrix,
-    baselineTrace: ArchitectureVersionEntry,
     dependencies: VersionBindingDependencies,
     sealedAt: string,
     additionalDigests?: Record<string, string>
   ): VersionIntegrityReference {
-    // 1. Compute discrete component digests
+    // 1. Compute discrete component digests for all 9 architecture specifications + 8 runtime dependencies
     const componentDigests: Record<string, string> = {
       "1C.5a_version": architectureMatrix["1C.5a_version"].integrity_ref,
       "1C.5b_version": architectureMatrix["1C.5b_version"].integrity_ref,
@@ -393,8 +532,7 @@ export class VersionBindingService {
       "1C.5f_version": architectureMatrix["1C.5f_version"].integrity_ref,
       "1C.5g_version": architectureMatrix["1C.5g_version"].integrity_ref,
       "1C.5h_mandate_version": architectureMatrix["1C.5h_mandate_version"].integrity_ref,
-      "1C.5h_architecture_version": baselineTrace.version,
-      "1C.5h_architecture_integrity": baselineTrace.integrity_ref,
+      "1C.5h_architecture_version": architectureMatrix["1C.5h_architecture_version"].integrity_ref,
       runtime_implementation_version: this.integrityProvider.computeDigest(
         dependencies.runtime_implementation_version.trim()
       ),
@@ -422,12 +560,11 @@ export class VersionBindingService {
       ...additionalDigests,
     };
 
-    // 2. Canonical composite payload structure (deterministically ordered)
+    // 2. Canonical composite payload structure (deterministically ordered via canonicalizeJson)
     const compositePayload = {
       binding_id: bindingId,
       scope_id: scopeId,
       architecture_version_matrix: architectureMatrix,
-      baseline_trace: baselineTrace,
       runtime_implementation_version: dependencies.runtime_implementation_version.trim(),
       model_configuration_version: dependencies.model_configuration_version.trim(),
       deterministic_rules_version: dependencies.deterministic_rules_version.trim(),

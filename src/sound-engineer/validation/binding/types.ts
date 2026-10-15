@@ -40,18 +40,100 @@ export const FROZEN_UPSTREAM_TITLES = {
 } as const;
 
 /**
- * Canonical default baseline cryptographic integrity references for upstream specifications.
+ * Canonical identifiers for the nine frozen upstream architecture specifications.
  */
-export const DEFAULT_FROZEN_UPSTREAM_INTEGRITY_REFS = {
-  "1C.5a": "sha256_1c5a_baseline_v0.3c",
-  "1C.5b": "sha256_1c5b_baseline_v0.2f",
-  "1C.5c": "sha256_1c5c_baseline_v0.1d",
-  "1C.5d": "sha256_1c5d_baseline_v0.1l",
-  "1C.5e": "sha256_1c5e_baseline_v0.1m",
-  "1C.5f": "sha256_1c5f_baseline_v0.1j",
-  "1C.5g": "sha256_1c5g_baseline_v0.1e",
-  "1C.5h_mandate": "sha256_1c5h_mandate_v0.1d",
-  "1C.5h_architecture": "sha256_1c5h_arch_baseline_v0.1j",
+export type ArchitectureArtifactKey =
+  | "1C.5a"
+  | "1C.5b"
+  | "1C.5c"
+  | "1C.5d"
+  | "1C.5e"
+  | "1C.5f"
+  | "1C.5g"
+  | "1C.5h_mandate"
+  | "1C.5h_architecture";
+
+export const ARCHITECTURE_ARTIFACT_KEYS: readonly ArchitectureArtifactKey[] = [
+  "1C.5a",
+  "1C.5b",
+  "1C.5c",
+  "1C.5d",
+  "1C.5e",
+  "1C.5f",
+  "1C.5g",
+  "1C.5h_mandate",
+  "1C.5h_architecture",
+] as const;
+
+/**
+ * Mapping between ArchitectureArtifactKey and ArchitectureVersionMatrix property names.
+ */
+export const ARTIFACT_KEY_TO_MATRIX_PROP: Record<ArchitectureArtifactKey, keyof ArchitectureVersionMatrix> = {
+  "1C.5a": "1C.5a_version",
+  "1C.5b": "1C.5b_version",
+  "1C.5c": "1C.5c_version",
+  "1C.5d": "1C.5d_version",
+  "1C.5e": "1C.5e_version",
+  "1C.5f": "1C.5f_version",
+  "1C.5g": "1C.5g_version",
+  "1C.5h_mandate": "1C.5h_mandate_version",
+  "1C.5h_architecture": "1C.5h_architecture_version",
+};
+
+/**
+ * Technology-neutral governance input boundary abstraction supplying authoritative cryptographic
+ * integrity references for the nine frozen architecture specifications.
+ *
+ * WP-05 is NOT responsible for scanning disks, crawling git, or inventing hash strings.
+ * WP-05 is responsible for consuming authoritative integrity references supplied by this boundary.
+ */
+export interface ArchitectureIntegrityReferenceProvider {
+  /**
+   * Returns the authoritative cryptographic integrity reference for the specified architecture artifact.
+   * If the artifact reference is missing, unavailable, or unresolved, returns undefined.
+   */
+  getIntegrityReference(artifact: ArchitectureArtifactKey): string | undefined;
+
+  /**
+   * Optional bulk resolver returning all available integrity references.
+   */
+  getAllIntegrityReferences?(): Partial<Record<ArchitectureArtifactKey, string>>;
+}
+
+/**
+ * Concrete in-memory provider for testing, fixtures, and explicit programmatic governance supply.
+ */
+export class StaticArchitectureIntegrityReferenceProvider implements ArchitectureIntegrityReferenceProvider {
+  private readonly refs: Map<ArchitectureArtifactKey, string>;
+
+  constructor(refs: Partial<Record<ArchitectureArtifactKey, string>>) {
+    this.refs = new Map(Object.entries(refs) as [ArchitectureArtifactKey, string][]);
+  }
+
+  public getIntegrityReference(artifact: ArchitectureArtifactKey): string | undefined {
+    return this.refs.get(artifact);
+  }
+
+  public getAllIntegrityReferences(): Partial<Record<ArchitectureArtifactKey, string>> {
+    return Object.fromEntries(this.refs.entries()) as Partial<Record<ArchitectureArtifactKey, string>>;
+  }
+}
+
+/**
+ * Isolated synthetic test fixture integrity references.
+ * STRICT GOVERNANCE: Strictly for testing and fixture manufacturing; NOT a production default.
+ * WP-05 does NOT automatically populate production records with these synthetic tokens.
+ */
+export const TEST_SYNTHETIC_UPSTREAM_INTEGRITY_REFS = {
+  "1C.5a": "test_sha256_1c5a_baseline_v0.3c",
+  "1C.5b": "test_sha256_1c5b_baseline_v0.2f",
+  "1C.5c": "test_sha256_1c5c_baseline_v0.1d",
+  "1C.5d": "test_sha256_1c5d_baseline_v0.1l",
+  "1C.5e": "test_sha256_1c5e_baseline_v0.1m",
+  "1C.5f": "test_sha256_1c5f_baseline_v0.1j",
+  "1C.5g": "test_sha256_1c5g_baseline_v0.1e",
+  "1C.5h_mandate": "test_sha256_1c5h_mandate_v0.1d",
+  "1C.5h_architecture": "test_sha256_1c5h_arch_baseline_v0.1j",
 } as const;
 
 /**
@@ -78,21 +160,25 @@ export interface ExecutionEnvironmentDependencies {
 
 /**
  * Complete input structure accepted by VersionBindingService.
+ * Governed directly by canonical architecture_version_matrix and execution environment dependencies.
  */
 export interface VersionBindingDependencies extends ExecutionEnvironmentDependencies {
-  /** Optional explicit architecture version matrix; defaults to canonical frozen upstream matrix */
+  /** Optional explicit architecture version matrix; if omitted, resolved from authoritative integrity provider */
   architecture_version_matrix?: Partial<ArchitectureVersionMatrix>;
-  /** Optional explicit detailed baseline trace; defaults to 1C.5h v0.1j baseline */
-  detailed_baseline_trace?: ArchitectureVersionEntry;
+
+  /** Optional per-call authoritative architecture integrity provider */
+  architecture_integrity_provider?: ArchitectureIntegrityReferenceProvider;
+
+  /** Optional per-call explicit mapping of authoritative integrity references */
+  architecture_integrity_references?: Partial<Record<ArchitectureArtifactKey, string>>;
 }
 
 /**
  * Options configuring version binding creation and verification.
+ * GOVERNED IDENTITY: Canonical binding_id cannot be overridden by callers.
  */
 export interface VersionBindingOptions {
-  /** Explicit binding ID; defaults to `binding_${scope_id}` */
-  bindingId?: string;
-  /** Explicit ISO 8601 UTC timestamp; defaults to current UTC time */
+  /** Explicit ISO 8601 UTC timestamp; defaults to current UTC time. Included in envelope, does NOT affect binding_id. */
   timestamp?: string;
   /** Optional custom or additional component digests */
   additionalComponentDigests?: Record<string, string>;
