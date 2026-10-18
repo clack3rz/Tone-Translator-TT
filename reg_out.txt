@@ -1,0 +1,3536 @@
+TAP version 13
+# Subtest: WP-14: Multi-Dimensional Acoustic Evaluation & Orthogonal Tolerance Engine
+    # Subtest: evaluates spectral dimension independently against governed tolerance criteria
+    ok 1 - evaluates spectral dimension independently against governed tolerance criteria
+      ---
+      duration_ms: 73.933222
+      type: 'test'
+      ...
+    # Subtest: evaluates dynamic envelope dimension against profile-specific dynamic budget
+    ok 2 - evaluates dynamic envelope dimension against profile-specific dynamic budget
+      ---
+      duration_ms: 1.35756
+      type: 'test'
+      ...
+    # Subtest: evaluates harmonic texture dimension against circuit-specific harmonic tolerances
+    ok 3 - evaluates harmonic texture dimension against circuit-specific harmonic tolerances
+      ---
+      duration_ms: 1.530713
+      type: 'test'
+      ...
+    # Subtest: evaluates spatial and phase dimension independently
+    ok 4 - evaluates spatial and phase dimension independently
+      ---
+      duration_ms: 1.516691
+      type: 'test'
+      ...
+    # Subtest: evaluates playability dimension when PROFILE-07 is assigned
+    ok 5 - evaluates playability dimension when PROFILE-07 is assigned
+      ---
+      duration_ms: 4.338554
+      type: 'test'
+      ...
+    # Subtest: evaluates mix-context dimension when PROFILE-08 is assigned
+    ok 6 - evaluates mix-context dimension when PROFILE-08 is assigned
+      ---
+      duration_ms: 1.365245
+      type: 'test'
+      ...
+    # Subtest: preserves each orthogonal dimension independently without scalar collapse
+    ok 7 - preserves each orthogonal dimension independently without scalar collapse
+      ---
+      duration_ms: 1.676595
+      type: 'test'
+      ...
+    # Subtest: throws ScalarCollapseForbiddenError if computeScalarScore is called
+    ok 8 - throws ScalarCollapseForbiddenError if computeScalarScore is called
+      ---
+      duration_ms: 0.921999
+      type: 'test'
+      ...
+    # Subtest: prevents passing spectral dimension from masking critical harmonic distortion failure
+    ok 9 - prevents passing spectral dimension from masking critical harmonic distortion failure
+      ---
+      duration_ms: 1.468852
+      type: 'test'
+      ...
+    # Subtest: derives criticality strictly from governed profile data
+    ok 10 - derives criticality strictly from governed profile data
+      ---
+      duration_ms: 1.423202
+      type: 'test'
+      ...
+    # Subtest: ensures perceptual failure cannot be waived or overwritten by passing objective metrics
+    ok 11 - ensures perceptual failure cannot be waived or overwritten by passing objective metrics
+      ---
+      duration_ms: 1.403299
+      type: 'test'
+      ...
+    # Subtest: ensures objective failure cannot be waived by passing perceptual evaluation
+    ok 12 - ensures objective failure cannot be waived by passing perceptual evaluation
+      ---
+      duration_ms: 1.142706
+      type: 'test'
+      ...
+    # Subtest: distinguishes clearly between non-applicable dimensions and applicable-missing-evidence
+    ok 13 - distinguishes clearly between non-applicable dimensions and applicable-missing-evidence
+      ---
+      duration_ms: 0.609935
+      type: 'test'
+      ...
+    # Subtest: enforces plan defect override: unknown topology does NOT use strictest conservative tolerances
+    ok 14 - enforces plan defect override: unknown topology does NOT use strictest conservative tolerances
+      ---
+      duration_ms: 1.015675
+      type: 'test'
+      ...
+    # Subtest: fails closed when supplied evidence records violate schema
+    ok 15 - fails closed when supplied evidence records violate schema
+      ---
+      duration_ms: 2.002794
+      type: 'test'
+      ...
+    # Subtest: accurately synthesizes tube amplifier and overdrive pedal circuit classes using governed tolerances
+    ok 16 - accurately synthesizes tube amplifier and overdrive pedal circuit classes using governed tolerances
+      ---
+      duration_ms: 1.368744
+      type: 'test'
+      ...
+    # Subtest: enforces strict architectural boundaries: no new records, exactly 14 edge types, result is deeply frozen
+    ok 17 - enforces strict architectural boundaries: no new records, exactly 14 edge types, result is deeply frozen
+      ---
+      duration_ms: 0.764468
+      type: 'test'
+      ...
+    1..17
+ok 1 - WP-14: Multi-Dimensional Acoustic Evaluation & Orthogonal Tolerance Engine
+  ---
+  duration_ms: 100.11889
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-17 — Evidence Conflict Preservation & Resolution Accounting (Record 15)
+    # Subtest: Scenario 1: Metrics PASS / Ears FAIL (Table 15 Row 1)
+        # Subtest: detects conflict when objective passes but human listening fails, preserving raw conflict
+        ok 1 - detects conflict when objective passes but human listening fails, preserving raw conflict
+          ---
+          duration_ms: 84.944425
+          type: 'test'
+          ...
+        1..1
+    ok 1 - Scenario 1: Metrics PASS / Ears FAIL (Table 15 Row 1)
+      ---
+      duration_ms: 85.87917
+      type: 'suite'
+      ...
+    # Subtest: Scenario 2: Ears PASS / Metrics FAIL (Table 15 Row 2)
+        # Subtest: detects conflict when human listening passes but objective metric fails technical threshold
+        ok 1 - detects conflict when human listening passes but objective metric fails technical threshold
+          ---
+          duration_ms: 3.16472
+          type: 'test'
+          ...
+        1..1
+    ok 2 - Scenario 2: Ears PASS / Metrics FAIL (Table 15 Row 2)
+      ---
+      duration_ms: 3.47756
+      type: 'suite'
+      ...
+    # Subtest: Scenario 3: Non-conflicting evidence streams
+        # Subtest: returns hasConflict: false when both objective and perceptual evaluations pass
+        ok 1 - returns hasConflict: false when both objective and perceptual evaluations pass
+          ---
+          duration_ms: 0.704582
+          type: 'test'
+          ...
+        # Subtest: returns hasConflict: false when both objective and perceptual evaluations fail (mutual agreement on failure)
+        ok 2 - returns hasConflict: false when both objective and perceptual evaluations fail (mutual agreement on failure)
+          ---
+          duration_ms: 0.473141
+          type: 'test'
+          ...
+        1..2
+    ok 3 - Scenario 3: Non-conflicting evidence streams
+      ---
+      duration_ms: 8.554516
+      type: 'suite'
+      ...
+    # Subtest: Single Canonical Symmetric CONFLICTS_WITH Edge & Bidirectional Traversal
+        # Subtest: persists exactly one symmetric edge regardless of input order and allows bidirectional traversal
+        ok 1 - persists exactly one symmetric edge regardless of input order and allows bidirectional traversal
+          ---
+          duration_ms: 0.789281
+          type: 'test'
+          ...
+        # Subtest: enforces canonical endpoint ordering (min_id, max_id) in edge definition
+        ok 2 - enforces canonical endpoint ordering (min_id, max_id) in edge definition
+          ---
+          duration_ms: 0.382232
+          type: 'test'
+          ...
+        # Subtest: rejects CONFLICTS_WITH edges between invalid endpoints (e.g. two ObjectiveEvidenceRecords or two PerceptualEvaluationRecords)
+        ok 3 - rejects CONFLICTS_WITH edges between invalid endpoints (e.g. two ObjectiveEvidenceRecords or two PerceptualEvaluationRecords)
+          ---
+          duration_ms: 0.810652
+          type: 'test'
+          ...
+        1..3
+    ok 4 - Single Canonical Symmetric CONFLICTS_WITH Edge & Bidirectional Traversal
+      ---
+      duration_ms: 2.358069
+      type: 'suite'
+      ...
+    # Subtest: Axiom 4: Anti-Scalar Smoothing & Conflict Preservation
+        # Subtest: strictly prohibits scalar smoothing, averaging, or artificial consensus
+        ok 1 - strictly prohibits scalar smoothing, averaging, or artificial consensus
+          ---
+          duration_ms: 0.331042
+          type: 'test'
+          ...
+        # Subtest: preserves individual raw conflicting scores in competing evidence records without averaging
+        ok 2 - preserves individual raw conflicting scores in competing evidence records without averaging
+          ---
+          duration_ms: 0.541016
+          type: 'test'
+          ...
+        1..2
+    ok 5 - Axiom 4: Anti-Scalar Smoothing & Conflict Preservation
+      ---
+      duration_ms: 1.142909
+      type: 'suite'
+      ...
+    # Subtest: Governed Conflict Detection Profile Resolver & Fail-Closed Behavior
+        # Subtest: fails closed with MissingConflictProfileError when profile reference is missing or empty
+        ok 1 - fails closed with MissingConflictProfileError when profile reference is missing or empty
+          ---
+          duration_ms: 0.643216
+          type: 'test'
+          ...
+        # Subtest: allows registering and applying domain-specific custom conflict detection profiles
+        ok 2 - allows registering and applying domain-specific custom conflict detection profiles
+          ---
+          duration_ms: 1.322846
+          type: 'test'
+          ...
+        1..2
+    ok 6 - Governed Conflict Detection Profile Resolver & Fail-Closed Behavior
+      ---
+      duration_ms: 2.102528
+      type: 'suite'
+      ...
+    # Subtest: Disagreement Evidence Accounting (Type C: Reviewer, Type D: Methodology)
+        # Subtest: documents intra-modality disagreement in Record 15 without violating graph endpoint contracts
+        ok 1 - documents intra-modality disagreement in Record 15 without violating graph endpoint contracts
+          ---
+          duration_ms: 1.276186
+          type: 'test'
+          ...
+        # Subtest: rejects disagreement documentation with fewer than 2 competing evidence references
+        ok 2 - rejects disagreement documentation with fewer than 2 competing evidence references
+          ---
+          duration_ms: 0.280583
+          type: 'test'
+          ...
+        1..2
+    ok 7 - Disagreement Evidence Accounting (Type C: Reviewer, Type D: Methodology)
+      ---
+      duration_ms: 1.673037
+      type: 'suite'
+      ...
+    # Subtest: Immutability & Input Validation Protection
+        # Subtest: returns deep-frozen results that prevent mutation
+        ok 1 - returns deep-frozen results that prevent mutation
+          ---
+          duration_ms: 0.56644
+          type: 'test'
+          ...
+        # Subtest: rejects input with missing packageRecord
+        ok 2 - rejects input with missing packageRecord
+          ---
+          duration_ms: 0.216181
+          type: 'test'
+          ...
+        # Subtest: explicitly verifies raw evidence records are never mutated by conflict detection
+        ok 3 - explicitly verifies raw evidence records are never mutated by conflict detection
+          ---
+          duration_ms: 0.729293
+          type: 'test'
+          ...
+        1..3
+    ok 8 - Immutability & Input Validation Protection
+      ---
+      duration_ms: 1.653783
+      type: 'suite'
+      ...
+    # Subtest: Package / Execution / Scope Context Coherence (Point 12)
+        # Subtest: fails closed when objective and perceptual evidence reference incompatible executions
+        ok 1 - fails closed when objective and perceptual evidence reference incompatible executions
+          ---
+          duration_ms: 2.860074
+          type: 'test'
+          ...
+        # Subtest: fails closed when scopeRecord.scope_id does not match packageRecord.scope_record_ref
+        ok 2 - fails closed when scopeRecord.scope_id does not match packageRecord.scope_record_ref
+          ---
+          duration_ms: 70.137727
+          type: 'test'
+          ...
+        # Subtest: fails closed when versionBindingRecord.binding_id does not match packageRecord.version_binding_ref
+        ok 3 - fails closed when versionBindingRecord.binding_id does not match packageRecord.version_binding_ref
+          ---
+          duration_ms: 3.982269
+          type: 'test'
+          ...
+        # Subtest: fails closed when executionRecord.execution_id does not match evidence execution_id
+        ok 4 - fails closed when executionRecord.execution_id does not match evidence execution_id
+          ---
+          duration_ms: 2.456211
+          type: 'test'
+          ...
+        # Subtest: fails closed when executionRecord.case_id is not included in packageRecord.validation_case_refs
+        ok 5 - fails closed when executionRecord.case_id is not included in packageRecord.validation_case_refs
+          ---
+          duration_ms: 0.447669
+          type: 'test'
+          ...
+        # Subtest: rejects disagreement input with whitespace-only evidence reference string
+        ok 6 - rejects disagreement input with whitespace-only evidence reference string
+          ---
+          duration_ms: 0.250647
+          type: 'test'
+          ...
+        1..6
+    ok 9 - Package / Execution / Scope Context Coherence (Point 12)
+      ---
+      duration_ms: 80.485167
+      type: 'suite'
+      ...
+    # Subtest: Governed Graph Endpoint Rejections for CONFLICTS_WITH (Point 8)
+        # Subtest: rejects UAT ↔ Objective and UAT ↔ Perceptual as CONFLICTS_WITH endpoints
+        ok 1 - rejects UAT ↔ Objective and UAT ↔ Perceptual as CONFLICTS_WITH endpoints
+          ---
+          duration_ms: 0.38836
+          type: 'test'
+          ...
+        # Subtest: rejects EvidenceConflictRecord or RegressionAssessmentRecord as CONFLICTS_WITH endpoints
+        ok 2 - rejects EvidenceConflictRecord or RegressionAssessmentRecord as CONFLICTS_WITH endpoints
+          ---
+          duration_ms: 0.2418
+          type: 'test'
+          ...
+        1..2
+    ok 10 - Governed Graph Endpoint Rejections for CONFLICTS_WITH (Point 8)
+      ---
+      duration_ms: 0.78794
+      type: 'suite'
+      ...
+    # Subtest: Boundary Protection: WP-15, WP-16, and WP-18 Separation (Points 11, 15, 16)
+        # Subtest: confirms conflict detection does NOT emit ValidationFailureRecord or attribution classes (WP-16)
+        ok 1 - confirms conflict detection does NOT emit ValidationFailureRecord or attribution classes (WP-16)
+          ---
+          duration_ms: 1.816989
+          type: 'test'
+          ...
+        # Subtest: confirms conflict detection does NOT emit ValidationUncertaintyRecord or UNCERTAIN_OF edge (WP-18)
+        ok 2 - confirms conflict detection does NOT emit ValidationUncertaintyRecord or UNCERTAIN_OF edge (WP-18)
+          ---
+          duration_ms: 1.51645
+          type: 'test'
+          ...
+        1..2
+    ok 11 - Boundary Protection: WP-15, WP-16, and WP-18 Separation (Points 11, 15, 16)
+      ---
+      duration_ms: 3.457073
+      type: 'suite'
+      ...
+    1..11
+ok 2 - Phase 1C.5h WP-17 — Evidence Conflict Preservation & Resolution Accounting (Record 15)
+  ---
+  duration_ms: 193.197129
+  type: 'suite'
+  ...
+# Subtest: WP-15: Tripartite Differential Comparison & Regression Detection Engine (Record 13)
+    # Subtest: executes all three independent pairwise comparisons and retains them separately
+    ok 1 - executes all three independent pairwise comparisons and retains them separately
+      ---
+      duration_ms: 14.844355
+      type: 'test'
+      ...
+    # Subtest: emits Record 13 strictly matching the signed-off schema with zero extra fields
+    ok 2 - emits Record 13 strictly matching the signed-off schema with zero extra fields
+      ---
+      duration_ms: 3.80941
+      type: 'test'
+      ...
+    # Subtest: accepts only the four canonical short-form classifications in Record 13
+    ok 3 - accepts only the four canonical short-form classifications in Record 13
+      ---
+      duration_ms: 0.596582
+      type: 'test'
+      ...
+    # Subtest: strictly rejects long-form legacy tokens at the schema level
+    ok 4 - strictly rejects long-form legacy tokens at the schema level
+      ---
+      duration_ms: 58.505248
+      type: 'test'
+      ...
+    # Subtest: enforces cardinal rule: candidate diverging from legacy is NOT automatically a regression
+    ok 5 - enforces cardinal rule: candidate diverging from legacy is NOT automatically a regression
+      ---
+      duration_ms: 1.114288
+      type: 'test'
+      ...
+    # Subtest: classifies INTENTIONAL_CORRECTION when divergence from legacy is backed by authorized intent
+    ok 6 - classifies INTENTIONAL_CORRECTION when divergence from legacy is backed by authorized intent
+      ---
+      duration_ms: 0.969004
+      type: 'test'
+      ...
+    # Subtest: does NOT auto-classify intentional correction merely because candidate is closer to Golden
+    ok 7 - does NOT auto-classify intentional correction merely because candidate is closer to Golden
+      ---
+      duration_ms: 0.887498
+      type: 'test'
+      ...
+    # Subtest: classifies non-degrading divergence within governed tolerances as NEUTRAL
+    ok 8 - classifies non-degrading divergence within governed tolerances as NEUTRAL
+      ---
+      duration_ms: 1.253659
+      type: 'test'
+      ...
+    # Subtest: classifies actual degradation relative to Golden/governed tolerances as GENUINE_REGRESSION
+    ok 9 - classifies actual degradation relative to Golden/governed tolerances as GENUINE_REGRESSION
+      ---
+      duration_ms: 1.126237
+      type: 'test'
+      ...
+    # Subtest: classifies UNRESOLVED when evidence streams are contradictory (objective pass vs perceptual fail)
+    ok 10 - classifies UNRESOLVED when evidence streams are contradictory (objective pass vs perceptual fail)
+      ---
+      duration_ms: 1.076465
+      type: 'test'
+      ...
+    # Subtest: strictly enforces governed materiality profiles and rejects missing profile without fallback
+    ok 11 - strictly enforces governed materiality profiles and rejects missing profile without fallback
+      ---
+      duration_ms: 1.420311
+      type: 'test'
+      ...
+    # Subtest: enforces blocks_gate_8 strictly based on governed materiality of genuine regression and unresolved states
+    ok 12 - enforces blocks_gate_8 strictly based on governed materiality of genuine regression and unresolved states
+      ---
+      duration_ms: 2.234502
+      type: 'test'
+      ...
+    # Subtest: fails closed on invalid Candidate evidence or invalid PATH-PROD baseline
+    ok 13 - fails closed on invalid Candidate evidence or invalid PATH-PROD baseline
+      ---
+      duration_ms: 0.708486
+      type: 'test'
+      ...
+    # Subtest: rejects invalid, inactive, contaminated, or scope-mismatched Golden References
+    ok 14 - rejects invalid, inactive, contaminated, or scope-mismatched Golden References
+      ---
+      duration_ms: 1.517121
+      type: 'test'
+      ...
+    # Subtest: fails closed on scope record or version binding mismatch
+    ok 15 - fails closed on scope record or version binding mismatch
+      ---
+      duration_ms: 0.434231
+      type: 'test'
+      ...
+    # Subtest: registers exact COMPARED_AGAINST relationship edges and respects the frozen 14-edge catalogue
+    ok 16 - registers exact COMPARED_AGAINST relationship edges and respects the frozen 14-edge catalogue
+      ---
+      duration_ms: 2.365414
+      type: 'test'
+      ...
+    # Subtest: enforces immutability and ensures no Record 14–17 or WP-16+ artifacts are produced
+    ok 17 - enforces immutability and ensures no Record 14–17 or WP-16+ artifacts are produced
+      ---
+      duration_ms: 0.57951
+      type: 'test'
+      ...
+    1..17
+ok 3 - WP-15: Tripartite Differential Comparison & Regression Detection Engine (Record 13)
+  ---
+  duration_ms: 96.607273
+  type: 'suite'
+  ...
+# Subtest: WP-16: FailureAttributionEngine (Record 14)
+    # Subtest: Scenario 1: Attributes runner OOM and audio driver dropouts to VALIDATION_ENVIRONMENT
+    ok 1 - Scenario 1: Attributes runner OOM and audio driver dropouts to VALIDATION_ENVIRONMENT
+      ---
+      duration_ms: 18.953158
+      type: 'test'
+      ...
+    # Subtest: Scenario 2: Attributes corrupted audio stem and depleted pickup battery to TEST_FIXTURE
+    ok 2 - Scenario 2: Attributes corrupted audio stem and depleted pickup battery to TEST_FIXTURE
+      ---
+      duration_ms: 2.42565
+      type: 'test'
+      ...
+    # Subtest: Scenario 3: Attributes Phase 1C.5g parameter transformation diff to MIGRATION_MAPPING
+    ok 3 - Scenario 3: Attributes Phase 1C.5g parameter transformation diff to MIGRATION_MAPPING
+      ---
+      duration_ms: 1.242174
+      type: 'test'
+      ...
+    # Subtest: Scenario 4: Attributes null pointer exception in core DSP code to RUNTIME_IMPLEMENTATION
+    ok 4 - Scenario 4: Attributes null pointer exception in core DSP code to RUNTIME_IMPLEMENTATION
+      ---
+      duration_ms: 0.752728
+      type: 'test'
+      ...
+    # Subtest: Scenario 5: Attributes cognitive contradiction in Stages 01–14 to REASONING
+    ok 5 - Scenario 5: Attributes cognitive contradiction in Stages 01–14 to REASONING
+      ---
+      duration_ms: 0.770188
+      type: 'test'
+      ...
+    # Subtest: Scenario 6: Attributes Stage 12 illegal platform parameter ID to PLATFORM_TRANSLATION
+    ok 6 - Scenario 6: Attributes Stage 12 illegal platform parameter ID to PLATFORM_TRANSLATION
+      ---
+      duration_ms: 1.177187
+      type: 'test'
+      ...
+    # Subtest: Scenario 7: Attributes vendor host application crash to TARGET_PLATFORM
+    ok 7 - Scenario 7: Attributes vendor host application crash to TARGET_PLATFORM
+      ---
+      duration_ms: 0.703311
+      type: 'test'
+      ...
+    # Subtest: Scenario 8: Attributes cluster scheduling and DB dropouts to OPERATIONAL_INFRASTRUCTURE
+    ok 8 - Scenario 8: Attributes cluster scheduling and DB dropouts to OPERATIONAL_INFRASTRUCTURE
+      ---
+      duration_ms: 61.769685
+      type: 'test'
+      ...
+    # Subtest: Scenario 9: Attributes unclassified symptoms without recognizable signatures to UNKNOWN
+    ok 9 - Scenario 9: Attributes unclassified symptoms without recognizable signatures to UNKNOWN
+      ---
+      duration_ms: 2.044546
+      type: 'test'
+      ...
+    # Subtest: Scenario 10: Forbids speculative blame when multiple conflicting signals are present, isolating to UNKNOWN
+    ok 10 - Scenario 10: Forbids speculative blame when multiple conflicting signals are present, isolating to UNKNOWN
+      ---
+      duration_ms: 16.154103
+      type: 'test'
+      ...
+    # Subtest: Scenario 11: Validates exact canonical REMANDS_TO edge contract and rejects invalid endpoints
+    ok 11 - Scenario 11: Validates exact canonical REMANDS_TO edge contract and rejects invalid endpoints
+      ---
+      duration_ms: 1.387164
+      type: 'test'
+      ...
+    # Subtest: Scenario 12: Enforces immutability via deepFreeze and appends Record 14 to audit ledger
+    ok 12 - Scenario 12: Enforces immutability via deepFreeze and appends Record 14 to audit ledger
+      ---
+      duration_ms: 2.514368
+      type: 'test'
+      ...
+    # Subtest: Scenario 13: Emitted record conforms 100% to signed-off Record 14 schema
+    ok 13 - Scenario 13: Emitted record conforms 100% to signed-off Record 14 schema
+      ---
+      duration_ms: 0.618386
+      type: 'test'
+      ...
+    # Subtest: Scenario 14: Throws appropriate error when mandatory inputs are missing or invalid
+    ok 14 - Scenario 14: Throws appropriate error when mandatory inputs are missing or invalid
+      ---
+      duration_ms: 0.966917
+      type: 'test'
+      ...
+    # Subtest: Scenario 15: Proves UNKNOWN does not automatically imply Gate-8 blocking solely because it is UNKNOWN
+    ok 15 - Scenario 15: Proves UNKNOWN does not automatically imply Gate-8 blocking solely because it is UNKNOWN
+      ---
+      duration_ms: 1.295726
+      type: 'test'
+      ...
+    # Subtest: Scenario 16: Proves attribution class and materiality are strictly independent across all pairings
+    ok 16 - Scenario 16: Proves attribution class and materiality are strictly independent across all pairings
+      ---
+      duration_ms: 1.199284
+      type: 'test'
+      ...
+    # Subtest: Scenario 17: Proves MAJOR is not automatically treated as CRITICAL_BLOCKER and gate_8_blocked follows exact governed rule
+    ok 17 - Scenario 17: Proves MAJOR is not automatically treated as CRITICAL_BLOCKER and gate_8_blocked follows exact governed rule
+      ---
+      duration_ms: 1.049567
+      type: 'test'
+      ...
+    # Subtest: Scenario 18: Proves no Gate-8 decision records or Record 15-17 artifacts are created by WP-16
+    ok 18 - Scenario 18: Proves no Gate-8 decision records or Record 15-17 artifacts are created by WP-16
+      ---
+      duration_ms: 2.213811
+      type: 'test'
+      ...
+    1..18
+ok 4 - WP-16: FailureAttributionEngine (Record 14)
+  ---
+  duration_ms: 120.087142
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-11: Objective Acoustic & Signal-Processing Measurement Engine (Record 10)
+    # Subtest: A. Record 10 Schema & Objective Measurement Parity
+        # Subtest: successfully measures a valid WP-10 execution and produces sealed Record 10 matching canonical schema
+        ok 1 - successfully measures a valid WP-10 execution and produces sealed Record 10 matching canonical schema
+          ---
+          duration_ms: 172.717994
+          type: 'test'
+          ...
+        # Subtest: produces deterministic repeat measurements for identical inputs
+        ok 2 - produces deterministic repeat measurements for identical inputs
+          ---
+          duration_ms: 16.552365
+          type: 'test'
+          ...
+        1..2
+    ok 1 - A. Record 10 Schema & Objective Measurement Parity
+      ---
+      duration_ms: 190.275689
+      type: 'suite'
+      ...
+    # Subtest: B. Spectral Analysis Accuracy
+        # Subtest: detects peak frequency with high precision for known synthetic tone (1000 Hz)
+        ok 1 - detects peak frequency with high precision for known synthetic tone (1000 Hz)
+          ---
+          duration_ms: 3.217942
+          type: 'test'
+          ...
+        # Subtest: calculates frequency-response delta between candidate and baseline
+        ok 2 - calculates frequency-response delta between candidate and baseline
+          ---
+          duration_ms: 79.319929
+          type: 'test'
+          ...
+        1..2
+    ok 2 - B. Spectral Analysis Accuracy
+      ---
+      duration_ms: 82.875834
+      type: 'suite'
+      ...
+    # Subtest: C. Harmonic Distortion Analysis
+        # Subtest: calculates near-zero THD% for pure undistorted sine wave
+        ok 1 - calculates near-zero THD% for pure undistorted sine wave
+          ---
+          duration_ms: 4.206035
+          type: 'test'
+          ...
+        # Subtest: accurately calculates THD% for synthetic wave with known 10% 2nd harmonic (-20 dB)
+        ok 2 - accurately calculates THD% for synthetic wave with known 10% 2nd harmonic (-20 dB)
+          ---
+          duration_ms: 12.399703
+          type: 'test'
+          ...
+        1..2
+    ok 3 - C. Harmonic Distortion Analysis
+      ---
+      duration_ms: 17.116133
+      type: 'suite'
+      ...
+    # Subtest: D. Dynamic Response Analysis
+        # Subtest: calculates theoretical crest factor for sine wave (3.01 dB / 1.414 linear)
+        ok 1 - calculates theoretical crest factor for sine wave (3.01 dB / 1.414 linear)
+          ---
+          duration_ms: 2.847678
+          type: 'test'
+          ...
+        1..1
+    ok 4 - D. Dynamic Response Analysis
+      ---
+      duration_ms: 3.001479
+      type: 'suite'
+      ...
+    # Subtest: E. Phase Coherence & Stereo Width
+        # Subtest: returns phase correlation of +1.0 and stereo width of 0.0 for identical stereo channels
+        ok 1 - returns phase correlation of +1.0 and stereo width of 0.0 for identical stereo channels
+          ---
+          duration_ms: 86.10513
+          type: 'test'
+          ...
+        # Subtest: returns phase correlation of -1.0 for inverted (180 deg out-of-phase) stereo channels
+        ok 2 - returns phase correlation of -1.0 for inverted (180 deg out-of-phase) stereo channels
+          ---
+          duration_ms: 91.612249
+          type: 'test'
+          ...
+        1..2
+    ok 5 - E. Phase Coherence & Stereo Width
+      ---
+      duration_ms: 178.104173
+      type: 'suite'
+      ...
+    # Subtest: F. Profile-Governed Tolerance Evaluation
+        # Subtest: evaluates to MET when measured value satisfies governed tolerance rule
+        ok 1 - evaluates to MET when measured value satisfies governed tolerance rule
+          ---
+          duration_ms: 1.589715
+          type: 'test'
+          ...
+        # Subtest: evaluates to OUT_OF_TOLERANCE when measured value exceeds governed threshold
+        ok 2 - evaluates to OUT_OF_TOLERANCE when measured value exceeds governed threshold
+          ---
+          duration_ms: 0.232217
+          type: 'test'
+          ...
+        # Subtest: evaluates to BORDERLINE when measured value falls within margin band
+        ok 3 - evaluates to BORDERLINE when measured value falls within margin band
+          ---
+          duration_ms: 0.184967
+          type: 'test'
+          ...
+        # Subtest: strictly returns NOT_APPLICABLE and does not use universal fallback when no rule is declared
+        ok 4 - strictly returns NOT_APPLICABLE and does not use universal fallback when no rule is declared
+          ---
+          duration_ms: 0.236546
+          type: 'test'
+          ...
+        1..4
+    ok 6 - F. Profile-Governed Tolerance Evaluation
+      ---
+      duration_ms: 2.467893
+      type: 'suite'
+      ...
+    # Subtest: G. Numerical Safety & Input Eligibility Guards
+        # Subtest: fails cleanly when given malformed or empty audio payload
+        ok 1 - fails cleanly when given malformed or empty audio payload
+          ---
+          duration_ms: 1.607006
+          type: 'test'
+          ...
+        # Subtest: fails closed when candidate audio integrity does not match execution record output_audio_integrity_ref
+        ok 2 - fails closed when candidate audio integrity does not match execution record output_audio_integrity_ref
+          ---
+          duration_ms: 3.037563
+          type: 'test'
+          ...
+        # Subtest: fails closed when execution outcome was FAILED or ABORTED
+        ok 3 - fails closed when execution outcome was FAILED or ABORTED
+          ---
+          duration_ms: 0.52716
+          type: 'test'
+          ...
+        # Subtest: fails closed when case does not require objective evidence
+        ok 4 - fails closed when case does not require objective evidence
+          ---
+          duration_ms: 3.067036
+          type: 'test'
+          ...
+        1..4
+    ok 7 - G. Numerical Safety & Input Eligibility Guards
+      ---
+      duration_ms: 8.430823
+      type: 'suite'
+      ...
+    # Subtest: H. Canonical Graph Edge Management & Graph Invariants
+        # Subtest: creates exact canonical EVIDENCED_BY edge from ValidationCase to ObjectiveEvidenceRecord
+        ok 1 - creates exact canonical EVIDENCED_BY edge from ValidationCase to ObjectiveEvidenceRecord
+          ---
+          duration_ms: 7.34583
+          type: 'test'
+          ...
+        # Subtest: creates zero execution -> evidence graph edges, preserving 14 governed edge types
+        ok 2 - creates zero execution -> evidence graph edges, preserving 14 governed edge types
+          ---
+          duration_ms: 9.604815
+          type: 'test'
+          ...
+        1..2
+    ok 8 - H. Canonical Graph Edge Management & Graph Invariants
+      ---
+      duration_ms: 17.104984
+      type: 'suite'
+      ...
+    1..8
+ok 5 - Phase 1C.5h — WP-11: Objective Acoustic & Signal-Processing Measurement Engine (Record 10)
+  ---
+  duration_ms: 500.619115
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-19 Focused Verification
+    # Subtest: 01: Exact Record 17 schema accepted; extra/invented fields strictly rejected
+    ok 1 - 01: Exact Record 17 schema accepted; extra/invented fields strictly rejected
+      ---
+      duration_ms: 10.332277
+      type: 'test'
+      ...
+    # Subtest: 02: Exact four outcome classes accepted; non-canonical aliases rejected
+    ok 2 - 02: Exact four outcome classes accepted; non-canonical aliases rejected
+      ---
+      duration_ms: 46.532348
+      type: 'test'
+      ...
+    # Subtest: 03: Outcome precedence preserves architectural semantics for Case A (FAIL), Case B (BLOCKED), and Case C (FAIL with coincident blockers preserved)
+    ok 3 - 03: Outcome precedence preserves architectural semantics for Case A (FAIL), Case B (BLOCKED), and Case C (FAIL with coincident blockers preserved)
+      ---
+      duration_ms: 29.719793
+      type: 'test'
+      ...
+    # Subtest: 04: UNRESOLVED divergence is strictly distinct from GENUINE_REGRESSION across 5 separate states
+    ok 4 - 04: UNRESOLVED divergence is strictly distinct from GENUINE_REGRESSION across 5 separate states
+      ---
+      duration_ms: 13.786579
+      type: 'test'
+      ...
+    # Subtest: 05: PASS requires strict positive proof; removing requirements breaks PASS
+    ok 5 - 05: PASS requires strict positive proof; removing requirements breaks PASS
+      ---
+      duration_ms: 68.860289
+      type: 'test'
+      ...
+    # Subtest: 06: WP-07 applicability: non-applicable excluded, missing applicable blocks, no local rule invention
+    ok 6 - 06: WP-07 applicability: non-applicable excluded, missing applicable blocks, no local rule invention
+      ---
+      duration_ms: 3.048252
+      type: 'test'
+      ...
+    # Subtest: 07: objective_summary accurately reflects WP-11 evidence without synthetic global score
+    ok 7 - 07: objective_summary accurately reflects WP-11 evidence without synthetic global score
+      ---
+      duration_ms: 1.258174
+      type: 'test'
+      ...
+    # Subtest: 08: Perceptual evidence influences outcome; objective PASS / listening FAIL respects conflict resolution
+    ok 8 - 08: Perceptual evidence influences outcome; objective PASS / listening FAIL respects conflict resolution
+      ---
+      duration_ms: 1.529328
+      type: 'test'
+      ...
+    # Subtest: 09: UAT evidence uses exact machine semantics; friction produces CONDITIONAL with conditions
+    ok 9 - 09: UAT evidence uses exact machine semantics; friction produces CONDITIONAL with conditions
+      ---
+      duration_ms: 1.239311
+      type: 'test'
+      ...
+    # Subtest: 10: Regression summary maintains distinct counts with zero scalar collapse
+    ok 10 - 10: Regression summary maintains distinct counts with zero scalar collapse
+      ---
+      duration_ms: 1.37606
+      type: 'test'
+      ...
+    # Subtest: 11: All eight governed hard blockers prevent PASS without semantic flattening
+    ok 11 - 11: All eight governed hard blockers prevent PASS without semantic flattening
+      ---
+      duration_ms: 1.782203
+      type: 'test'
+      ...
+    # Subtest: 12: Uncertainty: FORCES_BLOCK blocks, ALLOWS_CONDITIONAL yields CONDITIONAL, ACCEPTABLE_LOW_RISK permits PASS
+    ok 12 - 12: Uncertainty: FORCES_BLOCK blocks, ALLOWS_CONDITIONAL yields CONDITIONAL, ACCEPTABLE_LOW_RISK permits PASS
+      ---
+      duration_ms: 1.746674
+      type: 'test'
+      ...
+    # Subtest: 13: UncertaintyThresholdResolver resolves known profiles and fails closed on missing/empty/unknown
+    ok 13 - 13: UncertaintyThresholdResolver resolves known profiles and fails closed on missing/empty/unknown
+      ---
+      duration_ms: 0.378756
+      type: 'test'
+      ...
+    # Subtest: 14: CONDITIONAL outcome requires non-empty declarative conditions; no telemetry execution
+    ok 14 - 14: CONDITIONAL outcome requires non-empty declarative conditions; no telemetry execution
+      ---
+      duration_ms: 0.937
+      type: 'test'
+      ...
+    # Subtest: 15: unresolved_issues accurately aggregates active open items without historical leakage
+    ok 15 - 15: unresolved_issues accurately aggregates active open items without historical leakage
+      ---
+      duration_ms: 1.082066
+      type: 'test'
+      ...
+    # Subtest: 16: Context coherence: package, scope, version binding, and foreign evidence fail closed
+    ok 16 - 16: Context coherence: package, scope, version binding, and foreign evidence fail closed
+      ---
+      duration_ms: 1.190785
+      type: 'test'
+      ...
+    # Subtest: 17: Canonical EVIDENCED_BY: Outcome -> Objective and Outcome -> Perceptual accepted; reverse and other entities rejected
+    ok 17 - 17: Canonical EVIDENCED_BY: Outcome -> Objective and Outcome -> Perceptual accepted; reverse and other entities rejected
+      ---
+      duration_ms: 63.69703
+      type: 'test'
+      ...
+    # Subtest: 18: Canonical UNCERTAIN_OF: Outcome -> Uncertainty uses UNCERTAIN_OF without endpoint widening
+    ok 18 - 18: Canonical UNCERTAIN_OF: Outcome -> Uncertainty uses UNCERTAIN_OF without endpoint widening
+      ---
+      duration_ms: 1.204341
+      type: 'test'
+      ...
+    # Subtest: 19: Record 17 is deep-frozen and sealed; mutating outcome_class to INVALIDATED is impossible
+    ok 19 - 19: Record 17 is deep-frozen and sealed; mutating outcome_class to INVALIDATED is impossible
+      ---
+      duration_ms: 1.428543
+      type: 'test'
+      ...
+    # Subtest: 20: isApplicableForCurrentBinding detects staleness dynamically without mutating outcome
+    ok 20 - 20: isApplicableForCurrentBinding detects staleness dynamically without mutating outcome
+      ---
+      duration_ms: 1.974349
+      type: 'test'
+      ...
+    # Subtest: 21: Gate-8 separation: PASS != AUTHORIZED, CONDITIONAL != CONDITIONALLY_AUTHORIZED; no downstream records created
+    ok 21 - 21: Gate-8 separation: PASS != AUTHORIZED, CONDITIONAL != CONDITIONALLY_AUTHORIZED; no downstream records created
+      ---
+      duration_ms: 1.564764
+      type: 'test'
+      ...
+    # Subtest: 22: No WP-20 leakage: production code contains zero trigger generators or retest planners
+    ok 22 - 22: No WP-20 leakage: production code contains zero trigger generators or retest planners
+      ---
+      duration_ms: 1.59829
+      type: 'test'
+      ...
+    1..22
+ok 6 - Phase 1C.5h — WP-19 Focused Verification
+  ---
+  duration_ms: 266.30947
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-12: Perceptual Evaluation, Blind Listening & Psychoacoustic Harness (Record 11)
+    # Subtest: A. Record 11 Schema & Emitted Record Integrity
+        # Subtest: successfully evaluates a valid eligible WP-10 execution and produces valid Record 11
+        ok 1 - successfully evaluates a valid eligible WP-10 execution and produces valid Record 11
+          ---
+          duration_ms: 106.287724
+          type: 'test'
+          ...
+        # Subtest: verifies emitted Record 11 contains no extra persisted fields (strict schema validation)
+        ok 2 - verifies emitted Record 11 contains no extra persisted fields (strict schema validation)
+          ---
+          duration_ms: 8.256479
+          type: 'test'
+          ...
+        # Subtest: verifies Record 11 is deeply frozen and immutable after creation
+        ok 3 - verifies Record 11 is deeply frozen and immutable after creation
+          ---
+          duration_ms: 7.086285
+          type: 'test'
+          ...
+        1..3
+    ok 1 - A. Record 11 Schema & Emitted Record Integrity
+      ---
+      duration_ms: 122.874281
+      type: 'suite'
+      ...
+    # Subtest: B. Case Evidence Class & Execution Eligibility Guards
+        # Subtest: fails closed when case only requires OBJECTIVE evidence
+        ok 1 - fails closed when case only requires OBJECTIVE evidence
+          ---
+          duration_ms: 3.011169
+          type: 'test'
+          ...
+        # Subtest: accepts cases requiring PERCEPTUAL or MIXED evidence
+        ok 2 - accepts cases requiring PERCEPTUAL or MIXED evidence
+          ---
+          duration_ms: 2.477216
+          type: 'test'
+          ...
+        # Subtest: fails closed when execution outcome was FAILED or ABORTED
+        ok 3 - fails closed when execution outcome was FAILED or ABORTED
+          ---
+          duration_ms: 64.838953
+          type: 'test'
+          ...
+        # Subtest: fails closed when candidate audio integrity does not match execution record output_audio_integrity_ref
+        ok 4 - fails closed when candidate audio integrity does not match execution record output_audio_integrity_ref
+          ---
+          duration_ms: 1.697081
+          type: 'test'
+          ...
+        1..4
+    ok 2 - B. Case Evidence Class & Execution Eligibility Guards
+      ---
+      duration_ms: 72.862543
+      type: 'suite'
+      ...
+    # Subtest: C. Governed Roles & Listening Environment Validation
+        # Subtest: accepts all four canonical evaluator roles
+        ok 1 - accepts all four canonical evaluator roles
+          ---
+          duration_ms: 7.390613
+          type: 'test'
+          ...
+        # Subtest: rejects invalid or invented evaluator roles
+        ok 2 - rejects invalid or invented evaluator roles
+          ---
+          duration_ms: 2.294169
+          type: 'test'
+          ...
+        # Subtest: rejects invalid listening environments missing calibration or invalid monitor type
+        ok 3 - rejects invalid listening environments missing calibration or invalid monitor type
+          ---
+          duration_ms: 9.814759
+          type: 'test'
+          ...
+        1..3
+    ok 3 - C. Governed Roles & Listening Environment Validation
+      ---
+      duration_ms: 19.873822
+      type: 'suite'
+      ...
+    # Subtest: D. Blinded Presentation, Zero Leakage & Randomization
+        # Subtest: blinded A/B hides candidate/baseline identity and uses opaque lettered tokens
+        ok 1 - blinded A/B hides candidate/baseline identity and uses opaque lettered tokens
+          ---
+          duration_ms: 5.381468
+          type: 'test'
+          ...
+        # Subtest: verifies stimulus ordering is randomized and not hardcoded A=Candidate
+        ok 2 - verifies stimulus ordering is randomized and not hardcoded A=Candidate
+          ---
+          duration_ms: 0.70365
+          type: 'test'
+          ...
+        # Subtest: verifies injected deterministic RNG allows exact test reproducibility
+        ok 3 - verifies injected deterministic RNG allows exact test reproducibility
+          ---
+          duration_ms: 0.601163
+          type: 'test'
+          ...
+        # Subtest: ABX stimulus mapping blinds probe X to evaluator
+        ok 4 - ABX stimulus mapping blinds probe X to evaluator
+          ---
+          duration_ms: 0.449216
+          type: 'test'
+          ...
+        1..4
+    ok 4 - D. Blinded Presentation, Zero Leakage & Randomization
+      ---
+      duration_ms: 7.726394
+      type: 'suite'
+      ...
+    # Subtest: E. MUSHRA Hidden Reference & Anchor Invalidation
+        # Subtest: MUSHRA blinds hidden reference and low-pass anchor among stimuli
+        ok 1 - MUSHRA blinds hidden reference and low-pass anchor among stimuli
+          ---
+          duration_ms: 0.643325
+          type: 'test'
+          ...
+        # Subtest: required hidden anchor check failure invalidates session and prevents PERCEPTUAL_PASS
+        ok 2 - required hidden anchor check failure invalidates session and prevents PERCEPTUAL_PASS
+          ---
+          duration_ms: 106.071903
+          type: 'test'
+          ...
+        1..2
+    ok 5 - E. MUSHRA Hidden Reference & Anchor Invalidation
+      ---
+      duration_ms: 106.932749
+      type: 'suite'
+      ...
+    # Subtest: F. Rating Scale Governance & Anti-Universal-Threshold Discipline
+        # Subtest: strictly returns PERCEPTUAL_INCONCLUSIVE when no rating scale profile is supplied (zero universal average >= 7)
+        ok 1 - strictly returns PERCEPTUAL_INCONCLUSIVE when no rating scale profile is supplied (zero universal average >= 7)
+          ---
+          duration_ms: 2.317699
+          type: 'test'
+          ...
+        # Subtest: evaluates outcome according to governed rating scale profile rules
+        ok 2 - evaluates outcome according to governed rating scale profile rules
+          ---
+          duration_ms: 63.557136
+          type: 'test'
+          ...
+        1..2
+    ok 6 - F. Rating Scale Governance & Anti-Universal-Threshold Discipline
+      ---
+      duration_ms: 66.042291
+      type: 'suite'
+      ...
+    # Subtest: G. Session Duration Governance & Reviewer Fatigue Mitigation
+        # Subtest: invalidates session when session duration exceeds governed limit
+        ok 1 - invalidates session when session duration exceeds governed limit
+          ---
+          duration_ms: 2.156936
+          type: 'test'
+          ...
+        1..1
+    ok 7 - G. Session Duration Governance & Reviewer Fatigue Mitigation
+      ---
+      duration_ms: 2.279237
+      type: 'suite'
+      ...
+    # Subtest: H. Inter-Rater Reliability (Multi-Evaluator Panels)
+        # Subtest: single-evaluator case does not fabricate reliability
+        ok 1 - single-evaluator case does not fabricate reliability
+          ---
+          duration_ms: 0.43713
+          type: 'test'
+          ...
+        # Subtest: calculates Pearson correlation across shared dimensions for multi-evaluator panel
+        ok 2 - calculates Pearson correlation across shared dimensions for multi-evaluator panel
+          ---
+          duration_ms: 0.318627
+          type: 'test'
+          ...
+        # Subtest: calculates Cohen's Kappa for discrete categorical ratings
+        ok 3 - calculates Cohen's Kappa for discrete categorical ratings
+          ---
+          duration_ms: 0.287606
+          type: 'test'
+          ...
+        # Subtest: evaluates multi-evaluator panel using evaluatePanel and enforces reliability check
+        ok 4 - evaluates multi-evaluator panel using evaluatePanel and enforces reliability check
+          ---
+          duration_ms: 3.540808
+          type: 'test'
+          ...
+        1..4
+    ok 8 - H. Inter-Rater Reliability (Multi-Evaluator Panels)
+      ---
+      duration_ms: 4.807033
+      type: 'suite'
+      ...
+    # Subtest: I. Canonical Graph Edge Management & Graph Invariants
+        # Subtest: creates exact canonical EVALUATED_BY edge from PerceptualEvaluationRecord to EvaluatorPersona
+        ok 1 - creates exact canonical EVALUATED_BY edge from PerceptualEvaluationRecord to EvaluatorPersona
+          ---
+          duration_ms: 6.391378
+          type: 'test'
+          ...
+        # Subtest: creates exact canonical EVIDENCED_BY edge from ValidationCase to PerceptualEvaluationRecord
+        ok 2 - creates exact canonical EVIDENCED_BY edge from ValidationCase to PerceptualEvaluationRecord
+          ---
+          duration_ms: 2.685335
+          type: 'test'
+          ...
+        # Subtest: creates ZERO ExecutionRecord -> PerceptualRecord edges and ZERO CONFLICTS_WITH edges
+        ok 3 - creates ZERO ExecutionRecord -> PerceptualRecord edges and ZERO CONFLICTS_WITH edges
+          ---
+          duration_ms: 2.189247
+          type: 'test'
+          ...
+        # Subtest: verifies graph remains exactly 14 governed edge types and no Record 12 / WP-13 artifacts are created
+        ok 4 - verifies graph remains exactly 14 governed edge types and no Record 12 / WP-13 artifacts are created
+          ---
+          duration_ms: 0.128322
+          type: 'test'
+          ...
+        1..4
+    ok 9 - I. Canonical Graph Edge Management & Graph Invariants
+      ---
+      duration_ms: 11.608572
+      type: 'suite'
+      ...
+    1..9
+ok 7 - Phase 1C.5h — WP-12: Perceptual Evaluation, Blind Listening & Psychoacoustic Harness (Record 11)
+  ---
+  duration_ms: 417.102219
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-02: Graph Edge Model & Immutable Validation Audit Ledger
+    # Subtest: A1. Governed edge catalogue contains exactly fourteen governed edge types
+    ok 1 - A1. Governed edge catalogue contains exactly fourteen governed edge types
+      ---
+      duration_ms: 1.486666
+      type: 'test'
+      ...
+    # Subtest: A2. Rejects invented governed edges (e.g. HAS_EVIDENCE, LINKS_TO, BELONGS_TO)
+    ok 2 - A2. Rejects invented governed edges (e.g. HAS_EVIDENCE, LINKS_TO, BELONGS_TO)
+      ---
+      duration_ms: 1.072254
+      type: 'test'
+      ...
+    # Subtest: B. Validates and enforces exact endpoint constraints for all 14 governed edges
+    ok 3 - B. Validates and enforces exact endpoint constraints for all 14 governed edges
+      ---
+      duration_ms: 1.068121
+      type: 'test'
+      ...
+    # Subtest: C. Strictly rejects endpoint direction reversal for directional edges
+    ok 4 - C. Strictly rejects endpoint direction reversal for directional edges
+      ---
+      duration_ms: 0.28987
+      type: 'test'
+      ...
+    # Subtest: D. CONFLICTS_WITH enforces single canonical persistence and bidirectional lookup
+    ok 5 - D. CONFLICTS_WITH enforces single canonical persistence and bidirectional lookup
+      ---
+      duration_ms: 1.116386
+      type: 'test'
+      ...
+    # Subtest: E. Enforces directional acyclicity and protects against self, 2-node, and multi-hop cycles
+    ok 6 - E. Enforces directional acyclicity and protects against self, 2-node, and multi-hop cycles
+      ---
+      duration_ms: 0.816831
+      type: 'test'
+      ...
+    # Subtest: F. Rejects orphan endpoints and handles duplicates idempotently
+    ok 7 - F. Rejects orphan endpoints and handles duplicates idempotently
+      ---
+      duration_ms: 0.42547
+      type: 'test'
+      ...
+    # Subtest: G. Provides getProvenanceLineage, getImpactedScope, and getEvidenceForCase queries
+    ok 8 - G. Provides getProvenanceLineage, getImpactedScope, and getEvidenceForCase queries
+      ---
+      duration_ms: 15.224365
+      type: 'test'
+      ...
+    # Subtest: H. Evaluates historical applicability without mutating outcome records
+    ok 9 - H. Evaluates historical applicability without mutating outcome records
+      ---
+      duration_ms: 0.581946
+      type: 'test'
+      ...
+    # Subtest: I. ValidationAuditLedger executes append-only chaining and verification
+    ok 10 - I. ValidationAuditLedger executes append-only chaining and verification
+      ---
+      duration_ms: 3.596848
+      type: 'test'
+      ...
+    # Subtest: J. Detects all forms of audit ledger tampering
+    ok 11 - J. Detects all forms of audit ledger tampering
+      ---
+      duration_ms: 6.41447
+      type: 'test'
+      ...
+    # Subtest: K. Deterministic canonical serialization and standard SHA-256 test vectors
+    ok 12 - K. Deterministic canonical serialization and standard SHA-256 test vectors
+      ---
+      duration_ms: 71.758058
+      type: 'test'
+      ...
+    # Subtest: L. Guarantees immutability of returned entries and graph objects
+    ok 13 - L. Guarantees immutability of returned entries and graph objects
+      ---
+      duration_ms: 0.728919
+      type: 'test'
+      ...
+    1..13
+ok 8 - Phase 1C.5h — WP-02: Graph Edge Model & Immutable Validation Audit Ledger
+  ---
+  duration_ms: 106.474117
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-20 Focused Verification
+    # Subtest: 01: Exact Record 18 schema accepted; extra/invented fields strictly rejected
+    ok 1 - 01: Exact Record 18 schema accepted; extra/invented fields strictly rejected
+      ---
+      duration_ms: 3.925888
+      type: 'test'
+      ...
+    # Subtest: 02: Exact Record 19 schema accepted; extra/invented fields strictly rejected
+    ok 2 - 02: Exact Record 19 schema accepted; extra/invented fields strictly rejected
+      ---
+      duration_ms: 1.847405
+      type: 'test'
+      ...
+    # Subtest: 03: Exact four required_action values; invented values rejected
+    ok 3 - 03: Exact four required_action values; invented values rejected
+      ---
+      duration_ms: 0.494867
+      type: 'test'
+      ...
+    # Subtest: 04: Exact ten trigger categories mapped; Trigger 11 strictly rejected
+    ok 4 - 04: Exact ten trigger categories mapped; Trigger 11 strictly rejected
+      ---
+      duration_ms: 0.531036
+      type: 'test'
+      ...
+    # Subtest: 05: Dependency-driven invalidation across narrow gear, rules, exporter, and fixtures
+    ok 5 - 05: Dependency-driven invalidation across narrow gear, rules, exporter, and fixtures
+      ---
+      duration_ms: 67.961945
+      type: 'test'
+      ...
+    # Subtest: 06: Affected scope represents narrowest defensible impacted scope and protects bounds
+    ok 6 - 06: Affected scope represents narrowest defensible impacted scope and protects bounds
+      ---
+      duration_ms: 2.995388
+      type: 'test'
+      ...
+    # Subtest: 07: Binding integrity and transition coherence fail closed
+    ok 7 - 07: Binding integrity and transition coherence fail closed
+      ---
+      duration_ms: 0.86837
+      type: 'test'
+      ...
+    # Subtest: 08: Trigger/action independence: action follows impact rather than trigger number alone
+    ok 8 - 08: Trigger/action independence: action follows impact rather than trigger number alone
+      ---
+      duration_ms: 1.211417
+      type: 'test'
+      ...
+    # Subtest: 09: NO_ACTION preserves trigger evaluation, avoids stale evidence, and rejects plan creation
+    ok 9 - 09: NO_ACTION preserves trigger evaluation, avoids stale evidence, and rejects plan creation
+      ---
+      duration_ms: 1.169733
+      type: 'test'
+      ...
+    # Subtest: 10: PARTIAL_RETEST selects only affected existing cases and bounds retest scope
+    ok 10 - 10: PARTIAL_RETEST selects only affected existing cases and bounds retest scope
+      ---
+      duration_ms: 1.013373
+      type: 'test'
+      ...
+    # Subtest: 11: FULL_RETEST means full applicable retest of affected scope/package, not whole repository
+    ok 11 - 11: FULL_RETEST means full applicable retest of affected scope/package, not whole repository
+      ---
+      duration_ms: 0.988609
+      type: 'test'
+      ...
+    # Subtest: 12: Evidence partition completeness, disjointness, and foreign evidence fail-closed
+    ok 12 - 12: Evidence partition completeness, disjointness, and foreign evidence fail-closed
+      ---
+      duration_ms: 1.253434
+      type: 'test'
+      ...
+    # Subtest: 13: Historical records (17, 18, 19, executions, evidence) are immutable
+    ok 13 - 13: Historical records (17, 18, 19, executions, evidence) are immutable
+      ---
+      duration_ms: 1.093235
+      type: 'test'
+      ...
+    # Subtest: 14: Canonical INVALIDATED_BY exact contract: Outcome -> Trigger accepted, reverse/foreign rejected
+    ok 14 - 14: Canonical INVALIDATED_BY exact contract: Outcome -> Trigger accepted, reverse/foreign rejected
+      ---
+      duration_ms: 2.138183
+      type: 'test'
+      ...
+    # Subtest: 15: Historical PASS remains PASS while WP-19 dynamically observes staleness
+    ok 15 - 15: Historical PASS remains PASS while WP-19 dynamically observes staleness
+      ---
+      duration_ms: 0.798383
+      type: 'test'
+      ...
+    # Subtest: 16: Canonical REQUIRES_RETEST exact contract: Trigger -> Plan accepted, reverse rejected
+    ok 16 - 16: Canonical REQUIRES_RETEST exact contract: Trigger -> Plan accepted, reverse rejected
+      ---
+      duration_ms: 0.861743
+      type: 'test'
+      ...
+    # Subtest: 17: SUPERSEDES_VALIDATION preserves semantic direction (new -> prior), rejects inverted or cross-case
+    ok 17 - 17: SUPERSEDES_VALIDATION preserves semantic direction (new -> prior), rejects inverted or cross-case
+      ---
+      duration_ms: 0.719883
+      type: 'test'
+      ...
+    # Subtest: 18: Duplicate trigger idempotency prevents duplicate ledger entries while allowing distinct events
+    ok 18 - 18: Duplicate trigger idempotency prevents duplicate ledger entries while allowing distinct events
+      ---
+      duration_ms: 6.381157
+      type: 'test'
+      ...
+    # Subtest: 19: TRIGGER-05 target platform update escalates to SUSPEND_GATE_8 and invalidates platform evidence
+    ok 19 - 19: TRIGGER-05 target platform update escalates to SUSPEND_GATE_8 and invalidates platform evidence
+      ---
+      duration_ms: 0.810164
+      type: 'test'
+      ...
+    # Subtest: 20: TRIGGER-06 fixture library update preserves old fixture and invalidates dependent evidence
+    ok 20 - 20: TRIGGER-06 fixture library update preserves old fixture and invalidates dependent evidence
+      ---
+      duration_ms: 0.949643
+      type: 'test'
+      ...
+    # Subtest: 21: TRIGGER-09 candidate lesson approved targets lesson domain without approving/promoting
+    ok 21 - 21: TRIGGER-09 candidate lesson approved targets lesson domain without approving/promoting
+      ---
+      duration_ms: 0.976707
+      type: 'test'
+      ...
+    # Subtest: 22: TRIGGER-10 boundary produces SUSPEND_GATE_8 declaratively without telemetry loops or rollback
+    ok 22 - 22: TRIGGER-10 boundary produces SUSPEND_GATE_8 declaratively without telemetry loops or rollback
+      ---
+      duration_ms: 0.911679
+      type: 'test'
+      ...
+    # Subtest: 23: Retest planner constructs Record 19 and does not execute tests or synthesize outcomes
+    ok 23 - 23: Retest planner constructs Record 19 and does not execute tests or synthesize outcomes
+      ---
+      duration_ms: 0.871435
+      type: 'test'
+      ...
+    # Subtest: 24: Creating Record 19 does not make old PASS applicable or claim trigger resolved
+    ok 24 - 24: Creating Record 19 does not make old PASS applicable or claim trigger resolved
+      ---
+      duration_ms: 64.419026
+      type: 'test'
+      ...
+    # Subtest: 25: Ledger behavior is append-only with zero destructive replacement API
+    ok 25 - 25: Ledger behavior is append-only with zero destructive replacement API
+      ---
+      duration_ms: 1.905407
+      type: 'test'
+      ...
+    # Subtest: 26: Relationship graph maintains exactly 14 governed edge types
+    ok 26 - 26: Relationship graph maintains exactly 14 governed edge types
+      ---
+      duration_ms: 0.306065
+      type: 'test'
+      ...
+    # Subtest: 27: Downstream boundary: zero Records 20/21/22 generation and WP-21 untouched
+    ok 27 - 27: Downstream boundary: zero Records 20/21/22 generation and WP-21 untouched
+      ---
+      duration_ms: 0.177188
+      type: 'test'
+      ...
+    1..27
+ok 9 - Phase 1C.5h — WP-20 Focused Verification
+  ---
+  duration_ms: 174.793078
+  type: 'test'
+  ...
+# Subtest: WP-13: User Acceptance Testing Multi-Persona Workflow Engine (Record 12)
+    # Subtest: produces a valid Record 12 passing strict signed-off schema
+    ok 1 - produces a valid Record 12 passing strict signed-off schema
+      ---
+      duration_ms: 10.482816
+      type: 'test'
+      ...
+    # Subtest: rejects extraneous fields via strict Record 12 schema
+    ok 2 - rejects extraneous fields via strict Record 12 schema
+      ---
+      duration_ms: 1.502708
+      type: 'test'
+      ...
+    # Subtest: accepts all four canonical personas and rejects noncanonical personas
+    ok 3 - accepts all four canonical personas and rejects noncanonical personas
+      ---
+      duration_ms: 3.095124
+      type: 'test'
+      ...
+    # Subtest: accepts exactly three canonical task completion statuses and rejects invalid ones
+    ok 4 - accepts exactly three canonical task completion statuses and rejects invalid ones
+      ---
+      duration_ms: 2.24135
+      type: 'test'
+      ...
+    # Subtest: accepts exactly three canonical musical fitness verdicts and rejects invalid ones
+    ok 5 - accepts exactly three canonical musical fitness verdicts and rejects invalid ones
+      ---
+      duration_ms: 2.313467
+      type: 'test'
+      ...
+    # Subtest: enforces finite, non-negative task duration and fails closed on invalid values
+    ok 6 - enforces finite, non-negative task duration and fails closed on invalid values
+      ---
+      duration_ms: 1.00198
+      type: 'test'
+      ...
+    # Subtest: enforces workflow satisfaction rating bounds and rejects unknown profile references
+    ok 7 - enforces workflow satisfaction rating bounds and rejects unknown profile references
+      ---
+      duration_ms: 1.224855
+      type: 'test'
+      ...
+    # Subtest: preserves cognitive friction notes and blockers losslessly even on successful completion
+    ok 8 - preserves cognitive friction notes and blockers losslessly even on successful completion
+      ---
+      duration_ms: 0.943772
+      type: 'test'
+      ...
+    # Subtest: keeps musical fitness verdict independent from duration, completion, or rating
+    ok 9 - keeps musical fitness verdict independent from duration, completion, or rating
+      ---
+      duration_ms: 0.745126
+      type: 'test'
+      ...
+    # Subtest: rejects invalid package, missing package, or package lacking UAT profiles
+    ok 10 - rejects invalid package, missing package, or package lacking UAT profiles
+      ---
+      duration_ms: 1.499365
+      type: 'test'
+      ...
+    # Subtest: rejects out-of-scope scenario whose required profiles are not assigned to package
+    ok 11 - rejects out-of-scope scenario whose required profiles are not assigned to package
+      ---
+      duration_ms: 0.476584
+      type: 'test'
+      ...
+    # Subtest: detects persona coverage omissions and never fabricates fake evaluations
+    ok 12 - detects persona coverage omissions and never fabricates fake evaluations
+      ---
+      duration_ms: 1.867516
+      type: 'test'
+      ...
+    # Subtest: creates exact canonical EVALUATED_BY edge (UATEvaluationRecord -> EvaluatorPersona)
+    ok 13 - creates exact canonical EVALUATED_BY edge (UATEvaluationRecord -> EvaluatorPersona)
+      ---
+      duration_ms: 69.768682
+      type: 'test'
+      ...
+    # Subtest: enforces graph constraints: exactly 14 edge types, no reverse EVALUATED_BY, no widened EVIDENCED_BY
+    ok 14 - enforces graph constraints: exactly 14 edge types, no reverse EVALUATED_BY, no widened EVIDENCED_BY
+      ---
+      duration_ms: 0.748275
+      type: 'test'
+      ...
+    # Subtest: enforces deep immutability on emitted UATEvaluationRecord
+    ok 15 - enforces deep immutability on emitted UATEvaluationRecord
+      ---
+      duration_ms: 0.973093
+      type: 'test'
+      ...
+    # Subtest: preserves evaluation history in engine registry across multiple evaluations and packages
+    ok 16 - preserves evaluation history in engine registry across multiple evaluations and packages
+      ---
+      duration_ms: 1.110452
+      type: 'test'
+      ...
+    1..16
+ok 10 - WP-13: User Acceptance Testing Multi-Persona Workflow Engine (Record 12)
+  ---
+  duration_ms: 102.287325
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: ValidationUncertaintyRecord Schema & Enums
+    # Subtest: accepts a valid Record 16 matching exact schema
+    ok 1 - accepts a valid Record 16 matching exact schema
+      ---
+      duration_ms: 5.909803
+      type: 'test'
+      ...
+    # Subtest: strictly rejects extra/invented persisted fields on Record 16 (risk_score, risk_level, severity, confidence, gate8_blocked)
+    ok 2 - strictly rejects extra/invented persisted fields on Record 16 (risk_score, risk_level, severity, confidence, gate8_blocked)
+      ---
+      duration_ms: 2.609052
+      type: 'test'
+      ...
+    # Subtest: accepts all seven exact uncertainty source enum tokens
+    ok 3 - accepts all seven exact uncertainty source enum tokens
+      ---
+      duration_ms: 0.93204
+      type: 'test'
+      ...
+    # Subtest: rejects noncanonical uncertainty sources and invented aliases
+    ok 4 - rejects noncanonical uncertainty sources and invented aliases
+      ---
+      duration_ms: 1.006839
+      type: 'test'
+      ...
+    # Subtest: accepts all three exact gate_8_impact tokens and rejects noncanonical values
+    ok 5 - accepts all three exact gate_8_impact tokens and rejects noncanonical values
+      ---
+      duration_ms: 58.481643
+      type: 'test'
+      ...
+    1..5
+ok 11 - Phase 1C.5h WP-18: ValidationUncertaintyRecord Schema & Enums
+  ---
+  duration_ms: 70.544849
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: Governed Uncertainty Creation for All 7 Sources
+    # Subtest: creates Source 1: MISSING_EVIDENCE
+    ok 1 - creates Source 1: MISSING_EVIDENCE
+      ---
+      duration_ms: 1.516615
+      type: 'test'
+      ...
+    # Subtest: creates Source 2: CONFLICTING_EVIDENCE for unresolved conflict with material residual doubt
+    ok 2 - creates Source 2: CONFLICTING_EVIDENCE for unresolved conflict with material residual doubt
+      ---
+      duration_ms: 2.156374
+      type: 'test'
+      ...
+    # Subtest: creates Source 3: INSUFFICIENT_SAMPLE_SIZE
+    ok 3 - creates Source 3: INSUFFICIENT_SAMPLE_SIZE
+      ---
+      duration_ms: 0.565578
+      type: 'test'
+      ...
+    # Subtest: creates Source 4: UNTESTED_EDGE_DOMAIN
+    ok 4 - creates Source 4: UNTESTED_EDGE_DOMAIN
+      ---
+      duration_ms: 0.430118
+      type: 'test'
+      ...
+    # Subtest: creates Source 5: CALIBRATION_AMBIGUITY without converting to failure
+    ok 5 - creates Source 5: CALIBRATION_AMBIGUITY without converting to failure
+      ---
+      duration_ms: 0.513984
+      type: 'test'
+      ...
+    # Subtest: creates Source 6: UNKNOWN_FAILURE_CAUSE when residual-risk evidence is supplied
+    ok 6 - creates Source 6: UNKNOWN_FAILURE_CAUSE when residual-risk evidence is supplied
+      ---
+      duration_ms: 2.201008
+      type: 'test'
+      ...
+    # Subtest: creates Source 7: TARGET_PLATFORM_VERSION_INSTABILITY
+    ok 7 - creates Source 7: TARGET_PLATFORM_VERSION_INSTABILITY
+      ---
+      duration_ms: 0.340324
+      type: 'test'
+      ...
+    1..7
+ok 12 - Phase 1C.5h WP-18: Governed Uncertainty Creation for All 7 Sources
+  ---
+  duration_ms: 8.290216
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: Source/Impact Orthogonality & Risk Profile Governance
+    # Subtest: proves uncertainty source does not hardcode Gate 8 impact (same source receives different impacts)
+    ok 1 - proves uncertainty source does not hardcode Gate 8 impact (same source receives different impacts)
+      ---
+      duration_ms: 0.744124
+      type: 'test'
+      ...
+    # Subtest: fails closed when risk profile is missing or unknown (no fallback to universal threshold or strictest profile)
+    ok 2 - fails closed when risk profile is missing or unknown (no fallback to universal threshold or strictest profile)
+      ---
+      duration_ms: 0.361181
+      type: 'test'
+      ...
+    # Subtest: confirms internal risk calculation does not add a persisted field to Record 16
+    ok 3 - confirms internal risk calculation does not add a persisted field to Record 16
+      ---
+      duration_ms: 2.371537
+      type: 'test'
+      ...
+    1..3
+ok 13 - Phase 1C.5h WP-18: Source/Impact Orthogonality & Risk Profile Governance
+  ---
+  duration_ms: 3.667052
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: Governance Boundaries & Declarative Monitoring
+    # Subtest: confirms ACCEPTABLE_LOW_RISK does not create a PASS verdict or ValidationOutcomeRecord
+    ok 1 - confirms ACCEPTABLE_LOW_RISK does not create a PASS verdict or ValidationOutcomeRecord
+      ---
+      duration_ms: 0.304087
+      type: 'test'
+      ...
+    # Subtest: confirms ALLOWS_CONDITIONAL does not authorize deployment or execute telemetry
+    ok 2 - confirms ALLOWS_CONDITIONAL does not authorize deployment or execute telemetry
+      ---
+      duration_ms: 0.223525
+      type: 'test'
+      ...
+    # Subtest: requires non-empty required_monitoring_if_authorized when impact is ALLOWS_CONDITIONAL
+    ok 3 - requires non-empty required_monitoring_if_authorized when impact is ALLOWS_CONDITIONAL
+      ---
+      duration_ms: 0.229051
+      type: 'test'
+      ...
+    1..3
+ok 14 - Phase 1C.5h WP-18: Governance Boundaries & Declarative Monitoring
+  ---
+  duration_ms: 0.902491
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: Scope Containment & Context Coherence
+    # Subtest: rejects affected_scope exceeding WP-04 declared validation scope (ScopeContainmentViolationError)
+    ok 1 - rejects affected_scope exceeding WP-04 declared validation scope (ScopeContainmentViolationError)
+      ---
+      duration_ms: 1.391681
+      type: 'test'
+      ...
+    # Subtest: rejects incompatible package and context references
+    ok 2 - rejects incompatible package and context references
+      ---
+      duration_ms: 1.339105
+      type: 'test'
+      ...
+    # Subtest: rejects unrelated WP-17 conflict referencing a different package
+    ok 3 - rejects unrelated WP-17 conflict referencing a different package
+      ---
+      duration_ms: 0.276142
+      type: 'test'
+      ...
+    # Subtest: rejects automatic conversion of a resolved WP-17 conflict with zero residual uncertainty
+    ok 4 - rejects automatic conversion of a resolved WP-17 conflict with zero residual uncertainty
+      ---
+      duration_ms: 0.199175
+      type: 'test'
+      ...
+    # Subtest: rejects automatic conversion of WP-16 UNKNOWN failure without explicit residual-risk evidence
+    ok 5 - rejects automatic conversion of WP-16 UNKNOWN failure without explicit residual-risk evidence
+      ---
+      duration_ms: 0.165779
+      type: 'test'
+      ...
+    1..5
+ok 15 - Phase 1C.5h WP-18: Scope Containment & Context Coherence
+  ---
+  duration_ms: 3.697507
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: Immutability & Source Record Integrity
+    # Subtest: enforces deep immutability on emitted ValidationUncertaintyRecord
+    ok 1 - enforces deep immutability on emitted ValidationUncertaintyRecord
+      ---
+      duration_ms: 0.29175
+      type: 'test'
+      ...
+    1..1
+ok 16 - Phase 1C.5h WP-18: Immutability & Source Record Integrity
+  ---
+  duration_ms: 0.375161
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: Canonical UNCERTAIN_OF Graph Linking & Catalogue Protection
+    # Subtest: accepts canonical ValidationOutcomeRecord -> ValidationUncertaintyRecord UNCERTAIN_OF edge
+    ok 1 - accepts canonical ValidationOutcomeRecord -> ValidationUncertaintyRecord UNCERTAIN_OF edge
+      ---
+      duration_ms: 9.306576
+      type: 'test'
+      ...
+    # Subtest: rejects reverse UNCERTAIN_OF edge (ValidationUncertaintyRecord -> ValidationOutcomeRecord)
+    ok 2 - rejects reverse UNCERTAIN_OF edge (ValidationUncertaintyRecord -> ValidationOutcomeRecord)
+      ---
+      duration_ms: 0.590528
+      type: 'test'
+      ...
+    # Subtest: rejects illegal UNCERTAIN_OF source kinds (Package, Conflict, Failure)
+    ok 3 - rejects illegal UNCERTAIN_OF source kinds (Package, Conflict, Failure)
+      ---
+      duration_ms: 0.434081
+      type: 'test'
+      ...
+    # Subtest: confirms the relationship graph catalogue remains exactly 14 governed edge types
+    ok 4 - confirms the relationship graph catalogue remains exactly 14 governed edge types
+      ---
+      duration_ms: 0.324786
+      type: 'test'
+      ...
+    # Subtest: confirms WP-18 does not synthesize Record 17 and WP-19 artifacts are absent
+    ok 5 - confirms WP-18 does not synthesize Record 17 and WP-19 artifacts are absent
+      ---
+      duration_ms: 0.180494
+      type: 'test'
+      ...
+    1..5
+ok 17 - Phase 1C.5h WP-18: Canonical UNCERTAIN_OF Graph Linking & Catalogue Protection
+  ---
+  duration_ms: 11.176485
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h WP-18: Source Preservation, Narrow Scoping, and Downstream Protection
+    # Subtest: proves CONFLICTING_EVIDENCE produces different impacts under different severity/profiles
+    ok 1 - proves CONFLICTING_EVIDENCE produces different impacts under different severity/profiles
+      ---
+      duration_ms: 0.834604
+      type: 'test'
+      ...
+    # Subtest: proves UNKNOWN_FAILURE_CAUSE is not automatically blocking
+    ok 2 - proves UNKNOWN_FAILURE_CAUSE is not automatically blocking
+      ---
+      duration_ms: 0.503724
+      type: 'test'
+      ...
+    # Subtest: proves MISSING_EVIDENCE is not universally mapped to one impact
+    ok 3 - proves MISSING_EVIDENCE is not universally mapped to one impact
+      ---
+      duration_ms: 0.432816
+      type: 'test'
+      ...
+    # Subtest: proves source records (WP-16 Failure, WP-17 Conflict) remain completely unmodified and un-mutated
+    ok 4 - proves source records (WP-16 Failure, WP-17 Conflict) remain completely unmodified and un-mutated
+      ---
+      duration_ms: 0.665844
+      type: 'test'
+      ...
+    # Subtest: enforces narrow scoping without scope inflation (one sample rate/boundary does not inflate to all)
+    ok 5 - enforces narrow scoping without scope inflation (one sample rate/boundary does not inflate to all)
+      ---
+      duration_ms: 0.371089
+      type: 'test'
+      ...
+    # Subtest: confirms WP-18 creates zero downstream records (No Record 17, 18, 19, 20, 21, 22) and no telemetry jobs
+    ok 6 - confirms WP-18 creates zero downstream records (No Record 17, 18, 19, 20, 21, 22) and no telemetry jobs
+      ---
+      duration_ms: 1.834976
+      type: 'test'
+      ...
+    1..6
+ok 18 - Phase 1C.5h WP-18: Source Preservation, Narrow Scoping, and Downstream Protection
+  ---
+  duration_ms: 5.138351
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-09: Validation Case Engine (Record 5)
+    # Subtest: A. Record 5 Schema & Case Construction
+        # Subtest: successfully builds and parses a valid complete ValidationCase
+        ok 1 - successfully builds and parses a valid complete ValidationCase
+          ---
+          duration_ms: 8.413793
+          type: 'test'
+          ...
+        # Subtest: enforces deep-freeze immutability on built ValidationCase
+        ok 2 - enforces deep-freeze immutability on built ValidationCase
+          ---
+          duration_ms: 1.717926
+          type: 'test'
+          ...
+        1..2
+    ok 1 - A. Record 5 Schema & Case Construction
+      ---
+      duration_ms: 11.040257
+      type: 'suite'
+      ...
+    # Subtest: B. Falsifiability & Bounded Question Enforcement
+        # Subtest: rejects missing or empty validation question
+        ok 1 - rejects missing or empty validation question
+          ---
+          duration_ms: 0.871368
+          type: 'test'
+          ...
+        # Subtest: rejects questions that are too short (< 15 characters)
+        ok 2 - rejects questions that are too short (< 15 characters)
+          ---
+          duration_ms: 0.355154
+          type: 'test'
+          ...
+        # Subtest: rejects subjective, vague, and unfalsifiable questions
+        ok 3 - rejects subjective, vague, and unfalsifiable questions
+          ---
+          duration_ms: 0.717201
+          type: 'test'
+          ...
+        # Subtest: accepts bounded, explicit, and falsifiable questions
+        ok 4 - accepts bounded, explicit, and falsifiable questions
+          ---
+          duration_ms: 0.399777
+          type: 'test'
+          ...
+        1..4
+    ok 2 - B. Falsifiability & Bounded Question Enforcement
+      ---
+      duration_ms: 2.839776
+      type: 'suite'
+      ...
+    # Subtest: C. Acceptance Criteria Reference & Threshold Policy
+        # Subtest: accepts governed criteria references
+        ok 1 - accepts governed criteria references
+          ---
+          duration_ms: 0.5464
+          type: 'test'
+          ...
+        # Subtest: strictly rejects bare universal numeric thresholds (anti-hardcoded-threshold rule)
+        ok 2 - strictly rejects bare universal numeric thresholds (anti-hardcoded-threshold rule)
+          ---
+          duration_ms: 0.73636
+          type: 'test'
+          ...
+        1..2
+    ok 3 - C. Acceptance Criteria Reference & Threshold Policy
+      ---
+      duration_ms: 1.76629
+      type: 'suite'
+      ...
+    # Subtest: D. WP-04 Scope Containment Integration
+        # Subtest: accepts cases strictly within declared scope included_units
+        ok 1 - accepts cases strictly within declared scope included_units
+          ---
+          duration_ms: 1.489885
+          type: 'test'
+          ...
+        # Subtest: strictly rejects cases targeting units outside declared scope
+        ok 2 - strictly rejects cases targeting units outside declared scope
+          ---
+          duration_ms: 0.754983
+          type: 'test'
+          ...
+        # Subtest: strictly rejects cases reintroducing explicitly excluded units
+        ok 3 - strictly rejects cases reintroducing explicitly excluded units
+          ---
+          duration_ms: 0.825708
+          type: 'test'
+          ...
+        1..3
+    ok 4 - D. WP-04 Scope Containment Integration
+      ---
+      duration_ms: 3.398888
+      type: 'suite'
+      ...
+    # Subtest: E. WP-08 Fixture Eligibility & Scope Matching
+        # Subtest: accepts cases referencing valid, clean, in-scope fixtures
+        ok 1 - accepts cases referencing valid, clean, in-scope fixtures
+          ---
+          duration_ms: 1.924017
+          type: 'test'
+          ...
+        # Subtest: rejects non-existent fixture references
+        ok 2 - rejects non-existent fixture references
+          ---
+          duration_ms: 0.527056
+          type: 'test'
+          ...
+        # Subtest: rejects off-scope fixture references
+        ok 3 - rejects off-scope fixture references
+          ---
+          duration_ms: 0.636884
+          type: 'test'
+          ...
+        # Subtest: rejects contaminated or quarantined fixtures
+        ok 4 - rejects contaminated or quarantined fixtures
+          ---
+          duration_ms: 0.547672
+          type: 'test'
+          ...
+        # Subtest: rejects SUSPECT fixture references
+        ok 5 - rejects SUSPECT fixture references
+          ---
+          duration_ms: 0.496311
+          type: 'test'
+          ...
+        # Subtest: rejects SUPERSEDED fixture references for new case composition
+        ok 6 - rejects SUPERSEDED fixture references for new case composition
+          ---
+          duration_ms: 0.495426
+          type: 'test'
+          ...
+        # Subtest: rejects RETIRED fixture references
+        ok 7 - rejects RETIRED fixture references
+          ---
+          duration_ms: 0.54294
+          type: 'test'
+          ...
+        # Subtest: permits non-fixture cases when profile/question does not require fixtures (e.g. Structural Schema)
+        ok 8 - permits non-fixture cases when profile/question does not require fixtures (e.g. Structural Schema)
+          ---
+          duration_ms: 1.068643
+          type: 'test'
+          ...
+        1..8
+    ok 5 - E. WP-08 Fixture Eligibility & Scope Matching
+      ---
+      duration_ms: 6.782808
+      type: 'suite'
+      ...
+    # Subtest: F. Profile Dimension & Version Binding Governance
+        # Subtest: rejects unknown test profile dimensions
+        ok 1 - rejects unknown test profile dimensions
+          ---
+          duration_ms: 0.636009
+          type: 'test'
+          ...
+        # Subtest: rejects version binding mismatch when binding scope does not match active scope
+        ok 2 - rejects version binding mismatch when binding scope does not match active scope
+          ---
+          duration_ms: 0.44946
+          type: 'test'
+          ...
+        1..2
+    ok 6 - F. Profile Dimension & Version Binding Governance
+      ---
+      duration_ms: 1.383796
+      type: 'suite'
+      ...
+    # Subtest: G. Completeness & Required Field Guards
+        # Subtest: validates completeness using validateCaseCompleteness helper
+        ok 1 - validates completeness using validateCaseCompleteness helper
+          ---
+          duration_ms: 2.101623
+          type: 'test'
+          ...
+        1..1
+    ok 7 - G. Completeness & Required Field Guards
+      ---
+      duration_ms: 2.322993
+      type: 'suite'
+      ...
+    1..7
+ok 19 - Phase 1C.5h — WP-09: Validation Case Engine (Record 5)
+  ---
+  duration_ms: 31.304861
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-10: Sandboxed Validation Execution Harness & Audio Runner (Record 9)
+    # Subtest: A. Record 9 Schema & Validation Execution Parity
+        # Subtest: successfully executes a valid case, invokes candidate and baseline adapter paths, and produces sealed Record 9
+        ok 1 - successfully executes a valid case, invokes candidate and baseline adapter paths, and produces sealed Record 9
+          ---
+          duration_ms: 114.782172
+          type: 'test'
+          ...
+        # Subtest: attaches explicit caller trace_ref when provided for causal auditability
+        ok 2 - attaches explicit caller trace_ref when provided for causal auditability
+          ---
+          duration_ms: 16.527728
+          type: 'test'
+          ...
+        1..2
+    ok 1 - A. Record 9 Schema & Validation Execution Parity
+      ---
+      duration_ms: 132.347882
+      type: 'suite'
+      ...
+    # Subtest: B. Canonical TESTED_WITH Edge Management
+        # Subtest: creates exact canonical TESTED_WITH edge (ValidationExecutionRecord -> ValidationFixtureRecord)
+        ok 1 - creates exact canonical TESTED_WITH edge (ValidationExecutionRecord -> ValidationFixtureRecord)
+          ---
+          duration_ms: 49.395183
+          type: 'test'
+          ...
+        # Subtest: creates zero TESTED_WITH edges when case does not require or use a fixture
+        ok 2 - creates zero TESTED_WITH edges when case does not require or use a fixture
+          ---
+          duration_ms: 1.249913
+          type: 'test'
+          ...
+        1..2
+    ok 2 - B. Canonical TESTED_WITH Edge Management
+      ---
+      duration_ms: 50.981283
+      type: 'suite'
+      ...
+    # Subtest: C. Immediate Pre-Execution Fixture Revalidation & Fail-Closed Guards
+        # Subtest: fails closed immediately if fixture becomes CONTAMINATED before execution
+        ok 1 - fails closed immediately if fixture becomes CONTAMINATED before execution
+          ---
+          duration_ms: 5.868924
+          type: 'test'
+          ...
+        # Subtest: fails closed immediately if fixture lifecycle state becomes INVALIDATED or SUSPECT
+        ok 2 - fails closed immediately if fixture lifecycle state becomes INVALIDATED or SUSPECT
+          ---
+          duration_ms: 4.804662
+          type: 'test'
+          ...
+        # Subtest: fails closed if version binding scope does not match active scope
+        ok 3 - fails closed if version binding scope does not match active scope
+          ---
+          duration_ms: 0.906393
+          type: 'test'
+          ...
+        # Subtest: fails closed if case does not belong to provided package
+        ok 4 - fails closed if case does not belong to provided package
+          ---
+          duration_ms: 0.860126
+          type: 'test'
+          ...
+        1..4
+    ok 3 - C. Immediate Pre-Execution Fixture Revalidation & Fail-Closed Guards
+      ---
+      duration_ms: 12.83091
+      type: 'suite'
+      ...
+    # Subtest: D. Sandbox Crash Isolation & Render Failure Containment
+        # Subtest: survives adapter / candidate render crash without crashing the parent harness
+        ok 1 - survives adapter / candidate render crash without crashing the parent harness
+          ---
+          duration_ms: 2.571746
+          type: 'test'
+          ...
+        # Subtest: survives baseline render crash and reports FAILED outcome cleanly
+        ok 2 - survives baseline render crash and reports FAILED outcome cleanly
+          ---
+          duration_ms: 1.661215
+          type: 'test'
+          ...
+        1..2
+    ok 4 - D. Sandbox Crash Isolation & Render Failure Containment
+      ---
+      duration_ms: 4.597413
+      type: 'suite'
+      ...
+    # Subtest: E. Timeout & Operational Budget Governance
+        # Subtest: terminates execution when runtime exceeds operational budget reference and records ABORTED outcome
+        ok 1 - terminates execution when runtime exceeds operational budget reference and records ABORTED outcome
+          ---
+          duration_ms: 73.992294
+          type: 'test'
+          ...
+        1..1
+    ok 5 - E. Timeout & Operational Budget Governance
+      ---
+      duration_ms: 74.470374
+      type: 'suite'
+      ...
+    # Subtest: F. Governed Retest & Canonical SUPERSEDES_VALIDATION Edge
+        # Subtest: creates no SUPERSEDES_VALIDATION edge on standard first-run execution
+        ok 1 - creates no SUPERSEDES_VALIDATION edge on standard first-run execution
+          ---
+          duration_ms: 1.93462
+          type: 'test'
+          ...
+        # Subtest: creates exact canonical SUPERSEDES_VALIDATION edge (new execution -> prior execution) on governed retest
+        ok 2 - creates exact canonical SUPERSEDES_VALIDATION edge (new execution -> prior execution) on governed retest
+          ---
+          duration_ms: 7.815436
+          type: 'test'
+          ...
+        # Subtest: rejects invalid or self-superseding relationships
+        ok 3 - rejects invalid or self-superseding relationships
+          ---
+          duration_ms: 0.74569
+          type: 'test'
+          ...
+        1..3
+    ok 6 - F. Governed Retest & Canonical SUPERSEDES_VALIDATION Edge
+      ---
+      duration_ms: 11.354685
+      type: 'suite'
+      ...
+    # Subtest: G. Production Protection & Graph Invariants
+        # Subtest: ensures zero production mutation is permitted in validation sandbox
+        ok 1 - ensures zero production mutation is permitted in validation sandbox
+          ---
+          duration_ms: 0.469961
+          type: 'test'
+          ...
+        # Subtest: verifies graph catalogue remains at exactly 14 governed edge types and zero Record 10+ evidence is created
+        ok 2 - verifies graph catalogue remains at exactly 14 governed edge types and zero Record 10+ evidence is created
+          ---
+          duration_ms: 1.091982
+          type: 'test'
+          ...
+        1..2
+    ok 7 - G. Production Protection & Graph Invariants
+      ---
+      duration_ms: 1.715963
+      type: 'suite'
+      ...
+    1..7
+ok 20 - Phase 1C.5h — WP-10: Sandboxed Validation Execution Harness & Audio Runner (Record 9)
+  ---
+  duration_ms: 289.577084
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-08: Golden Acoustic Fixture Corpus & Benchmark Stem Management (Record 8)
+    # Subtest: 1. Strict Taxonomy Compliance (Eight Frozen Fixture Classes)
+        # Subtest: recognizes all eight frozen Fixture Classes in enums and manifest
+        ok 1 - recognizes all eight frozen Fixture Classes in enums and manifest
+          ---
+          duration_ms: 1.118063
+          type: 'test'
+          ...
+        # Subtest: ensures the MVVI bootstrap corpus covers all eight frozen Fixture Classes
+        ok 2 - ensures the MVVI bootstrap corpus covers all eight frozen Fixture Classes
+          ---
+          duration_ms: 59.997905
+          type: 'test'
+          ...
+        # Subtest: rejects non-governed fixture classes at schema validation level
+        ok 3 - rejects non-governed fixture classes at schema validation level
+          ---
+          duration_ms: 1.345314
+          type: 'test'
+          ...
+        1..3
+    ok 1 - 1. Strict Taxonomy Compliance (Eight Frozen Fixture Classes)
+      ---
+      duration_ms: 63.512681
+      type: 'suite'
+      ...
+    # Subtest: 2. Canonical Enum Parity for Record 8
+        # Subtest: validates contamination_status: CLEAN | CONTAMINATED | SUSPECT
+        ok 1 - validates contamination_status: CLEAN | CONTAMINATED | SUSPECT
+          ---
+          duration_ms: 0.326698
+          type: 'test'
+          ...
+        # Subtest: validates lifecycle_status: ACTIVE | SUPERSEDED | INVALIDATED | RETIRED
+        ok 2 - validates lifecycle_status: ACTIVE | SUPERSEDED | INVALIDATED | RETIRED
+          ---
+          duration_ms: 0.285031
+          type: 'test'
+          ...
+        # Subtest: rejects invalid contamination or lifecycle statuses
+        ok 3 - rejects invalid contamination or lifecycle statuses
+          ---
+          duration_ms: 0.452501
+          type: 'test'
+          ...
+        1..3
+    ok 2 - 2. Canonical Enum Parity for Record 8
+      ---
+      duration_ms: 1.501875
+      type: 'suite'
+      ...
+    # Subtest: 3. Declared Applicability Scope Enforcement (Prohibiting Off-Label Use)
+        # Subtest: requires explicit, non-empty declared_applicability_scope on registration
+        ok 1 - requires explicit, non-empty declared_applicability_scope on registration
+          ---
+          duration_ms: 0.517996
+          type: 'test'
+          ...
+        # Subtest: matches applicable fixtures within declared scope
+        ok 2 - matches applicable fixtures within declared scope
+          ---
+          duration_ms: 0.465792
+          type: 'test'
+          ...
+        # Subtest: rejects off-scope fixture use with explicit diagnostic reason
+        ok 3 - rejects off-scope fixture use with explicit diagnostic reason
+          ---
+          duration_ms: 0.358986
+          type: 'test'
+          ...
+        1..3
+    ok 3 - 3. Declared Applicability Scope Enforcement (Prohibiting Off-Label Use)
+      ---
+      duration_ms: 2.063887
+      type: 'suite'
+      ...
+    # Subtest: 4. Uncompressed PCM Audio Verification & Corrupt Header Rejection
+        # Subtest: successfully validates valid 16-bit, 24-bit, and 32-bit integer PCM WAV buffers
+        ok 1 - successfully validates valid 16-bit, 24-bit, and 32-bit integer PCM WAV buffers
+          ---
+          duration_ms: 19.812852
+          type: 'test'
+          ...
+        # Subtest: strictly rejects IEEE Float audio format (0x0003) under frozen PCM contract
+        ok 2 - strictly rejects IEEE Float audio format (0x0003) under frozen PCM contract
+          ---
+          duration_ms: 1.995815
+          type: 'test'
+          ...
+        # Subtest: rejects truncated buffer (< 44 bytes)
+        ok 3 - rejects truncated buffer (< 44 bytes)
+          ---
+          duration_ms: 0.206918
+          type: 'test'
+          ...
+        # Subtest: rejects corrupt RIFF magic bytes
+        ok 4 - rejects corrupt RIFF magic bytes
+          ---
+          duration_ms: 1.825117
+          type: 'test'
+          ...
+        # Subtest: rejects corrupt WAVE marker
+        ok 5 - rejects corrupt WAVE marker
+          ---
+          duration_ms: 1.920865
+          type: 'test'
+          ...
+        # Subtest: rejects unsupported non-PCM compressed audio format codes
+        ok 6 - rejects unsupported non-PCM compressed audio format codes
+          ---
+          duration_ms: 1.882331
+          type: 'test'
+          ...
+        # Subtest: rejects corrupt WAV header where data chunk size exceeds physical buffer
+        ok 7 - rejects corrupt WAV header where data chunk size exceeds physical buffer
+          ---
+          duration_ms: 2.07247
+          type: 'test'
+          ...
+        1..7
+    ok 4 - 4. Uncompressed PCM Audio Verification & Corrupt Header Rejection
+      ---
+      duration_ms: 30.179635
+      type: 'suite'
+      ...
+    # Subtest: 5. Modified Audio Bits & Tamper-Evident Bit Integrity (Condition 01)
+        # Subtest: computes deterministic SHA-256 over raw binary audio payload
+        ok 1 - computes deterministic SHA-256 over raw binary audio payload
+          ---
+          duration_ms: 90.725078
+          type: 'test'
+          ...
+        # Subtest: verifies bit integrity when payload matches reference
+        ok 2 - verifies bit integrity when payload matches reference
+          ---
+          duration_ms: 2.470575
+          type: 'test'
+          ...
+        # Subtest: rejects modified audio bits immediately (Condition 01: Invalid Test Fixture)
+        ok 3 - rejects modified audio bits immediately (Condition 01: Invalid Test Fixture)
+          ---
+          duration_ms: 3.110594
+          type: 'test'
+          ...
+        1..3
+    ok 5 - 5. Modified Audio Bits & Tamper-Evident Bit Integrity (Condition 01)
+      ---
+      duration_ms: 96.558019
+      type: 'suite'
+      ...
+    # Subtest: 6. Provenance Completeness Audit (Condition 02)
+        # Subtest: passes for fixtures with complete capture provenance
+        ok 1 - passes for fixtures with complete capture provenance
+          ---
+          duration_ms: 0.176997
+          type: 'test'
+          ...
+        # Subtest: detects missing provenance fields and flags Condition 02
+        ok 2 - detects missing provenance fields and flags Condition 02
+          ---
+          duration_ms: 0.244505
+          type: 'test'
+          ...
+        1..2
+    ok 6 - 6. Provenance Completeness Audit (Condition 02)
+      ---
+      duration_ms: 0.566182
+      type: 'suite'
+      ...
+    # Subtest: 7. Calibration Specification Audit (Condition 03)
+        # Subtest: verifies non-empty calibration_spec on fixtures
+        ok 1 - verifies non-empty calibration_spec on fixtures
+          ---
+          duration_ms: 0.169104
+          type: 'test'
+          ...
+        # Subtest: rejects fixture with empty calibration spec
+        ok 2 - rejects fixture with empty calibration spec
+          ---
+          duration_ms: 0.182328
+          type: 'test'
+          ...
+        1..2
+    ok 7 - 7. Calibration Specification Audit (Condition 03)
+      ---
+      duration_ms: 0.462734
+      type: 'suite'
+      ...
+    # Subtest: 8. Anti-Contamination Protocol & Invariant 4
+        # Subtest: quarantines contaminated fixture and mandates full revalidation of prior passes
+        ok 1 - quarantines contaminated fixture and mandates full revalidation of prior passes
+          ---
+          duration_ms: 0.781651
+          type: 'test'
+          ...
+        # Subtest: quarantines suspect fixture from active testing
+        ok 2 - quarantines suspect fixture from active testing
+          ---
+          duration_ms: 0.285989
+          type: 'test'
+          ...
+        # Subtest: enforces Invariant 4: prohibits silent overwriting of a sealed fixture version
+        ok 3 - enforces Invariant 4: prohibits silent overwriting of a sealed fixture version
+          ---
+          duration_ms: 0.633785
+          type: 'test'
+          ...
+        1..3
+    ok 8 - 8. Anti-Contamination Protocol & Invariant 4
+      ---
+      duration_ms: 1.920257
+      type: 'suite'
+      ...
+    # Subtest: 9. Governed Lifecycle Management (ACTIVE -> SUPERSEDED -> RETIRED)
+        # Subtest: successfully supersedes an active fixture with an approved successor
+        ok 1 - successfully supersedes an active fixture with an approved successor
+          ---
+          duration_ms: 0.395865
+          type: 'test'
+          ...
+        # Subtest: retires a fixture to immutable audit archive
+        ok 2 - retires a fixture to immutable audit archive
+          ---
+          duration_ms: 0.447854
+          type: 'test'
+          ...
+        1..2
+    ok 9 - 9. Governed Lifecycle Management (ACTIVE -> SUPERSEDED -> RETIRED)
+      ---
+      duration_ms: 1.05544
+      type: 'suite'
+      ...
+    # Subtest: 10. Fixture Manifest Verification CLI & Tool
+        # Subtest: verifies the default initial illustrative MVVI bootstrap manifest cleanly
+        ok 1 - verifies the default initial illustrative MVVI bootstrap manifest cleanly
+          ---
+          duration_ms: 1.094695
+          type: 'test'
+          ...
+        # Subtest: detects manifest failure when a required fixture class is omitted
+        ok 2 - detects manifest failure when a required fixture class is omitted
+          ---
+          duration_ms: 0.282815
+          type: 'test'
+          ...
+        1..2
+    ok 10 - 10. Fixture Manifest Verification CLI & Tool
+      ---
+      duration_ms: 1.532556
+      type: 'suite'
+      ...
+    # Subtest: 11. Defect 1 Correction: Removal of Automatic Golden Bootstrap Corpus
+        # Subtest: starts with exactly zero production golden fixtures when default constructor is called
+        ok 1 - starts with exactly zero production golden fixtures when default constructor is called
+          ---
+          duration_ms: 0.275606
+          type: 'test'
+          ...
+        # Subtest: ensures illustrative bootstrap records are not auto-loaded into production runtime
+        ok 2 - ensures illustrative bootstrap records are not auto-loaded into production runtime
+          ---
+          duration_ms: 0.159003
+          type: 'test'
+          ...
+        # Subtest: requires explicit test-only invocation to populate synthetic test corpus
+        ok 3 - requires explicit test-only invocation to populate synthetic test corpus
+          ---
+          duration_ms: 0.216321
+          type: 'test'
+          ...
+        # Subtest: verifies no mock fixture silently qualifies as production golden evidence
+        ok 4 - verifies no mock fixture silently qualifies as production golden evidence
+          ---
+          duration_ms: 0.150638
+          type: 'test'
+          ...
+        1..4
+    ok 11 - 11. Defect 1 Correction: Removal of Automatic Golden Bootstrap Corpus
+      ---
+      duration_ms: 0.984829
+      type: 'suite'
+      ...
+    # Subtest: 12. Defect 2 Correction: Authoritative Payload Integrity Routing Through IntegrityProvider
+        # Subtest: routes raw binary audio payload hashing through IntegrityProvider without bypass
+        ok 1 - routes raw binary audio payload hashing through IntegrityProvider without bypass
+          ---
+          duration_ms: 1.543921
+          type: 'test'
+          ...
+        # Subtest: verifies CanonicalSha256IntegrityProvider handles both binary Uint8Array and string uniformly
+        ok 2 - verifies CanonicalSha256IntegrityProvider handles both binary Uint8Array and string uniformly
+          ---
+          duration_ms: 0.538875
+          type: 'test'
+          ...
+        # Subtest: verifies deterministic byte serialization adapter works when custom provider only accepts strings
+        ok 3 - verifies deterministic byte serialization adapter works when custom provider only accepts strings
+          ---
+          duration_ms: 0.288337
+          type: 'test'
+          ...
+        # Subtest: ensures zero bypass: rejecting provider verifyDigest unconditionally fails verification even with matching digest strings
+        ok 4 - ensures zero bypass: rejecting provider verifyDigest unconditionally fails verification even with matching digest strings
+          ---
+          duration_ms: 0.808374
+          type: 'test'
+          ...
+        1..4
+    ok 12 - 12. Defect 2 Correction: Authoritative Payload Integrity Routing Through IntegrityProvider
+      ---
+      duration_ms: 3.378922
+      type: 'suite'
+      ...
+    # Subtest: 13. Defect 3 Correction: Governed Read-Only Payload Storage Boundary
+        # Subtest: enforces two-phase payload store: writable during provisioning, strictly immutable once sealed
+        ok 1 - enforces two-phase payload store: writable during provisioning, strictly immutable once sealed
+          ---
+          duration_ms: 1.899232
+          type: 'test'
+          ...
+        # Subtest: verifies defensive copying: mutating retrieved payload buffer does not corrupt internal storage
+        ok 2 - verifies defensive copying: mutating retrieved payload buffer does not corrupt internal storage
+          ---
+          duration_ms: 0.147633
+          type: 'test'
+          ...
+        # Subtest: confirms validation-time interface exposes only read operations without mutation APIs
+        ok 3 - confirms validation-time interface exposes only read operations without mutation APIs
+          ---
+          duration_ms: 0.213368
+          type: 'test'
+          ...
+        # Subtest: fails closed when validation operations are attempted on a non-read-only mount
+        ok 4 - fails closed when validation operations are attempted on a non-read-only mount
+          ---
+          duration_ms: 0.481504
+          type: 'test'
+          ...
+        # Subtest: rejects storePayloadBuffer mutation during active read-only validation mount
+        ok 5 - rejects storePayloadBuffer mutation during active read-only validation mount
+          ---
+          duration_ms: 0.399763
+          type: 'test'
+          ...
+        1..5
+    ok 13 - 13. Defect 3 Correction: Governed Read-Only Payload Storage Boundary
+      ---
+      duration_ms: 3.354955
+      type: 'suite'
+      ...
+    # Subtest: 14. Defect 4 Correction: Strict Enforcement of Uncompressed Integer PCM Contract
+        # Subtest: successfully validates valid 16-bit, 24-bit, and 32-bit integer PCM WAV buffers
+        ok 1 - successfully validates valid 16-bit, 24-bit, and 32-bit integer PCM WAV buffers
+          ---
+          duration_ms: 1.076974
+          type: 'test'
+          ...
+        # Subtest: strictly rejects IEEE Float audio format (0x0003) under frozen PCM contract
+        ok 2 - strictly rejects IEEE Float audio format (0x0003) under frozen PCM contract
+          ---
+          duration_ms: 0.339434
+          type: 'test'
+          ...
+        # Subtest: strictly rejects ADPCM format (0x0002)
+        ok 3 - strictly rejects ADPCM format (0x0002)
+          ---
+          duration_ms: 0.371803
+          type: 'test'
+          ...
+        # Subtest: strictly rejects MP3-in-WAV (0x0055) and compressed codecs
+        ok 4 - strictly rejects MP3-in-WAV (0x0055) and compressed codecs
+          ---
+          duration_ms: 0.360141
+          type: 'test'
+          ...
+        # Subtest: strictly rejects corrupt or truncated headers
+        ok 5 - strictly rejects corrupt or truncated headers
+          ---
+          duration_ms: 0.143601
+          type: 'test'
+          ...
+        1..5
+    ok 14 - 14. Defect 4 Correction: Strict Enforcement of Uncompressed Integer PCM Contract
+      ---
+      duration_ms: 2.4888
+      type: 'suite'
+      ...
+    # Subtest: 15. Defect 5 Correction: Audio Validation Applied Only To Audio Fixture Classes
+        # Subtest: registers and stores Approved Preset (non-audio) payload without WAV validation
+        ok 1 - registers and stores Approved Preset (non-audio) payload without WAV validation
+          ---
+          duration_ms: 0.711205
+          type: 'test'
+          ...
+        # Subtest: registers and stores Workflow & Prompt (non-audio) text/JSON payload without WAV validation
+        ok 2 - registers and stores Workflow & Prompt (non-audio) text/JSON payload without WAV validation
+          ---
+          duration_ms: 1.615135
+          type: 'test'
+          ...
+        # Subtest: still strictly enforces PCM WAV validation for audio fixture classes
+        ok 3 - still strictly enforces PCM WAV validation for audio fixture classes
+          ---
+          duration_ms: 0.500031
+          type: 'test'
+          ...
+        # Subtest: verifies non-audio fixtures still strictly enforce integrity, provenance, calibration, and applicability
+        ok 4 - verifies non-audio fixtures still strictly enforce integrity, provenance, calibration, and applicability
+          ---
+          duration_ms: 0.720545
+          type: 'test'
+          ...
+        # Subtest: verifies manifest generator assigns class-appropriate file extensions and omits audioSpec for non-audio classes
+        ok 5 - verifies manifest generator assigns class-appropriate file extensions and omits audioSpec for non-audio classes
+          ---
+          duration_ms: 47.272516
+          type: 'test'
+          ...
+        1..5
+    ok 15 - 15. Defect 5 Correction: Audio Validation Applied Only To Audio Fixture Classes
+      ---
+      duration_ms: 51.094668
+      type: 'suite'
+      ...
+    # Subtest: 16. Preserved Invariant 4 & Boundary Discipline: Quarantine & Revalidation Directives
+        # Subtest: emits governed FixtureRevalidationDirective with TRIGGER-06 when fixture is contaminated
+        ok 1 - emits governed FixtureRevalidationDirective with TRIGGER-06 when fixture is contaminated
+          ---
+          duration_ms: 0.489805
+          type: 'test'
+          ...
+        # Subtest: emits governed FixtureRevalidationDirective and enforces quarantine when fixture is suspect
+        ok 2 - emits governed FixtureRevalidationDirective and enforces quarantine when fixture is suspect
+          ---
+          duration_ms: 0.169931
+          type: 'test'
+          ...
+        1..2
+    ok 16 - 16. Preserved Invariant 4 & Boundary Discipline: Quarantine & Revalidation Directives
+      ---
+      duration_ms: 0.830685
+      type: 'suite'
+      ...
+    1..16
+ok 21 - Phase 1C.5h — WP-08: Golden Acoustic Fixture Corpus & Benchmark Stem Management (Record 8)
+  ---
+  duration_ms: 263.801503
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-03: Validation Intake & Sealed Handoff Package Verification
+    # Subtest: A. Valid sealed handoff package produces INTAKE_ACCEPTED, links DERIVED_FROM_HANDOFF, and commits to ledger
+    ok 1 - A. Valid sealed handoff package produces INTAKE_ACCEPTED, links DERIVED_FROM_HANDOFF, and commits to ledger
+      ---
+      duration_ms: 24.212586
+      type: 'test'
+      ...
+    # Subtest: B. Corrupted payload or invalid integrity_ref causes INTAKE_REJECTED but preserves identifiable provenance via DERIVED_FROM_HANDOFF
+    ok 2 - B. Corrupted payload or invalid integrity_ref causes INTAKE_REJECTED but preserves identifiable provenance via DERIVED_FROM_HANDOFF
+      ---
+      duration_ms: 69.706207
+      type: 'test'
+      ...
+    # Subtest: C. Corrupted or invalid digital signature causes INTAKE_REJECTED with provenance linkage
+    ok 3 - C. Corrupted or invalid digital signature causes INTAKE_REJECTED with provenance linkage
+      ---
+      duration_ms: 7.482892
+      type: 'test'
+      ...
+    # Subtest: D. Valid signature from unauthorized signer role causes INTAKE_REJECTED with provenance linkage
+    ok 4 - D. Valid signature from unauthorized signer role causes INTAKE_REJECTED with provenance linkage
+      ---
+      duration_ms: 8.094325
+      type: 'test'
+      ...
+    # Subtest: E. Omission of ANY of the seven Phase 1C.5g gates causes INTAKE_REJECTED with provenance linkage
+    ok 5 - E. Omission of ANY of the seven Phase 1C.5g gates causes INTAKE_REJECTED with provenance linkage
+      ---
+      duration_ms: 11.251442
+      type: 'test'
+      ...
+    # Subtest: F. Renamed gate token causes INTAKE_REJECTED with provenance linkage
+    ok 6 - F. Renamed gate token causes INTAKE_REJECTED with provenance linkage
+      ---
+      duration_ms: 1.266512
+      type: 'test'
+      ...
+    # Subtest: G. Missing declared scope reference causes INTAKE_REJECTED with provenance linkage
+    ok 7 - G. Missing declared scope reference causes INTAKE_REJECTED with provenance linkage
+      ---
+      duration_ms: 1.118982
+      type: 'test'
+      ...
+    # Subtest: H. Missing frozen upstream version metadata causes INTAKE_REJECTED with provenance linkage
+    ok 8 - H. Missing frozen upstream version metadata causes INTAKE_REJECTED with provenance linkage
+      ---
+      duration_ms: 0.973321
+      type: 'test'
+      ...
+    # Subtest: I. Unidentifiable malformed envelope retains audit history but does NOT fabricate graph nodes or edges
+    ok 9 - I. Unidentifiable malformed envelope retains audit history but does NOT fabricate graph nodes or edges
+      ---
+      duration_ms: 1.938901
+      type: 'test'
+      ...
+    # Subtest: J. Strictly enforces canonical enum parity (INTAKE_ACCEPTED | INTAKE_REJECTED) with zero transient states
+    ok 10 - J. Strictly enforces canonical enum parity (INTAKE_ACCEPTED | INTAKE_REJECTED) with zero transient states
+      ---
+      duration_ms: 2.706425
+      type: 'test'
+      ...
+    # Subtest: K. Enforces exact edge direction: ValidationIntakeRecord -> MigrationHandoffPackageRecord
+    ok 11 - K. Enforces exact edge direction: ValidationIntakeRecord -> MigrationHandoffPackageRecord
+      ---
+      duration_ms: 0.798863
+      type: 'test'
+      ...
+    # Subtest: L & M. Corrected atomicity rule: Rejection terminates downstream progression but does NOT erase identifiable provenance
+    ok 12 - L & M. Corrected atomicity rule: Rejection terminates downstream progression but does NOT erase identifiable provenance
+      ---
+      duration_ms: 1.507006
+      type: 'test'
+      ...
+    # Subtest: N. Identical handoff package replay is handled idempotently without inflating records or edges
+    ok 13 - N. Identical handoff package replay is handled idempotently without inflating records or edges
+      ---
+      duration_ms: 1.516169
+      type: 'test'
+      ...
+    # Subtest: O. Resolves signer authorization through configurable policy boundary without hardcoding canonical role taxonomy
+    ok 14 - O. Resolves signer authorization through configurable policy boundary without hardcoding canonical role taxonomy
+      ---
+      duration_ms: 2.926039
+      type: 'test'
+      ...
+    # Subtest: P. Confirms absence of upstream canonical machine role enum and verifies non-governing status of local default roles
+    ok 15 - P. Confirms absence of upstream canonical machine role enum and verifies non-governing status of local default roles
+      ---
+      duration_ms: 9.531979
+      type: 'test'
+      ...
+    1..15
+ok 22 - Phase 1C.5h — WP-03: Validation Intake & Sealed Handoff Package Verification
+  ---
+  duration_ms: 205.51329
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-09: Validation Package Composition Engine (Record 6)
+    # Subtest: A. Record 6 Schema & Sealing Parity
+        # Subtest: successfully composes, seals, and validates a ValidationPackage
+        ok 1 - successfully composes, seals, and validates a ValidationPackage
+          ---
+          duration_ms: 10.715952
+          type: 'test'
+          ...
+        # Subtest: verifies downstream execution, evidence, and outcome fields remain strictly empty/unset
+        ok 2 - verifies downstream execution, evidence, and outcome fields remain strictly empty/unset
+          ---
+          duration_ms: 4.172023
+          type: 'test'
+          ...
+        1..2
+    ok 1 - A. Record 6 Schema & Sealing Parity
+      ---
+      duration_ms: 15.939203
+      type: 'suite'
+      ...
+    # Subtest: B. Package Sealing Immutability & Determinism
+        # Subtest: enforces immutability: prohibits case insertion or configuration after sealing
+        ok 1 - enforces immutability: prohibits case insertion or configuration after sealing
+          ---
+          duration_ms: 3.077373
+          type: 'test'
+          ...
+        # Subtest: derives deterministic package ID and seal for identical canonical input
+        ok 2 - derives deterministic package ID and seal for identical canonical input
+          ---
+          duration_ms: 3.992407
+          type: 'test'
+          ...
+        1..2
+    ok 2 - B. Package Sealing Immutability & Determinism
+      ---
+      duration_ms: 7.486444
+      type: 'suite'
+      ...
+    # Subtest: C. One Package = One Scope + One Binding Invariant
+        # Subtest: rejects composition when version binding does not match scope
+        ok 1 - rejects composition when version binding does not match scope
+          ---
+          duration_ms: 0.68449
+          type: 'test'
+          ...
+        # Subtest: rejects empty package (zero cases)
+        ok 2 - rejects empty package (zero cases)
+          ---
+          duration_ms: 0.369925
+          type: 'test'
+          ...
+        1..2
+    ok 3 - C. One Package = One Scope + One Binding Invariant
+      ---
+      duration_ms: 1.641775
+      type: 'suite'
+      ...
+    # Subtest: D. Mandatory Profile Coverage Matrix (Special Test: Profile Coverage)
+        # Subtest: fails package sealing if any mandatory profile is missing case coverage
+        ok 1 - fails package sealing if any mandatory profile is missing case coverage
+          ---
+          duration_ms: 2.401053
+          type: 'test'
+          ...
+        # Subtest: Special Test — Profile Coverage: reports PROFILE-12 uncovered when mandatory profiles PROFILE-01, PROFILE-03, PROFILE-12 are assigned but cases cover only PROFILE-01, PROFILE-03
+        ok 2 - Special Test — Profile Coverage: reports PROFILE-12 uncovered when mandatory profiles PROFILE-01, PROFILE-03, PROFILE-12 are assigned but cases cover only PROFILE-01, PROFILE-03
+          ---
+          duration_ms: 1.339851
+          type: 'test'
+          ...
+        # Subtest: permits sealing when an optional profile is omitted without blocking
+        ok 3 - permits sealing when an optional profile is omitted without blocking
+          ---
+          duration_ms: 2.131753
+          type: 'test'
+          ...
+        # Subtest: rejects unknown profile IDs assigned to package
+        ok 4 - rejects unknown profile IDs assigned to package
+          ---
+          duration_ms: 0.625083
+          type: 'test'
+          ...
+        1..4
+    ok 4 - D. Mandatory Profile Coverage Matrix (Special Test: Profile Coverage)
+      ---
+      duration_ms: 6.982871
+      type: 'suite'
+      ...
+    # Subtest: E. Readiness Gate Audit Integration (WP-06)
+        # Subtest: rejects package composition/sealing if readiness outcome is BLOCKED_NOT_EVALUABLE
+        ok 1 - rejects package composition/sealing if readiness outcome is BLOCKED_NOT_EVALUABLE
+          ---
+          duration_ms: 0.992908
+          type: 'test'
+          ...
+        # Subtest: handles READY_WITH_DECLARED_LIMITATIONS: rejects cases evaluating unevaluable limited scope
+        ok 2 - handles READY_WITH_DECLARED_LIMITATIONS: rejects cases evaluating unevaluable limited scope
+          ---
+          duration_ms: 0.782324
+          type: 'test'
+          ...
+        1..2
+    ok 5 - E. Readiness Gate Audit Integration (WP-06)
+      ---
+      duration_ms: 2.061883
+      type: 'suite'
+      ...
+    # Subtest: F. Fixture Revalidation Race (Special Test: Fixture Contamination Before Seal)
+        # Subtest: fails package sealing if a fixture is contaminated between case creation and package seal
+        ok 1 - fails package sealing if a fixture is contaminated between case creation and package seal
+          ---
+          duration_ms: 1.914522
+          type: 'test'
+          ...
+        1..1
+    ok 6 - F. Fixture Revalidation Race (Special Test: Fixture Contamination Before Seal)
+      ---
+      duration_ms: 2.073986
+      type: 'suite'
+      ...
+    # Subtest: G. Graph Linage & Governance Ownership (Special Tests: No TESTED_WITH, Exact 14 Edges)
+        # Subtest: registers nodes and creates VALIDATES and BOUND_TO edges with zero TESTED_WITH edges
+        ok 1 - registers nodes and creates VALIDATES and BOUND_TO edges with zero TESTED_WITH edges
+          ---
+          duration_ms: 44.894797
+          type: 'test'
+          ...
+        # Subtest: rejects invalid VALIDATES edge target entity kinds
+        ok 2 - rejects invalid VALIDATES edge target entity kinds
+          ---
+          duration_ms: 0.381779
+          type: 'test'
+          ...
+        1..2
+    ok 7 - G. Graph Linage & Governance Ownership (Special Tests: No TESTED_WITH, Exact 14 Edges)
+      ---
+      duration_ms: 45.498985
+      type: 'suite'
+      ...
+    # Subtest: H. Special Test: Absence of Execution Artifacts & Audit Replay
+        # Subtest: confirms no ValidationExecutionRecord, ObjectiveEvidenceRecord, or outcomes were created
+        ok 1 - confirms no ValidationExecutionRecord, ObjectiveEvidenceRecord, or outcomes were created
+          ---
+          duration_ms: 2.292514
+          type: 'test'
+          ...
+        # Subtest: changed package composition produces distinct deterministic identity and preserves prior package
+        ok 2 - changed package composition produces distinct deterministic identity and preserves prior package
+          ---
+          duration_ms: 7.162335
+          type: 'test'
+          ...
+        1..2
+    ok 8 - H. Special Test: Absence of Execution Artifacts & Audit Replay
+      ---
+      duration_ms: 9.643194
+      type: 'suite'
+      ...
+    1..8
+ok 23 - Phase 1C.5h — WP-09: Validation Package Composition Engine (Record 6)
+  ---
+  duration_ms: 93.090583
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-06: Pre-Validation Readiness Assessment & Phase 1C.5g Gate Auditor (Record 4)
+    # Subtest: 1. evaluates full readiness (READY) when all eight mandatory prerequisites pass and fixture coverage is 100%
+    ok 1 - 1. evaluates full readiness (READY) when all eight mandatory prerequisites pass and fixture coverage is 100%
+      ---
+      duration_ms: 70.456869
+      type: 'test'
+      ...
+    # Subtest: 2. fails with BLOCKED_NOT_EVALUABLE and lists deficiencies when Phase 1C.5g gate tokens are missing
+    ok 2 - 2. fails with BLOCKED_NOT_EVALUABLE and lists deficiencies when Phase 1C.5g gate tokens are missing
+      ---
+      duration_ms: 2.701517
+      type: 'test'
+      ...
+    # Subtest: 3. rejects renamed or invented gate names and fails closed with zero tolerance for substitution
+    ok 3 - 3. rejects renamed or invented gate names and fails closed with zero tolerance for substitution
+      ---
+      duration_ms: 1.264322
+      type: 'test'
+      ...
+    # Subtest: 4. fails prerequisite when a gate token has non-complete status (e.g. IN_PROGRESS)
+    ok 4 - 4. fails prerequisite when a gate token has non-complete status (e.g. IN_PROGRESS)
+      ---
+      duration_ms: 1.336286
+      type: 'test'
+      ...
+    # Subtest: 4a. fails prerequisite when a gate token lacks a non-empty token_id
+    ok 5 - 4a. fails prerequisite when a gate token lacks a non-empty token_id
+      ---
+      duration_ms: 2.21722
+      type: 'test'
+      ...
+    # Subtest: 4b. fails prerequisite when a gate token lacks a valid ISO 8601 UTC sealed_at timestamp
+    ok 6 - 4b. fails prerequisite when a gate token lacks a valid ISO 8601 UTC sealed_at timestamp
+      ---
+      duration_ms: 2.824605
+      type: 'test'
+      ...
+    # Subtest: 4c. accepts canonical completion status 'PASS' as well as 'COMPLETE' per signed-off WP-03
+    ok 7 - 4c. accepts canonical completion status 'PASS' as well as 'COMPLETE' per signed-off WP-03
+      ---
+      duration_ms: 1.211195
+      type: 'test'
+      ...
+    # Subtest: 4d. accepts gate tokens when authorized_by is omitted, verifying it remains optional
+    ok 8 - 4d. accepts gate tokens when authorized_by is omitted, verifying it remains optional
+      ---
+      duration_ms: 1.660048
+      type: 'test'
+      ...
+    # Subtest: 4e. individually verifies each of the seven Phase 1C.5g gates requires sealed tokens
+    ok 9 - 4e. individually verifies each of the seven Phase 1C.5g gates requires sealed tokens
+      ---
+      duration_ms: 6.180606
+      type: 'test'
+      ...
+    # Subtest: 5. fails with BLOCKED_NOT_EVALUABLE when golden fixture coverage is zero or omitted
+    ok 10 - 5. fails with BLOCKED_NOT_EVALUABLE when golden fixture coverage is zero or omitted
+      ---
+      duration_ms: 2.269869
+      type: 'test'
+      ...
+    # Subtest: 6. fails Golden Fixture Availability if fixtures are contaminated or payload integrity fails
+    ok 11 - 6. fails Golden Fixture Availability if fixtures are contaminated or payload integrity fails
+      ---
+      duration_ms: 1.843489
+      type: 'test'
+      ...
+    # Subtest: 7. produces READY_WITH_DECLARED_LIMITATIONS with explicit limitation notes for partial fixture coverage
+    ok 12 - 7. produces READY_WITH_DECLARED_LIMITATIONS with explicit limitation notes for partial fixture coverage
+      ---
+      duration_ms: 2.511576
+      type: 'test'
+      ...
+    # Subtest: 7a. verifies arbitrary limitation notes do not alter READY outcome when all prerequisites pass and fixture coverage is 100%
+    ok 13 - 7a. verifies arbitrary limitation notes do not alter READY outcome when all prerequisites pass and fixture coverage is 100%
+      ---
+      duration_ms: 1.061997
+      type: 'test'
+      ...
+    # Subtest: 8. fails Execution Environment Stability on host/platform version mismatch or instability
+    ok 14 - 8. fails Execution Environment Stability on host/platform version mismatch or instability
+      ---
+      duration_ms: 1.832492
+      type: 'test'
+      ...
+    # Subtest: 9. fails Traceability Pipeline Active prerequisite when Phase 1C.5f RunTrace recorder is inactive
+    ok 15 - 9. fails Traceability Pipeline Active prerequisite when Phase 1C.5f RunTrace recorder is inactive
+      ---
+      duration_ms: 59.292611
+      type: 'test'
+      ...
+    # Subtest: 10. fails Comparability Verified prerequisite if harnesses are uncalibrated or discrepant
+    ok 16 - 10. fails Comparability Verified prerequisite if harnesses are uncalibrated or discrepant
+      ---
+      duration_ms: 2.789825
+      type: 'test'
+      ...
+    # Subtest: 11. fails Rollback Staging Verified prerequisite if PATH-ROLLBACK is unconfigured or unverified
+    ok 17 - 11. fails Rollback Staging Verified prerequisite if PATH-ROLLBACK is unconfigured or unverified
+      ---
+      duration_ms: 1.298669
+      type: 'test'
+      ...
+    # Subtest: 12. marks Absence of Unresolved Upstream Blockers as BLOCKED when defects or quarantines exist
+    ok 18 - 12. marks Absence of Unresolved Upstream Blockers as BLOCKED when defects or quarantines exist
+      ---
+      duration_ms: 1.384534
+      type: 'test'
+      ...
+    # Subtest: 12a. blocks readiness when an active blocker affects an included scoped candidate unit
+    ok 19 - 12a. blocks readiness when an active blocker affects an included scoped candidate unit
+      ---
+      duration_ms: 1.466228
+      type: 'test'
+      ...
+    # Subtest: 12b. does NOT block readiness when a blocker affects only explicitly excluded units
+    ok 20 - 12b. does NOT block readiness when a blocker affects only explicitly excluded units
+      ---
+      duration_ms: 1.326564
+      type: 'test'
+      ...
+    # Subtest: 12c. does NOT block readiness when a blocker affects candidate units outside declared scope
+    ok 21 - 12c. does NOT block readiness when a blocker affects candidate units outside declared scope
+      ---
+      duration_ms: 1.202466
+      type: 'test'
+      ...
+    # Subtest: 12d. blocks readiness when an active blocker is explicitly marked global
+    ok 22 - 12d. blocks readiness when an active blocker is explicitly marked global
+      ---
+      duration_ms: 1.09615
+      type: 'test'
+      ...
+    # Subtest: 12e. fails closed with BLOCKED status when upstream blocker readiness evidence is omitted
+    ok 23 - 12e. fails closed with BLOCKED status when upstream blocker readiness evidence is omitted
+      ---
+      duration_ms: 0.745065
+      type: 'test'
+      ...
+    # Subtest: 13. fails Handoff Integrity when intake was rejected or package integrity reference mismatches
+    ok 24 - 13. fails Handoff Integrity when intake was rejected or package integrity reference mismatches
+      ---
+      duration_ms: 1.436296
+      type: 'test'
+      ...
+    # Subtest: 14. produces deterministic readiness_id and enforces deep-freeze immutability on Record 4
+    ok 25 - 14. produces deterministic readiness_id and enforces deep-freeze immutability on Record 4
+      ---
+      duration_ms: 1.130286
+      type: 'test'
+      ...
+    # Subtest: 14a. derives readiness_id using full deterministic state digest without truncation
+    ok 26 - 14a. derives readiness_id using full deterministic state digest without truncation
+      ---
+      duration_ms: 0.650184
+      type: 'test'
+      ...
+    # Subtest: 14b. preserves immutable historical blocked assessment when reassessment becomes READY
+    ok 27 - 14b. preserves immutable historical blocked assessment when reassessment becomes READY
+      ---
+      duration_ms: 2.693222
+      type: 'test'
+      ...
+    # Subtest: 14c. replaying identical readiness state is idempotent and creates zero duplicate ledger records
+    ok 28 - 14c. replaying identical readiness state is idempotent and creates zero duplicate ledger records
+      ---
+      duration_ms: 1.991477
+      type: 'test'
+      ...
+    # Subtest: 15. registers Record 4 node and ledger entry without expanding 14 governed edge types
+    ok 29 - 15. registers Record 4 node and ledger entry without expanding 14 governed edge types
+      ---
+      duration_ms: 2.581168
+      type: 'test'
+      ...
+    1..29
+ok 24 - Phase 1C.5h — WP-06: Pre-Validation Readiness Assessment & Phase 1C.5g Gate Auditor (Record 4)
+  ---
+  duration_ms: 186.542618
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-01: Foundational Schemas & Record Catalogue
+    # Subtest: 1. exposes all twenty-two governed record schemas in catalogue map
+    ok 1 - 1. exposes all twenty-two governed record schemas in catalogue map
+      ---
+      duration_ms: 1.55561
+      type: 'test'
+      ...
+    # Subtest: 2. Record 01 (ValidationIntakeRecord) enforces strict schema and canonical enums
+    ok 2 - 2. Record 01 (ValidationIntakeRecord) enforces strict schema and canonical enums
+      ---
+      duration_ms: 4.921694
+      type: 'test'
+      ...
+    # Subtest: 3. Record 02 (ValidationScopeRecord) enforces primary domain and scope bounds
+    ok 3 - 3. Record 02 (ValidationScopeRecord) enforces primary domain and scope bounds
+      ---
+      duration_ms: 1.3516
+      type: 'test'
+      ...
+    # Subtest: 4. Record 03 (ValidationVersionBindingRecord) enforces full architecture matrix and integrity reference
+    ok 4 - 4. Record 03 (ValidationVersionBindingRecord) enforces full architecture matrix and integrity reference
+      ---
+      duration_ms: 3.966078
+      type: 'test'
+      ...
+    # Subtest: 5. Record 04 enforces frozen readiness outcomes and prerequisite status
+    ok 5 - 5. Record 04 enforces frozen readiness outcomes and prerequisite status
+      ---
+      duration_ms: 1.783206
+      type: 'test'
+      ...
+    # Subtest: 6. Record 05 (ValidationCase) parses valid case and rejects malformed fields
+    ok 6 - 6. Record 05 (ValidationCase) parses valid case and rejects malformed fields
+      ---
+      duration_ms: 2.104812
+      type: 'test'
+      ...
+    # Subtest: 7. Record 06 (ValidationPackage) aggregates cases, fixtures, and evidence references
+    ok 7 - 7. Record 06 (ValidationPackage) aggregates cases, fixtures, and evidence references
+      ---
+      duration_ms: 1.965061
+      type: 'test'
+      ...
+    # Subtest: 8. Record 07 (TestProfileRecord) supports the 14 profile families and 8 fixture classes
+    ok 8 - 8. Record 07 (TestProfileRecord) supports the 14 profile families and 8 fixture classes
+      ---
+      duration_ms: 0.498536
+      type: 'test'
+      ...
+    # Subtest: 9. Record 08 enforces frozen contamination_status (CLEAN|CONTAMINATED|SUSPECT) and lifecycle_status
+    ok 9 - 9. Record 08 enforces frozen contamination_status (CLEAN|CONTAMINATED|SUSPECT) and lifecycle_status
+      ---
+      duration_ms: 0.932533
+      type: 'test'
+      ...
+    # Subtest: 10. Record 09 (ValidationExecutionRecord) enforces execution fields and outcome states
+    ok 10 - 10. Record 09 (ValidationExecutionRecord) enforces execution fields and outcome states
+      ---
+      duration_ms: 2.495991
+      type: 'test'
+      ...
+    # Subtest: 11. Record 10 enforces frozen tolerance_evaluation (MET | OUT_OF_TOLERANCE | BORDERLINE | NOT_APPLICABLE)
+    ok 11 - 11. Record 10 enforces frozen tolerance_evaluation (MET | OUT_OF_TOLERANCE | BORDERLINE | NOT_APPLICABLE)
+      ---
+      duration_ms: 2.061453
+      type: 'test'
+      ...
+    # Subtest: 12. Record 11 enforces perceptual methodologies, listener roles, and evaluation outcome
+    ok 12 - 12. Record 11 enforces perceptual methodologies, listener roles, and evaluation outcome
+      ---
+      duration_ms: 2.482652
+      type: 'test'
+      ...
+    # Subtest: 13. Record 12 enforces exact evaluator personas, task completion statuses, and musical fitness verdicts
+    ok 13 - 13. Record 12 enforces exact evaluator personas, task completion statuses, and musical fitness verdicts
+      ---
+      duration_ms: 2.334148
+      type: 'test'
+      ...
+    # Subtest: 14. Record 13 strictly enforces persisted enum INTENTIONAL_CORRECTION | NEUTRAL | GENUINE_REGRESSION | UNRESOLVED and REJECTS long-form labels
+    ok 14 - 14. Record 13 strictly enforces persisted enum INTENTIONAL_CORRECTION | NEUTRAL | GENUINE_REGRESSION | UNRESOLVED and REJECTS long-form labels
+      ---
+      duration_ms: 5.72218
+      type: 'test'
+      ...
+    # Subtest: 15. Record 14 enforces root-layer attribution classes and confidence
+    ok 15 - 15. Record 14 enforces root-layer attribution classes and confidence
+      ---
+      duration_ms: 2.1755
+      type: 'test'
+      ...
+    # Subtest: 16. Record 15 preserves contradictory evidence and requires >= 2 competing evidence refs
+    ok 16 - 16. Record 15 preserves contradictory evidence and requires >= 2 competing evidence refs
+      ---
+      duration_ms: 1.191816
+      type: 'test'
+      ...
+    # Subtest: 17. Record 16 logs preserved uncertainty and Gate 8 impact
+    ok 17 - 17. Record 16 logs preserved uncertainty and Gate 8 impact
+      ---
+      duration_ms: 0.98698
+      type: 'test'
+      ...
+    # Subtest: 18. Record 17 enforces outcome classes (PASS|FAIL|BLOCKED|CONDITIONAL) and strictly REJECTS INVALIDATED
+    ok 18 - 18. Record 17 enforces outcome classes (PASS|FAIL|BLOCKED|CONDITIONAL) and strictly REJECTS INVALIDATED
+      ---
+      duration_ms: 1.884794
+      type: 'test'
+      ...
+    # Subtest: 19. Record 18 enforces the 4 canonical required actions and 10 trigger sources
+    ok 19 - 19. Record 18 enforces the 4 canonical required actions and 10 trigger sources
+      ---
+      duration_ms: 1.058171
+      type: 'test'
+      ...
+    # Subtest: 20. Record 19 parses retest plan and preserves evidence lineage
+    ok 20 - 20. Record 19 parses retest plan and preserves evidence lineage
+      ---
+      duration_ms: 0.873332
+      type: 'test'
+      ...
+    # Subtest: 21. Record 20 enforces exact four-pillar readiness values (SATISFIED|DEFICIENT|INCONCLUSIVE)
+    ok 21 - 21. Record 20 enforces exact four-pillar readiness values (SATISFIED|DEFICIENT|INCONCLUSIVE)
+      ---
+      duration_ms: 1.446071
+      type: 'test'
+      ...
+    # Subtest: 22. Record 21 strictly separates decision outcome from governance status
+    ok 22 - 22. Record 21 strictly separates decision outcome from governance status
+      ---
+      duration_ms: 1.725227
+      type: 'test'
+      ...
+    # Subtest: 23. Record 22 strictly REJECTS ACTIVE as new_governance_status and accepts only SUSPENDED|RESTRICTED|WITHDRAWN|SUPERSEDED
+    ok 23 - 23. Record 22 strictly REJECTS ACTIVE as new_governance_status and accepts only SUSPENDED|RESTRICTED|WITHDRAWN|SUPERSEDED
+      ---
+      duration_ms: 1.50507
+      type: 'test'
+      ...
+    # Subtest: 24. Round-trip JSON serialization preserves valid canonical values
+    ok 24 - 24. Round-trip JSON serialization preserves valid canonical values
+      ---
+      duration_ms: 2.112345
+      type: 'test'
+      ...
+    1..24
+ok 25 - Phase 1C.5h — WP-01: Foundational Schemas & Record Catalogue
+  ---
+  duration_ms: 51.523611
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-04: Validation Scope Boundary & Inflation Protection Subsystem
+    # Subtest: A. Derives canonical ValidationScopeRecord (Record 2) from an accepted intake record
+    ok 1 - A. Derives canonical ValidationScopeRecord (Record 2) from an accepted intake record
+      ---
+      duration_ms: 9.246965
+      type: 'test'
+      ...
+    # Subtest: B. Rejects derivation if intake record is INTAKE_REJECTED
+    ok 2 - B. Rejects derivation if intake record is INTAKE_REJECTED
+      ---
+      duration_ms: 0.653856
+      type: 'test'
+      ...
+    # Subtest: C. Rejects wildcard boundary definitions with ScopeWildcardRejectionError
+    ok 3 - C. Rejects wildcard boundary definitions with ScopeWildcardRejectionError
+      ---
+      duration_ms: 0.854382
+      type: 'test'
+      ...
+    # Subtest: D. Rejects raw declared_scope text containing wildcards when no structured override is present
+    ok 4 - D. Rejects raw declared_scope text containing wildcards when no structured override is present
+      ---
+      duration_ms: 0.282309
+      type: 'test'
+      ...
+    # Subtest: E. Rejects contradictory scope definitions where a unit is in both included and excluded sets
+    ok 5 - E. Rejects contradictory scope definitions where a unit is in both included and excluded sets
+      ---
+      duration_ms: 0.383438
+      type: 'test'
+      ...
+    # Subtest: F. Rejects empty included_units
+    ok 6 - F. Rejects empty included_units
+      ---
+      duration_ms: 0.427663
+      type: 'test'
+      ...
+    # Subtest: G. Parses natural delimited text into explicit included units
+    ok 7 - G. Parses natural delimited text into explicit included units
+      ---
+      duration_ms: 0.42082
+      type: 'test'
+      ...
+    # Subtest: H. ScopeEnforcer verifies in-scope units and throws ScopeInflationError with Condition 20 on out-of-scope units
+    ok 8 - H. ScopeEnforcer verifies in-scope units and throws ScopeInflationError with Condition 20 on out-of-scope units
+      ---
+      duration_ms: 0.809833
+      type: 'test'
+      ...
+    # Subtest: I. ScopeEnforcer intercepts out-of-scope ValidationCase and tags with Condition 20
+    ok 9 - I. ScopeEnforcer intercepts out-of-scope ValidationCase and tags with Condition 20
+      ---
+      duration_ms: 0.712775
+      type: 'test'
+      ...
+    # Subtest: J. ScopeEnforcer intercepts TestProfileRecord referencing out-of-scope gear
+    ok 10 - J. ScopeEnforcer intercepts TestProfileRecord referencing out-of-scope gear
+      ---
+      duration_ms: 0.717881
+      type: 'test'
+      ...
+    # Subtest: K. ScopeEnforcer intercepts ValidationFixtureRecord referencing out-of-scope gear
+    ok 11 - K. ScopeEnforcer intercepts ValidationFixtureRecord referencing out-of-scope gear
+      ---
+      duration_ms: 0.374014
+      type: 'test'
+      ...
+    # Subtest: L. ScopeEnforcer validates production authorization petition against Table 18 Scope Inflation Guard
+    ok 12 - L. ScopeEnforcer validates production authorization petition against Table 18 Scope Inflation Guard
+      ---
+      duration_ms: 0.533752
+      type: 'test'
+      ...
+    # Subtest: M. Preserves immutable scope identity and enforces freeze protection
+    ok 13 - M. Preserves immutable scope identity and enforces freeze protection
+      ---
+      duration_ms: 0.639356
+      type: 'test'
+      ...
+    # Subtest: N. Verifies tamper-evident audit ledger sequencing for derived ValidationScopeRecords
+    ok 14 - N. Verifies tamper-evident audit ledger sequencing for derived ValidationScopeRecords
+      ---
+      duration_ms: 3.700178
+      type: 'test'
+      ...
+    1..14
+ok 26 - Phase 1C.5h — WP-04: Validation Scope Boundary & Inflation Protection Subsystem
+  ---
+  duration_ms: 21.825165
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-07: Test Profile Template Repository & Applicability Rules Engine (Record 7)
+    # Subtest: A. repository contains exactly fourteen canonical profiles without duplicates
+    ok 1 - A. repository contains exactly fourteen canonical profiles without duplicates
+      ---
+      duration_ms: 1.886382
+      type: 'test'
+      ...
+    # Subtest: B. asserts exact Profile 01 through 14 canonical IDs and families
+    ok 2 - B. asserts exact Profile 01 through 14 canonical IDs and families
+      ---
+      duration_ms: 4.480701
+      type: 'test'
+      ...
+    # Subtest: C. verifies each profile required_analyses reflects its frozen focus from Section 13.2
+    ok 3 - C. verifies each profile required_analyses reflects its frozen focus from Section 13.2
+      ---
+      duration_ms: 0.653523
+      type: 'test'
+      ...
+    # Subtest: D. asserts target_component_class and applicability_rules match Section 13.2 / Table 05
+    ok 4 - D. asserts target_component_class and applicability_rules match Section 13.2 / Table 05
+      ---
+      duration_ms: 0.397389
+      type: 'test'
+      ...
+    # Subtest: E. validates every canonical profile strictly against WP-01 testProfileRecordSchema
+    ok 5 - E. validates every canonical profile strictly against WP-01 testProfileRecordSchema
+      ---
+      duration_ms: 0.71418
+      type: 'test'
+      ...
+    # Subtest: F. prevents mutation of returned profiles and nested arrays
+    ok 6 - F. prevents mutation of returned profiles and nested arrays
+      ---
+      duration_ms: 0.394476
+      type: 'test'
+      ...
+    # Subtest: G. supports query by ID, family, and normalized aliases without inventing profiles
+    ok 7 - G. supports query by ID, family, and normalized aliases without inventing profiles
+      ---
+      duration_ms: 0.305298
+      type: 'test'
+      ...
+    # Subtest: H. assigns mandatory profiles for every subsystem class represented in Table 05
+    ok 8 - H. assigns mandatory profiles for every subsystem class represented in Table 05
+      ---
+      duration_ms: 3.746255
+      type: 'test'
+      ...
+    # Subtest: I. verifies optional profiles remain optional where specified in Table 05
+    ok 9 - I. verifies optional profiles remain optional where specified in Table 05
+      ---
+      duration_ms: 0.740299
+      type: 'test'
+      ...
+    # Subtest: J. enforces Table 07 objective-only requirements (preset loading, safe ranges, rollback)
+    ok 10 - J. enforces Table 07 objective-only requirements (preset loading, safe ranges, rollback)
+      ---
+      duration_ms: 1.346512
+      type: 'test'
+      ...
+    # Subtest: K. enforces Table 07 perceptual-mandatory requirements (mix cut, playability, authentic tone)
+    ok 11 - K. enforces Table 07 perceptual-mandatory requirements (mix cut, playability, authentic tone)
+      ---
+      duration_ms: 0.855346
+      type: 'test'
+      ...
+    # Subtest: L. enforces Table 07 mixed cases where both objective and perceptual evidence are mandated
+    ok 12 - L. enforces Table 07 mixed cases where both objective and perceptual evidence are mandated
+      ---
+      duration_ms: 0.706756
+      type: 'test'
+      ...
+    # Subtest: M. ensures pure serialization subjects do not receive irrelevant human listening or playability profiles
+    ok 13 - M. ensures pure serialization subjects do not receive irrelevant human listening or playability profiles
+      ---
+      duration_ms: 0.300426
+      type: 'test'
+      ...
+    # Subtest: N. assigns objective acoustic profile to amplifier models and cabinet emulators
+    ok 14 - N. assigns objective acoustic profile to amplifier models and cabinet emulators
+      ---
+      duration_ms: 0.323574
+      type: 'test'
+      ...
+    # Subtest: O. assigns dynamic response profile to overdrives, compressors, and power-amp sag
+    ok 15 - O. assigns dynamic response profile to overdrives, compressors, and power-amp sag
+      ---
+      duration_ms: 0.305642
+      type: 'test'
+      ...
+    # Subtest: P. assigns perceptual listening profile to complete guitar tones and presets
+    ok 16 - P. assigns perceptual listening profile to complete guitar tones and presets
+      ---
+      duration_ms: 0.201201
+      type: 'test'
+      ...
+    # Subtest: Q. assigns playability profile where interactive real-time feel is required
+    ok 17 - Q. assigns playability profile where interactive real-time feel is required
+      ---
+      duration_ms: 0.193264
+      type: 'test'
+      ...
+    # Subtest: R. assigns mix-context profile where multitrack commercial pocket is evaluated
+    ok 18 - R. assigns mix-context profile where multitrack commercial pocket is evaluated
+      ---
+      duration_ms: 0.197305
+      type: 'test'
+      ...
+    # Subtest: S. assigns regression profile when component is migrated from legacy production heuristics
+    ok 19 - S. assigns regression profile when component is migrated from legacy production heuristics
+      ---
+      duration_ms: 0.211371
+      type: 'test'
+      ...
+    # Subtest: T. does NOT automatically assign regression profile to completely novel components
+    ok 20 - T. does NOT automatically assign regression profile to completely novel components
+      ---
+      duration_ms: 0.29403
+      type: 'test'
+      ...
+    # Subtest: U. mandates rollback profile for production-cutover candidate deployments
+    ok 21 - U. mandates rollback profile for production-cutover candidate deployments
+      ---
+      duration_ms: 0.232711
+      type: 'test'
+      ...
+    # Subtest: V. does NOT universally assign rollback profile to non-cutover internal utilities
+    ok 22 - V. does NOT universally assign rollback profile to non-cutover internal utilities
+      ---
+      duration_ms: 0.214918
+      type: 'test'
+      ...
+    # Subtest: W. assigns adversarial/edge-case profile to signal intake, exporter, and UI modules
+    ok 23 - W. assigns adversarial/edge-case profile to signal intake, exporter, and UI modules
+      ---
+      duration_ms: 0.233583
+      type: 'test'
+      ...
+    # Subtest: X. assigns traceability/governance profile to all AI Sound Engineer reasoning runs
+    ok 24 - X. assigns traceability/governance profile to all AI Sound Engineer reasoning runs
+      ---
+      duration_ms: 0.205438
+      type: 'test'
+      ...
+    # Subtest: Y. assigns user-workflow/UAT profile to full application UI and preset discovery flows
+    ok 25 - Y. assigns user-workflow/UAT profile to full application UI and preset discovery flows
+      ---
+      duration_ms: 0.298949
+      type: 'test'
+      ...
+    # Subtest: Z. fails closed and does NOT default to all fourteen profiles for unknown component class
+    ok 26 - Z. fails closed and does NOT default to all fourteen profiles for unknown component class
+      ---
+      duration_ms: 0.624208
+      type: 'test'
+      ...
+    # Subtest: AA. refuses arbitrary request for universal profile assignment
+    ok 27 - AA. refuses arbitrary request for universal profile assignment
+      ---
+      duration_ms: 0.501801
+      type: 'test'
+      ...
+    # Subtest: AB. prevents profile assignment from widening scope when unit is out of scope or excluded
+    ok 28 - AB. prevents profile assignment from widening scope when unit is out of scope or excluded
+      ---
+      duration_ms: 1.191819
+      type: 'test'
+      ...
+    # Subtest: AC. produces identical ordered profile output on equivalent input
+    ok 29 - AC. produces identical ordered profile output on equivalent input
+      ---
+      duration_ms: 0.600506
+      type: 'test'
+      ...
+    # Subtest: AD. verifies all profile templates use governed tolerance reference strings rather than universal numeric thresholds
+    ok 30 - AD. verifies all profile templates use governed tolerance reference strings rather than universal numeric thresholds
+      ---
+      duration_ms: 0.58071
+      type: 'test'
+      ...
+    # Subtest: AE. registers Record 7 nodes without inventing profile edges, preserving exactly 14 governed edge types
+    ok 31 - AE. registers Record 7 nodes without inventing profile edges, preserving exactly 14 governed edge types
+      ---
+      duration_ms: 0.853031
+      type: 'test'
+      ...
+    1..31
+ok 27 - Phase 1C.5h — WP-07: Test Profile Template Repository & Applicability Rules Engine (Record 7)
+  ---
+  duration_ms: 26.644446
+  type: 'suite'
+  ...
+# Subtest: Phase 1C.5h — WP-05: Strict Version Binding Subsystem (Record 3)
+    # Subtest: A. derives canonical binding_id solely from governed state and ignores arbitrary caller identity
+    ok 1 - A. derives canonical binding_id solely from governed state and ignores arbitrary caller identity
+      ---
+      duration_ms: 14.406948
+      type: 'test'
+      ...
+    # Subtest: B. produces distinct full-state binding_id and appends new ledger entry when runtime version changes
+    ok 2 - B. produces distinct full-state binding_id and appends new ledger entry when runtime version changes
+      ---
+      duration_ms: 16.323104
+      type: 'test'
+      ...
+    # Subtest: C. guarantees cross-scope isolation: same version dependencies with different scopes produce distinct bindings
+    ok 3 - C. guarantees cross-scope isolation: same version dependencies with different scopes produce distinct bindings
+      ---
+      duration_ms: 38.120997
+      type: 'test'
+      ...
+    # Subtest: D. derives binding_id from the complete 64-character SHA-256 version-state digest without truncation
+    ok 4 - D. derives binding_id from the complete 64-character SHA-256 version-state digest without truncation
+      ---
+      duration_ms: 1.505333
+      type: 'test'
+      ...
+    # Subtest: E. ensures distinct version states cannot collide or be equated even if a hypothetical prefix matches
+    ok 5 - E. ensures distinct version states cannot collide or be equated even if a hypothetical prefix matches
+      ---
+      duration_ms: 1.696333
+      type: 'test'
+      ...
+    # Subtest: F. fails closed with MissingDependencyError when created without authoritative architecture integrity references
+    ok 6 - F. fails closed with MissingDependencyError when created without authoritative architecture integrity references
+      ---
+      duration_ms: 0.717648
+      type: 'test'
+      ...
+    # Subtest: G. independently requires authoritative integrity_ref for all nine architecture specifications
+    ok 7 - G. independently requires authoritative integrity_ref for all nine architecture specifications
+      ---
+      duration_ms: 0.92898
+      type: 'test'
+      ...
+    # Subtest: H. verifies synthetic integrity refs originate exclusively from test fixtures and are not production defaults
+    ok 8 - H. verifies synthetic integrity refs originate exclusively from test fixtures and are not production defaults
+      ---
+      duration_ms: 0.467061
+      type: 'test'
+      ...
+    # Subtest: I. injects nine distinct authoritative integrity references and verifies exact preservation in persisted Record 3
+    ok 9 - I. injects nine distinct authoritative integrity references and verifies exact preservation in persisted Record 3
+      ---
+      duration_ms: 1.627243
+      type: 'test'
+      ...
+    # Subtest: J. changing one supplied architecture integrity ref produces new version-state digest, binding_id, and composite digest
+    ok 10 - J. changing one supplied architecture integrity ref produces new version-state digest, binding_id, and composite digest
+      ---
+      duration_ms: 2.353433
+      type: 'test'
+      ...
+    # Subtest: K. fails with VersionMismatchError if an architecture version label diverges, even with valid integrity_ref
+    ok 11 - K. fails with VersionMismatchError if an architecture version label diverges, even with valid integrity_ref
+      ---
+      duration_ms: 0.392773
+      type: 'test'
+      ...
+    # Subtest: L. identical scope + versions + supplied refs + execution dependencies produces identical binding and single ledger entry
+    ok 12 - L. identical scope + versions + supplied refs + execution dependencies produces identical binding and single ledger entry
+      ---
+      duration_ms: 1.609607
+      type: 'test'
+      ...
+    # Subtest: M. preserves immutable historical bindings when dependencies change for the same scope
+    ok 13 - M. preserves immutable historical bindings when dependencies change for the same scope
+      ---
+      duration_ms: 2.67478
+      type: 'test'
+      ...
+    # Subtest: N. registers only Record 3 nodes and preserves exactly 14 governed edge types without expansion
+    ok 14 - N. registers only Record 3 nodes and preserves exactly 14 governed edge types without expansion
+      ---
+      duration_ms: 1.165924
+      type: 'test'
+      ...
+    # Subtest: O. produces distinct binding_id and composite digest for each individual execution dependency mutation
+    ok 15 - O. produces distinct binding_id and composite digest for each individual execution dependency mutation
+      ---
+      duration_ms: 7.963199
+      type: 'test'
+      ...
+    # Subtest: P. rejects placeholder strings ('unknown', 'pending', version string clone) as integrity references
+    ok 16 - P. rejects placeholder strings ('unknown', 'pending', version string clone) as integrity references
+      ---
+      duration_ms: 0.295161
+      type: 'test'
+      ...
+    # Subtest: Q. different timestamps produce identical binding_id, composite digest, and no duplicate binding
+    ok 17 - Q. different timestamps produce identical binding_id, composite digest, and no duplicate binding
+      ---
+      duration_ms: 5.829526
+      type: 'test'
+      ...
+    # Subtest: R. verifyBindingIntegrity confirms cryptographic validity and detects tampering
+    ok 18 - R. verifyBindingIntegrity confirms cryptographic validity and detects tampering
+      ---
+      duration_ms: 5.339327
+      type: 'test'
+      ...
+    1..18
+ok 28 - Phase 1C.5h — WP-05: Strict Version Binding Subsystem (Record 3)
+  ---
+  duration_ms: 105.836158
+  type: 'suite'
+  ...
+1..28
+# tests 479
+# suites 93
+# pass 479
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 49243.739894

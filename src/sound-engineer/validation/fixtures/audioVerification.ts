@@ -2,8 +2,40 @@
 // Audio payload integrity and PCM header validation engine for Phase 1C.5h WP-08.
 // Enforces uncompressed PCM audio requirement and tamper-evident bit integrity.
 
-import { type IntegrityProvider } from "../schemas/integrity";
+import { FIXTURE_CLASSES, type FixtureClass } from "../schemas/enums";
+import { type IntegrityProvider, canonicalizeJson } from "../schemas/integrity";
 import { type PcmAudioSpec, type PcmValidationResult } from "./types";
+
+/**
+ * Evaluates whether a governed fixture class requires uncompressed PCM WAV validation.
+ *
+ * Governed Audio Fixture Classes (require PCM WAV validation):
+ * - DI_PERFORMANCE
+ * - REFERENCE_TONE
+ * - RENDERED_PLATFORM_BENCHMARK
+ * - SYNTHETIC_TEST_SIGNAL
+ * - MULTITRACK_CONTEXT
+ * - ADVERSARIAL_PATHOLOGICAL
+ *
+ * Governed Non-Audio Fixture Classes (do NOT undergo PCM WAV validation):
+ * - APPROVED_PRESET (preset XML/JSON/binary)
+ * - WORKFLOW_PROMPT (text/prompt/JSON)
+ */
+export function isAudioFixtureClass(fixtureClass: FixtureClass): boolean {
+  switch (fixtureClass) {
+    case FIXTURE_CLASSES.APPROVED_PRESET:
+    case FIXTURE_CLASSES.WORKFLOW_PROMPT:
+      return false;
+    case FIXTURE_CLASSES.DI_PERFORMANCE:
+    case FIXTURE_CLASSES.REFERENCE_TONE:
+    case FIXTURE_CLASSES.RENDERED_PLATFORM_BENCHMARK:
+    case FIXTURE_CLASSES.SYNTHETIC_TEST_SIGNAL:
+    case FIXTURE_CLASSES.MULTITRACK_CONTEXT:
+    case FIXTURE_CLASSES.ADVERSARIAL_PATHOLOGICAL:
+    default:
+      return true;
+  }
+}
 
 /**
  * Rotates a 32-bit integer right by n bits.
@@ -108,24 +140,86 @@ export function computeSha256BytesHex(bytes: Uint8Array): string {
 }
 
 /**
+ * Authoritative Canonical SHA-256 Integrity Provider for Phase 1C.5h.
+ * Implements the pluggable IntegrityProvider interface signed off in WP-01.
+ * Supports binary Uint8Array payloads, string payloads, and canonicalized object payloads.
+ */
+export class CanonicalSha256IntegrityProvider implements IntegrityProvider {
+  public readonly algorithmName = "SHA-256";
+
+  /**
+   * Computes deterministic SHA-256 digest reference.
+   * Directly processes Uint8Array bytes; encodes strings via TextEncoder;
+   * canonicalizes structured objects deterministically.
+   */
+  public computeDigest(payload: unknown): string {
+    if (payload instanceof Uint8Array) {
+      return `sha256:${computeSha256BytesHex(payload)}`;
+    }
+    if (typeof payload === "string") {
+      const bytes = new TextEncoder().encode(payload);
+      return `sha256:${computeSha256BytesHex(bytes)}`;
+    }
+    const json = canonicalizeJson(payload);
+    const bytes = new TextEncoder().encode(json);
+    return `sha256:${computeSha256BytesHex(bytes)}`;
+  }
+
+  /**
+   * Authoritatively verifies payload against expected digest reference.
+   */
+  public verifyDigest(payload: unknown, expectedDigest: string): boolean {
+    const computed = this.computeDigest(payload);
+    const normExpected = expectedDigest.trim().toLowerCase().replace(/^sha256:/, "");
+    const normComputed = computed.trim().toLowerCase().replace(/^sha256:/, "");
+    return normExpected === normComputed || expectedDigest.trim().toLowerCase() === computed.trim().toLowerCase();
+  }
+}
+
+/**
+ * Canonical default integrity provider instance.
+ */
+export const DEFAULT_INTEGRITY_PROVIDER: IntegrityProvider = new CanonicalSha256IntegrityProvider();
+
+/**
+ * Converts a byte array (Uint8Array) to deterministic canonical hex string.
+ * Used at the WP-08 boundary as a compatible encoding adapter when an injected
+ * custom IntegrityProvider only accepts string input.
+ */
+export function bytesToDeterministicHex(bytes: Uint8Array): string {
+  let hex = "";
+  for (let i = 0; i < bytes.length; i++) {
+    hex += bytes[i].toString(16).padStart(2, "0");
+  }
+  return hex;
+}
+
+/**
  * Computes payload digest for binary buffer or string payload.
+ * Authoritative implementation: 100% of payload integrity routed through IntegrityProvider.
+ * If a custom provider does not support Uint8Array natively, adapts via deterministic hex serialization.
  */
 export function computePayloadDigest(
   payload: Uint8Array | string,
   integrityProvider?: IntegrityProvider
 ): string {
-  if (typeof payload === "string") {
-    if (integrityProvider) {
-      return integrityProvider.computeDigest(payload);
+  const provider = integrityProvider ?? DEFAULT_INTEGRITY_PROVIDER;
+  if (payload instanceof Uint8Array) {
+    try {
+      return provider.computeDigest(payload);
+    } catch {
+      // Deterministic byte-to-hex adapter if custom provider only accepts string
+      const hex = bytesToDeterministicHex(payload);
+      return provider.computeDigest(hex);
     }
-    const bytes = new TextEncoder().encode(payload);
-    return computeSha256BytesHex(bytes);
   }
-  return computeSha256BytesHex(payload);
+  return provider.computeDigest(payload);
 }
 
 /**
  * Verifies that the payload digest matches the expected integrity reference.
+ * Authoritatively routes 100% through IntegrityProvider.verifyDigest().
+ * Fails closed without any bypass if provider.verifyDigest returns false.
  */
 export function verifyAudioPayloadIntegrity(
   payload: Uint8Array | string,
@@ -137,10 +231,46 @@ export function verifyAudioPayloadIntegrity(
   expectedDigest: string;
   error?: string;
 } {
-  const computedDigest = computePayloadDigest(payload, integrityProvider);
-  const normExpected = expectedIntegrityRef.trim().toLowerCase().replace(/^sha256:/, "");
-  const normComputed = computedDigest.trim().toLowerCase().replace(/^sha256:/, "");
-  const valid = normExpected === normComputed || expectedIntegrityRef === computedDigest;
+  const provider = integrityProvider ?? DEFAULT_INTEGRITY_PROVIDER;
+  const computedDigest = computePayloadDigest(payload, provider);
+  const isBinary = payload instanceof Uint8Array;
+
+  let valid = false;
+
+  // 1. Direct authoritative verification through injected IntegrityProvider
+  try {
+    valid = provider.verifyDigest(payload, expectedIntegrityRef);
+  } catch {
+    if (isBinary) {
+      // Deterministic byte-to-hex adapter if custom provider only accepts string input
+      const hex = bytesToDeterministicHex(payload);
+      try {
+        valid = provider.verifyDigest(hex, expectedIntegrityRef);
+      } catch {
+        valid = false;
+      }
+    }
+  }
+
+  // 2. If provider.verifyDigest failed and expected reference has an algorithm prefix (e.g. "sha256:"),
+  // attempt verification using stripped canonical format strictly through provider.verifyDigest
+  // (supports providers whose verifyDigest expects bare hex rather than prefixed uri)
+  if (!valid && expectedIntegrityRef.includes(":")) {
+    const stripped = expectedIntegrityRef.slice(expectedIntegrityRef.indexOf(":") + 1);
+    try {
+      valid = provider.verifyDigest(payload, stripped);
+    } catch {
+      if (isBinary) {
+        const hex = bytesToDeterministicHex(payload);
+        try {
+          valid = provider.verifyDigest(hex, stripped);
+        } catch {
+          valid = false;
+        }
+      }
+    }
+  }
+
   return {
     valid,
     computedDigest,
@@ -262,13 +392,20 @@ export function validatePcmWavHeader(buffer: Uint8Array): PcmValidationResult {
   }
 
   if (foundFmt) {
-    // Check audio format: 1 = PCM integer, 3 = IEEE float
-    if (audioFormatCode !== 1 && audioFormatCode !== 3) {
-      errors.push(
-        `Non-PCM audio format rejected: format code 0x${audioFormatCode.toString(
-          16
-        )} is not uncompressed PCM (format 1 or 3 required)`
-      );
+    // Phase 1C.5h frozen PCM contract strictly requires uncompressed integer PCM (format code 0x0001).
+    // IEEE float (0x0003) and all non-PCM formats are strictly rejected.
+    if (audioFormatCode !== 1) {
+      if (audioFormatCode === 3) {
+        errors.push(
+          "Non-PCM audio format rejected: format code 0x0003 is IEEE float. Phase 1C.5h frozen PCM contract strictly requires uncompressed integer PCM (format code 0x0001)."
+        );
+      } else {
+        errors.push(
+          `Non-PCM audio format rejected: format code 0x${audioFormatCode.toString(
+            16
+          )} is not uncompressed integer PCM (format code 0x0001 required).`
+        );
+      }
     }
 
     if (channels < 1 || channels > 8) {
@@ -332,8 +469,8 @@ export function validatePcmWavHeader(buffer: Uint8Array): PcmValidationResult {
     byteLength: dataChunkSize,
     sampleCount,
     durationSeconds,
-    isFloat: audioFormatCode === 3,
-    audioFormatCode,
+    isFloat: false,
+    audioFormatCode: 1,
   };
 
   return {
@@ -355,6 +492,7 @@ export function createSyntheticPcmWav(options: {
   signalType?: "sine" | "chirp" | "impulse" | "silence" | "noise";
   frequencyHz?: number;
   amplitudeDbFs?: number;
+  formatCode?: number;
 }): Uint8Array {
   const sampleRate = options.sampleRate ?? 48000;
   const channels = options.channels ?? 1;
@@ -363,6 +501,7 @@ export function createSyntheticPcmWav(options: {
   const signalType = options.signalType ?? "sine";
   const frequencyHz = options.frequencyHz ?? 1000;
   const amplitudeDbFs = options.amplitudeDbFs ?? -6; // -6 dBFS nominal
+  const formatCode = options.formatCode ?? 1; // Default to 1 (uncompressed integer PCM)
 
   const totalSamples = Math.floor(sampleRate * durationSeconds);
   const bytesPerSample = bitDepth / 8;
@@ -393,7 +532,7 @@ export function createSyntheticPcmWav(options: {
   buffer[14] = 0x74; // t
   buffer[15] = 0x20; // ' '
   view.setUint32(16, 16, true); // Subchunk1Size = 16 for PCM
-  view.setUint16(20, bitDepth === 32 ? 3 : 1, true); // 1 = PCM integer, 3 = IEEE float
+  view.setUint16(20, formatCode, true); // 1 = PCM integer, 3 = IEEE float
   view.setUint16(22, channels, true);
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, byteRate, true);
@@ -456,8 +595,14 @@ export function createSyntheticPcmWav(options: {
         buffer[dataOffset + 2] = (int24 >> 16) & 0xff;
         dataOffset += 3;
       } else if (bitDepth === 32) {
-        // IEEE Float 32
-        view.setFloat32(dataOffset, sampleVal, true);
+        if (formatCode === 3) {
+          // IEEE Float 32
+          view.setFloat32(dataOffset, sampleVal, true);
+        } else {
+          // 32-bit Integer PCM
+          const int32 = Math.round(sampleVal * 2147483647);
+          view.setInt32(dataOffset, int32, true);
+        }
         dataOffset += 4;
       }
     }

@@ -40,8 +40,9 @@ export interface PcmAudioSpec {
   readonly byteLength: number;
   readonly sampleCount: number;
   readonly durationSeconds: number;
-  readonly isFloat: boolean;
-  readonly audioFormatCode: number;
+  /** Always false under frozen PCM contract; IEEE Float (0x0003) is forbidden */
+  readonly isFloat: false;
+  readonly audioFormatCode: 1;
 }
 
 /**
@@ -52,6 +53,76 @@ export interface PcmValidationResult {
   readonly errors: readonly string[];
   readonly warnings: readonly string[];
   readonly spec?: PcmAudioSpec;
+}
+
+/**
+ * Read-only interface for validation-time fixture payload consumption.
+ * Strictly prohibits mutation methods (set, replace, delete) during test execution.
+ */
+export interface ReadOnlyFixturePayloadStore {
+  /** Retrieves raw audio payload bytes if present */
+  readPayload(fixtureId: string): Uint8Array | undefined;
+  /** Checks if payload exists in the store */
+  hasPayload(fixtureId: string): boolean;
+  /** Returns true if storage is in enforced read-only state */
+  isReadOnlyForValidation(): boolean;
+}
+
+/**
+ * Canonical alias for read-only fixture payload storage interface used in validation consumption.
+ */
+export type FixturePayloadStore = ReadOnlyFixturePayloadStore;
+
+/**
+ * Controlled mutable interface for provisioning/ingestion phase prior to sealing.
+ */
+export interface MutableFixturePayloadStore extends ReadOnlyFixturePayloadStore {
+  /** Provisions a payload buffer before sealing */
+  provisionPayload(fixtureId: string, payload: Uint8Array): void;
+  /** Permanently seals the payload store to read-only state */
+  seal(): void;
+}
+
+/**
+ * Governed Revalidation Directive issued when a fixture is invalidated or contaminated.
+ * Connects WP-08 fixture status changes to WP-09 / WP-18 retest requirements without violating boundaries.
+ */
+export interface FixtureRevalidationDirective {
+  readonly directiveId: string;
+  readonly fixtureId: string;
+  readonly contaminationStatus: FixtureContaminationStatus;
+  readonly lifecycleStatus: FixtureLifecycleStatus;
+  readonly triggerSource: "TRIGGER-06_FIXTURE_RECALIBRATION_CONTAMINATION";
+  readonly affectedScope: readonly string[];
+  readonly reason: string;
+  readonly timestamp: string;
+}
+
+/**
+ * Result of quarantining a contaminated or suspect fixture.
+ */
+export interface FixtureQuarantineResult {
+  readonly fixture: ValidationFixtureRecord;
+  readonly isQuarantined: boolean;
+  readonly requiresRevalidationOfPriorPasses: boolean;
+  readonly revalidationDirective: FixtureRevalidationDirective;
+  readonly quarantineReport: string;
+  readonly contamination_status: FixtureContaminationStatus;
+  readonly lifecycle_status: FixtureLifecycleStatus;
+  readonly fixture_id: string;
+}
+
+/**
+ * Fixture payload type classification for class-appropriate validation (Defect 5).
+ */
+export type FixturePayloadType = "audio_pcm_wav" | "preset" | "prompt" | "opaque_binary" | "text";
+
+/**
+ * Options controlling fixture registration and payload validation.
+ */
+export interface FixtureRegistrationOptions {
+  /** Explicit payload type override if fixture class supports multiple payload formats */
+  readonly payloadType?: FixturePayloadType;
 }
 
 /**

@@ -12,6 +12,7 @@ import {
 } from "../schemas/enums";
 import { parseValidationFixtureRecord } from "../schemas/records";
 import {
+  isAudioFixtureClass,
   validatePcmWavHeader,
   verifyAudioPayloadIntegrity,
 } from "./audioVerification";
@@ -163,13 +164,15 @@ export function verifyFixtureManifest(
               );
             }
 
-            const pcmCheck = validatePcmWavHeader(uint8);
-            if (!pcmCheck.valid) {
-              errors.push(
-                `Fixture file '${entry.relativeFilePath}' PCM WAV header invalid: ${pcmCheck.errors.join(
-                  "; "
-                )}`
-              );
+            if (isAudioFixtureClass(record.fixture_class)) {
+              const pcmCheck = validatePcmWavHeader(uint8);
+              if (!pcmCheck.valid) {
+                errors.push(
+                  `Fixture file '${entry.relativeFilePath}' PCM WAV header invalid: ${pcmCheck.errors.join(
+                    "; "
+                  )}`
+                );
+              }
             }
           } else {
             warnings.push(

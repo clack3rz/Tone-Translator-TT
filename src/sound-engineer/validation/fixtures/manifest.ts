@@ -12,7 +12,10 @@ import {
   parseValidationFixtureRecord,
   type ValidationFixtureRecord,
 } from "../schemas/records";
-import { computeSha256BytesHex } from "./audioVerification";
+import {
+  DEFAULT_INTEGRITY_PROVIDER,
+  isAudioFixtureClass,
+} from "./audioVerification";
 import {
   type FixtureCorpusManifest,
   type FixtureManifestEntry,
@@ -24,26 +27,25 @@ import {
 export const MVVI_FIXTURE_CORPUS_VERSION = "v1.0.0-mvvi-bootstrap";
 
 /**
- * Computes deterministic integrity reference for raw text / metadata string.
+ * Computes deterministic integrity reference using the authoritative IntegrityProvider.
  */
 function computeTextPayloadDigest(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  return `sha256:${computeSha256BytesHex(bytes)}`;
+  return DEFAULT_INTEGRITY_PROVIDER.computeDigest(text);
 }
 
 /**
- * The 11 initial illustrative MVVI bootstrap fixture records.
- * Covering all 8 frozen fixture classes:
- * 1. DI_PERFORMANCE (4 stems: clean, crunch, lead, bass)
- * 2. REFERENCE_TONE (1 stem: studio commercial benchmark)
- * 3. APPROVED_PRESET (1 benchmark: verified target platform preset)
- * 4. RENDERED_PLATFORM_BENCHMARK (1 benchmark: physical amp/cab audio)
- * 5. SYNTHETIC_TEST_SIGNAL (2 signals: 1kHz sine, log chirp)
- * 6. MULTITRACK_CONTEXT (1 stem: rhythm section context)
- * 7. ADVERSARIAL_PATHOLOGICAL (1 stem: clipped pathological signal)
- * 8. WORKFLOW_PROMPT (1 suite: standardized user prompt suite)
+ * ISOLATED SYNTHETIC TEST-ONLY MVVI BOOTSTRAP FIXTURE RECORDS.
+ *
+ * CRITICAL ARCHITECTURAL CONSTITUTION (Section 18, Invariant 4):
+ * "A TEST FIXTURE IS NOT AUTOMATICALLY PRODUCTION GOLDEN EVIDENCE."
+ * "MVVI MEMBERSHIP DOES NOT AUTOMATICALLY CONFER GOLDEN-FIXTURE STATUS."
+ *
+ * These records represent isolated synthetic test-only fixtures used exclusively for automated tests,
+ * taxonomy coverage verification, and harness testing.
+ * They are NOT registered into production/runtime state by default, and must never be conflated
+ * with real, physical, hardware-calibrated Golden Acoustic Evidence.
  */
-export const MVVI_BOOTSTRAP_FIXTURE_RECORDS: readonly ValidationFixtureRecord[] = [
+export const SYNTHETIC_TEST_MVVI_BOOTSTRAP_FIXTURES: readonly ValidationFixtureRecord[] = [
   // 1. DI_PERFORMANCE - Clean Chords
   parseValidationFixtureRecord({
     fixture_id: "FIX-DI-CLN-01-v1",
@@ -380,18 +382,38 @@ export const MVVI_BOOTSTRAP_FIXTURE_RECORDS: readonly ValidationFixtureRecord[] 
 ];
 
 /**
+ * @deprecated Use SYNTHETIC_TEST_MVVI_BOOTSTRAP_FIXTURES. Isolated synthetic test-only fixtures for automated test suites.
+ */
+export const MVVI_BOOTSTRAP_FIXTURE_RECORDS: readonly ValidationFixtureRecord[] =
+  SYNTHETIC_TEST_MVVI_BOOTSTRAP_FIXTURES;
+
+/**
  * Creates the canonical initial illustrative MVVI bootstrap fixture corpus manifest.
+ * Assigns class-appropriate file extensions (.xml for presets, .json for prompts, .wav for audio stems)
+ * and omits audioSpec for non-audio fixture classes (Defect 5).
  */
 export function createDefaultMvviCorpusManifest(): FixtureCorpusManifest {
-  const entries: FixtureManifestEntry[] = MVVI_BOOTSTRAP_FIXTURE_RECORDS.map((record) => ({
-    record,
-    relativeFilePath: `fixtures/${record.fixture_id}.wav`,
-    audioSpec: {
-      sampleRate: 48000,
-      channels: 1,
-      bitDepth: 24,
-    },
-  }));
+  const entries: FixtureManifestEntry[] = MVVI_BOOTSTRAP_FIXTURE_RECORDS.map((record) => {
+    const isAudio = isAudioFixtureClass(record.fixture_class);
+    let extension = "wav";
+    if (record.fixture_class === FIXTURE_CLASSES.APPROVED_PRESET) {
+      extension = "xml";
+    } else if (record.fixture_class === FIXTURE_CLASSES.WORKFLOW_PROMPT) {
+      extension = "json";
+    }
+
+    return {
+      record,
+      relativeFilePath: `fixtures/${record.fixture_id}.${extension}`,
+      audioSpec: isAudio
+        ? {
+            sampleRate: 48000,
+            channels: 1,
+            bitDepth: 24,
+          }
+        : undefined,
+    };
+  });
 
   const compositeDigest = computeTextPayloadDigest(
     entries.map((e) => `${e.record.fixture_id}:${e.record.payload_integrity_ref}`).join("|")
