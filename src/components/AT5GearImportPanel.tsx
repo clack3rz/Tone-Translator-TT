@@ -40,6 +40,7 @@ import { at5DatabaseService } from '../services/at5DatabaseService';
 import { auth, signInWithGoogle } from '../services/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { refreshCatalog, getAt5Catalog } from '../services/at5Catalog';
+import { copyToClipboard } from '../utils/clipboard';
 import { 
   refreshProtocols, 
   getVerifiedCabs, 
@@ -1142,9 +1143,10 @@ export const AT5GearImportPanel: React.FC<{ onRefreshChain?: () => void }> = ({ 
 
   const copyDebugJson = () => {
     if (!importResults) return;
-    navigator.clipboard.writeText(JSON.stringify(importResults, null, 2));
-    setCopyFeedback("Copied!");
-    setTimeout(() => setCopyFeedback(null), 2000);
+    void copyToClipboard(JSON.stringify(importResults, null, 2)).then(() => {
+      setCopyFeedback("Copied!");
+      setTimeout(() => setCopyFeedback(null), 2000);
+    }).catch(() => {});
   };
 
   const exportDebugJson = () => {

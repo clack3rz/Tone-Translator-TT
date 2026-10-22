@@ -55,32 +55,15 @@ export interface RenderResult {
   readonly anomalies: string[];
 }
 
-/**
- * Abstract PlatformValidationAdapter contract for candidate and baseline audio rendering.
- * Does NOT hardwire to any specific DAW, host, or OS automation (Axiom 1 / Section 14).
- */
-export interface PlatformValidationAdapter {
-  /** Identifier of the target platform adapter */
-  readonly platformId: string;
-  /** Version string of the adapter */
-  readonly platformVersion: string;
+import type {
+  PlatformAudioRenderer,
+  PlatformValidationAdapter,
+} from "../platform/platformAdapter";
 
-  /**
-   * Renders audio through the candidate Tone Translator pipeline / shadow model.
-   */
-  renderCandidate(request: RenderRequest): Promise<RenderResult>;
-
-  /**
-   * Renders audio through the legacy PATH-PROD baseline to produce comparison reference WAV.
-   * Strictly read-only baseline generation; does not mutate live production routing or state.
-   */
-  renderBaseline(request: RenderRequest): Promise<RenderResult>;
-
-  /**
-   * Optional cancellation hook to abort an active render job.
-   */
-  cancelRender?(renderId: string): Promise<void>;
-}
+export type {
+  PlatformAudioRenderer,
+  PlatformValidationAdapter,
+};
 
 /**
  * Interface for resolving an operational budget reference string into millisecond timeout limits.

@@ -794,7 +794,14 @@ export const gate8ChangeRecordSchema = z
     authorizing_official: z.string().min(1, "authorizing_official must not be empty"),
     record_integrity_metadata: recordIntegrityMetadataSchema,
   })
-  .strict();
+  .strict()
+  .refine(
+    (data) => data.previous_governance_status !== data.new_governance_status,
+    {
+      message: "Same-state transition is prohibited: previous_governance_status and new_governance_status must differ.",
+      path: ["new_governance_status"],
+    }
+  );
 
 export type Gate8ChangeRecord = Readonly<z.infer<typeof gate8ChangeRecordSchema>>;
 

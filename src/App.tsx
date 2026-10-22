@@ -38,6 +38,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { translateTone } from './services/geminiService';
+import { copyToClipboard } from './utils/clipboard';
 import { ToneResult } from './types';
 import { parseAt5p, PresetData } from './services/presetParser';
 import { getExportData, getExportDebugData } from './services/presetExporter';
@@ -432,9 +433,10 @@ export default function App() {
     text += `CONFIDENCE: ${toneResult.confidence}%\n`;
     text += `ENGINE: V2.0_MASTER\n`;
 
-    navigator.clipboard.writeText(text);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    void copyToClipboard(text).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }).catch(() => {});
   };
 
   const onTargetDrop = useCallback((acceptedFiles: File[]) => {
@@ -597,9 +599,10 @@ export default function App() {
   const copyExportDebug = () => {
     if (!toneResult) return;
     const debug = getExportDebugData(toneResult, currentChain);
-    navigator.clipboard.writeText(JSON.stringify(debug, null, 2));
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    void copyToClipboard(JSON.stringify(debug, null, 2)).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }).catch(() => {});
   };
 
   const exportDebugJson = () => {

@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { ToneProfileResult } from '../types';
 
+import { copyToClipboard } from '../utils/clipboard';
+
 interface ToneProfileViewProps {
   profileResult: ToneProfileResult;
   rawRequest: string;
@@ -32,9 +34,10 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
   const { tone_profile, initial_family_guidance, classification_reasoning, warnings } = profileResult;
 
   const handleCopyJson = () => {
-    navigator.clipboard.writeText(JSON.stringify(profileResult, null, 2));
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    void copyToClipboard(JSON.stringify(profileResult, null, 2)).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }).catch(() => {});
   };
 
   const getRoleBadgeColor = (role: string) => {

@@ -20,6 +20,7 @@ import { getAt5Catalog } from "../services/at5Catalog";
 import { getVerifiedCabs, getVerifiedSpeakers, getVerifiedMics } from "../services/at5VerifiedProtocols";
 import { AT5_VERIFIED_GEAR } from "../services/at5VerifiedParameterOverrides";
 import { ToneProfileView } from "./ToneProfileView";
+import { copyToClipboard } from "../utils/clipboard";
 
 type ExportDebugItem = {
   original_name: string;
@@ -1643,11 +1644,15 @@ export const AT5SignalChainView: React.FC<Props> = ({
   });
 
   const copyJson = async () => {
-    await navigator.clipboard.writeText(JSON.stringify(debugData, null, 2));
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
+    try {
+      await copyToClipboard(JSON.stringify(debugData, null, 2));
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch {
+      // Gracefully prevent unhandled exceptions in sandboxed or unfocused frames
+    }
   };
 
   const exportJson = () => {

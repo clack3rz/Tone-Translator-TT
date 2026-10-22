@@ -56,6 +56,7 @@ import {
 import { GearProfile, GearProfileParameter, AT5CatalogItem, ParameterMapping, IKMPAKCandidate, MicPlacementMapping, ParameterOptionRow } from '../types';
 import { gearProfileService } from '../services/gearProfileService';
 import { parseAt5pPreset } from '../services/at5PresetImporter';
+import { copyToClipboard } from '../utils/clipboard';
 import { at5DatabaseService } from '../services/at5DatabaseService';
 import { refreshDbParameterMappings, refreshCoreParameterMappings, refreshDbMicPlacementMappings, generateAliasesForXmlParam, testSingleParameterTranslation } from '../services/at5ParameterManifest';
 import { auth, signInWithGoogle } from '../services/firebase';
@@ -891,11 +892,12 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
   const handleCopyGuid = (e: React.MouseEvent, guid: string, profileId: string) => {
     e.stopPropagation();
     if (!guid) return;
-    navigator.clipboard.writeText(guid);
-    setCopiedGuidId(profileId);
-    setTimeout(() => {
-      setCopiedGuidId(null);
-    }, 1500);
+    void copyToClipboard(guid).then(() => {
+      setCopiedGuidId(profileId);
+      setTimeout(() => {
+        setCopiedGuidId(null);
+      }, 1500);
+    }).catch(() => {});
   };
 
   // Handle select a profile for viewing/editing (collapses finder automatically and scrolls editor into view)
@@ -1642,9 +1644,12 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
     if (!editedProfile) return;
     try {
       const jsonStr = JSON.stringify(editedProfile, null, 2);
-      navigator.clipboard.writeText(jsonStr);
-      setImportFeedback("Gear Profile JSON copied.");
-      setTimeout(() => setImportFeedback(null), 3000);
+      void copyToClipboard(jsonStr).then((ok) => {
+        if (ok) {
+          setImportFeedback("Gear Profile JSON copied.");
+          setTimeout(() => setImportFeedback(null), 3000);
+        }
+      }).catch(() => {});
     } catch (err: any) {
       console.error("Failed to copy profile JSON:", err);
       setImportErrors([`Copy failed: ${err.message || err}`]);
@@ -6512,9 +6517,10 @@ export const GearManagementPanel: React.FC<GearManagementPanelProps> = ({
                                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Apply Action JSON Debug Log</span>
                                 <button
                                   onClick={() => {
-                                    navigator.clipboard.writeText(JSON.stringify(ad.debugOutput, null, 2));
-                                    setCopiedIndex(idx);
-                                    setTimeout(() => setCopiedIndex(null), 1500);
+                                    void copyToClipboard(JSON.stringify(ad.debugOutput, null, 2)).then(() => {
+                                      setCopiedIndex(idx);
+                                      setTimeout(() => setCopiedIndex(null), 1500);
+                                    }).catch(() => {});
                                   }}
                                   className="text-[9px] font-mono text-cyan-400 hover:underline hover:text-cyan-300 uppercase"
                                 >

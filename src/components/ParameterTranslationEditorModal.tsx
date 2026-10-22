@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { GearProfile, GearProfileParameter, ParameterOptionRow } from '../types';
 import { TestTranslationResult } from '../services/at5ParameterManifest';
+import { copyToClipboard } from '../utils/clipboard';
 
 interface FormattedNumericInputProps {
   value: number | undefined;
@@ -902,9 +903,10 @@ export const ParameterTranslationEditorModal: React.FC<ParameterTranslationEdito
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(testTranslationResult.xmlPreview);
-                      setCopiedTestXml(true);
-                      setTimeout(() => setCopiedTestXml(false), 2000);
+                      void copyToClipboard(testTranslationResult.xmlPreview).then(() => {
+                        setCopiedTestXml(true);
+                        setTimeout(() => setCopiedTestXml(false), 2000);
+                      }).catch(() => {});
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono bg-gear-accent/15 hover:bg-gear-accent/25 text-gear-accent border border-gear-accent/30 rounded-lg transition-all cursor-pointer shrink-0"
                   >

@@ -1136,24 +1136,8 @@ test("Phase 1C.5h — WP-20 Focused Verification", async (t) => {
     const c2 = createTestCase("case_cab", "guitar:cab:4x12_greenback", ["guitar:cab:4x12_greenback"]);
     const ev1 = createTestObjectiveEvidence("ev_5150", "exec_5150");
     const ev2 = createTestObjectiveEvidence("ev_cab", "exec_cab");
-    const exec1: ValidationExecutionRecord = {
-      execution_id: "exec_5150",
-      case_id: "case_5150",
-      fixture_id: "fix_01",
-      profile_id: "profile_01",
-      execution_timestamp: "2026-03-20T10:00:00Z",
-      status: "COMPLETED",
-      environment_integrity_hash: "env_hash_01",
-    };
-    const exec2: ValidationExecutionRecord = {
-      execution_id: "exec_cab",
-      case_id: "case_cab",
-      fixture_id: "fix_01",
-      profile_id: "profile_01",
-      execution_timestamp: "2026-03-20T10:00:00Z",
-      status: "COMPLETED",
-      environment_integrity_hash: "env_hash_01",
-    };
+    const exec1 = createTestExecution("exec_5150", "case_5150");
+    const exec2 = createTestExecution("exec_cab", "case_cab");
 
     // Case A: Lesson irrelevant to validated scope -> NO_ACTION
     const resA = detector.detectTrigger({

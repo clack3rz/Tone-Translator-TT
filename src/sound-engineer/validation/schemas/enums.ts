@@ -487,8 +487,10 @@ export type PreviousGovernanceStatus =
 
 /**
  * Record 22: Valid new governance status values resulting from change.
- * CRITICAL GOVERNANCE: ACTIVE is strictly prohibited as a new_governance_status.
- * Withdrawn authorizations are never reinstated; remediated candidates require a new Gate 8 decision.
+ * Bound to Section 28.3.
+ * Permitted new statuses: SUSPENDED, RESTRICTED, WITHDRAWN, SUPERSEDED.
+ * CRITICAL: ACTIVE is strictly prohibited as a new_governance_status.
+ * Withdrawn authorizations are never reinstated; re-adjudication produces a new AdoptionDecisionRecord.
  */
 export const NEW_GOVERNANCE_STATUSES = {
   SUSPENDED: "SUSPENDED",
@@ -513,6 +515,7 @@ export type Gate8ChangeTriggerSource =
 
 /**
  * Record 22: Governance effect of the Gate 8 change.
+ * Bound to Section 28.3.
  */
 export const GOVERNANCE_EFFECTS = {
   SUSPEND_AUTHORIZATION: "SUSPEND_AUTHORIZATION",
