@@ -34,6 +34,7 @@ import {
   ProductionReadinessSynthesizer,
   FROZEN_HARD_BLOCKERS,
   UpstreamGovernanceState,
+  PILLAR_READINESS_STATUSES,
 } from "../sound-engineer/validation/readiness";
 
 import { GOVERNED_EDGE_TYPES } from "../sound-engineer/validation/graph/edgeTypes";
@@ -881,10 +882,16 @@ describe("WP-29 Stage 3: Dedicated WP-29 Acceptance & Contract Verification", ()
       false,
       "Blocker 04 must NOT trigger on unrelated principle violations"
     );
-    // It DOES trigger Blocker 08
+    // Upstream violations degrade reasoning & governance pillar to DEFICIENT without masquerading as extra hard blocker
     assert.strictEqual(
-      resA.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION),
-      true
+      resA.pillarEvaluations.reasoning_governance_readiness,
+      PILLAR_READINESS_STATUSES.DEFICIENT,
+      "Upstream violations must degrade reasoning & governance pillar to DEFICIENT"
+    );
+    assert.strictEqual(resA.gate8Eligible, false);
+    assert.ok(
+      !resA.hardBlockersPresent.some((b) => b.toLowerCase().includes("upstream")),
+      "Upstream violations must not masquerade as a hard blocker"
     );
 
     // Case B: provenance_intact: false -> Blocker 04 MUST trigger
@@ -905,9 +912,9 @@ describe("WP-29 Stage 3: Dedicated WP-29 Acceptance & Contract Verification", ()
   });
 
   // -------------------------------------------------------------------------
-  // 10. Blocker 08 candidate-lesson tri-state preserved
+  // 10. Upstream governance candidate-lesson tri-state preserved via Pillar 2
   // -------------------------------------------------------------------------
-  it("10. Blocker 08 candidate-lesson tri-state preserved: false triggers, true and undefined do not", () => {
+  it("10. Upstream governance candidate-lesson tri-state preserved: false forces DEFICIENT pillar, true and undefined do not", () => {
     const synthesizer = new ProductionReadinessSynthesizer();
     const scope = createTestScope("scope_b8_test");
     const binding = createValidVersionBinding(scope);
@@ -922,32 +929,33 @@ describe("WP-29 Stage 3: Dedicated WP-29 Acceptance & Contract Verification", ()
       evidence_refs: ["obj_acc_01"],
     };
 
-    // 1. false -> triggers Blocker 08
+    // 1. false -> degrades Pillar 2 to DEFICIENT
     const resFalse = synthesizer.synthesizeProductionReadiness({
       packageRecord: pkg,
       scopeRecord: scope,
       versionBinding: binding,
       upstreamGovernanceState: { candidate_lesson_quarantined: false },
     });
-    assert.ok(resFalse.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION));
+    assert.strictEqual(resFalse.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+    assert.strictEqual(resFalse.gate8Eligible, false);
 
-    // 2. true -> does NOT trigger Blocker 08
+    // 2. true -> does NOT degrade Pillar 2 to DEFICIENT
     const resTrue = synthesizer.synthesizeProductionReadiness({
       packageRecord: pkg,
       scopeRecord: scope,
       versionBinding: binding,
       upstreamGovernanceState: { candidate_lesson_quarantined: true },
     });
-    assert.ok(!resTrue.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION));
+    assert.notStrictEqual(resTrue.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
 
-    // 3. undefined -> does NOT trigger Blocker 08
+    // 3. undefined -> does NOT degrade Pillar 2 to DEFICIENT
     const resUndef = synthesizer.synthesizeProductionReadiness({
       packageRecord: pkg,
       scopeRecord: scope,
       versionBinding: binding,
       upstreamGovernanceState: { candidate_lesson_quarantined: undefined },
     });
-    assert.ok(!resUndef.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION));
+    assert.notStrictEqual(resUndef.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
   });
 
   // -------------------------------------------------------------------------

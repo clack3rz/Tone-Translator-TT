@@ -562,6 +562,19 @@ const SettingsTable = ({
   );
 };
 
+const getGearManagerTarget = (item: ExportDebugItem): string => {
+  if (
+    item.verified_guid_resolved &&
+    !item.substitution_used &&
+    !item.fallback_applied &&
+    item.resolved_guid &&
+    item.resolved_guid !== "773b8ea7-b54a-4a3c-99df-ffbbf6d29271"
+  ) {
+    return item.resolved_guid;
+  }
+  return item.original_name || (item as any).original_requested_gear_name || item.normalized_name;
+};
+
 const SelectedGearDetailPanel = ({
   item,
   onJumpToCatalogue,
@@ -720,7 +733,7 @@ const SelectedGearDetailPanel = ({
             {onJumpToCatalogue && (
               <button 
                 type="button"
-                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name, item.original_index)}
+                onClick={() => onJumpToCatalogue(getGearManagerTarget(item), item.original_index)}
                 className="px-3 py-1 rounded-full bg-gear-accent/20 text-gear-accent hover:bg-gear-accent hover:text-black text-[10px] font-bold font-mono border border-gear-accent/30 transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-sm ml-1"
                 title="Open directly in Gear Manager to review or edit translation parameters"
               >
@@ -742,7 +755,7 @@ const SelectedGearDetailPanel = ({
             {onJumpToCatalogue && (
               <button 
                 type="button"
-                onClick={() => onJumpToCatalogue(item.resolved_guid || item.actual_exported_guid || item.normalized_name || item.original_name, item.original_index)}
+                onClick={() => onJumpToCatalogue(getGearManagerTarget(item), item.original_index)}
                 className="px-2 py-0.5 rounded bg-gear-accent/15 text-gear-accent text-[9px] font-mono border border-gear-accent/30 hover:bg-gear-accent hover:text-black transition-all uppercase tracking-tighter flex items-center gap-1"
               >
                 Manage Profile

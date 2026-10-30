@@ -3,6 +3,7 @@
 // Bound to frozen specification v0.1j Section 25.1 & Table 13.
 
 import {
+  CONFLICT_RESOLUTION_STATUSES,
   EXECUTION_OUTCOMES,
   FIXTURE_CONTAMINATION_STATUSES,
   MATERIALITY_SCORES,
@@ -93,9 +94,19 @@ export function evaluateFourPillars(
         }
         hasAffirmativeAcousticEvidence = true;
         if (obj.objective_pass_fail === OBJECTIVE_PASS_FAIL_STATUSES.FAIL) {
-          acousticFailures.push(
-            `Objective acoustic failure in "${obj.objective_evidence_id}" (${obj.metric_category})`
+          // Check for exact governed disposition via an accepted intentional trade-off
+          const isDispositioned = input.evidenceConflicts?.some(
+            (c) =>
+              c.package_id === input.packageRecord.package_id &&
+              c.resolution_status === CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF &&
+              c.competing_evidence_refs.includes(obj.objective_evidence_id)
           );
+
+          if (!isDispositioned) {
+            acousticFailures.push(
+              `Objective acoustic failure in "${obj.objective_evidence_id}" (${obj.metric_category})`
+            );
+          }
         }
       }
     }

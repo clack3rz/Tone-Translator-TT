@@ -67,6 +67,8 @@ export interface ObjectiveSummaryData {
     readonly delta: number;
     readonly tolerance_evaluation: string;
   }>;
+  readonly dispositioned_count?: number;
+  readonly unresolved_failed_count?: number;
 }
 
 /**

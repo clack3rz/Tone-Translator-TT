@@ -493,7 +493,12 @@ describe("WP-29 Stage 2 Slice 1E: Pre-Gate-8 Governance Mapping & Blocker-04 Int
       versionBinding: binding,
       upstreamGovernanceState: govWithViolation,
     });
-    assert.ok(res.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION));
+    assert.strictEqual(res.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+    assert.strictEqual(res.gate8Eligible, false);
+    assert.ok(
+      !res.hardBlockersPresent.some((b) => b.toLowerCase().includes("upstream")),
+      "Upstream violations must not masquerade as a hard blocker"
+    );
   });
 
   it("9. Causal explainability ceiling: causal_explainability_verified remains false under Level 3 parameter provenance", () => {
@@ -712,14 +717,20 @@ describe("WP-29 Stage 2 Slice 1E: Pre-Gate-8 Governance Mapping & Blocker-04 Int
       "Unrelated P12 violation must NOT indirectly trigger Hard Blocker 04"
     );
 
-    // Blocker 08 MUST be triggered (due to active upstream violation):
+    // Upstream violations degrade reasoning & governance pillar to DEFICIENT without masquerading as extra hard blocker
+    assert.strictEqual(
+      res.pillarEvaluations.reasoning_governance_readiness,
+      PILLAR_READINESS_STATUSES.DEFICIENT,
+      "Active upstream violation must degrade reasoning & governance pillar to DEFICIENT"
+    );
+    assert.strictEqual(res.gate8Eligible, false);
     assert.ok(
-      res.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION),
-      "Active upstream violation must trigger Hard Blocker 08"
+      !res.hardBlockersPresent.some((b) => b.toLowerCase().includes("upstream")),
+      "Upstream violations must not masquerade as a hard blocker"
     );
   });
 
-  it("15. Blocker 08 tri-state candidate lesson truth table: false triggers blocker, true and undefined do not", () => {
+  it("15. Upstream governance candidate-lesson tri-state truth table: false forces DEFICIENT pillar, true and undefined do not", () => {
     const scope = createTestScope();
     const binding = createTestBinding(scope.scope_id);
     const pkg = createTestPackage("pkg_quarantine_tristate", scope.scope_id, binding.binding_id);
@@ -736,7 +747,7 @@ describe("WP-29 Stage 2 Slice 1E: Pre-Gate-8 Governance Mapping & Blocker-04 Int
       ],
     });
 
-    // 1. candidate_lesson_quarantined === false -> TRIGGERS Blocker 08
+    // 1. candidate_lesson_quarantined === false -> degrades reasoning_governance_readiness to DEFICIENT
     const govFalse = toUpstreamGovernanceState(pristineReport, { candidateLessonQuarantined: false });
     assert.strictEqual(govFalse.candidate_lesson_quarantined, false);
     const resFalse = synthesizer.synthesizeProductionReadiness({
@@ -745,16 +756,14 @@ describe("WP-29 Stage 2 Slice 1E: Pre-Gate-8 Governance Mapping & Blocker-04 Int
       versionBinding: binding,
       upstreamGovernanceState: govFalse,
     });
+    assert.strictEqual(resFalse.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+    assert.strictEqual(resFalse.gate8Eligible, false);
     assert.ok(
-      resFalse.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION),
-      "candidate_lesson_quarantined: false MUST trigger Blocker 08"
-    );
-    assert.ok(
-      resFalse.synthesisRationale.includes("quarantine") ||
-      resFalse.hardBlockersPresent.length > 0
+      !resFalse.hardBlockersPresent.some((b) => b.toLowerCase().includes("upstream")),
+      "Quarantine breach must not masquerade as an extra hard blocker"
     );
 
-    // 2. candidate_lesson_quarantined === true -> DOES NOT trigger Blocker 08
+    // 2. candidate_lesson_quarantined === true -> does not force DEFICIENT
     const govTrue = toUpstreamGovernanceState(pristineReport, { candidateLessonQuarantined: true });
     assert.strictEqual(govTrue.candidate_lesson_quarantined, true);
     const resTrue = synthesizer.synthesizeProductionReadiness({
@@ -763,12 +772,9 @@ describe("WP-29 Stage 2 Slice 1E: Pre-Gate-8 Governance Mapping & Blocker-04 Int
       versionBinding: binding,
       upstreamGovernanceState: govTrue,
     });
-    assert.ok(
-      !resTrue.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION),
-      "candidate_lesson_quarantined: true must NOT trigger Blocker 08"
-    );
+    assert.notStrictEqual(resTrue.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
 
-    // 3. candidate_lesson_quarantined === undefined -> DOES NOT trigger Blocker 08
+    // 3. candidate_lesson_quarantined === undefined -> does not force DEFICIENT
     const govUndefined = toUpstreamGovernanceState(pristineReport);
     assert.strictEqual(govUndefined.candidate_lesson_quarantined, undefined);
     const resUndefined = synthesizer.synthesizeProductionReadiness({
@@ -777,9 +783,6 @@ describe("WP-29 Stage 2 Slice 1E: Pre-Gate-8 Governance Mapping & Blocker-04 Int
       versionBinding: binding,
       upstreamGovernanceState: govUndefined,
     });
-    assert.ok(
-      !resUndefined.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION),
-      "candidate_lesson_quarantined: undefined must NOT trigger Blocker 08"
-    );
+    assert.notStrictEqual(resUndefined.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
   });
 });

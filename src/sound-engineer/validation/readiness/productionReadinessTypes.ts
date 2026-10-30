@@ -44,42 +44,88 @@ export {
  * CRITICAL ARCHITECTURAL CONSTITUTION: All eight hard blockers must be implemented.
  * Subsets or older 5-blocker drafts are strictly prohibited.
  */
-export const FROZEN_HARD_BLOCKERS = {
-  /** 1. Unresolved material genuine regression within requested authorization scope */
+const CANONICAL_HARD_BLOCKERS = {
+  /** 1. BLOCK-01: Unresolved material genuine regression within requested authorization scope */
   BLOCKER_01_UNRESOLVED_GENUINE_REGRESSION:
     "BLOCKER-01: Unresolved material genuine regression within requested authorization scope",
 
-  /** 2. Target-platform preset export failure, crash, or serialization corruption */
+  /** 2. BLOCK-02: Target-platform preset export failure, crash, or serialization corruption */
   BLOCKER_02_EXPORT_FAILURE_CORRUPTION:
     "BLOCKER-02: Target-platform preset export failure, crash, or serialization corruption",
 
-  /** 3. Failure or unverified state of automated rollback (PATH-ROLLBACK) */
+  /** 3. BLOCK-03: Failure or unverified state of automated rollback (PATH-ROLLBACK) */
   BLOCKER_03_ROLLBACK_FAILED_OR_UNVERIFIED:
     "BLOCKER-03: Failure or unverified state of automated rollback (PATH-ROLLBACK)",
 
-  /** 4. Missing, broken, or unverifiable Phase 1C.5f provenance / traceability */
+  /** 4. BLOCK-04: Missing, broken, or unverifiable Phase 1C.5f provenance / traceability */
   BLOCKER_04_PROVENANCE_TRACEABILITY_BROKEN:
     "BLOCKER-04: Missing, broken, or unverifiable Phase 1C.5f provenance / traceability",
 
-  /** 5. Contaminated, miscalibrated, or missing Golden fixtures */
-  BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING:
-    "BLOCKER-05: Contaminated, miscalibrated, or missing Golden fixtures",
+  /** 5. BLOCK-05: Runtime instability, resource leak, or audio buffer underruns */
+  BLOCKER_05_RUNTIME_INSTABILITY:
+    "BLOCKER-05: Runtime instability, resource leak, or audio buffer underruns",
 
-  /** 6. Requested authorization scope broader than actually tested scope */
+  /** 6. BLOCK-06: Requested authorization scope broader than actually tested scope */
   BLOCKER_06_SCOPE_INFLATION:
     "BLOCKER-06: Requested authorization scope broader than actually tested scope",
 
-  /** 7. Unresolved critical uncertainty regarding production tone safety */
-  BLOCKER_07_CRITICAL_TONE_UNCERTAINTY:
-    "BLOCKER-07: Unresolved critical uncertainty regarding production tone safety",
+  /** 7. BLOCK-07: Contaminated Golden fixtures leaked into model tuning */
+  BLOCKER_07_FIXTURE_CONTAMINATION:
+    "BLOCKER-07: Contaminated Golden fixtures leaked into model tuning",
 
-  /** 8. Unresolved upstream architectural violation across Phases 1C.5a through 1C.5g */
-  BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION:
-    "BLOCKER-08: Unresolved upstream architectural violation across Phases 1C.5a through 1C.5g",
+  /** 8. BLOCK-08: Unresolved critical uncertainty regarding production tone safety or live audio risk */
+  BLOCKER_08_CRITICAL_UNCERTAINTY:
+    "BLOCKER-08: Unresolved critical uncertainty regarding production tone safety or live audio risk",
+} as const;
+
+/**
+ * Deprecated aliases preserved for non-breaking consumer compatibility during migration.
+ * Canonical blockers are defined in FROZEN_HARD_BLOCKERS (exactly 8 canonical Table 13 blockers).
+ */
+export const DEPRECATED_HARD_BLOCKER_ALIASES = {
+  /** @deprecated Use FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION */
+  BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING:
+    CANONICAL_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION,
+  /** @deprecated Use FROZEN_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY */
+  BLOCKER_07_CRITICAL_TONE_UNCERTAINTY:
+    CANONICAL_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY,
 } as const;
 
 export type FrozenHardBlocker =
-  (typeof FROZEN_HARD_BLOCKERS)[keyof typeof FROZEN_HARD_BLOCKERS];
+  (typeof CANONICAL_HARD_BLOCKERS)[keyof typeof CANONICAL_HARD_BLOCKERS];
+
+export type FrozenHardBlockersMap = typeof CANONICAL_HARD_BLOCKERS & {
+  /** @deprecated Legacy alias for BLOCKER_07_FIXTURE_CONTAMINATION */
+  readonly BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING: string;
+  /** @deprecated Legacy alias for BLOCKER_08_CRITICAL_UNCERTAINTY */
+  readonly BLOCKER_07_CRITICAL_TONE_UNCERTAINTY: string;
+};
+
+/**
+ * The exact eight frozen Hard Blockers defined in frozen specification v0.1j Section 25 & Table 13.
+ * CRITICAL ARCHITECTURAL CONSTITUTION: All eight hard blockers must be implemented.
+ * Subsets, shifted numbering, or non-Table-13 additions are strictly prohibited.
+ * Enumerable entries are strictly the 8 canonical Table 13 blockers.
+ */
+export const FROZEN_HARD_BLOCKERS: FrozenHardBlockersMap = {
+  ...CANONICAL_HARD_BLOCKERS,
+} as FrozenHardBlockersMap;
+
+// Attach non-enumerable backward-compatibility aliases so Object.values() and Object.keys() remain exactly 8
+Object.defineProperties(FROZEN_HARD_BLOCKERS, {
+  BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING: {
+    value: CANONICAL_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  },
+  BLOCKER_07_CRITICAL_TONE_UNCERTAINTY: {
+    value: CANONICAL_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  },
+});
 
 /**
  * Explicit typed interface for consuming Rollback Verification evidence (WP-27 dependency boundary).

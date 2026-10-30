@@ -22,6 +22,7 @@ export interface SignalChainElement {
   type: 'pedal' | 'amp' | 'cab' | 'rack';
   name: string;
   model?: string;
+  originalName?: string;
   settings: Record<string, string | number>;
 }
 

@@ -1019,6 +1019,7 @@ export function normaliseSignalChain(
 
     return {
       ...gear,
+      originalName: gear.originalName || gear.name,
       name: canonicalName,
       type: canonicalType,
       settings: normaliseSettings(

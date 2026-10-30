@@ -29,6 +29,7 @@ import {
 } from "../schemas/integrity";
 import {
   validationOutcomeRecordSchema,
+  EvidenceConflictRecord,
   ValidationOutcomeRecord,
   ValidationVersionBindingRecord,
 } from "../schemas/records";
@@ -167,7 +168,11 @@ export class ValidationOutcomeSynthesizer {
     // -------------------------------------------------------------------------
     // Step 4: Summarize Evidence Streams
     // -------------------------------------------------------------------------
-    const objectiveSummary = this.buildObjectiveSummary(input.objectiveEvidence ?? []);
+    const objectiveSummary = this.buildObjectiveSummary(
+      input.objectiveEvidence ?? [],
+      input.conflictRecords,
+      packageId
+    );
     const perceptualSummary = this.buildPerceptualSummary(input.perceptualEvidence ?? []);
     const uatSummary = this.buildUATSummary(input.uatEvidence ?? []);
     const regressionSummary = this.buildRegressionSummary(input.regressionAssessments ?? []);
@@ -190,9 +195,11 @@ export class ValidationOutcomeSynthesizer {
     // -------------------------------------------------------------------------
     // Step 6: Evaluate Evidence Failures
     // -------------------------------------------------------------------------
-    if (objectiveSummary.failed_count > 0) {
+    const unresolvedObjectiveCount =
+      objectiveSummary.unresolved_failed_count ?? objectiveSummary.failed_count;
+    if (unresolvedObjectiveCount > 0) {
       openFailures.push(
-        `Objective acoustic criteria failed: ${objectiveSummary.failed_count} measurements out of tolerance.`
+        `Objective acoustic criteria failed: ${unresolvedObjectiveCount} measurement(s) out of tolerance.`
       );
     }
 
@@ -571,12 +578,15 @@ export class ValidationOutcomeSynthesizer {
   // ---------------------------------------------------------------------------
 
   private buildObjectiveSummary(
-    records: ReadonlyArray<any>
+    records: ReadonlyArray<any>,
+    conflictRecords?: ReadonlyArray<EvidenceConflictRecord>,
+    packageId?: string
   ): ObjectiveSummaryData {
     let passedCount = 0;
     let failedCount = 0;
     let borderlineCount = 0;
     let notApplicableCount = 0;
+    let dispositionedCount = 0;
     const byCategory: Record<
       string,
       { passed: number; failed: number; borderline: number; not_applicable: number }
@@ -600,6 +610,18 @@ export class ValidationOutcomeSynthesizer {
       } else if (r.objective_pass_fail === OBJECTIVE_PASS_FAIL_STATUSES.FAIL) {
         failedCount++;
         byCategory[cat].failed++;
+
+        // Traceable exact evidence linkage: check if this specific failed objective measurement
+        // is formally dispositioned by an accepted intentional trade-off
+        const isDispositioned = conflictRecords?.some(
+          (c) =>
+            (!packageId || c.package_id === packageId) &&
+            c.resolution_status === CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF &&
+            c.competing_evidence_refs.includes(r.objective_evidence_id)
+        );
+        if (isDispositioned) {
+          dispositionedCount++;
+        }
       }
 
       if (r.tolerance_evaluation === TOLERANCE_EVALUATIONS.BORDERLINE) {
@@ -626,6 +648,8 @@ export class ValidationOutcomeSynthesizer {
       not_applicable_count: notApplicableCount,
       by_category: byCategory,
       out_of_tolerance_metrics: outOfToleranceMetrics,
+      dispositioned_count: dispositionedCount,
+      unresolved_failed_count: failedCount - dispositionedCount,
     };
   }
 

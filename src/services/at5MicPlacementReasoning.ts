@@ -51,6 +51,13 @@ export interface MicPlacementDecision {
   wasCompletedFromPartialOrOmitted: boolean;
 }
 
+function getStyleArray(toneProfile?: Partial<ToneProfile>): string[] {
+  if (!toneProfile?.style) return [];
+  if (Array.isArray(toneProfile.style)) return toneProfile.style;
+  if (typeof toneProfile.style === 'string') return [toneProfile.style];
+  return [];
+}
+
 /**
  * Assigns an authoritative tonal role to a selected microphone model
  * based on its acoustic transducer characteristics and musical function.
@@ -61,8 +68,9 @@ export function determineMicrophoneRole(
   micSlot: "Mic_0" | "Mic_1" | "Mic_2" = "Mic_0"
 ): string {
   const clean = (micModel || "").toLowerCase().trim();
+  const styles = getStyleArray(toneProfile);
   const isBassTone = toneProfile?.role === "bass" || 
-    (toneProfile?.style || []).some(s => s.toLowerCase().includes("bass"));
+    styles.some(s => s.toLowerCase().includes("bass"));
 
   if (isBassTone || clean.includes("vintage dynamic 20") || clean.includes("dynamic 20") || clean.includes("re20")) {
     return "bass low-end/fullness mic";
@@ -77,7 +85,7 @@ export function determineMicrophoneRole(
   }
 
   if (clean.includes("87") || clean.includes("u87") || clean.includes("414") || clean.includes("c414") || clean.includes("condenser")) {
-    if (toneProfile?.style?.some(s => ["ambient", "shoegaze", "surf", "room"].includes(s.toLowerCase()))) {
+    if (styles.some(s => ["ambient", "shoegaze", "surf", "room"].includes(s.toLowerCase()))) {
       return "room/space mic";
     }
     return "detail/polish mic";
@@ -111,7 +119,7 @@ export function determineTargetToneRequirement(
   const hasHarshnessRisk = isHighGain || promptLower.includes("fizz") || promptLower.includes("harsh") || promptLower.includes("buzz") || promptLower.includes("solid-state") || promptLower.includes("solid state");
   const isRhythm = toneProfile?.role === "rhythm" || promptLower.includes("rhythm") || promptLower.includes("palm mute") || promptLower.includes("chug");
   const isLead = toneProfile?.role === "lead" || promptLower.includes("lead") || promptLower.includes("solo");
-  const isAmbient = (toneProfile?.style || []).some(s => ["ambient", "shoegaze", "surf", "spatial"].includes(s.toLowerCase())) || promptLower.includes("ambient");
+  const isAmbient = getStyleArray(toneProfile).some(s => ["ambient", "shoegaze", "surf", "spatial"].includes(s.toLowerCase())) || promptLower.includes("ambient");
 
   if (role.includes("attack") || role.includes("presence")) {
     if (isHighGain && isRhythm) {
@@ -331,7 +339,7 @@ export function reasonSemanticMicPlacement(input: MicReasoningInput): MicPlaceme
     promptLower.includes("solid-state") || promptLower.includes("solid state") ||
     promptLower.includes("cowboys") || promptLower.includes("pantera") || promptLower.includes("kill 'em all") || promptLower.includes("kill em all");
 
-  const isAmbientOrSpatial = (toneProfile?.style || []).some(s => 
+  const isAmbientOrSpatial = getStyleArray(toneProfile).some(s => 
     ["ambient", "shoegaze", "surf", "reverb-drenched", "roomy", "spatial"].includes(s.toLowerCase())
   ) || promptLower.includes("ambient") || promptLower.includes("shoegaze");
 

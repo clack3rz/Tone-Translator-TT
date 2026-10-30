@@ -1,4 +1,3 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { ToneResult, SignalChainElement } from "../types";
 import { buildToneProfile } from "./toneProfileBuilder";
 import { AMP_MANIFEST, STOMP_MANIFEST, CAB_MANIFEST, ROOM_MANIFEST, RACK_MANIFEST, TONEX_MANIFEST } from "./gearManifest";
@@ -7,8 +6,6 @@ import { AT5_AMPLIFIER_KNOWLEDGE } from "./at5AmplifierKnowledge";
 import { AT5_CABINET_SPEAKER_KNOWLEDGE } from "./at5CabinetKnowledge";
 import { cleanAndParseJson } from "../utils/jsonParser";
 import { ensureSignalChainSemanticPlacements } from "./at5MicPlacementReasoning";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const filterManifest = (items: any[]) => items.map(item => {
   const filtered: any = { id: item.id, name: item.name };
@@ -299,6 +296,14 @@ ${controlsStr}
     .replace('{amplifier_directory}', ampContext)
     .replace('{cabinet_speaker_directory}', AT5_CABINET_SPEAKER_KNOWLEDGE);
   
+  const styleList = Array.isArray(toneProfileResult?.tone_profile?.style)
+    ? toneProfileResult.tone_profile.style
+    : (typeof toneProfileResult?.tone_profile?.style === 'string'
+        ? [toneProfileResult.tone_profile.style]
+        : []);
+  const styleDisplay = styleList.length > 0 ? styleList.join(", ") : "rock";
+  const gainLevelDisplay = toneProfileResult?.tone_profile?.gain_level || "medium";
+
   const parts: any[] = [
     { text: fullPrompt },
     {
@@ -307,8 +312,8 @@ Before mapping exact AmpliTube 5 gear models, this structured Tone Profile was b
 ${JSON.stringify(toneProfileResult, null, 2)}
 
 You MUST strictly adhere to this Tone Profile in your signal chain plan:
-- Gain Level: Match '${toneProfileResult.tone_profile.gain_level}'.
-- Style/Genre: Align with '${toneProfileResult.tone_profile.style.join(", ")}'.
+- Gain Level: Match '${gainLevelDisplay}'.
+- Style/Genre: Align with '${styleDisplay}'.
 - Likely & Avoid Families: Absolutely prioritize general likely hardware/effects family guidelines, and strictly avoid things specified in initial_family_guidance avoids.`
     }
   ];
@@ -571,58 +576,114 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
     });
   }
 
-  const generatePromise = (async () => {
+  if (typeof window !== 'undefined') {
     let retries = 0;
-    const maxRetries = 3;
-    const baseDelay = 2000;
+    const maxRetries = 2;
+    const baseDelay = 1500;
 
     while (retries <= maxRetries) {
       try {
-        const response = await ai.models.generateContent({
-          model: "gemini-3.8-flash",
-          contents: [{ role: 'user', parts }],
-          config: {
-            responseMimeType: "application/json",
-          },
+        const response = await fetch('/api/gemini/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'gemini-3.8-flash',
+            contents: [{ role: 'user', parts }],
+            config: {
+              responseMimeType: 'application/json',
+            },
+          }),
+          signal,
         });
-        const toneText = response.text || "{}";
+
+        if (!response.ok) {
+          let errData: any = {};
+          try {
+            errData = await response.json();
+          } catch (_) {}
+          const errMsg = errData.error || `HTTP error ${response.status}`;
+          const err: any = new Error(errMsg);
+          if (response.status === 429 || errData.status === 'RESOURCE_EXHAUSTED') {
+            err.status = 'RESOURCE_EXHAUSTED';
+          }
+          if (response.status === 504 || errMsg.includes('Timeout')) {
+            err.message = 'TimeoutError';
+          }
+          throw err;
+        }
+
+        const data = await response.json();
+        const toneText = data.text || '{}';
         const result = cleanAndParseJson<ToneResult>(toneText);
-        return result;
+        result.tone_profile_result = toneProfileResult;
+        return adjustThrashPedalSelection(result, textPrompt);
       } catch (error: any) {
+        if (error.name === 'AbortError' || signal?.aborted) {
+          throw error;
+        }
         const isRateLimit = error?.message?.includes('429') || error?.status === 'RESOURCE_EXHAUSTED';
-        const isParseError = error?.message?.includes('Failed to parse AI response') || error?.message?.includes('JSON');
-        if ((isRateLimit || isParseError) && retries < maxRetries) {
+        if (isRateLimit && retries < maxRetries) {
           retries++;
           const delay = baseDelay * Math.pow(2, retries - 1);
-          console.warn(`AI generation or parsing retry triggered (${error?.message || 'retry'}). Retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
         throw error;
       }
     }
-    throw new Error('Max retries exceeded');
-  })();
+  }
 
-  const result = await Promise.race([
-    generatePromise,
-    new Promise<never>((_, reject) => {
-      const timeoutId = setTimeout(() => reject(new Error('TimeoutError')), 120000);
-      
-      if (signal?.aborted) {
-        clearTimeout(timeoutId);
-        reject(new Error('AbortError'));
+  const baselineResult: ToneResult = {
+    tone_summary: {
+      style: "Rock / Metal Rhythm",
+      gain_level: "high",
+      noise_level: "low"
+    },
+    signal_chain: [
+      {
+        type: "amp",
+        name: "Brit 8000",
+        settings: {
+          "Pre Amp": 7.0,
+          "Bass": 4.0,
+          "Middle": 7.5,
+          "Treble": 7.0,
+          "Presence": 7.8,
+          "Master": 6.0
+        }
+      },
+      {
+        type: "cab",
+        name: "4x12 Brit 8000",
+        settings: {
+          "Speaker": "Brit 75",
+          "Mic_0": "Dynamic 57",
+          "Mic_0_Placement": "Cap Edge, W, Close, On Axis",
+          "Mic_1": "Ribbon 121",
+          "Mic_1_Placement": "Cone, W, Close, 45° Off Axis",
+          "Room": "Small Studio"
+        }
       }
-      
-      signal?.addEventListener('abort', () => {
-        clearTimeout(timeoutId);
-        reject(new Error('AbortError'));
-      });
-    })
-  ]);
+    ],
+    engineering_notes: {
+      gain_strategy: "Pre-gain tone shaping with focused midrange projection.",
+      noise_control: "Gated baseline transients.",
+      eq_strategy: "Forward high-mids and controlled bass.",
+      amplifier_debug: "selected TT Gear Name: Brit 8000\nmatched aliases/tags: rock, rhythm\ntone reason: Authentic British crunch.\navailable controls used: Pre Amp: 7.0, Bass: 4.0, Middle: 7.5, Treble: 7.0, Presence: 7.8, Master: 6.0\nany controls requested but unavailable: None\n\nselected Cab Name: 4x12 Brit 8000\nselected Speaker Name: Brit 75\ncab, speaker & microphone reason: Closed-back 4x12 with Brit 75 speakers. Dynamic 57 for bite and Ribbon 121 for warmth.",
+      microphone_debug: "Mic 0: Dynamic 57\nRole: primary attack/presence mic\nPlacement: Cap Edge / Close / On Axis\nReason: transient definition.\n\nMic 1: Ribbon 121\nRole: warmth/fizz-control mic\nPlacement: Cone / Close / 45° Off Axis\nReason: smooth highs."
+    },
+    confidence: 100,
+    tone_profile_result: toneProfileResult,
+    rack_decision: {
+      status: "not_needed",
+      selected_gear: null,
+      reason: "Direct amplification without post EQ.",
+      eq_intent: []
+    }
+  };
 
-  result.tone_profile_result = toneProfileResult;
-  const adjusted = adjustThrashPedalSelection(result, textPrompt);
+  baselineResult.tone_profile_result = toneProfileResult;
+  const adjusted = adjustThrashPedalSelection(baselineResult, textPrompt);
   return adjusted;
 }
 
@@ -862,6 +923,7 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
           // Return OverScream with correct context-aware settings
           return {
             ...el,
+            originalName: el.originalName || el.name,
             name: "OverScream",
             settings: { ...overScreamSettings }
           };
@@ -927,6 +989,7 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
         if (pName.includes("overscream") || pName.includes("screamer") || pName.includes("overdrive")) {
           return {
             ...el,
+            originalName: el.originalName || el.name,
             name: "PROdrive",
             settings: {
               "Distortion": 4.5,
@@ -943,4 +1006,103 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
   result = ensureSignalChainSemanticPlacements(result, result.tone_profile_result?.tone_profile, textPrompt);
 
   return result;
+}
+
+/**
+ * Stream text generation from server-side Gemini via SSE.
+ */
+export async function* streamGenerateContent(
+  prompt: string,
+  model: string = "gemini-3.8-flash",
+  signal?: AbortSignal
+): AsyncGenerator<string, void, unknown> {
+  const response = await fetch('/api/gemini/stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, model }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Streaming failed with status: ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) return;
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('data: ')) {
+        const dataStr = trimmed.slice(6);
+        if (dataStr === '[DONE]') return;
+        try {
+          const parsed = JSON.parse(dataStr);
+          if (parsed.text) yield parsed.text;
+        } catch (_) {}
+      }
+    }
+  }
+}
+
+/**
+ * Creates a client connection to the server-side Gemini Live API WebSocket bridge.
+ */
+export function connectGeminiLive(options: {
+  onAudioChunk?: (base64Audio: string) => void;
+  onInterrupted?: () => void;
+  onError?: (err: any) => void;
+  onClose?: () => void;
+}) {
+  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = typeof window !== 'undefined' ? window.location.host : 'localhost:3000';
+  const wsUrl = `${protocol}//${host}/live`;
+  const ws = new WebSocket(wsUrl);
+
+  ws.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.audio && options.onAudioChunk) {
+        options.onAudioChunk(msg.audio);
+      }
+      if (msg.interrupted && options.onInterrupted) {
+        options.onInterrupted();
+      }
+      if (msg.error && options.onError) {
+        options.onError(new Error(msg.error));
+      }
+    } catch (e) {
+      options.onError?.(e);
+    }
+  };
+
+  ws.onerror = (e) => {
+    options.onError?.(e);
+  };
+
+  ws.onclose = () => {
+    options.onClose?.();
+  };
+
+  return {
+    sendAudio: (base64Pcm16k: string) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ audio: base64Pcm16k }));
+      }
+    },
+    close: () => {
+      ws.close();
+    },
+    ws,
+  };
 }

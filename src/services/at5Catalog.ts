@@ -205,11 +205,14 @@ const scoreItem = (item: AT5CatalogItem, query: string, requestedGroup: AT5GearG
      score -= 2000; 
   }
 
-  score += Math.min(item.usedInPresets ?? 0, 50);
+  // Only award preset popularity and verified GUID bonuses if underlying lexical match evidence exists
+  if (score > 0) {
+    score += Math.min(item.usedInPresets ?? 0, 50);
 
-  // Bonus for having a real GUID
-  if (item.guid && item.guid.length > 10) {
-    score += 500;
+    // Bonus for having a real GUID
+    if (item.guid && item.guid.length > 10) {
+      score += 500;
+    }
   }
 
   // Avoid fake / previously hallucinated ids.

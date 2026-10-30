@@ -21,6 +21,7 @@ import {
   FROZEN_HARD_BLOCKERS,
   ProductionReadinessSynthesisInput,
 } from "./productionReadinessTypes";
+import { GOVERNED_HARD_BLOCKERS } from "../outcome/outcomeTypes";
 
 export interface HardBlockerEvaluationResult {
   readonly hardBlockersPresent: readonly string[];
@@ -195,42 +196,78 @@ export function evaluateHardBlockers(
   }
 
   // ---------------------------------------------------------------------------
-  // 5. Hard Blocker 5: Contaminated, miscalibrated, or missing Golden fixtures
+  // 5. Hard Blocker 5: Runtime instability, resource leak, or audio buffer underruns (BLOCK-05)
   // ---------------------------------------------------------------------------
-  let hasFixtureIssue = false;
-  if (input.fixtureRecords && input.fixtureRecords.length > 0) {
-    for (const fix of input.fixtureRecords) {
+  let hasRuntimeInstability = false;
+  if (input.objectiveEvidence) {
+    for (const obj of input.objectiveEvidence) {
       if (
-        fix.contamination_status === FIXTURE_CONTAMINATION_STATUSES.CONTAMINATED ||
-        fix.lifecycle_status === FIXTURE_LIFECYCLE_STATUSES.INVALIDATED
+        obj.metric_category === OBJECTIVE_METRIC_CATEGORIES.OPERATIONAL_LATENCY_PERFORMANCE &&
+        obj.objective_pass_fail === OBJECTIVE_PASS_FAIL_STATUSES.FAIL
       ) {
-        hasFixtureIssue = true;
-        details[FROZEN_HARD_BLOCKERS.BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING] =
-          `Golden fixture "${fix.fixture_id}" is contaminated or miscalibrated/invalidated ("${fix.contamination_status}" / "${fix.lifecycle_status}").`;
+        hasRuntimeInstability = true;
+        details[FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY] =
+          `Operational stability / latency budget breach in objective evidence "${obj.objective_evidence_id}".`;
         break;
       }
     }
-  } else if (!input.fixtureRecords && (input.packageRecord.validation_case_refs?.length ?? 0) > 0) {
-    // Check if outcome was BLOCKED due to fixture missing
-    if (
-      input.validationOutcome?.unresolved_issues.some((issue) =>
-        issue.toLowerCase().includes("fixture") || issue.toLowerCase().includes("contamination")
-      ) ||
-      (input.validationOutcome?.outcome_class === VALIDATION_OUTCOME_CLASSES.BLOCKED &&
-        input.validationOutcome?.summary_verdict.toLowerCase().includes("fixture"))
-    ) {
-      hasFixtureIssue = true;
-      details[FROZEN_HARD_BLOCKERS.BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING] =
-        "Golden fixtures missing or contaminated during validation.";
+  }
+
+  if (!hasRuntimeInstability && input.executionRecords) {
+    for (const exec of input.executionRecords) {
+      if (
+        (exec.profile_id.includes("08") ||
+          exec.profile_id.includes("operational") ||
+          exec.profile_id.includes("stability")) &&
+        (exec.outcome === EXECUTION_OUTCOMES.FAILED || exec.outcome === EXECUTION_OUTCOMES.ABORTED)
+      ) {
+        hasRuntimeInstability = true;
+        details[FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY] =
+          `Operational execution failed or aborted under load in execution "${exec.execution_id}".`;
+        break;
+      }
     }
   }
 
-  if (hasFixtureIssue) {
-    blockers.push(FROZEN_HARD_BLOCKERS.BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING);
+  if (!hasRuntimeInstability && input.failureAttributions) {
+    for (const f of input.failureAttributions) {
+      if (
+        f.attribution_class === FAILURE_ATTRIBUTION_CLASSES.RUNTIME_IMPLEMENTATION &&
+        (f.gate_8_blocked || f.materiality === FAILURE_MATERIALITIES.CRITICAL_BLOCKER)
+      ) {
+        hasRuntimeInstability = true;
+        details[FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY] =
+          `Runtime implementation instability in failure attribution "${f.failure_id}".`;
+        break;
+      }
+    }
+  }
+
+  if (!hasRuntimeInstability && input.validationOutcome) {
+    const outcomeWithBlockers = input.validationOutcome as { active_hard_blockers?: readonly string[] };
+    if (
+      outcomeWithBlockers.active_hard_blockers?.includes(
+        GOVERNED_HARD_BLOCKERS.BLOCK_05_INSTABILITY
+      ) ||
+      input.validationOutcome.unresolved_issues?.some(
+        (issue) =>
+          issue.toLowerCase().includes("runtime instability") ||
+          issue.toLowerCase().includes("buffer underrun") ||
+          issue.toLowerCase().includes("resource leak")
+      )
+    ) {
+      hasRuntimeInstability = true;
+      details[FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY] =
+        "Runtime instability or buffer underrun recorded in validation outcome.";
+    }
+  }
+
+  if (hasRuntimeInstability) {
+    blockers.push(FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY);
   }
 
   // ---------------------------------------------------------------------------
-  // 6. Hard Blocker 6: Requested authorization scope broader than actually tested scope
+  // 6. Hard Blocker 6: Requested authorization scope broader than actually tested scope (BLOCK-06)
   // ---------------------------------------------------------------------------
   let hasScopeInflation = false;
   const testedUnits = new Set(input.scopeRecord.included_units);
@@ -256,7 +293,44 @@ export function evaluateHardBlockers(
   }
 
   // ---------------------------------------------------------------------------
-  // 7. Hard Blocker 7: Unresolved critical uncertainty regarding production tone safety
+  // 7. Hard Blocker 7: Contaminated Golden fixtures leaked into model tuning (BLOCK-07)
+  // ---------------------------------------------------------------------------
+  let hasFixtureContamination = false;
+  if (input.fixtureRecords && input.fixtureRecords.length > 0) {
+    for (const fix of input.fixtureRecords) {
+      if (fix.contamination_status === FIXTURE_CONTAMINATION_STATUSES.CONTAMINATED) {
+        hasFixtureContamination = true;
+        details[FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION] =
+          `Golden fixture "${fix.fixture_id}" is contaminated (${fix.contamination_status}).`;
+        break;
+      }
+    }
+  }
+
+  if (!hasFixtureContamination && input.validationOutcome) {
+    const outcomeWithBlockers = input.validationOutcome as { active_hard_blockers?: readonly string[] };
+    if (
+      outcomeWithBlockers.active_hard_blockers?.includes(
+        GOVERNED_HARD_BLOCKERS.BLOCK_07_CONTAMINATION
+      ) ||
+      input.validationOutcome.unresolved_issues?.some(
+        (issue) =>
+          issue.toLowerCase().includes("fixture contamination") ||
+          issue.toLowerCase().includes("fixture leak")
+      )
+    ) {
+      hasFixtureContamination = true;
+      details[FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION] =
+        "Fixture contamination recorded in validation outcome.";
+    }
+  }
+
+  if (hasFixtureContamination) {
+    blockers.push(FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 8. Hard Blocker 8: Unresolved critical uncertainty regarding production tone safety or live audio risk (BLOCK-08)
   // ---------------------------------------------------------------------------
   let hasCriticalUncertainty = false;
   if (input.uncertaintyRecords && input.uncertaintyRecords.length > 0) {
@@ -264,48 +338,33 @@ export function evaluateHardBlockers(
       const isCritical =
         u.gate_8_impact === UNCERTAINTY_GATE_8_IMPACTS.FORCES_BLOCK ||
         u.potential_production_risk.toLowerCase().includes("critical") ||
-        u.potential_production_risk.toLowerCase().includes("tone safety");
+        u.potential_production_risk.toLowerCase().includes("tone safety") ||
+        u.potential_production_risk.toLowerCase().includes("live audio");
 
       if (isCritical) {
         hasCriticalUncertainty = true;
-        details[FROZEN_HARD_BLOCKERS.BLOCKER_07_CRITICAL_TONE_UNCERTAINTY] =
+        details[FROZEN_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY] =
           `Unresolved critical uncertainty "${u.uncertainty_id}": ${u.potential_production_risk}.`;
         break;
       }
     }
   }
 
-  if (hasCriticalUncertainty) {
-    blockers.push(FROZEN_HARD_BLOCKERS.BLOCKER_07_CRITICAL_TONE_UNCERTAINTY);
-  }
-
-  // ---------------------------------------------------------------------------
-  // 8. Hard Blocker 8: Unresolved upstream architectural violation across Phases 1C.5a through 1C.5g
-  // ---------------------------------------------------------------------------
-  let hasUpstreamViolation = false;
-  if (input.upstreamGovernanceState) {
-    const gov = input.upstreamGovernanceState;
-    if (gov.upstream_violations && gov.upstream_violations.length > 0) {
-      hasUpstreamViolation = true;
-      details[FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION] =
-        `Active upstream architectural violations: ${gov.upstream_violations.join(", ")}.`;
-    } else if (gov.ungrounded_reasoning_detected === true) {
-      hasUpstreamViolation = true;
-      details[FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION] =
-        "Ungrounded or fabricated intervention reasoning detected in upstream pipeline.";
-    } else if (gov.candidate_lesson_quarantined === false) {
-      hasUpstreamViolation = true;
-      details[FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION] =
-        "Candidate lesson quarantine violation: unapproved candidate lesson promoted.";
-    } else if (gov.principles_complied === false) {
-      hasUpstreamViolation = true;
-      details[FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION] =
-        "Non-compliance with the 21 Architectural Principles detected.";
+  if (!hasCriticalUncertainty && input.validationOutcome) {
+    const outcomeWithBlockers = input.validationOutcome as { active_hard_blockers?: readonly string[] };
+    if (
+      outcomeWithBlockers.active_hard_blockers?.includes(
+        GOVERNED_HARD_BLOCKERS.BLOCK_08_UNCERTAINTY
+      )
+    ) {
+      hasCriticalUncertainty = true;
+      details[FROZEN_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY] =
+        "Critical uncertainty recorded in validation outcome.";
     }
   }
 
-  if (hasUpstreamViolation) {
-    blockers.push(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION);
+  if (hasCriticalUncertainty) {
+    blockers.push(FROZEN_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY);
   }
 
   return {

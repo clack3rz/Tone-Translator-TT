@@ -1,73 +1,9 @@
-import { GoogleGenAI } from "@google/genai";
 import { ToneProfileResult } from "../types";
-import { cleanAndParseJson } from "../utils/jsonParser";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-const SYSTEM_PROMPT = `
-You are the world-class "Tone Profile Builder AI", a master guitar tone taxonomist and classifier.
-Your single goal is to analyze the user's natural language tone request (and optional meta inputs) and build a highly structured, multidimensional Tone Profile JSON.
-
-HARD CONSTRAINTS:
-- Return ONLY valid JSON matching the schema below.
-- Do NOT pick specific gear brands or model names (e.g., do NOT select "Amps: British Tube Lead 1" or "Mics: Dynamic 57" - that is the job of the gear mapper stage).
-- Define broad, character-driven families (e.g., "vintage Marshall", "hot-rodded Marshall", "Mesa Mark", "Fender clean", "Greenback", "Vintage 30", "G12T-75", "Dynamic 57 close microphone", "Ribbon 121 warmth microphone", etc.).
-- Categorize the style / era / role / gain / dynamics / low-end / midrange / highs before any final gear decision.
-- Always include negative constraints in "effects_avoid" or "amp_family_avoid" lists where key overlaps are dangerous. E.g., for classic rock rhythm tones, avoid "modern metal", "extreme high gain", "Rectifier-style", "delay/chorus by default", "extreme pre-amp saturation".
-- Ensure that the future audio-derived placeholder fields are omitted or left undefined/omitted in the direct JSON output, but feel free to include schema placeholders in comments or future-ready designs.
-
-SCHEMA FOR JSON OUTPUT:
-{
-  "tone_profile": {
-    "source_type": "text | audio | text_plus_audio | learning_card",
-    "input_summary": "Concise summary of user's core request",
-    "artist": "string - empty if none",
-    "song": "string - empty if none",
-    "album": "string - empty if none",
-    "player": "string - empty if none",
-    "era": "e.g., 1970s, late 1980s, modern, empty if unknown",
-    "style": ["classic rock", "thrash metal", "glam metal", "modern progressive", "blues", "jazz", "country", "punk", "grunge", "doom", "alternative", "retro"],
-    "role": "rhythm | lead | clean | acoustic_style | bass | mixed | unknown",
-    "gain_level": "clean | edge | low | medium-low | medium | medium-high | high | unknown",
-    "distortion_type": "clean | edge_of_breakup | crunch | overdrive | saturated | fuzz | unknown",
-    "low_end": "loose | controlled | tight | boomy | unknown",
-    "midrange": "scooped | neutral | forward | aggressive | unknown",
-    "highs": "dark | smooth | bright | harsh | unknown",
-    "attack": "soft | balanced | sharp | unknown",
-    "dynamics": "dynamic | slightly_compressed | compressed | unknown",
-    "effects_profile": "none | minimal | moderate | heavy | unknown",
-    "room": "dry | small | medium | large | unknown",
-    "width": "mono | narrow | double_tracked | wide | unknown",
-    "production_style": "raw | polished | live | studio | unknown",
-    "confidence": "low | medium | high"
-  },
-  "initial_family_guidance": {
-    "amp_family_likely": ["comma-separated list of likely general amp styles"],
-    "amp_family_avoid": ["comma-separated list of amp styles to penalize/avoid"],
-    "cab_family_likely": ["likely cabinet style or construction"],
-    "speaker_family_likely": ["likely speaker models"],
-    "mic_strategy_likely": ["likely microphone types, roles, and placement direction"],
-    "effects_likely": ["effects likely needed"],
-    "effects_avoid": ["effects to explicitly avoid"]
-  },
-  "classification_reasoning": {
-    "style_reasoning": "Detailed breakdown of the genre/style categorization",
-    "era_reasoning": "Breakdown of the vintage or modern production environment",
-    "role_reasoning": "Reasoning for selected role (rhythm vs lead vs bass)",
-    "gain_reasoning": "Detailed description of the distortion saturation requirements",
-    "effects_reasoning": "Analysis of the wet/dry mix requirements",
-    "family_reasoning": "Strategy for likelihood selection of hardware families"
-  },
-  "warnings": ["array of warning messages or potential pitfalls like high fizz, gain smear, or conflicting keywords"]
-}
-
-INPUT FOR ANALYSIS:
-"{user_input}"
-`;
 
 /**
  * Builds a structured Tone Profile JSON from a text-based request.
- * Designed to be future-proof for isolated audio input.
+ * In browser environments, requests the server-side Gemini endpoint.
+ * In local/test environments or offline, uses local deterministic recipes and classification.
  */
 export async function buildToneProfile(
   textPrompt: string,
@@ -76,75 +12,54 @@ export async function buildToneProfile(
 ): Promise<ToneProfileResult> {
   const lowerPrompt = textPrompt.toLowerCase().trim();
 
-  // Try local determinstic recipes / matches first for high reliability on target validation recipes,
-  // or as extremely fast and custom-tuned classifications.
-  let matchingRecipeResult = checkStaticToneProfileRecipes(lowerPrompt);
+  // Try local deterministic recipes first for instant validation response
+  const matchingRecipeResult = checkStaticToneProfileRecipes(lowerPrompt);
   if (matchingRecipeResult) {
     return matchingRecipeResult;
   }
 
-  const fullPrompt = SYSTEM_PROMPT.replace("{user_input}", textPrompt);
-  const parts: any[] = [{ text: fullPrompt }];
+  // When running in the browser, call the server-side Gemini endpoint
+  if (typeof window !== 'undefined') {
+    try {
+      const response = await fetch('/api/gemini/tone-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ textPrompt, targetAudio }),
+        signal,
+      });
 
-  if (targetAudio) {
-    parts.push({ text: "Reference Audio uploaded (future audio input placeholders can be filled using this):" });
-    parts.push({
-      inlineData: {
-        data: targetAudio.base64,
-        mimeType: targetAudio.mimeType,
-      },
-    });
-  }
-
-  try {
-    let retries = 0;
-    const maxRetries = 2;
-    const baseDelay = 1500;
-    let responseText = "";
-
-    while (retries <= maxRetries) {
-      try {
-        const response = await ai.models.generateContent({
-          model: "gemini-3.8-flash",
-          contents: [{ role: 'user', parts }],
-          config: {
-            responseMimeType: "application/json",
-          },
-        });
-        responseText = response.text || "{}";
-        break;
-      } catch (error: any) {
-        const isRateLimit = error?.message?.includes('429') || error?.status === 'RESOURCE_EXHAUSTED';
-        if (isRateLimit && retries < maxRetries) {
-          retries++;
-          const delay = baseDelay * Math.pow(2, retries - 1);
-          console.warn(`Rate limit in Tone Profile Builder. Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
+      if (response.ok) {
+        const parsed = (await response.json()) as ToneProfileResult;
+        if (parsed && parsed.tone_profile) {
+          if (typeof parsed.tone_profile.style === 'string') {
+            parsed.tone_profile.style = [parsed.tone_profile.style];
+          } else if (!Array.isArray(parsed.tone_profile.style)) {
+            parsed.tone_profile.style = [];
+          }
+          parsed.tone_profile.gain_level = parsed.tone_profile.gain_level || "medium";
+          parsed.tone_profile.spectral_centroid = undefined;
+          parsed.tone_profile.low_end_tightness = undefined;
+          parsed.tone_profile.midrange_emphasis = undefined;
+          parsed.tone_profile.gain_saturation_estimate = undefined;
+          parsed.tone_profile.dynamic_range_estimate = undefined;
+          parsed.tone_profile.transient_attack_estimate = undefined;
+          parsed.tone_profile.reverb_room_estimate = undefined;
+          parsed.tone_profile.width_estimate = undefined;
+          parsed.tone_profile.noise_fizz_estimate = undefined;
         }
-        throw error;
+        return parsed;
       }
+    } catch (err: any) {
+      if (err.name === 'AbortError' || signal?.aborted) {
+        throw err;
+      }
+      console.warn("Server tone-profile endpoint unavailable, using local deterministic fallback:", err);
     }
-
-    const parsed = cleanAndParseJson<ToneProfileResult>(responseText);
-    // Inject future audio-derived placeholder fields in ToneProfile to fulfill Workflow 2 structural placeholders
-    if (parsed && parsed.tone_profile) {
-      parsed.tone_profile.spectral_centroid = undefined;
-      parsed.tone_profile.low_end_tightness = undefined;
-      parsed.tone_profile.midrange_emphasis = undefined;
-      parsed.tone_profile.gain_saturation_estimate = undefined;
-      parsed.tone_profile.dynamic_range_estimate = undefined;
-      parsed.tone_profile.transient_attack_estimate = undefined;
-      parsed.tone_profile.reverb_room_estimate = undefined;
-      parsed.tone_profile.width_estimate = undefined;
-      parsed.tone_profile.noise_fizz_estimate = undefined;
-    }
-    return parsed;
-  } catch (err) {
-    console.warn("Fell back to local deterministic rule-based Tone Profile Builder:", err);
-    return createLocalDeterministicToneProfile(textPrompt);
   }
+
+  return createLocalDeterministicToneProfile(textPrompt);
 }
+
 
 /**
  * Deterministic tone profile matcher for standard validation suite tests

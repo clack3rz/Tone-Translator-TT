@@ -6,6 +6,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  CONFLICT_RESOLUTION_STATUSES,
+  CONFLICT_RESOLUTION_STRATEGIES,
+  CONFLICT_TYPES,
   EXECUTION_OUTCOMES,
   FAILURE_ATTRIBUTION_CLASSES,
   FAILURE_MATERIALITIES,
@@ -37,6 +40,7 @@ import {
   InvalidEndpointError,
 } from "../sound-engineer/validation/graph/edgeTypes";
 import {
+  EvidenceConflictRecord,
   ObjectiveEvidenceRecord,
   PerceptualEvaluationRecord,
   ProductionReadinessAssessmentRecord,
@@ -552,48 +556,47 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
   });
 
   // -------------------------------------------------------------------------
-  // 7. Hard Blocker 5: Contaminated, miscalibrated, or missing Golden fixtures & SUSPECT handling
   // -------------------------------------------------------------------------
-  it("07: BLOCKER-05: CONTAMINATED or INVALIDATED triggers Blocker 5; active SUSPECT forces INCONCLUSIVE pillar", () => {
-    // Case A: Confirmed CONTAMINATED fixture triggers Blocker 5
-    const inputContam = createPristineInput({
-      fixtureRecords: [
-        createTestFixture({
-          contamination_status: FIXTURE_CONTAMINATION_STATUSES.CONTAMINATED,
+  // 7. Hard Blocker 5: Runtime instability, resource leak, or audio buffer underruns (BLOCK-05)
+  // -------------------------------------------------------------------------
+  it("07: BLOCKER-05: Runtime instability (latency spike, buffer underrun, resource leak) disqualifies Gate 8", () => {
+    // Case A: Objective evidence latency / operational stability failure triggers Blocker 5
+    const inputLatencyFail = createPristineInput({
+      objectiveEvidence: [
+        createTestObjectiveEvidence(),
+        createTestObjectiveEvidence({
+          objective_evidence_id: "obj_latency_breach_01",
+          metric_category: OBJECTIVE_METRIC_CATEGORIES.OPERATIONAL_LATENCY_PERFORMANCE,
+          measured_parameters: { buffer_underrun_count: 35.0 },
+          measured_delta: 35.0,
+          objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+          tolerance_evaluation: TOLERANCE_EVALUATIONS.OUT_OF_TOLERANCE,
         }),
       ],
     });
-    const resContam = synthesizer.synthesizeProductionReadiness(inputContam);
-    assert.equal(resContam.gate8Eligible, false);
-    assert.ok(resContam.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING));
+    const resLatency = synthesizer.synthesizeProductionReadiness(inputLatencyFail);
+    assert.equal(resLatency.gate8Eligible, false);
+    assert.ok(resLatency.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY));
+    assert.equal(resLatency.pillarEvaluations.platform_operational_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
 
-    // Case B: Miscalibrated / INVALIDATED fixture triggers Blocker 5
-    const inputInval = createPristineInput({
-      fixtureRecords: [
-        createTestFixture({
-          lifecycle_status: FIXTURE_LIFECYCLE_STATUSES.INVALIDATED,
+    // Case B: Operational profile execution failure triggers Blocker 5
+    const inputExecFail = createPristineInput({
+      executionRecords: [
+        createTestExecution({
+          execution_id: "exec_perf_08",
+          profile_id: "profile_08_operational_stability",
+          outcome: EXECUTION_OUTCOMES.FAILED,
         }),
       ],
     });
-    const resInval = synthesizer.synthesizeProductionReadiness(inputInval);
-    assert.equal(resInval.gate8Eligible, false);
-    assert.ok(resInval.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING));
+    const resExecFail = synthesizer.synthesizeProductionReadiness(inputExecFail);
+    assert.equal(resExecFail.gate8Eligible, false);
+    assert.ok(resExecFail.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY));
 
-    // Case C: Active SUSPECT fixture (quarantine pending verification) does NOT trigger Blocker 5,
-    // but forces Pillar 1 to INCONCLUSIVE (fail-closed, gate_8_eligible === false)
-    const inputSuspect = createPristineInput({
-      fixtureRecords: [
-        createTestFixture({
-          contamination_status: FIXTURE_CONTAMINATION_STATUSES.SUSPECT,
-          lifecycle_status: FIXTURE_LIFECYCLE_STATUSES.ACTIVE,
-        }),
-      ],
-    });
-    const resSuspect = synthesizer.synthesizeProductionReadiness(inputSuspect);
-    assert.ok(!resSuspect.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_05_FIXTURE_CONTAMINATED_OR_MISSING));
-    assert.equal(resSuspect.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.INCONCLUSIVE);
-    assert.equal(resSuspect.gate8Eligible, false);
-    assert.match(resSuspect.synthesisRationale, /flagged SUSPECT/);
+    // Case C: Clean operational state does NOT trigger Blocker 5
+    const cleanInput = createPristineInput();
+    const resClean = synthesizer.synthesizeProductionReadiness(cleanInput);
+    assert.ok(!resClean.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY));
   });
 
   // -------------------------------------------------------------------------
@@ -629,9 +632,53 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
   });
 
   // -------------------------------------------------------------------------
-  // 9. Hard Blocker 7: Unresolved critical uncertainty regarding production tone safety
+  // 9. Hard Blocker 7: Contaminated Golden fixtures leaked into model tuning (BLOCK-07)
   // -------------------------------------------------------------------------
-  it("09: BLOCKER-07 disqualifies Gate 8 on unresolved critical uncertainty; benign does not", () => {
+  it("09: BLOCKER-07: CONTAMINATED fixture triggers Blocker 7; non-contaminated invalid does not; SUSPECT forces INCONCLUSIVE pillar", () => {
+    // Case A: Confirmed CONTAMINATED fixture triggers Blocker 7
+    const inputContam = createPristineInput({
+      fixtureRecords: [
+        createTestFixture({
+          contamination_status: FIXTURE_CONTAMINATION_STATUSES.CONTAMINATED,
+        }),
+      ],
+    });
+    const resContam = synthesizer.synthesizeProductionReadiness(inputContam);
+    assert.equal(resContam.gate8Eligible, false);
+    assert.ok(resContam.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION));
+
+    // Case B: Non-contaminated INVALIDATED fixture does NOT trigger Blocker 7 (contamination only)
+    const inputInval = createPristineInput({
+      fixtureRecords: [
+        createTestFixture({
+          contamination_status: FIXTURE_CONTAMINATION_STATUSES.CLEAN,
+          lifecycle_status: FIXTURE_LIFECYCLE_STATUSES.INVALIDATED,
+        }),
+      ],
+    });
+    const resInval = synthesizer.synthesizeProductionReadiness(inputInval);
+    assert.ok(!resInval.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION));
+
+    // Case C: Active SUSPECT fixture does NOT trigger Blocker 7, but forces Pillar 1 to INCONCLUSIVE
+    const inputSuspect = createPristineInput({
+      fixtureRecords: [
+        createTestFixture({
+          contamination_status: FIXTURE_CONTAMINATION_STATUSES.SUSPECT,
+          lifecycle_status: FIXTURE_LIFECYCLE_STATUSES.ACTIVE,
+        }),
+      ],
+    });
+    const resSuspect = synthesizer.synthesizeProductionReadiness(inputSuspect);
+    assert.ok(!resSuspect.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION));
+    assert.equal(resSuspect.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.INCONCLUSIVE);
+    assert.equal(resSuspect.gate8Eligible, false);
+    assert.match(resSuspect.synthesisRationale, /flagged SUSPECT/);
+  });
+
+  // -------------------------------------------------------------------------
+  // 10. Hard Blocker 8: Unresolved critical uncertainty regarding production tone safety (BLOCK-08)
+  // -------------------------------------------------------------------------
+  it("10: BLOCKER-08 disqualifies Gate 8 on unresolved critical uncertainty; benign does not", () => {
     const criticalUncertainty: ValidationUncertaintyRecord = {
       uncertainty_id: "unc_01",
       package_id: "pkg_5150_validation_01",
@@ -647,9 +694,9 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
     });
     const result = synthesizer.synthesizeProductionReadiness(input);
     assert.equal(result.gate8Eligible, false);
-    assert.ok(result.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_07_CRITICAL_TONE_UNCERTAINTY));
+    assert.ok(result.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY));
 
-    // Low acceptable risk uncertainty does not trigger BLOCKER-07
+    // Low acceptable risk uncertainty does not trigger BLOCKER-08
     const lowRiskUncertainty: ValidationUncertaintyRecord = {
       ...criticalUncertainty,
       uncertainty_id: "unc_low",
@@ -660,14 +707,18 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
       uncertaintyRecords: [lowRiskUncertainty],
     });
     const resLow = synthesizer.synthesizeProductionReadiness(inputLow);
-    assert.ok(!resLow.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_07_CRITICAL_TONE_UNCERTAINTY));
+    assert.ok(!resLow.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY));
   });
 
   // -------------------------------------------------------------------------
-  // 10. Hard Blocker 8: Unresolved upstream architectural violation across Phases 1C.5a-g
+  // 10B. Upstream Architectural Non-Conformance: Routes to Pillar 2 DEFICIENT, not as extra hard blocker
   // -------------------------------------------------------------------------
-  it("10: BLOCKER-08 disqualifies Gate 8 on active upstream violations or ungrounded reasoning", () => {
-    // Case A: Active upstream violations list
+  it("10B: Upstream architectural non-conformance routes to Pillar 2 DEFICIENT and does NOT masquerade as an extra hard blocker", () => {
+    // Blocker count remains exactly 8 canonical Table 13 blockers
+    const canonicalBlockers = Object.values(FROZEN_HARD_BLOCKERS);
+    assert.strictEqual(canonicalBlockers.length, 8, "Blocker count must remain exactly 8");
+
+    // Active upstream violations degrade reasoning & governance pillar to DEFICIENT
     const inputViol = createPristineInput({
       upstreamGovernanceState: createValidUpstreamGovernance({
         upstream_violations: ["1C.5d Stage 7 Acoustic Hypothesis Contract Violation"],
@@ -675,9 +726,10 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
     });
     const resViol = synthesizer.synthesizeProductionReadiness(inputViol);
     assert.equal(resViol.gate8Eligible, false);
-    assert.ok(resViol.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION));
+    assert.equal(resViol.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+    assert.strictEqual(resViol.hardBlockersPresent.length, 0, "Upstream violations must NOT masquerade as a hard blocker");
 
-    // Case B: Fabricated intervention reasoning
+    // Fabricated intervention reasoning degrades Pillar 2
     const inputFab = createPristineInput({
       upstreamGovernanceState: createValidUpstreamGovernance({
         ungrounded_reasoning_detected: true,
@@ -685,9 +737,10 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
     });
     const resFab = synthesizer.synthesizeProductionReadiness(inputFab);
     assert.equal(resFab.gate8Eligible, false);
-    assert.ok(resFab.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION));
+    assert.equal(resFab.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+    assert.strictEqual(resFab.hardBlockersPresent.length, 0);
 
-    // Case C: Candidate lesson quarantine breach
+    // Candidate lesson quarantine breach degrades Pillar 2
     const inputQuarantine = createPristineInput({
       upstreamGovernanceState: createValidUpstreamGovernance({
         candidate_lesson_quarantined: false,
@@ -695,7 +748,102 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
     });
     const resQuarantine = synthesizer.synthesizeProductionReadiness(inputQuarantine);
     assert.equal(resQuarantine.gate8Eligible, false);
-    assert.ok(resQuarantine.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_UPSTREAM_ARCHITECTURAL_VIOLATION));
+    assert.equal(resQuarantine.pillarEvaluations.reasoning_governance_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+    assert.strictEqual(resQuarantine.hardBlockersPresent.length, 0);
+  });
+
+  // -------------------------------------------------------------------------
+  // 10C. Each of the Eight Frozen Hard Blockers Independently Disqualifies Gate 8
+  // -------------------------------------------------------------------------
+  it("10C: Each of the eight frozen hard blockers independently disqualifies Gate 8", () => {
+    // 1. BLOCK-01: Regression
+    const r1 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      regressionAssessments: [{
+        regression_id: "reg_01",
+        package_id: "pkg_01",
+        comparison_target: "v1.0.0_baseline",
+        affected_scope: ["guitar:amp:5150_lead"],
+        divergence_detected: true,
+        divergence_magnitude: 4.5,
+        classification: REGRESSION_CLASSIFICATIONS.GENUINE_REGRESSION,
+        materiality_score: MATERIALITY_SCORES.HIGH,
+        regression_domain: REGRESSION_DOMAINS.ACOUSTIC,
+        detailed_justification: "Severe loss of low-end punch under palm muting.",
+        blocks_gate_8: true,
+      }],
+    }));
+    assert.strictEqual(r1.gate8Eligible, false);
+    assert.ok(r1.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_01_UNRESOLVED_GENUINE_REGRESSION));
+
+    // 2. BLOCK-02: Export Crash
+    const r2 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      objectiveEvidence: [
+        createTestObjectiveEvidence(),
+        createTestObjectiveEvidence({
+          objective_evidence_id: "obj_export_fail",
+          metric_category: OBJECTIVE_METRIC_CATEGORIES.EXPORT_INTEGRITY,
+          objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+        }),
+      ],
+    }));
+    assert.strictEqual(r2.gate8Eligible, false);
+    assert.ok(r2.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_02_EXPORT_FAILURE_CORRUPTION));
+
+    // 3. BLOCK-03: Rollback Fail
+    const r3 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      rollbackEvidence: undefined,
+    }));
+    assert.strictEqual(r3.gate8Eligible, false);
+    assert.ok(r3.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_03_ROLLBACK_FAILED_OR_UNVERIFIED));
+
+    // 4. BLOCK-04: Provenance
+    const r4 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      upstreamGovernanceState: createValidUpstreamGovernance({ provenance_intact: false }),
+    }));
+    assert.strictEqual(r4.gate8Eligible, false);
+    assert.ok(r4.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_04_PROVENANCE_TRACEABILITY_BROKEN));
+
+    // 5. BLOCK-05: Instability
+    const r5 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      executionRecords: [
+        createTestExecution({
+          execution_id: "exec_stress_08",
+          profile_id: "profile_08_operational_stability",
+          outcome: EXECUTION_OUTCOMES.FAILED,
+        }),
+      ],
+    }));
+    assert.strictEqual(r5.gate8Eligible, false);
+    assert.ok(r5.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_05_RUNTIME_INSTABILITY));
+
+    // 6. BLOCK-06: Scope Inflation
+    const r6 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      requestedScope: ["untested_unit_xyz"],
+    }));
+    assert.strictEqual(r6.gate8Eligible, false);
+    assert.ok(r6.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_06_SCOPE_INFLATION));
+
+    // 7. BLOCK-07: Contamination
+    const r7 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      fixtureRecords: [createTestFixture({ contamination_status: FIXTURE_CONTAMINATION_STATUSES.CONTAMINATED })],
+    }));
+    assert.strictEqual(r7.gate8Eligible, false);
+    assert.ok(r7.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_07_FIXTURE_CONTAMINATION));
+
+    // 8. BLOCK-08: Uncertainty
+    const r8 = synthesizer.synthesizeProductionReadiness(createPristineInput({
+      uncertaintyRecords: [{
+        uncertainty_id: "unc_01",
+        package_id: "pkg_01",
+        uncertainty_source: UNCERTAINTY_SOURCES.TARGET_PLATFORM_VERSION_INSTABILITY,
+        affected_scope: ["guitar:amp:5150_lead"],
+        potential_production_risk: "Critical tone safety risk",
+        gate_8_impact: UNCERTAINTY_GATE_8_IMPACTS.FORCES_BLOCK,
+        required_monitoring_if_authorized: [],
+      }],
+    }));
+    assert.strictEqual(r8.gate8Eligible, false);
+    assert.ok(r8.hardBlockersPresent.includes(FROZEN_HARD_BLOCKERS.BLOCKER_08_CRITICAL_UNCERTAINTY));
   });
 
   // -------------------------------------------------------------------------
@@ -1079,4 +1227,149 @@ describe("Phase 1C.5h — WP-21: Four-Pillar Production Readiness Assessment Syn
       (record.pillar_evaluations as any).acoustic_musical_readiness = "DEFICIENT";
     }, TypeError);
   });
+
+  // -------------------------------------------------------------------------
+  // 21. Governed Evidence-Conflict Resolution in Acoustic / Musical Readiness Pillar (Pillar 1)
+  // -------------------------------------------------------------------------
+  it("21: Acoustic readiness (Pillar 1) respects governed evidence conflict resolution overlay without mutating evidence", () => {
+    const failedObjective = createTestObjectiveEvidence({
+      objective_evidence_id: "obj_harmonic_thd_01",
+      metric_category: OBJECTIVE_METRIC_CATEGORIES.HARMONIC_DISTORTION,
+      tolerance_evaluation: TOLERANCE_EVALUATIONS.OUT_OF_TOLERANCE,
+      objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+    });
+
+    const perceptualPass = createTestPerceptualEvidence({
+      perceptual_evidence_id: "perc_listening_01",
+      evaluation_outcome: PERCEPTUAL_EVALUATION_OUTCOMES.PERCEPTUAL_PASS,
+    });
+
+    // Baseline: Pristine input has SATISFIED Pillar 1
+    const pristine = createPristineInput();
+    const pkgId = pristine.packageRecord.package_id;
+
+    // Case A: Raw objective FAIL with NO conflict record -> Pillar 1 DEFICIENT
+    const inputNoConflict = createPristineInput({
+      objectiveEvidence: [failedObjective],
+      perceptualEvaluations: [perceptualPass],
+      evidenceConflicts: [],
+    });
+    const resNoConflict = synthesizer.synthesizeProductionReadiness(inputNoConflict);
+    assert.equal(resNoConflict.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+    assert.equal(resNoConflict.gate8Eligible, false);
+
+    // Case B: Unrelated accepted trade-off (different evidence ID) -> Pillar 1 remains DEFICIENT
+    const unrelatedConflict: EvidenceConflictRecord = {
+      conflict_id: "conflict_unrelated",
+      package_id: pkgId,
+      conflict_type: CONFLICT_TYPES.OBJECTIVE_VS_PERCEPTUAL,
+      competing_evidence_refs: ["obj_some_other_id", "perc_listening_01"],
+      conflict_description: "Unrelated conflict description",
+      underlying_acoustic_phenomenon: "Unrelated phenomenon",
+      resolution_strategy: CONFLICT_RESOLUTION_STRATEGIES.DECLARED_INTENTIONAL_CORRECTION,
+      resolution_status: CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF,
+      residual_uncertainty_score: 0.1,
+    };
+    const inputUnrelated = createPristineInput({
+      objectiveEvidence: [failedObjective],
+      perceptualEvaluations: [perceptualPass],
+      evidenceConflicts: [unrelatedConflict],
+    });
+    const resUnrelated = synthesizer.synthesizeProductionReadiness(inputUnrelated);
+    assert.equal(resUnrelated.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+
+    // Case C: Accepted trade-off with different package_id -> Pillar 1 remains DEFICIENT
+    const wrongPackageConflict: EvidenceConflictRecord = {
+      conflict_id: "conflict_wrong_pkg",
+      package_id: "different_package_id",
+      conflict_type: CONFLICT_TYPES.OBJECTIVE_VS_PERCEPTUAL,
+      competing_evidence_refs: [failedObjective.objective_evidence_id, "perc_listening_01"],
+      conflict_description: "Wrong package conflict",
+      underlying_acoustic_phenomenon: "Saturation",
+      resolution_strategy: CONFLICT_RESOLUTION_STRATEGIES.DECLARED_INTENTIONAL_CORRECTION,
+      resolution_status: CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF,
+      residual_uncertainty_score: 0.1,
+    };
+    const inputWrongPkg = createPristineInput({
+      objectiveEvidence: [failedObjective],
+      perceptualEvaluations: [perceptualPass],
+      evidenceConflicts: [wrongPackageConflict],
+    });
+    const resWrongPkg = synthesizer.synthesizeProductionReadiness(inputWrongPkg);
+    assert.equal(resWrongPkg.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+
+    // Case D: Conflict with UNRESOLVED status -> Pillar 1 remains DEFICIENT
+    const unresolvedConflict: EvidenceConflictRecord = {
+      conflict_id: "conflict_unresolved",
+      package_id: pkgId,
+      conflict_type: CONFLICT_TYPES.OBJECTIVE_VS_PERCEPTUAL,
+      competing_evidence_refs: [failedObjective.objective_evidence_id, "perc_listening_01"],
+      conflict_description: "Pending panel review",
+      underlying_acoustic_phenomenon: "Harmonic distortion elevation",
+      resolution_strategy: CONFLICT_RESOLUTION_STRATEGIES.CONVENE_EXPERT_PANEL_RECONCILIATION,
+      resolution_status: CONFLICT_RESOLUTION_STATUSES.UNRESOLVED,
+      residual_uncertainty_score: 0.5,
+    };
+    const inputUnresolved = createPristineInput({
+      objectiveEvidence: [failedObjective],
+      perceptualEvaluations: [perceptualPass],
+      evidenceConflicts: [unresolvedConflict],
+    });
+    const resUnresolved = synthesizer.synthesizeProductionReadiness(inputUnresolved);
+    assert.equal(resUnresolved.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+
+    // Case E: Exactly linked accepted trade-off -> objective failure dispositioned -> Pillar 1 SATISFIED
+    const acceptedConflict: EvidenceConflictRecord = {
+      conflict_id: "conflict_exact_match",
+      package_id: pkgId,
+      conflict_type: CONFLICT_TYPES.OBJECTIVE_VS_PERCEPTUAL,
+      competing_evidence_refs: [failedObjective.objective_evidence_id, "perc_listening_01"],
+      conflict_description: "Intentional harmonic saturation trade-off",
+      underlying_acoustic_phenomenon: "Harmonic bloom saturation",
+      resolution_strategy: CONFLICT_RESOLUTION_STRATEGIES.DECLARED_INTENTIONAL_CORRECTION,
+      resolution_status: CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF,
+      residual_uncertainty_score: 0.1,
+    };
+    const inputAccepted = createPristineInput({
+      objectiveEvidence: [failedObjective],
+      perceptualEvaluations: [perceptualPass],
+      evidenceConflicts: [acceptedConflict],
+    });
+    const resAccepted = synthesizer.synthesizeProductionReadiness(inputAccepted);
+    assert.equal(resAccepted.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.SATISFIED);
+    assert.equal(resAccepted.gate8Eligible, true);
+
+    // Historical evidence remains strictly immutable
+    assert.equal(failedObjective.objective_pass_fail, OBJECTIVE_PASS_FAIL_STATUSES.FAIL);
+    assert.equal(failedObjective.tolerance_evaluation, TOLERANCE_EVALUATIONS.OUT_OF_TOLERANCE);
+
+    // Case F: Multiple objective failures where only one is dispositioned -> Pillar 1 DEFICIENT
+    const secondFailedObjective = createTestObjectiveEvidence({
+      objective_evidence_id: "obj_spectral_linear_02",
+      metric_category: OBJECTIVE_METRIC_CATEGORIES.SPECTRAL_ANALYSIS,
+      tolerance_evaluation: TOLERANCE_EVALUATIONS.OUT_OF_TOLERANCE,
+      objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+    });
+    const inputPartial = createPristineInput({
+      objectiveEvidence: [failedObjective, secondFailedObjective],
+      perceptualEvaluations: [perceptualPass],
+      evidenceConflicts: [acceptedConflict], // only dispositions obj_harmonic_thd_01
+    });
+    const resPartial = synthesizer.synthesizeProductionReadiness(inputPartial);
+    assert.equal(resPartial.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+
+    // Case G: Perceptual evaluation FAIL cannot be bypassed by accepted objective trade-off -> Pillar 1 DEFICIENT
+    const failedPerceptual = createTestPerceptualEvidence({
+      perceptual_evidence_id: "perc_bad_02",
+      evaluation_outcome: PERCEPTUAL_EVALUATION_OUTCOMES.PERCEPTUAL_FAIL,
+    });
+    const inputPercFail = createPristineInput({
+      objectiveEvidence: [failedObjective],
+      perceptualEvaluations: [perceptualPass, failedPerceptual],
+      evidenceConflicts: [acceptedConflict],
+    });
+    const resPercFail = synthesizer.synthesizeProductionReadiness(inputPercFail);
+    assert.equal(resPercFail.pillarEvaluations.acoustic_musical_readiness, PILLAR_READINESS_STATUSES.DEFICIENT);
+  });
 });
+

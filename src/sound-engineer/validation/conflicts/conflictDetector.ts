@@ -121,6 +121,7 @@ export class EvidenceConflictDetector {
       customConflictId,
       customConflictType,
       customResolutionStrategy,
+      customResolutionStatus,
       customUnderlyingAcousticPhenomenon,
       customDescription,
       customResidualUncertainty,
@@ -205,7 +206,9 @@ export class EvidenceConflictDetector {
       CONFLICT_RESOLUTION_STRATEGIES.CONVENE_EXPERT_PANEL_RECONCILIATION;
 
     const resolutionStatus =
-      profile.defaultResolutionStatus ?? CONFLICT_RESOLUTION_STATUSES.UNRESOLVED;
+      customResolutionStatus ??
+      profile.defaultResolutionStatus ??
+      CONFLICT_RESOLUTION_STATUSES.UNRESOLVED;
 
     const residualUncertainty =
       customResidualUncertainty ??

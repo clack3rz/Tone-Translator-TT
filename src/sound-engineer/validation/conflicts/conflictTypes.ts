@@ -64,6 +64,7 @@ export interface EvidenceConflictDetectorInput {
   readonly customConflictId?: string;
   readonly customConflictType?: ConflictType;
   readonly customResolutionStrategy?: ConflictResolutionStrategy;
+  readonly customResolutionStatus?: ConflictResolutionStatus;
   readonly customUnderlyingAcousticPhenomenon?: string;
   readonly customDescription?: string;
   readonly customResidualUncertainty?: number | string;

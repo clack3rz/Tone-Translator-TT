@@ -1894,7 +1894,7 @@ const makeDebugItem = (
     settings: normalizeSettingsToCanonical(pair.normalized.name, group, pair.normalized.settings ?? {}),
   };
 
-  const originalRequestedGearName = pair.raw.name;
+  const originalRequestedGearName = (pair.raw as any).originalName || pair.raw.name;
   const originalRequestedSettings = { ...(pair.raw.settings ?? {}) };
   const normalizedRequestedGearName = gear.name;
 
@@ -2370,15 +2370,17 @@ const makeDebugItem = (
   const isMissingGuid = catalogMatch && (!catalogMatch.guid || catalogMatch.guid === "");
 
   if (isTypeMismatch) {
-    finalReason = `Check: TYPE MISMATCH. Requested "${gear.name}" (RACK) in a ${group.toUpperCase()} slot. Use Rack section instead.`;
+    finalReason = `Check: TYPE MISMATCH. Requested "${originalRequestedGearName}" (RACK) in a ${group.toUpperCase()} slot. Use Rack section instead.`;
   } else if (!verified_guid_resolved && exportStrictnessMode === "strict") {
-    finalReason = `FAIL: "${gear.name}" lacks verified GUID. Strict Export Mode blocks fallback export.`;
+    finalReason = `FAIL: "${originalRequestedGearName}" lacks verified GUID. Strict Export Mode blocks fallback export.`;
+  } else if (!guid || guid === "" || guid === AT5_EMPTY_SLOT_GUID || actualExportedGearName === "None") {
+    finalReason = `Check: "${originalRequestedGearName}" lacks a verified GUID and was not exported (empty slot in preset XML).`;
   } else if (fallback_guid_used || substitution_used || (actualExportedGearName !== gear.name && guid !== "")) {
-    finalReason = `CRITICAL: "${gear.name}" lacks a verified GUID and cannot be exported. TT exported fallback "${actualExportedGearName}" instead.`;
+    finalReason = `CRITICAL: "${originalRequestedGearName}" lacks a verified GUID and cannot be exported. TT exported fallback "${actualExportedGearName}" instead.`;
   } else if (isMissingFromCatalog) {
-    finalReason = `Check: "${gear.name}" not found in Gear Catalogue. Added with placeholder GUID.`;
+    finalReason = `Check: "${originalRequestedGearName}" not found in Gear Catalogue. Added with placeholder GUID.`;
   } else if (isMissingGuid) {
-    finalReason = `Check: "${gear.name}" found in Catalogue but lacks a verified GUID mapping.`;
+    finalReason = `Check: "${originalRequestedGearName}" found in Catalogue but lacks a verified GUID mapping.`;
   } else if (exported) {
     finalReason = "Included"; // This will trigger the "PASS" state in the UI
   }
@@ -2386,7 +2388,7 @@ const makeDebugItem = (
   // Custom Suggestion Action Setup
   let suggested_action: string | undefined = undefined;
   if (!verified_guid_resolved) {
-    suggested_action = `Import an AT5 .at5p preset containing ${gear.name} using Gear Management / Discovery.`;
+    suggested_action = `Import an AT5 .at5p preset containing ${originalRequestedGearName} using Gear Management / Discovery.`;
     if (gear.name === "Darrell 100") {
       finalReason = `Check: "Darrell 100" is the preferred amp target, but it requires Gear Discovery before it can be exported correctly.`;
     }
@@ -3414,7 +3416,10 @@ const makeDebugItem = (
     } else if (!verified_guid_resolved && exportStrictnessMode === "strict" && exported) {
       final_status = "FAIL";
       parameter_mapping_status = "FAILED";
-      finalReason = `FAIL: "${gear.name}" lacks verified GUID. Strict Export Mode blocks fallback export.`;
+      finalReason = `FAIL: "${originalRequestedGearName}" lacks verified GUID. Strict Export Mode blocks fallback export.`;
+    } else if (exported && (!gear_guid_resolved || !guid || guid === AT5_EMPTY_SLOT_GUID)) {
+      final_status = "CHECK";
+      finalReason = `Check: "${originalRequestedGearName}" lacks a verified GUID and was not exported (empty slot in preset XML).`;
     } else {
       final_status = "SKIPPED";
     }
@@ -3475,16 +3480,22 @@ const makeDebugItem = (
     if (!verified_guid_resolved) {
       if (exportStrictnessMode === "strict") {
         final_status = "FAIL";
-        finalReason = `FAIL: "${gear.name}" lacks verified GUID. Strict Export Mode blocks fallback export.`;
+        finalReason = `FAIL: "${originalRequestedGearName}" lacks verified GUID. Strict Export Mode blocks fallback export.`;
+      } else if (!guid || guid === "" || guid === AT5_EMPTY_SLOT_GUID || actualExportedGearName === "None") {
+        final_status = "CHECK";
+        finalReason = `Check: "${originalRequestedGearName}" lacks a verified GUID and was not exported (empty slot in preset XML).`;
       } else if (substitution_used || fallback_guid_used || actualExportedGearName !== gear.name) {
         final_status = "SUBSTITUTED_FALLBACK";
-        finalReason = `CRITICAL: "${gear.name}" lacks verified GUID and cannot be exported. TT exported fallback "${actualExportedGearName}" instead.`;
+        finalReason = `CRITICAL: "${originalRequestedGearName}" lacks verified GUID and cannot be exported. TT exported fallback "${actualExportedGearName}" instead.`;
       } else {
         final_status = "CHECK";
       }
+    } else if (!guid || guid === "" || guid === AT5_EMPTY_SLOT_GUID || actualExportedGearName === "None") {
+      final_status = "CHECK";
+      finalReason = `Check: "${originalRequestedGearName}" lacks a verified GUID and was not exported (empty slot in preset XML).`;
     } else if (fallback_guid_used || substitution_used || actualExportedGearName !== gear.name) {
       final_status = "SUBSTITUTED_FALLBACK";
-      finalReason = `CRITICAL: TT exported fallback "${actualExportedGearName}" instead of "${gear.name}".`;
+      finalReason = `CRITICAL: TT exported fallback "${actualExportedGearName}" instead of "${originalRequestedGearName}".`;
     } else {
       if (final_status !== "FAIL" && final_status !== "CHECK" && final_status !== "PARTIAL" && final_status !== "PARTIAL_WITH_FALLBACK") {
         if (finalReason && finalReason.toLowerCase().includes("check:")) {
@@ -3537,7 +3548,7 @@ const makeDebugItem = (
         if (finalExported) {
           final_status = "CHECK";
           parameter_mapping_status = "UNVERIFIED";
-          finalReason = `Check: "${gear.name}" found in Catalogue but lacks a verified GUID mapping.`;
+          finalReason = `Check: "${originalRequestedGearName}" found in Catalogue but lacks a verified GUID mapping.`;
         }
       }
     } else if (selectorInfo.status === "UNRESOLVED") {
@@ -4151,7 +4162,31 @@ export const getExportDebugData = (
       debugItem.section_found = true;
       debugItem.slot_node_found = true;
       debugItem.actual_guid_found = actualXmlItem.guid;
+      debugItem.actual_exported_guid = actualXmlItem.guid;
       debugItem.slot_attrs_found = Object.keys(actualXmlItem.attrs);
+
+      // Derive actual_exported_gear_name strictly from actualXmlItem.guid
+      if (!actualXmlItem.guid || actualXmlItem.guid === "" || actualXmlItem.guid === AT5_EMPTY_SLOT_GUID) {
+        debugItem.actual_exported_gear_name = "None";
+        if (debugItem.final_status === "SUBSTITUTED_FALLBACK" || !debugItem.verified_guid_resolved) {
+          debugItem.final_status = "CHECK";
+          debugItem.reason = `Check: "${debugItem.original_name}" lacks a verified GUID and was not exported (empty slot in preset XML).`;
+          debugItem.fallback_applied = false;
+          debugItem.fallback_guid_used = false;
+          debugItem.substitution_used = false;
+          debugItem.fallback_exported_gear_name = undefined;
+          debugItem.fallback_exported_guid = undefined;
+        }
+      } else if (actualXmlItem.guid === DEFAULT_AMP_GUID) {
+        debugItem.actual_exported_gear_name = "Brit 8000";
+      } else if (actualXmlItem.guid === DEFAULT_CAB_GUID) {
+        debugItem.actual_exported_gear_name = "4x12 Brit 8000";
+      } else {
+        const matchByGuid = getAt5Catalog().find(c => c.guid === actualXmlItem.guid);
+        if (matchByGuid) {
+          debugItem.actual_exported_gear_name = matchByGuid.displayName;
+        }
+      }
 
       // 1. Sync GUID
       if (debugItem.resolved_guid !== actualXmlItem.guid) {

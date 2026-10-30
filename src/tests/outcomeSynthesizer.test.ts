@@ -1189,4 +1189,232 @@ describe("Phase 1C.5h — WP-19 Focused Verification", () => {
     assert.equal((result as any).triggerRecord, undefined);
     assert.equal((result as any).retestPlanRecord, undefined);
   });
+
+  // Criterion 23: Governed Evidence-Conflict Resolution Integration (Table 15 & Scenario 08)
+  describe("23: Governed Evidence-Conflict Resolution Integration", () => {
+    it("23.1: unresolved objective FAIL blocks synthesis as FAIL", () => {
+      const synthesizer = new ValidationOutcomeSynthesizer();
+      const scope = createTestScope();
+      const binding = createTestBinding();
+      const pkg = createTestPackage();
+      const executions = createCompleteExecutions();
+      const failedObj = createTestObjectiveEvidence({
+        objective_evidence_id: "obj_fail_01",
+        objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+      });
+
+      const result = synthesizer.synthesizeOutcome({
+        packageRecord: pkg,
+        scopeRecord: scope,
+        versionBindingRecord: binding,
+        executionRecords: executions,
+        objectiveEvidence: [failedObj],
+        rollbackOperationalityVerified: true,
+      });
+
+      assert.equal(result.outcomeClass, VALIDATION_OUTCOME_CLASSES.FAIL);
+      assert.ok(result.unresolvedIssues.some((f) => f.includes("Objective acoustic criteria failed")));
+    });
+
+    it("23.2: unresolved or rejected trade-off conflict blocks synthesis as FAIL", () => {
+      const synthesizer = new ValidationOutcomeSynthesizer();
+      const scope = createTestScope();
+      const binding = createTestBinding();
+      const pkg = createTestPackage();
+      const executions = createCompleteExecutions();
+      const failedObj = createTestObjectiveEvidence({
+        objective_evidence_id: "obj_fail_01",
+        objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+      });
+      const unresolvedConflict = createTestConflict({
+        conflict_id: "c_unresolved",
+        package_id: pkg.package_id,
+        competing_evidence_refs: ["obj_fail_01", "perc_01"],
+        resolution_status: CONFLICT_RESOLUTION_STATUSES.UNRESOLVED,
+      });
+
+      const result = synthesizer.synthesizeOutcome({
+        packageRecord: pkg,
+        scopeRecord: scope,
+        versionBindingRecord: binding,
+        executionRecords: executions,
+        objectiveEvidence: [failedObj],
+        conflictRecords: [unresolvedConflict],
+        rollbackOperationalityVerified: true,
+      });
+
+      assert.equal(result.outcomeClass, VALIDATION_OUTCOME_CLASSES.FAIL);
+      assert.ok(result.unresolvedIssues.some((f) => f.includes("Objective acoustic criteria failed")));
+    });
+
+    it("23.3: unrelated accepted trade-off does not suppress an objective failure", () => {
+      const synthesizer = new ValidationOutcomeSynthesizer();
+      const scope = createTestScope();
+      const binding = createTestBinding();
+      const pkg = createTestPackage();
+      const executions = createCompleteExecutions();
+      const failedObj = createTestObjectiveEvidence({
+        objective_evidence_id: "obj_fail_01",
+        objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+      });
+      const unrelatedConflict = createTestConflict({
+        conflict_id: "c_unrelated",
+        package_id: pkg.package_id,
+        competing_evidence_refs: ["obj_different_evidence", "perc_01"],
+        resolution_status: CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF,
+      });
+
+      const result = synthesizer.synthesizeOutcome({
+        packageRecord: pkg,
+        scopeRecord: scope,
+        versionBindingRecord: binding,
+        executionRecords: executions,
+        objectiveEvidence: [failedObj],
+        conflictRecords: [unrelatedConflict],
+        rollbackOperationalityVerified: true,
+      });
+
+      assert.equal(result.outcomeClass, VALIDATION_OUTCOME_CLASSES.FAIL);
+      assert.ok(result.unresolvedIssues.some((f) => f.includes("Objective acoustic criteria failed")));
+    });
+
+    it("23.4: correctly linked accepted trade-off dispositions the objective failure and allows PASS", () => {
+      const synthesizer = new ValidationOutcomeSynthesizer();
+      const scope = createTestScope();
+      const binding = createTestBinding();
+      const pkg = createTestPackage();
+      const executions = createCompleteExecutions();
+      const failedObj = createTestObjectiveEvidence({
+        objective_evidence_id: "obj_fail_01",
+        objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+      });
+      const acceptedConflict = createTestConflict({
+        conflict_id: "c_accepted",
+        package_id: pkg.package_id,
+        competing_evidence_refs: ["obj_fail_01", "perc_01"],
+        resolution_status: CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF,
+        resolution_strategy: CONFLICT_RESOLUTION_STRATEGIES.DECLARED_INTENTIONAL_CORRECTION,
+      });
+
+      const result = synthesizer.synthesizeOutcome({
+        packageRecord: pkg,
+        scopeRecord: scope,
+        versionBindingRecord: binding,
+        executionRecords: executions,
+        objectiveEvidence: [failedObj],
+        conflictRecords: [acceptedConflict],
+        rollbackOperationalityVerified: true,
+      });
+
+      assert.equal(result.outcomeClass, VALIDATION_OUTCOME_CLASSES.PASS);
+      assert.equal(result.unresolvedIssues.length, 0);
+      assert.equal(result.outcomeRecord.objective_summary.failed_count, 1);
+      assert.equal(result.outcomeRecord.objective_summary.dispositioned_count, 1);
+      assert.equal(result.outcomeRecord.objective_summary.unresolved_failed_count, 0);
+    });
+
+    it("23.5: one resolved + one unresolved objective FAIL still blocks as FAIL", () => {
+      const synthesizer = new ValidationOutcomeSynthesizer();
+      const scope = createTestScope();
+      const binding = createTestBinding();
+      const pkg = createTestPackage();
+      const executions = createCompleteExecutions();
+      const resolvedObj = createTestObjectiveEvidence({
+        objective_evidence_id: "obj_resolved_01",
+        objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+      });
+      const unmitigatedObj = createTestObjectiveEvidence({
+        objective_evidence_id: "obj_unmitigated_02",
+        objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+      });
+      const acceptedConflict = createTestConflict({
+        conflict_id: "c_accepted",
+        package_id: pkg.package_id,
+        competing_evidence_refs: ["obj_resolved_01", "perc_01"],
+        resolution_status: CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF,
+      });
+
+      const result = synthesizer.synthesizeOutcome({
+        packageRecord: pkg,
+        scopeRecord: scope,
+        versionBindingRecord: binding,
+        executionRecords: executions,
+        objectiveEvidence: [resolvedObj, unmitigatedObj],
+        conflictRecords: [acceptedConflict],
+        rollbackOperationalityVerified: true,
+      });
+
+      assert.equal(result.outcomeClass, VALIDATION_OUTCOME_CLASSES.FAIL);
+      assert.ok(result.unresolvedIssues.some((f) => f.includes("1 measurement(s) out of tolerance")));
+      assert.equal(result.outcomeRecord.objective_summary.failed_count, 2);
+      assert.equal(result.outcomeRecord.objective_summary.dispositioned_count, 1);
+      assert.equal(result.outcomeRecord.objective_summary.unresolved_failed_count, 1);
+    });
+
+    it("23.6: accepted trade-off does not mutate or rewrite the original objective evidence record", () => {
+      const synthesizer = new ValidationOutcomeSynthesizer();
+      const scope = createTestScope();
+      const binding = createTestBinding();
+      const pkg = createTestPackage();
+      const executions = createCompleteExecutions();
+      const failedObj = Object.freeze(
+        createTestObjectiveEvidence({
+          objective_evidence_id: "obj_fail_immutable",
+          objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+          tolerance_evaluation: TOLERANCE_EVALUATIONS.OUT_OF_TOLERANCE,
+          measured_delta: 3.5,
+        })
+      );
+      const acceptedConflict = createTestConflict({
+        conflict_id: "c_accepted",
+        package_id: pkg.package_id,
+        competing_evidence_refs: ["obj_fail_immutable", "perc_01"],
+        resolution_status: CONFLICT_RESOLUTION_STATUSES.ACCEPTED_TRADE_OFF,
+      });
+
+      synthesizer.synthesizeOutcome({
+        packageRecord: pkg,
+        scopeRecord: scope,
+        versionBindingRecord: binding,
+        executionRecords: executions,
+        objectiveEvidence: [failedObj],
+        conflictRecords: [acceptedConflict],
+        rollbackOperationalityVerified: true,
+      });
+
+      // Original record remains immutable and truthfully FAIL
+      assert.equal(failedObj.objective_pass_fail, OBJECTIVE_PASS_FAIL_STATUSES.FAIL);
+      assert.equal(failedObj.tolerance_evaluation, TOLERANCE_EVALUATIONS.OUT_OF_TOLERANCE);
+      assert.equal(failedObj.measured_delta, 3.5);
+    });
+
+    it("23.7: perceptual PASS alone never suppresses objective FAIL without accepted trade-off conflict", () => {
+      const synthesizer = new ValidationOutcomeSynthesizer();
+      const scope = createTestScope();
+      const binding = createTestBinding();
+      const pkg = createTestPackage();
+      const executions = createCompleteExecutions();
+      const failedObj = createTestObjectiveEvidence({
+        objective_evidence_id: "obj_fail_01",
+        objective_pass_fail: OBJECTIVE_PASS_FAIL_STATUSES.FAIL,
+      });
+      const passedPerc = createTestPerceptualEvidence({
+        evaluation_outcome: PERCEPTUAL_EVALUATION_OUTCOMES.PERCEPTUAL_PASS,
+      });
+
+      const result = synthesizer.synthesizeOutcome({
+        packageRecord: pkg,
+        scopeRecord: scope,
+        versionBindingRecord: binding,
+        executionRecords: executions,
+        objectiveEvidence: [failedObj],
+        perceptualEvidence: [passedPerc],
+        conflictRecords: [], // No conflict record
+        rollbackOperationalityVerified: true,
+      });
+
+      assert.equal(result.outcomeClass, VALIDATION_OUTCOME_CLASSES.FAIL);
+      assert.ok(result.unresolvedIssues.some((f) => f.includes("Objective acoustic criteria failed")));
+    });
+  });
 });
