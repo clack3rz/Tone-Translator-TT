@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "decision_id": "EV-UAT-ST0-D01",
+  "record_type": "Project Owner final acceptance and authority-transition evidence; conditional closure filing",
+  "repository": "clack3rz/Tone-Translator-TT",
+  "recorded_at_utc": "2026-10-31T12:41:57Z",
+  "recorded_at_sydney": "2026-10-31T23:41:57+11:00",
+  "source": {
+    "conversation_id": "6adb2ab8-c7b4-83ec-a884-b5db0cedce21",
+    "conversation_title": "Validation Plan",
+    "conversation_url": "chatgpt-conversation://6adb2ab8-c7b4-83ec-a884-b5db0cedce21",
+    "user_message_id": "4e841ce7-bdbc-4bd7-821b-11ca773414e0",
+    "source_turn_id": "4e841ce7-bdbc-4bd7-821b-11ca773414e0",
+    "source_turn_started_at_epoch_seconds": 1793450410.073,
+    "source_turn_started_at_utc": "2026-10-31T12:40:10.073Z",
+    "retrieval": "Direct read_thread retrieval of original userMessage; not cached preview or assistant paraphrase",
+    "verbatim_owner_approval": "As Tone Translator Project Owner, I formally APPROVE the final D-01 authority transition for Architecture v0.1k SHA-256 315cb18538be96ead9b901987a80b3deaebfcf91a4e0d7fbb747a17c0ba0c082 and Build Plan v0.1i SHA-256 455533ee73e50de91238b176bd3a045a724a1017966d50943b41051dd4d181b5, as published at merge commit ce4f9a614d147f1095fde1d551cfdbd7c8ff42d4. These become authoritative for future governance interpretation; the frozen predecessors remain unchanged as historical records. Inherited frozen/adoption declarations are historical and do not override this decision. I authorize recording D-01 closure after the exact acceptance and authority-transition evidence is filed and verified. No empirical UAT acceptance, baseline freeze, Gate 8 or Production authorization.",
+    "authentication_limit": "Conversation provenance and stated Project Owner role; no independent identity attestation or cryptographic Owner signature claimed"
+  },
+  "authority": {
+    "owner_decision": "APPROVED",
+    "accepted_artifacts_authoritative_for_future_governance_interpretation": true,
+    "relationship": "Architecture v0.1k replaces v0.1j and Build Plan v0.1i replaces v0.1h for future governance interpretation only. Predecessor bytes remain immutable historical records.",
+    "inherited_declarations": "Inherited frozen/adoption declarations and candidate non-authority statements are historical and do not override the later explicit Owner decision. No accepted file bytes or names are changed; _PROPOSED suffixes remain.",
+    "upstream_scope": "This decision does not expand authority beyond the two specified documents or alter upstream constitutional authorities.",
+    "historical_publication_records": "The false authority flags and HOLD in the two existing publication JSON records describe the earlier publication stage; preserved unchanged. This separate later decision records the expressly approved future authority transition."
+  },
+  "closure": {
+    "D01": "HOLD",
+    "closed": false,
+    "owner_authorization": "Conditional: closure may be recorded only after exact acceptance and authority-transition evidence is filed and verified.",
+    "filing_status": "Proposed controlled governance branch/PR filing; not merged to main by this record",
+    "independent_read_only_verification": "REQUIRED; pending. Publisher checks are not independent verification.",
+    "merge_authorized_by_this_record": false,
+    "automatic_merge": false,
+    "next_step": "Independent verifier checks original Owner source and exact filed commit, bytes, hashes, scope and authority boundaries; records immutable audit references. Governed integration and verification of final filed main commit required before any separate D-01 closure record."
+  },
+  "publication": {
+    "approved_base_commit": "6bcb4bd28b1922beb77cbf654f50e14417d7d5e6",
+    "publication_head_commit": "67dc097b6cf654e2509e0a43c33e1d352d03c87c",
+    "publication_head_committer_utc": "2026-10-31T12:29:14Z",
+    "publication_pr": "https://github.com/clack3rz/Tone-Translator-TT/pull/4",
+    "publication_pr_created_at_utc": "2026-10-31T12:29:28Z",
+    "merge_commit": "ce4f9a614d147f1095fde1d551cfdbd7c8ff42d4",
+    "merged_at_utc": "2026-10-31T12:36:34Z",
+    "merge_root_tree": "2d9f70601ffd11e0c7d4b1748e818412d698ee38",
+    "merge_ordered_parents": [
+      "6bcb4bd28b1922beb77cbf654f50e14417d7d5e6",
+      "67dc097b6cf654e2509e0a43c33e1d352d03c87c"
+    ],
+    "timeline_note": "UTC timestamps correspond to Sydney UTC+11 on 31 October 2026. Prior post-merge audit PASS is reported in source conversation; this filing separately recomputed current remote hashes."
+  },
+  "publisher_preflight": {
+    "main_head": "ce4f9a614d147f1095fde1d551cfdbd7c8ff42d4",
+    "method": "Live remote main ref, commit and complete recursive tree; individual base64 contents fetched pinned to merge, decoded without normalization; SHA-256 and Git blob SHA-1 computed using blob <byte-length> NUL prefix.",
+    "original_file_count": 824,
+    "original_entries_preserved": true,
+    "publication_additions": 4,
+    "predecessor_paths_modes_types_and_blobs_match_approved_base": true,
+    "independent_audit": false,
+    "repository_procedure_scan": "Complete remote tree contains no AGENTS.md, CONTRIBUTING, README or PR-template procedure files; governance directory contains the two accepted artifacts and two historical publication JSON records. Separate branch/PR used per Owner request; no direct-main filing."
+  },
+  "identities": [
+    {
+      "path": "TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1j.txt",
+      "bytes": 241844,
+      "sha256": "24b20ad34781758896684e5e9b437102654f6706c9551a6681e3242292a8040d",
+      "git_blob_sha1": "9ec84527ee227abc2c60cf38637d2e6f59e0df7f",
+      "mode": "100644",
+      "type": "blob",
+      "role": "immutable historical predecessor"
+    },
+    {
+      "path": "TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1h.txt",
+      "bytes": 165021,
+      "sha256": "9b02834b23d2ef2e4df5e4ca5c267262053056cc5f77cef25abfcbc16e29bca3",
+      "git_blob_sha1": "a322cfb45c05fec5bff3cc812bbd2902f4792d58",
+      "mode": "100644",
+      "type": "blob",
+      "role": "immutable historical predecessor"
+    },
+    {
+      "path": "governance/decisions/EV-UAT-ST0-D01/TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1k_PROPOSED.txt",
+      "bytes": 243181,
+      "sha256": "315cb18538be96ead9b901987a80b3deaebfcf91a4e0d7fbb747a17c0ba0c082",
+      "git_blob_sha1": "9f49e3e93c2d5d6c56dcab632efaaf932e9de0a5",
+      "mode": "100644",
+      "type": "blob",
+      "role": "accepted authority for future governance interpretation"
+    },
+    {
+      "path": "governance/decisions/EV-UAT-ST0-D01/TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1i_PROPOSED.txt",
+      "bytes": 169672,
+      "sha256": "455533ee73e50de91238b176bd3a045a724a1017966d50943b41051dd4d181b5",
+      "git_blob_sha1": "baf2b3cf3deabf6dfdd6b47d34878a3943a55657",
+      "mode": "100644",
+      "type": "blob",
+      "role": "accepted authority for future governance interpretation"
+    },
+    {
+      "path": "governance/decisions/EV-UAT-ST0-D01/github-publication-approval.json",
+      "bytes": 1232,
+      "sha256": "680ba5f9870c99cf9a6d082c8f47030b3350ae572cb1c2be3ea92032a2eb7e5e",
+      "git_blob_sha1": "614deb972fc56b8b60315c5db00acad4687c44e0",
+      "mode": "100644",
+      "type": "blob",
+      "role": "historical publication evidence"
+    },
+    {
+      "path": "governance/decisions/EV-UAT-ST0-D01/github-publication-manifest.json",
+      "bytes": 3078,
+      "sha256": "16e1482dc983a7dedc0e561d53d6f6c68a3f05f41e4534e5738aa623b4ba69bc",
+      "git_blob_sha1": "8b34e9b22e5ddae322625b9851f2beeca748b356",
+      "mode": "100644",
+      "type": "blob",
+      "role": "historical publication evidence"
+    }
+  ],
+  "non_implications": [
+    "No empirical validation acceptance or empirical UAT PASS",
+    "No implementation completion",
+    "No baseline or candidate baseline freeze",
+    "No Gate 8 authorization",
+    "No Production authorization, deployment, cutover or routing change",
+    "No code change, tests or Gemini execution",
+    "No unilateral D-01 closure"
+  ]
+}
