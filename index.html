@@ -8,17 +8,64 @@
     <meta property="og:title" content="Tone Translator (Guitar)" />
     <meta property="og:description" content="Expert Amplitube 5 architect. Design tones from text/audio or tune existing presets by comparing recorded signals to studio references." />
     <script>
-      // Intercept and suppress third-party extension errors (e.g. MetaMask/Web3 connection issue in sandboxed cross-origin iframes)
+      // Intercept and suppress benign sandbox / HMR errors (MetaMask Web3 extension and Vite HMR websocket in iframe)
       (function() {
-        const isMetaMaskError = (msg) => {
+        if (typeof window !== 'undefined' && window.WebSocket) {
+          const NativeWebSocket = window.WebSocket;
+          class MockHmrSocket extends EventTarget {
+            constructor(url, protocols) {
+              super();
+              this.url = url;
+              this.protocols = protocols;
+              this.readyState = 1; // WebSocket.OPEN
+              this.OPEN = 1;
+              this.CLOSED = 3;
+              this.CLOSING = 2;
+              this.CONNECTING = 0;
+            }
+            send(data) {}
+            close(code, reason) {
+              this.readyState = 3;
+              this.dispatchEvent(new Event('close'));
+            }
+          }
+
+          function ViteSafeWebSocket(url, protocols) {
+            const isViteHmr = Array.isArray(protocols)
+              ? protocols.includes('vite-hmr')
+              : protocols === 'vite-hmr' || (typeof url === 'string' && (url.includes('vite-hmr') || url.includes('token=')));
+            
+            if (isViteHmr) {
+              return new MockHmrSocket(url, protocols);
+            }
+            return new NativeWebSocket(url, protocols);
+          }
+          ViteSafeWebSocket.prototype = NativeWebSocket.prototype;
+          ViteSafeWebSocket.CONNECTING = NativeWebSocket.CONNECTING;
+          ViteSafeWebSocket.OPEN = NativeWebSocket.OPEN;
+          ViteSafeWebSocket.CLOSING = NativeWebSocket.CLOSING;
+          ViteSafeWebSocket.CLOSED = NativeWebSocket.CLOSED;
+          window.WebSocket = ViteSafeWebSocket;
+        }
+
+        const isIgnoredError = (msg) => {
           if (!msg) return false;
           const s = String(msg).toLowerCase();
-          return s.includes('metamask') || s.includes('ethereum') || s.includes('wallet') || s.includes('extension-context-invalidated');
+          return (
+            s.includes('metamask') ||
+            s.includes('ethereum') ||
+            s.includes('wallet') ||
+            s.includes('extension-context-invalidated') ||
+            s.includes('websocket closed without opened') ||
+            s.includes('failed to connect to websocket') ||
+            s.includes('vite-hmr') ||
+            (s.includes('failed to fetch dynamically imported module') && s.includes('@vite/client'))
+          );
         };
 
         window.addEventListener('error', function(event) {
           const msg = event.message || (event.error && event.error.message);
-          if (isMetaMaskError(msg)) {
+          if (isIgnoredError(msg)) {
             event.preventDefault();
             event.stopImmediatePropagation();
           }
@@ -27,18 +74,18 @@
         window.addEventListener('unhandledrejection', function(event) {
           const reason = event.reason;
           const msg = reason ? (reason.message || String(reason)) : '';
-          if (isMetaMaskError(msg)) {
+          if (isIgnoredError(msg)) {
             event.preventDefault();
             event.stopImmediatePropagation();
           }
         }, true);
 
-        // Filter out console.errors for MetaMask sandbox constraints
+        // Filter out console.errors for ignored sandbox / HMR constraints
         const originalConsoleError = console.error;
         console.error = function() {
           const args = Array.from(arguments);
-          const hasMetaMask = args.some(arg => isMetaMaskError(arg));
-          if (!hasMetaMask) {
+          const hasIgnored = args.some(arg => isIgnoredError(arg));
+          if (!hasIgnored) {
             originalConsoleError.apply(console, arguments);
           }
         };

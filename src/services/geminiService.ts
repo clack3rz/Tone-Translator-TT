@@ -840,7 +840,7 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
   // 4. Amp types selected:
   const selectsMarshallAmp = result.signal_chain.some(el => {
     if (el.type !== "amp") return false;
-    const name = el.name.toLowerCase();
+    const name = el.name ? String(el.name).toLowerCase() : "";
     return (
       name.includes("brit 800") ||
       name.includes("brit 8000") ||
@@ -906,7 +906,7 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
 
     result.signal_chain = result.signal_chain.map(el => {
       if (el.type === "pedal") {
-        const pName = el.name.toLowerCase();
+        const pName = el.name ? String(el.name).toLowerCase() : "";
         // Identify if this pedal is a boost, drive, distortion, fuzz, or specifically PROdrive / The RAT
         const isDriveOrRat = [
           "prodrive",
@@ -961,7 +961,7 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
     }
     
     if (result.tone_summary && result.tone_summary.style) {
-      if (hasThrashKeywords && !result.tone_summary.style.toLowerCase().includes("v2")) {
+      if (hasThrashKeywords && !String(result.tone_summary.style).toLowerCase().includes("v2")) {
         result.tone_summary.style = "1980's Metallica Kill 'Em All rhythm v2";
       }
     }
@@ -985,7 +985,7 @@ function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): Ton
   if (prefersProDriveExplicitly) {
     result.signal_chain = result.signal_chain.map(el => {
       if (el.type === "pedal") {
-        const pName = el.name.toLowerCase();
+        const pName = el.name ? String(el.name).toLowerCase() : "";
         if (pName.includes("overscream") || pName.includes("screamer") || pName.includes("overdrive")) {
           return {
             ...el,

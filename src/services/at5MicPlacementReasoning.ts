@@ -51,10 +51,35 @@ export interface MicPlacementDecision {
   wasCompletedFromPartialOrOmitted: boolean;
 }
 
+function safeLower(val: unknown): string {
+  if (val == null) return "";
+  if (typeof val === "string") return val.toLowerCase().trim();
+  if (typeof val === "number" || typeof val === "boolean") return String(val).toLowerCase().trim();
+  if (typeof val === "object") {
+    const v = (val as any).name ?? (val as any).model ?? (val as any).value ?? (val as any).label ?? (val as any).displayName;
+    if (v != null && typeof v !== "object") return String(v).toLowerCase().trim();
+  }
+  return "";
+}
+
+function safeString(val: unknown, fallback: string = ""): string {
+  if (val == null) return fallback;
+  if (typeof val === "string") return val;
+  if (typeof val === "number" || typeof val === "boolean") return String(val);
+  if (typeof val === "object") {
+    const v = (val as any).name ?? (val as any).model ?? (val as any).value ?? (val as any).label ?? (val as any).displayName;
+    if (v != null && typeof v !== "object") return String(v);
+  }
+  return fallback;
+}
+
 function getStyleArray(toneProfile?: Partial<ToneProfile>): string[] {
   if (!toneProfile?.style) return [];
-  if (Array.isArray(toneProfile.style)) return toneProfile.style;
+  if (Array.isArray(toneProfile.style)) {
+    return toneProfile.style.map(s => safeString(s)).filter(Boolean);
+  }
   if (typeof toneProfile.style === 'string') return [toneProfile.style];
+  if (typeof toneProfile.style === 'number') return [String(toneProfile.style)];
   return [];
 }
 
@@ -67,10 +92,11 @@ export function determineMicrophoneRole(
   toneProfile?: Partial<ToneProfile>,
   micSlot: "Mic_0" | "Mic_1" | "Mic_2" = "Mic_0"
 ): string {
-  const clean = (micModel || "").toLowerCase().trim();
+  const clean = safeLower(micModel);
   const styles = getStyleArray(toneProfile);
-  const isBassTone = toneProfile?.role === "bass" || 
-    styles.some(s => s.toLowerCase().includes("bass"));
+  const roleStr = safeLower(toneProfile?.role);
+  const isBassTone = roleStr === "bass" || 
+    styles.some(s => safeLower(s).includes("bass"));
 
   if (isBassTone || clean.includes("vintage dynamic 20") || clean.includes("dynamic 20") || clean.includes("re20")) {
     return "bass low-end/fullness mic";
@@ -85,7 +111,7 @@ export function determineMicrophoneRole(
   }
 
   if (clean.includes("87") || clean.includes("u87") || clean.includes("414") || clean.includes("c414") || clean.includes("condenser")) {
-    if (styles.some(s => ["ambient", "shoegaze", "surf", "room"].includes(s.toLowerCase()))) {
+    if (styles.some(s => ["ambient", "shoegaze", "surf", "room"].includes(safeLower(s)))) {
       return "room/space mic";
     }
     return "detail/polish mic";
@@ -109,19 +135,21 @@ export function determineTargetToneRequirement(
   toneProfile?: Partial<ToneProfile>,
   promptContext: string = ""
 ): string {
-  const promptLower = promptContext.toLowerCase();
-  const gainLevel = (toneProfile?.gain_level || "").toLowerCase();
-  const distType = (toneProfile?.distortion_type || "").toLowerCase();
+  const promptLower = safeLower(promptContext);
+  const gainLevel = safeLower(toneProfile?.gain_level);
+  const distType = safeLower(toneProfile?.distortion_type);
+  const roleStr = safeLower(role);
   const isHighGain = gainLevel === "high" || gainLevel === "medium-high" || distType === "saturated" || distType === "fuzz" ||
     promptLower.includes("thrash") || promptLower.includes("metal") || promptLower.includes("high gain");
   const isCrunch = distType === "crunch" || distType === "overdrive" || gainLevel === "medium";
   const isClean = gainLevel === "clean" || gainLevel === "low" || distType === "clean" || distType === "transparent";
   const hasHarshnessRisk = isHighGain || promptLower.includes("fizz") || promptLower.includes("harsh") || promptLower.includes("buzz") || promptLower.includes("solid-state") || promptLower.includes("solid state");
-  const isRhythm = toneProfile?.role === "rhythm" || promptLower.includes("rhythm") || promptLower.includes("palm mute") || promptLower.includes("chug");
-  const isLead = toneProfile?.role === "lead" || promptLower.includes("lead") || promptLower.includes("solo");
-  const isAmbient = getStyleArray(toneProfile).some(s => ["ambient", "shoegaze", "surf", "spatial"].includes(s.toLowerCase())) || promptLower.includes("ambient");
+  const tpRole = safeLower(toneProfile?.role);
+  const isRhythm = tpRole === "rhythm" || promptLower.includes("rhythm") || promptLower.includes("palm mute") || promptLower.includes("chug");
+  const isLead = tpRole === "lead" || promptLower.includes("lead") || promptLower.includes("solo");
+  const isAmbient = getStyleArray(toneProfile).some(s => ["ambient", "shoegaze", "surf", "spatial"].includes(safeLower(s))) || promptLower.includes("ambient");
 
-  if (role.includes("attack") || role.includes("presence")) {
+  if (roleStr.includes("attack") || roleStr.includes("presence")) {
     if (isHighGain && isRhythm) {
       return "The target calls for sharp pick attack, tight transient definition, and aggressive upper-mid presence under heavy saturation";
     }
@@ -199,7 +227,7 @@ export function determineDistanceReason(
   role: string,
   promptContext: string = ""
 ): string {
-  const promptLower = promptContext.toLowerCase();
+  const promptLower = safeLower(promptContext);
   switch (distance) {
     case "Close":
       if (promptLower.includes("rhythm") || promptLower.includes("palm mute") || promptLower.includes("tight") || promptLower.includes("thrash")) {
@@ -220,9 +248,10 @@ export function determineAngleReason(
   angle: SemanticAngle,
   role: string
 ): string {
+  const roleLower = safeLower(role);
   switch (angle) {
     case "On Axis":
-      if (role.includes("attack") || role.includes("presence")) {
+      if (roleLower.includes("attack") || roleLower.includes("presence")) {
         return "On Axis preserves the attack, direct high-frequency energy, and articulation required from the primary mic";
       }
       return "On Axis preserves direct high-frequency energy, attack and articulation";
@@ -242,9 +271,11 @@ export function determineMultiMicRelationship(
   angle: SemanticAngle,
   otherMic: NonNullable<MicReasoningInput["otherMic"]>
 ): string {
-  const otherName = otherMic.model || "primary mic";
-  const isOtherAttack = otherMic.role?.includes("attack") || otherMic.role?.includes("presence");
-  const isThisWarmth = role.includes("warmth") || role.includes("fizz");
+  const otherName = safeString(otherMic.model, "primary mic");
+  const otherRole = safeLower(otherMic.role);
+  const thisRole = safeLower(role);
+  const isOtherAttack = otherRole.includes("attack") || otherRole.includes("presence");
+  const isThisWarmth = thisRole.includes("warmth") || thisRole.includes("fizz");
 
   if (isThisWarmth && isOtherAttack) {
     if (position === "Cone" && angle === "45° Off Axis") {
@@ -322,12 +353,12 @@ export function buildAcousticReasoning(params: BuildAcousticReasoningInput): str
  */
 export function reasonSemanticMicPlacement(input: MicReasoningInput): MicPlacementDecision {
   const { micModel, micSlot, cabName = "", speakerName = "", toneProfile, otherMic, promptContext = "", existingPlacement } = input;
-  const promptLower = promptContext.toLowerCase();
+  const promptLower = safeLower(promptContext);
   const role = determineMicrophoneRole(micModel, toneProfile, micSlot);
 
   // --- Step 1: Analyze Target Tone Characteristics ---
-  const gainLevel = (toneProfile?.gain_level || "").toLowerCase();
-  const distortionType = (toneProfile?.distortion_type || "").toLowerCase();
+  const gainLevel = safeLower(toneProfile?.gain_level);
+  const distortionType = safeLower(toneProfile?.distortion_type);
   const isHighGain = gainLevel === "high" || gainLevel === "medium-high" || 
     distortionType === "saturated" || distortionType === "fuzz" ||
     promptLower.includes("thrash") || promptLower.includes("metal") || promptLower.includes("high gain");
@@ -340,11 +371,11 @@ export function reasonSemanticMicPlacement(input: MicReasoningInput): MicPlaceme
     promptLower.includes("cowboys") || promptLower.includes("pantera") || promptLower.includes("kill 'em all") || promptLower.includes("kill em all");
 
   const isAmbientOrSpatial = getStyleArray(toneProfile).some(s => 
-    ["ambient", "shoegaze", "surf", "reverb-drenched", "roomy", "spatial"].includes(s.toLowerCase())
+    ["ambient", "shoegaze", "surf", "reverb-drenched", "roomy", "spatial"].includes(safeLower(s))
   ) || promptLower.includes("ambient") || promptLower.includes("shoegaze");
 
   // --- Step 2: Analyze Cabinet and Speaker Behaviour ---
-  const cleanSpeaker = speakerName.toLowerCase();
+  const cleanSpeaker = safeLower(speakerName);
   const isBrightSpeaker = cleanSpeaker.includes("brit 75") || cleanSpeaker.includes("t75") || 
     cleanSpeaker.includes("american 12c") || cleanSpeaker.includes("jensen") ||
     cleanSpeaker.includes("brit v1") || cleanSpeaker.includes("v30");
@@ -537,19 +568,21 @@ export function ensureSignalChainSemanticPlacements(
   for (const el of result.signal_chain) {
     if (el.type === "cab" || (el as any).type === "cabinet") {
       const settings = el.settings || {};
-      const speakerName = (settings["Speaker"] || settings["speaker"] || "") as string;
-      const cabName = el.name || "";
+      const speakerName = safeString(settings["Speaker"] ?? settings["speaker"]);
+      const cabName = safeString(el.name);
 
       const detection = detectCabSettingsFormat(settings);
       const isLegacy = detection.isLegacy;
 
       if (isLegacy) {
         // Legacy 1-indexed schema: Mic_1 is Primary, Mic_2 is Secondary
-        const mic1Name = (settings["Mic_1"] || settings["mic_1"] || settings["Mic 1"] || settings["mic 1"]) as string;
+        const mic1Raw = settings["Mic_1"] ?? settings["mic_1"] ?? settings["Mic 1"] ?? settings["mic 1"];
+        const mic1Name = safeString(mic1Raw);
         let m1Decision: MicPlacementDecision | undefined = undefined;
 
         if (mic1Name) {
-          const rawM1Placement = (settings["Mic_1_Placement"] || settings["mic_1_placement"] || settings["Mic 1 Placement"]) as string;
+          const rawM1 = settings["Mic_1_Placement"] ?? settings["mic_1_placement"] ?? settings["Mic 1 Placement"];
+          const rawM1Placement = rawM1 != null ? (typeof rawM1 === "string" ? rawM1 : String(rawM1)) : undefined;
           m1Decision = reasonSemanticMicPlacement({
             micModel: mic1Name,
             micSlot: "Mic_1",
@@ -567,9 +600,11 @@ export function ensureSignalChainSemanticPlacements(
           decisions.push(m1Decision);
         }
 
-        const mic2Name = (settings["Mic_2"] || settings["mic_2"] || settings["Mic 2"] || settings["mic 2"]) as string;
+        const mic2Raw = settings["Mic_2"] ?? settings["mic_2"] ?? settings["Mic 2"] ?? settings["mic 2"];
+        const mic2Name = safeString(mic2Raw);
         if (mic2Name) {
-          const rawM2Placement = (settings["Mic_2_Placement"] || settings["mic_2_placement"] || settings["Mic 2 Placement"]) as string;
+          const rawM2 = settings["Mic_2_Placement"] ?? settings["mic_2_placement"] ?? settings["Mic 2 Placement"];
+          const rawM2Placement = rawM2 != null ? (typeof rawM2 === "string" ? rawM2 : String(rawM2)) : undefined;
           const m2Decision = reasonSemanticMicPlacement({
             micModel: mic2Name,
             micSlot: "Mic_2",
@@ -596,11 +631,13 @@ export function ensureSignalChainSemanticPlacements(
         }
       } else {
         // Canonical 0-indexed schema: Mic_0 is Primary, Mic_1 is Secondary
-        const mic0Name = (settings["Mic_0"] || settings["mic_0"] || settings["Mic 0"] || settings["mic 0"]) as string;
+        const mic0Raw = settings["Mic_0"] ?? settings["mic_0"] ?? settings["Mic 0"] ?? settings["mic 0"];
+        const mic0Name = safeString(mic0Raw);
         let m0Decision: MicPlacementDecision | undefined = undefined;
 
         if (mic0Name) {
-          const rawM0Placement = (settings["Mic_0_Placement"] || settings["mic_0_placement"] || settings["Mic 0 Placement"]) as string;
+          const rawM0 = settings["Mic_0_Placement"] ?? settings["mic_0_placement"] ?? settings["Mic 0 Placement"];
+          const rawM0Placement = rawM0 != null ? (typeof rawM0 === "string" ? rawM0 : String(rawM0)) : undefined;
           m0Decision = reasonSemanticMicPlacement({
             micModel: mic0Name,
             micSlot: "Mic_0",
@@ -618,9 +655,11 @@ export function ensureSignalChainSemanticPlacements(
           decisions.push(m0Decision);
         }
 
-        const mic1Name = (settings["Mic_1"] || settings["mic_1"] || settings["Mic 1"] || settings["mic 1"]) as string;
+        const mic1Raw = settings["Mic_1"] ?? settings["mic_1"] ?? settings["Mic 1"] ?? settings["mic 1"];
+        const mic1Name = safeString(mic1Raw);
         if (mic1Name) {
-          const rawM1Placement = (settings["Mic_1_Placement"] || settings["mic_1_placement"] || settings["Mic 1 Placement"]) as string;
+          const rawM1 = settings["Mic_1_Placement"] ?? settings["mic_1_placement"] ?? settings["Mic 1 Placement"];
+          const rawM1Placement = rawM1 != null ? (typeof rawM1 === "string" ? rawM1 : String(rawM1)) : undefined;
           const m1Decision = reasonSemanticMicPlacement({
             micModel: mic1Name,
             micSlot: "Mic_1",

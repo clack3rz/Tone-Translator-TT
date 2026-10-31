@@ -820,6 +820,64 @@ describe("Stage 2: Semantic Microphone Placement System", () => {
     assert.match(canonicalSlot1, /^Mic_[01]$/);
   });
 
+  // 22. Robustness Test: Numeric and non-string values do not throw TypeError
+  it("safely handles numeric and non-string toneProfile and mic settings without throwing TypeError", () => {
+    // Test reasonSemanticMicPlacement with numeric gain_level, distortion_type, speakerName, etc.
+    const decision = reasonSemanticMicPlacement({
+      micModel: 57 as any,
+      micSlot: "Mic_1",
+      speakerName: 75 as any,
+      promptContext: 12345 as any,
+      toneProfile: {
+        gain_level: 8 as any,
+        distortion_type: 1 as any,
+        role: 42 as any,
+        style: [100, 200] as any
+      } as any
+    });
+
+    assert.ok(decision);
+    assert.ok(decision.position);
+    assert.ok(decision.distance);
+    assert.ok(decision.angle);
+    assert.ok(typeof decision.placementString === "string");
+    assert.ok(typeof decision.reason === "string");
+
+    // Test ensureSignalChainSemanticPlacements with numeric cab settings
+    const testResult: any = {
+      signal_chain: [
+        {
+          type: "cab",
+          name: "4x12 Brit 8000",
+          settings: {
+            Speaker: 123,
+            Mic_0: 57,
+            Mic_0_Placement: undefined,
+            Mic_1: 121,
+            Mic_1_Placement: null
+          }
+        }
+      ]
+    };
+
+    const toneProfile: any = {
+      gain_level: 9,
+      distortion_type: 4,
+      role: 42,
+      style: 999
+    };
+
+    assert.doesNotThrow(() => {
+      ensureSignalChainSemanticPlacements(testResult, toneProfile, "heavy rock");
+    });
+
+    const cab = testResult.signal_chain[0];
+    assert.ok(cab.settings.Mic_0_Placement);
+    assert.ok(cab.settings.Mic_1_Placement);
+    assert.equal(typeof cab.settings.Mic_0_Placement, "string");
+    assert.equal(typeof cab.settings.Mic_1_Placement, "string");
+  });
+
   after(() => {
     setTimeout(() => process.exit(0), 100);
   });

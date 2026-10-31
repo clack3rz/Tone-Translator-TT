@@ -40,8 +40,8 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
     }).catch(() => {});
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role?.toLowerCase()) {
+  const getRoleBadgeColor = (role: unknown) => {
+    switch (String(role ?? '').toLowerCase()) {
       case 'rhythm': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'lead': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
       case 'bass': return 'bg-green-500/10 text-green-400 border-green-500/20';
@@ -51,8 +51,8 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
     }
   };
 
-  const getGainBadgeColor = (gain: string) => {
-    switch (gain?.toLowerCase()) {
+  const getGainBadgeColor = (gain: unknown) => {
+    switch (String(gain ?? '').toLowerCase()) {
       case 'clean': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
       case 'edge': return 'bg-teal-500/10 text-teal-400 border-teal-500/20';
       case 'low': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
@@ -229,7 +229,7 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-gray-500 uppercase font-mono tracking-wider">Distortion Model:</span>
-                  <span className="text-gray-300 font-mono capitalize">{tone_profile.distortion_type?.replace(/_/g, ' ')}</span>
+                  <span className="text-gray-300 font-mono capitalize">{String(tone_profile.distortion_type || '').replace(/_/g, ' ')}</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-gray-500 uppercase font-mono tracking-wider">Attack Profile:</span>

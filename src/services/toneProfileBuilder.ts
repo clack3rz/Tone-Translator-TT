@@ -35,8 +35,38 @@ export async function buildToneProfile(
             parsed.tone_profile.style = [parsed.tone_profile.style];
           } else if (!Array.isArray(parsed.tone_profile.style)) {
             parsed.tone_profile.style = [];
+          } else {
+            parsed.tone_profile.style = parsed.tone_profile.style.map(s => String(s || "").trim()).filter(Boolean);
           }
-          parsed.tone_profile.gain_level = parsed.tone_profile.gain_level || "medium";
+
+          if (typeof parsed.tone_profile.gain_level === 'number') {
+            const num = parsed.tone_profile.gain_level;
+            parsed.tone_profile.gain_level = num >= 7 ? "high" : num >= 5 ? "medium-high" : num >= 3 ? "medium" : "low";
+          } else if (typeof parsed.tone_profile.gain_level === 'string') {
+            parsed.tone_profile.gain_level = parsed.tone_profile.gain_level.trim() || "medium";
+          } else {
+            parsed.tone_profile.gain_level = "medium";
+          }
+
+          if (typeof parsed.tone_profile.distortion_type !== 'string') {
+            parsed.tone_profile.distortion_type = String(parsed.tone_profile.distortion_type || "unknown");
+          }
+
+          if (typeof parsed.tone_profile.role !== 'string') {
+            parsed.tone_profile.role = String(parsed.tone_profile.role || "unknown");
+          }
+
+          const stringKeys = [
+            'low_end', 'midrange', 'highs', 'attack', 'dynamics',
+            'effects_profile', 'room', 'width', 'production_style',
+            'confidence', 'input_summary', 'artist', 'song', 'album', 'player', 'era'
+          ] as const;
+          for (const k of stringKeys) {
+            if (parsed.tone_profile[k] != null && typeof parsed.tone_profile[k] !== 'string') {
+              (parsed.tone_profile as any)[k] = String(parsed.tone_profile[k]);
+            }
+          }
+
           parsed.tone_profile.spectral_centroid = undefined;
           parsed.tone_profile.low_end_tightness = undefined;
           parsed.tone_profile.midrange_emphasis = undefined;

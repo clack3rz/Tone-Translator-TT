@@ -162,41 +162,48 @@ async function startServer() {
     }
   });
 
-  let hasDistIndex = fs.existsSync(path.join(distDir, 'index.html'));
-  if (!hasDistIndex && process.env.NODE_ENV === 'production') {
-    console.warn('[server] dist/index.html not found in production. Attempting vite build...');
-    try {
-      const { execSync } = await import('child_process');
-      execSync('npx vite build', { stdio: 'inherit' });
-      hasDistIndex = fs.existsSync(path.join(distDir, 'index.html'));
-    } catch (buildErr) {
-      console.error('[server] Automatic build failed:', buildErr);
-    }
-  }
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  if (hasDistIndex || fs.existsSync(distDir)) {
-    // Serve static files from production build directory
-    app.use(express.static(distDir));
-
-    // Fallback all SPA routes to index.html with guaranteed 200 OK
-    app.use((_req, res) => {
-      const indexPath = path.join(distDir, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-      } else {
-        const rootIndex = path.resolve(__dirname, 'index.html');
-        if (fs.existsSync(rootIndex)) {
-          res.sendFile(rootIndex);
-        } else {
-          res.status(200).send('<!doctype html><html><head><title>Tone Translator (Guitar)</title></head><body><div id="root"></div></body></html>');
-        }
+  if (isProduction) {
+    let hasDistIndex = fs.existsSync(path.join(distDir, 'index.html'));
+    if (!hasDistIndex) {
+      console.warn('[server] dist/index.html not found in production. Attempting vite build...');
+      try {
+        const { execSync } = await import('child_process');
+        execSync('npx vite build', { stdio: 'inherit' });
+        hasDistIndex = fs.existsSync(path.join(distDir, 'index.html'));
+      } catch (buildErr) {
+        console.error('[server] Automatic build failed:', buildErr);
       }
-    });
+    }
+
+    if (hasDistIndex || fs.existsSync(distDir)) {
+      // Serve static files from production build directory
+      app.use(express.static(distDir));
+
+      // Fallback all SPA routes to index.html with guaranteed 200 OK
+      app.use((_req, res) => {
+        const indexPath = path.join(distDir, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          const rootIndex = path.resolve(__dirname, 'index.html');
+          if (fs.existsSync(rootIndex)) {
+            res.sendFile(rootIndex);
+          } else {
+            res.status(200).send('<!doctype html><html><head><title>Tone Translator (Guitar)</title></head><body><div id="root"></div></body></html>');
+          }
+        }
+      });
+    }
   } else {
-    // In dev mode when dist does not exist, use Vite in middleware mode
+    // In dev mode, mount Vite in middleware mode
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
