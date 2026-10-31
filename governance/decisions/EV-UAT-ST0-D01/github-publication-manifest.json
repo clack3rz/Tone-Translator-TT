@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "repository": "clack3rz/Tone-Translator-TT",
+  "base_commit": "6bcb4bd28b1922beb77cbf654f50e14417d7d5e6",
+  "branch": "governance/ev-uat-st0-d01-controlled-publication-20261031",
+  "target": "main",
+  "publication_scope": "Branch and pull request only; no merge",
+  "D01": "HOLD",
+  "candidates_authoritative": false,
+  "artifacts": [
+    {
+      "path": "governance/decisions/EV-UAT-ST0-D01/TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1k_PROPOSED.txt",
+      "bytes": 243181,
+      "sha256": "315cb18538be96ead9b901987a80b3deaebfcf91a4e0d7fbb747a17c0ba0c082",
+      "git_blob_sha1": "9f49e3e93c2d5d6c56dcab632efaaf932e9de0a5",
+      "source": "Exact previously locally published bytes at the same relative path in the user's Work workspace"
+    },
+    {
+      "path": "governance/decisions/EV-UAT-ST0-D01/TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1i_PROPOSED.txt",
+      "bytes": 169672,
+      "sha256": "455533ee73e50de91238b176bd3a045a724a1017966d50943b41051dd4d181b5",
+      "git_blob_sha1": "baf2b3cf3deabf6dfdd6b47d34878a3943a55657",
+      "source": "Exact previously locally published bytes at the same relative path in the user's Work workspace"
+    }
+  ],
+  "frozen_predecessors": [
+    {
+      "path": "TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1j.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ec84527ee227abc2c60cf38637d2e6f59e0df7f",
+      "size": 241844,
+      "url": "https://api.github.com/repos/clack3rz/Tone-Translator-TT/git/blobs/9ec84527ee227abc2c60cf38637d2e6f59e0df7f"
+    },
+    {
+      "path": "TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1h.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a322cfb45c05fec5bff3cc812bbd2902f4792d58",
+      "size": 165021,
+      "url": "https://api.github.com/repos/clack3rz/Tone-Translator-TT/git/blobs/a322cfb45c05fec5bff3cc812bbd2902f4792d58"
+    }
+  ],
+  "changed_files": [
+    "governance/decisions/EV-UAT-ST0-D01/TT_Empirical_Validation_UAT_Verification_and_Production_Readiness_Architecture_v0.1k_PROPOSED.txt",
+    "governance/decisions/EV-UAT-ST0-D01/TT_Phase_1C.5h_Implementation_and_Build_Plan_v0.1i_PROPOSED.txt",
+    "governance/decisions/EV-UAT-ST0-D01/github-publication-approval.json",
+    "governance/decisions/EV-UAT-ST0-D01/github-publication-manifest.json"
+  ],
+  "preflight": {
+    "main_matches_pinned_commit": true,
+    "destination_paths_absent": true,
+    "dedicated_branch_absent": true
+  },
+  "verification": "Exact base64 blob upload from local bytes. Commit and PR remote verification reported separately after publication; this manifest does not claim independent post-merge certification.",
+  "authority": "Historical authority/freeze declarations inside unchanged artifacts do not adopt these candidates. Independent post-merge verification and explicit final Owner decision required.",
+  "excluded_actions": [
+    "code changes",
+    "tests",
+    "Gemini",
+    "deployment",
+    "baseline freeze",
+    "Gate 8",
+    "Production"
+  ]
+}
