@@ -1,0 +1,20 @@
+{
+  "decision": "APPROVED controlled GitHub publication through dedicated branch and PR targeting main",
+  "source_conversation": "6adb2ab8-c7b4-83ec-a884-b5db0cedce21",
+  "source_user_message": "8b545cb3-7001-4294-9485-a1a46b82b4fd",
+  "verbatim_owner_approval": "As Tone Translator Project Owner, I APPROVE controlled GitHub publication of the exact hash-verified Architecture v0.1k and Build Plan v0.1i artifacts on a dedicated D-01 branch, through a pull request targeting main, with separate governance evidence. Preserve both frozen predecessors and the exact approved bytes. Do not automatically merge or transition authority. Require independent post-merge remote hash and governance verification, followed by my explicit final authority-transition and D-01 closure decision. D-01 remains HOLD.",
+  "D01": "HOLD",
+  "candidates_authoritative": false,
+  "merge_authorized": false,
+  "authority_transition": false,
+  "required": "Independent post-merge remote hash and governance verification, then explicit Project Owner final authority-transition and D-01 closure decision",
+  "excluded_actions": [
+    "code changes",
+    "tests",
+    "Gemini",
+    "deployment",
+    "baseline freeze",
+    "Gate 8",
+    "Production"
+  ]
+}
