@@ -34,8 +34,19 @@ async function startServer() {
   };
   app.get('/api/health', healthHandler);
   app.get('/health', healthHandler);
-  app.get('/healthz', healthHandler);
   app.get('/_ah/health', healthHandler);
+
+  // Endpoint to download the full project source code archive
+  app.get('/api/export-source', (_req, res) => {
+    const zipPath = path.resolve(__dirname, 'public/tone-translator-source.zip');
+    if (fs.existsSync(zipPath)) {
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename="tone-translator-source.zip"');
+      res.sendFile(zipPath);
+    } else {
+      res.status(404).json({ error: 'Source archive not ready. Please try again shortly.' });
+    }
+  });
 
   // Server-side Gemini content generation endpoint
   app.post('/api/gemini/generate', async (req, res) => {

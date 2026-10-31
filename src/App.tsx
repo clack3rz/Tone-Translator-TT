@@ -722,6 +722,16 @@ export default function App() {
 
           <div className="w-px h-4 bg-white/10 mx-2" />
 
+          <a
+            href="/api/export-source"
+            download="tone-translator-source.zip"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-gear-accent/40 text-[10px] font-mono text-gray-400 hover:text-white transition-all uppercase tracking-tighter"
+            title="Download full project source code archive (.zip)"
+          >
+            <Download className="w-3 h-3 text-gear-accent" />
+            <span>Export Source</span>
+          </a>
+
           {user ? (
             <div className="flex items-center gap-2">
               <button 
