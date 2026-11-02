@@ -1,3 +1,4 @@
+import { exportProvenance, provenanceSummary, provenanceMarker } from './generationProvenance';
 // src/services/presetExporter.ts
 // Deterministic AT5 .at5p XML exporter. Do not call Gemini to serialize presets.
 
@@ -1444,11 +1445,10 @@ export const generateXML = (result: ToneResult): string => {
   const rackB = slotPlan.filter(item => item.final_selected_slot_section === "RackB").map(item => item.normalized);
   const rackC = slotPlan.filter(item => item.final_selected_slot_section === "RackC").map(item => item.normalized);
 
-  const description = escapeXml(
-    result.engineering_notes?.gain_strategy ??
-      result.tone_summary?.style ??
-      "Tone Translator preset"
-  );
+  const description = escapeXml([
+    result.engineering_notes?.gain_strategy ?? result.tone_summary?.style ?? "Tone Translator preset",
+    provenanceSummary(result), provenanceMarker(result), result.notice ?? ''
+  ].join('\n'));
 
   const style = escapeXml(result.tone_summary?.style ?? "Rock");
 
@@ -1691,6 +1691,7 @@ export interface ExportDebugItem {
 }
 
 export interface ExportDebugData {
+  generation_provenance?: ReturnType<typeof exportProvenance>;
   raw_input_chain: SignalChainElement[];
   exported_chain: ExportDebugItem[];
   skipped_gear: ExportDebugItem[];
@@ -3986,6 +3987,10 @@ let lastGeneratedXmlCache: XmlCacheEntry | null = null;
 const computeXmlCacheKey = (result: ToneResult, signalChain?: SignalChainElement[]): string => {
   try {
     return JSON.stringify({
+      provenance: exportProvenance(result),
+      preset_name: result.preset_name,
+      description: result.description,
+      notice: result.notice,
       midiPC: result.midiPC,
       tone_summary: result.tone_summary,
       signal_chain: signalChain ?? result.signal_chain ?? [],
@@ -4435,6 +4440,7 @@ export const getExportDebugData = (
   }
 
   return {
+    generation_provenance: exportProvenance(result),
     raw_input_chain: rawInput,
     exported_chain: exportedChain,
     skipped_gear: skippedGear,

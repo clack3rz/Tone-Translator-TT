@@ -1,4 +1,6 @@
-import { ToneResult, SignalChainElement } from "../types";
+import { identity, inputLedger, MODEL } from './generationProvenance';
+import { requestModel, checkCancelled, classifyFailure, canDegrade, GenerationError, fail } from './generationFailure';
+import { ToneResult, NormalizedToneResult, GenerationProvenance, GenerationFailure, SignalChainElement } from "../types";
 import { buildToneProfile } from "./toneProfileBuilder";
 import { AMP_MANIFEST, STOMP_MANIFEST, CAB_MANIFEST, ROOM_MANIFEST, RACK_MANIFEST, TONEX_MANIFEST } from "./gearManifest";
 import { getAt5Catalog, findAT5Gear, AT5_EMPTY_SLOT_GUID } from "./at5Catalog";
@@ -273,9 +275,28 @@ export async function translateTone(
   signal?: AbortSignal,
   youtubeUrl?: string,
   useValidationRecipes: boolean = false
-): Promise<ToneResult> {
+): Promise<NormalizedToneResult> {
+  checkCancelled(signal);
+  const run=identity();
   // Step 1: Tone Profile Builder (Runs before final signal-chain generation)
   const toneProfileResult = await buildToneProfile(textPrompt, targetAudio, signal);
+  const finalize=(produce:()=>ToneResult,origin:GenerationProvenance['origin'],failure?:GenerationFailure,execution?:any):NormalizedToneResult=>{
+    checkCancelled(signal);
+    let result:ToneResult;
+    let selfReport:number|undefined;
+    try { result=produce(); selfReport=typeof result.confidence==='number' && Number.isFinite(result.confidence)?result.confidence:undefined; delete result.confidence; } catch(error) { const terminal=classifyFailure(error,'postprocess');throw new GenerationError({...terminal,cause:failure}); }
+    checkCancelled(signal);
+    return {...result,tone_profile_result:toneProfileResult,
+      notice:origin==='heuristic_fallback'?'Unverified heuristic suggestion following a service failure. Raw reference inputs are not processed by local rules.':result.notice,
+      provenance:{...run,completedAt:new Date().toISOString(),origin,attemptCount:execution?.attempts??failure?.attemptCount??0,retryHistory:execution?.retryHistory??failure?.retryHistory??[],completionStatus:origin==='heuristic_fallback'||toneProfileResult.provenance.failure?'degraded':'complete',
+        engineVersion:origin==='heuristic_fallback'?'tt-p1/main-baseline-rules-1':'tt-p1/1',
+        requestedModel:origin==='live_model'||failure?MODEL:undefined,returnedModelVersion:typeof execution?.returnedModelVersion==='string'?execution.returnedModelVersion:undefined,
+        profileRunId:toneProfileResult.provenance.runId,postprocessing:origin==='validation_recipe'?['semantic-mic-placement/1']:['thrash-pedal-selection/1','semantic-mic-placement/1'],
+        inputs:inputLedger({text:!!textPrompt,targetAudio:!!targetAudio,currentAudio:!!currentAudio,preset:!!userPreset,youtubeUrl:!!youtubeUrl},origin==='live_model',toneProfileResult.provenance),
+        failure,confidence:{basis:origin==='live_model'?'uncalibrated_model_self_report':'unverified_heuristic',validationStatus:'unvalidated',modelSelfReport:origin==='live_model'?selfReport:undefined}}};
+  };
+  let generationFailure:GenerationFailure|undefined;
+
 
   const ampContext = AT5_AMPLIFIER_KNOWLEDGE.map(amp => {
     const controlsStr = amp.controls.map(c => `- ${c.name} (range: ${c.min} to ${c.max}${c.description ? ` - ${c.description}` : ""})`).join("\n");
@@ -334,7 +355,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
   ].some(kw => lowerPrompt.includes(kw));
 
   if (useValidationRecipes && isAcdcKeyword) {
-    return ensureSignalChainSemanticPlacements({
+    return finalize(() => ensureSignalChainSemanticPlacements({
       tone_summary: {
         style: "classic rock",
         gain_level: "medium",
@@ -382,7 +403,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
         reason: "For classic AC/DC rhythm, a bone-dry, uncolored tone driven directly by tube power amp saturation is ideal. Post-amp/rack EQ is not needed because the amplifier and cabinet handle all necessary frequency shaping of the raw, historic classic rock voice.",
         eq_intent: []
       }
-    }, toneProfileResult?.tone_profile, textPrompt);
+    }, toneProfileResult?.tone_profile, textPrompt), 'validation_recipe');
   }
 
   const isPanteraKeyword = [
@@ -390,7 +411,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
   ].some(kw => lowerPrompt.includes(kw));
 
   if (useValidationRecipes && isPanteraKeyword) {
-    return ensureSignalChainSemanticPlacements({
+    return finalize(() => ensureSignalChainSemanticPlacements({
       tone_summary: {
         style: "Pantera Cowboys From Hell Thrash Metal Rhythm",
         gain_level: "high",
@@ -473,7 +494,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           "Sharpen upper-mid biting presence around 3.1kHz"
         ]
       }
-    }, toneProfileResult?.tone_profile, textPrompt);
+    }, toneProfileResult?.tone_profile, textPrompt), 'validation_recipe');
   }
 
   if (
@@ -482,7 +503,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
     (lowerPrompt.includes("kill em all") || lowerPrompt.includes("kill 'em all")) &&
     lowerPrompt.includes("rhythm")
   ) {
-    return ensureSignalChainSemanticPlacements({
+    return finalize(() => ensureSignalChainSemanticPlacements({
       tone_summary: {
         style: "1980's Metallica Kill 'Em All rhythm v2",
         gain_level: "high",
@@ -563,7 +584,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
           "Boost presence in high-mids at 1.6kHz to 3.1kHz"
         ]
       }
-    }, toneProfileResult?.tone_profile, textPrompt);
+    }, toneProfileResult?.tone_profile, textPrompt), 'validation_recipe');
   }
 
   if (targetAudio) {
@@ -577,59 +598,17 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
   }
 
   if (typeof window !== 'undefined') {
-    let retries = 0;
-    const maxRetries = 2;
-    const baseDelay = 1500;
-
-    while (retries <= maxRetries) {
-      try {
-        const response = await fetch('/api/gemini/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'gemini-3.8-flash',
-            contents: [{ role: 'user', parts }],
-            config: {
-              responseMimeType: 'application/json',
-            },
-          }),
-          signal,
-        });
-
-        if (!response.ok) {
-          let errData: any = {};
-          try {
-            errData = await response.json();
-          } catch (_) {}
-          const errMsg = errData.error || `HTTP error ${response.status}`;
-          const err: any = new Error(errMsg);
-          if (response.status === 429 || errData.status === 'RESOURCE_EXHAUSTED') {
-            err.status = 'RESOURCE_EXHAUSTED';
-          }
-          if (response.status === 504 || errMsg.includes('Timeout')) {
-            err.message = 'TimeoutError';
-          }
-          throw err;
-        }
-
-        const data = await response.json();
-        const toneText = data.text || '{}';
-        const result = cleanAndParseJson<ToneResult>(toneText);
-        result.tone_profile_result = toneProfileResult;
-        return adjustThrashPedalSelection(result, textPrompt);
-      } catch (error: any) {
-        if (error.name === 'AbortError' || signal?.aborted) {
-          throw error;
-        }
-        const isRateLimit = error?.message?.includes('429') || error?.status === 'RESOURCE_EXHAUSTED';
-        if (isRateLimit && retries < maxRetries) {
-          retries++;
-          const delay = baseDelay * Math.pow(2, retries - 1);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-        throw error;
-      }
+    try {
+      const {data,attempts,retryHistory}=await requestModel('/api/gemini/generate',{model:MODEL,contents:[{role:'user',parts}],config:{responseMimeType:'application/json'}},'generation',signal);
+      if(typeof data.text!=='string') fail('response_decode',new Error());
+      let result:ToneResult;
+      try { result=cleanAndParseJson<ToneResult>(data.text); } catch(error) { fail('response_decode',error); }
+      if(!result || !Array.isArray(result.signal_chain) || !result.signal_chain.length || result.signal_chain.some(el=>!el||!['pedal','amp','cab','rack'].includes(el.type)||typeof el.name!=='string'||!el.name.trim()||!el.settings||typeof el.settings!=='object'||Array.isArray(el.settings)||Object.values(el.settings).some(v=>!['string','number'].includes(typeof v)||(typeof v==='number'&&!Number.isFinite(v))))) fail('response_validation',new Error());
+      return finalize(()=>adjustThrashPedalSelection(result,textPrompt),'live_model',undefined,{...data.execution,attempts,retryHistory});
+    } catch(error) {
+      checkCancelled(signal);
+      generationFailure=classifyFailure(error,'generation');
+      if(!canDegrade(generationFailure)) throw new GenerationError(generationFailure);
     }
   }
 
@@ -683,8 +662,7 @@ You MUST strictly adhere to this Tone Profile in your signal chain plan:
   };
 
   baselineResult.tone_profile_result = toneProfileResult;
-  const adjusted = adjustThrashPedalSelection(baselineResult, textPrompt);
-  return adjusted;
+  return finalize(()=>adjustThrashPedalSelection(baselineResult,textPrompt),generationFailure?'heuristic_fallback':'local_baseline',generationFailure);
 }
 
 function adjustThrashPedalSelection(result: ToneResult, textPrompt: string): ToneResult {

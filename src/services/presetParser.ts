@@ -1,3 +1,4 @@
+import { readProvenanceMarker } from './generationProvenance';
 
 import { XMLParser } from "fast-xml-parser";
 
@@ -6,6 +7,8 @@ export interface PresetData {
     source: string;
     presetName: string;
     genre?: string;
+    description?: string;
+    ttProvenance?: ReturnType<typeof readProvenanceMarker>;
   };
   signalChain: any[];
 }
@@ -121,6 +124,8 @@ export function parseAt5p(xmlContent: string): PresetData {
       source: "at5p",
       presetName: root.GUID || "Unknown Preset",
       genre: root.MetaInfo?.Style,
+      description: String(root.MetaInfo?.Description ?? ''),
+      ttProvenance: readProvenanceMarker(String(root.MetaInfo?.Description ?? '')),
     },
     signalChain,
   };
