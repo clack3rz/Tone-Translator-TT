@@ -97,5 +97,38 @@ test('P1-10 injected postprocess error is terminal, never availability fallback'
   JSON.parse=function(text:string,...args:any[]){const value=original(text,...args);if(typeof text==='string'&&text.includes('"provenance":{"origin":"forged"}')&&value.signal_chain&&!injected){injected=true;Object.defineProperty(value,'confidence',{get(){throw new Error('injected');},configurable:true});}return value;};
   try{await assert.rejects(translateTone('fixture'),(e:any)=>e.failure?.category==='postprocess');}finally{JSON.parse=original;}
 });
+test('P1-12 all 32 input combinations agree with observed live payload inclusion',async()=>{
+  const audio={base64:'Zml4dHVyZQ==',mimeType:'audio/wav'};
+  for(let mask=0;mask<32;mask++){
+    const calls=mockGeneration({text:JSON.stringify(chain)});
+    const r=await translateTone(mask&1?'fixture':'',mask&2?audio:undefined,mask&4?audio:undefined,mask&8?{metadata:{presetName:'fixture'}}:undefined,undefined,mask&16?'https://example.test/video':undefined);
+    const parts=calls[1].payload.contents[0].parts;
+    assert.equal(parts.some((p:any)=>p.inlineData),!!(mask&2));
+    assert.equal(parts.some((p:any)=>p.text?.startsWith('Existing Preset Context:')),!!(mask&8));
+    assert.equal(parts.some((p:any)=>p.text?.startsWith('Additional YouTube Context:')),!!(mask&16));
+    for(const [index,input] of ['text','targetAudio','currentAudio','preset','youtubeUrl'].entries()){
+      const use=r.provenance.inputs.find(i=>i.input===input)!;
+      assert.equal(use.supplied,!!(mask&(1<<index)));assert.equal(use.submittedToModel,!!(mask&(1<<index))&&input!=='currentAudio');
+    }
+  }
+});
+test('P1-10 fallback postprocessing exception retains preceding payment failure',async()=>{
+  const original=String.prototype.toLowerCase;let failLocal=false;
+  globalThis.fetch=async(url)=>{if(String(url).includes('tone-profile'))return response(profile);failLocal=true;return response({},402);};
+  String.prototype.toLowerCase=function(){if(failLocal&&String(this)==='fallback fixture')throw new Error('injected fallback');return original.call(this);};
+  try{await assert.rejects(translateTone('fallback fixture'),(e:any)=>e.failure.category==='postprocess'&&e.failure.cause.category==='payment');}finally{String.prototype.toLowerCase=original;}
+});
+test('P1-08 abort during each actual retry wait prevents another request',async(t)=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  try{
+    for(const abortAfterAttempt of [1,2]){
+      let attempts=0;const controller=new AbortController();globalThis.fetch=async()=>{attempts++;return response({},429);};
+      const settled=requestModel('/fixture',{},'profile',controller.signal).then(v=>v,e=>e);
+      const flush=async()=>{for(let n=0;n<20;n++)await Promise.resolve();};
+      await flush();if(abortAfterAttempt===2){t.mock.timers.tick(1500);await flush();}
+      controller.abort();const error=await settled;assert.equal(error.name,'AbortError');t.mock.timers.tick(30000);await flush();assert.equal(attempts,abortAfterAttempt);
+    }
+  }finally{t.mock.timers.reset();}
+});
 
 

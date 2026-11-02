@@ -10,24 +10,24 @@ const codes: Record<string, FailureCategory> = {
   RESOURCE_EXHAUSTED: 'rate_limit', PAYMENT_REQUIRED: 'payment', UNAUTHENTICATED: 'authentication',
   PERMISSION_DENIED: 'permission', DEADLINE_EXCEEDED: 'timeout', UNAVAILABLE: 'unavailable',
 };
-export function classifyFailure(error: unknown, stage: FailureStage, attemptCount = 1): GenerationFailure {
-  if (error instanceof GenerationError) return { ...error.failure, stage: ['profile','generation'].includes(error.failure.stage) ? stage : error.failure.stage, attemptCount };
+export function classifyFailure(error: unknown, stage: FailureStage, attemptCount?: number): GenerationFailure {
+  if (error instanceof GenerationError) return { ...error.failure, stage: ['profile','generation'].includes(error.failure.stage) ? stage : error.failure.stage, attemptCount:attemptCount ?? error.failure.attemptCount };
   const e = error as any;
   const status = [e?.httpStatus, e?.status, e?.code, e?.error?.code].find(v => typeof v === 'number');
   const code = [e?.status, e?.code, e?.error?.status].find(v => typeof v === 'string' && codes[v]);
   let category: FailureCategory = 'unknown';
-  if (typeof status === 'number') {
+  if (stage === 'postprocess') category = 'postprocess';
+  else if (stage === 'response_decode') category = 'decode';
+  else if (stage === 'response_validation') category = 'validation';
+  else if (typeof status === 'number') {
     category = status === 429 ? 'rate_limit' : status === 402 ? 'payment' : status === 401 ? 'authentication'
       : status === 403 ? 'permission' : status === 408 || status === 504 ? 'timeout' : status >= 500 ? 'unavailable' : 'unknown';
   } else if (code) category = codes[code];
   else if (e?.name === 'AbortError') category = 'cancelled';
   else if (e?.name === 'TimeoutError') category = 'timeout';
-  else if (stage === 'response_decode') category = 'decode';
-  else if (stage === 'response_validation') category = 'validation';
-  else if (stage === 'postprocess') category = 'postprocess';
   else if (e instanceof TypeError && /fetch|network/i.test(e.message.slice(0, 200))) category = 'network';
   // Deliberately do not guess operational causes from arbitrary provider prose.
-  return { stage, category, httpStatus: status, providerCode: code, attemptCount, retryHistory: [],
+  return { stage, category, httpStatus: status, providerCode: code, attemptCount:attemptCount ?? 1, retryHistory: [],
     message: `Tone request failed (${stage}/${category}).` };
 }
 export function fail(stage: FailureStage, error: unknown): never { throw new GenerationError(classifyFailure(error, stage)); }

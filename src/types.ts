@@ -159,8 +159,8 @@ export interface ProfileProvenance {
   runId: string;
   origin: 'live_model' | 'static_recipe' | 'local_heuristic' | 'legacy_unknown';
   engineVersion: string;
-  startedAt: string;
-  completedAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
   requestedModel?: string;
   returnedModelVersion?: string;
   inputs: InputUse[];

@@ -1,3 +1,4 @@
+import { normalizeResult } from './generationProvenance';
 import { ToneResult, SignalChainElement } from '../types';
 import { PresetData } from './presetParser';
 
@@ -216,6 +217,7 @@ export function loadWorkingSession(): { session: WorkingSessionData | null; rest
       return { session: null, restored: false, reason: validation.reason };
     }
 
+    if (parsed.toneResult) parsed.toneResult = normalizeResult(parsed.toneResult);
     currentRevision = typeof parsed.revision === 'number' ? parsed.revision : 0;
     const chainItems = parsed.toneResult?.signal_chain?.length ?? 0;
     console.log(

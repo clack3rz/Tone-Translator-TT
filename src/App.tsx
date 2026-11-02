@@ -1,3 +1,5 @@
+import { provenanceSummary, exportProvenance } from './services/generationProvenance';
+import { GenerationError } from './services/generationFailure';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'motion/react';
@@ -139,6 +141,9 @@ export default function App() {
   const [targetAudioFile, setTargetAudioFile] = useState<File | null>(null);
   const [recordingAudioFile, setRecordingAudioFile] = useState<File | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
+  const activeGenerationRef = React.useRef<AbortController | null>(null);
+  const [resultIsPrevious, setResultIsPrevious] = useState(false);
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [toneResult, setToneResult] = useState<ToneResult | null>(initialSession?.toneResult || null);
   const [activeGearId, setActiveGearId] = useState<string | null>(initialSession?.activeGearId || null);
@@ -376,7 +381,7 @@ export default function App() {
 
   const initiateExport = () => {
     if (!toneResult) return;
-    const defaultName = `TT_${toneResult.tone_summary.style.substring(0, 15).replace(/[^a-z0-9]/gi, '_')}`;
+    const defaultName = `TT_${(toneResult.tone_summary?.style ?? 'Preset').substring(0, 15).replace(/[^a-z0-9]/gi, '_')}`;
     setExportFilename(defaultName);
     setIsExportModalOpen(true);
   };
@@ -430,7 +435,7 @@ export default function App() {
       text += `\n`;
     });
 
-    text += `CONFIDENCE: ${toneResult.confidence}%\n`;
+    text += `${provenanceSummary(toneResult)}\n${JSON.stringify(exportProvenance(toneResult), null, 2)}\n`;
     text += `ENGINE: V2.0_MASTER\n`;
 
     void copyToClipboard(text).then(() => {
@@ -501,6 +506,11 @@ export default function App() {
       return;
     }
 
+    activeGenerationRef.current?.abort();
+    const controller = new AbortController();
+    activeGenerationRef.current = controller;
+    setAbortController(controller);
+    setResultIsPrevious(true);
     setIsTranslating(true);
     setError(null);
     setSourceOriginalIndex(null);
@@ -534,9 +544,6 @@ export default function App() {
       }
     }
 
-    const controller = new AbortController();
-    setAbortController(controller);
-
     try {
       const toBase64 = (file: File): Promise<{ base64: string; mimeType: string }> => {
         return new Promise((resolve) => {
@@ -561,39 +568,33 @@ export default function App() {
         youtubeUrl || undefined,
         useValidationRecipes
       );
+      if (controller.signal.aborted || activeGenerationRef.current !== controller) return;
       setToneResult(toneResponse);
+      setResultIsPrevious(false);
+      setNoticeDismissed(false);
       
       if (userPreset) {
         // Compare logic might need update but we'll try to find a proxy
         setDiffs(["Analysis completed with new engine"]);
       }
-    } catch (err: any) {
-      if (err.name === 'AbortError' || (err instanceof Error && err.message.includes('abort'))) {
-        console.log('Analysis aborted by user');
-        return;
-      }
-      if (err instanceof Error && err.message.includes('TimeoutError')) {
-        setError('Analysis timed out. The tone might be too complex or the service is busy. Please try again.');
-        return;
-      }
-      if (err?.message?.includes('429') || err?.status === 'RESOURCE_EXHAUSTED') {
-        setError('Rate limit exceeded. Please wait a moment and try again.');
-        return;
-      }
-      console.error(err);
-      setError('Failed to translate tone. Please check your connection and try again.');
+    } catch (err: unknown) {
+      if (activeGenerationRef.current !== controller || controller.signal.aborted) return;
+      if (err instanceof GenerationError) setError(err.failure.message);
+      else setError('Failed to translate tone. The previous result, if shown, belongs to its earlier run.');
     } finally {
-      setIsTranslating(false);
-      setAbortController(null);
+      if (activeGenerationRef.current === controller) {
+        activeGenerationRef.current = null;
+        setIsTranslating(false);
+        setAbortController(null);
+      }
     }
   };
 
   const handleCancel = () => {
-    if (abortController) {
-      abortController.abort();
-      setIsTranslating(false);
-      setAbortController(null);
-    }
+    activeGenerationRef.current?.abort();
+    activeGenerationRef.current = null;
+    setIsTranslating(false);
+    setAbortController(null);
   };
 
   const copyExportDebug = () => {
@@ -711,6 +712,7 @@ export default function App() {
             {isTranslating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
             {isTranslating ? "ANALYZING..." : "GENERATE"}
           </button>
+          {isTranslating && <button type="button" onClick={handleCancel}>Cancel generation</button>}
         </div>
 
           <div className="flex items-center gap-4">
@@ -826,6 +828,12 @@ export default function App() {
           {!isGearToolOpen && (
             toneResult ? (
               <div className="max-w-6xl mx-auto space-y-12">
+                <section aria-label="Generation provenance" className="text-sm text-amber-200 border border-amber-500/30 rounded p-4">
+                  <p>{provenanceSummary(toneResult)}</p>
+                  <button type="button" onClick={copyManifestAsText}>Copy manifest</button>
+                  {resultIsPrevious && <p role="status">Retained result from the previous run. It is not an output of the current or failed request.</p>}
+                  {toneResult.notice && !noticeDismissed && <div role="note"><p>{toneResult.notice}</p><button type="button" onClick={() => setNoticeDismissed(true)}>Dismiss details</button></div>}
+                </section>
                 {exportDebugData && (
                   <AT5SignalChainView 
                     debugData={exportDebugData} 
@@ -866,7 +874,7 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-6 text-[9px] font-mono text-gray-500 uppercase">
-          {toneResult && `CONFIDENCE: ${toneResult.confidence}% // V2.0_MASTER`}
+          {toneResult && 'Tonal assessment: unvalidated'}
         </div>
         <div className="flex items-center gap-6">
           <div className="text-[9px] font-mono text-gray-800 uppercase tracking-[0.6em] font-bold">

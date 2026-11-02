@@ -1,3 +1,4 @@
+import { normalizeProfile } from '../services/generationProvenance';
 import React, { useState } from 'react';
 import { 
   Sparkles, 
@@ -31,6 +32,7 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
     return null;
   }
 
+  profileResult = normalizeProfile(profileResult);
   const { tone_profile, initial_family_guidance, classification_reasoning, warnings } = profileResult;
 
   const handleCopyJson = () => {
@@ -79,7 +81,7 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
             </span>
           </div>
           <p className="text-[10px] text-gray-500 font-mono uppercase mt-1 tracking-wider">
-            Pre-generation Taxonomical Classification and Heuristics
+            Profile origin: {profileResult.provenance?.origin} · Unvalidated assessment
           </p>
         </div>
 
@@ -190,7 +192,7 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
             <div className="p-4 rounded-xl bg-white/[0.01] border border-white/5 space-y-1.5">
               <span className="text-[8px] font-mono text-gray-500 uppercase tracking-widest flex items-center gap-1">
                 <Compass className="w-2.5 h-2.5 text-gray-600" />
-                Role &amp; Confidence
+                Role &amp; Unvalidated assessment
               </span>
               <div className="flex items-center gap-1.5">
                 <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border ${getRoleBadgeColor(tone_profile.role)}`}>
@@ -203,7 +205,7 @@ export function ToneProfileView({ profileResult, rawRequest }: ToneProfileViewPr
                     ? 'bg-red-500/10 text-red-400 border border-red-500/10'
                     : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/10'
                 }`}>
-                  {tone_profile.confidence}
+                  {tone_profile.confidence} (unvalidated)
                 </span>
               </div>
               <div className="text-[9px] text-gray-600 font-mono uppercase tracking-widest">
