@@ -91,6 +91,7 @@ export interface ClassificationReasoning {
 }
 
 export interface ToneProfileResult {
+  provenance?: ProfileProvenance;
   tone_profile: ToneProfile;
   initial_family_guidance: InitialFamilyGuidance;
   classification_reasoning: ClassificationReasoning;
@@ -106,6 +107,9 @@ export interface RackDecision {
 }
 
 export interface ToneResult {
+  /** Compatibility payload. New producers return NormalizedToneResult. */
+  provenance?: GenerationProvenance;
+  notice?: string;
   preset_name?: string;
   description?: string;
   tone_summary?: ToneSummary;
@@ -121,6 +125,54 @@ export interface ToneResult {
   tone_adjustment_intent?: Record<string, string>;
   rack_decision?: RackDecision;
 }
+
+export type FailureStage = 'profile' | 'generation' | 'response_decode' | 'response_validation' | 'postprocess';
+export type FailureCategory = 'cancelled' | 'rate_limit' | 'payment' | 'authentication' | 'permission' | 'network' | 'timeout' | 'unavailable' | 'decode' | 'validation' | 'postprocess' | 'unknown';
+export interface GenerationFailure {
+  stage: FailureStage;
+  category: FailureCategory;
+  httpStatus?: number;
+  providerCode?: string;
+  attemptCount: number;
+  retryHistory: { attempt: number; category: FailureCategory; delayMs: number }[];
+  message: string;
+  cause?: GenerationFailure;
+}
+export interface InputUse {
+  input: 'text' | 'targetAudio' | 'currentAudio' | 'preset' | 'youtubeUrl';
+  supplied: boolean;
+  submittedToModel: boolean;
+  consumedByLocalRules: boolean;
+  usedIndirectlyThroughProfile: boolean;
+  omissionReason?: string;
+  reference?: string;
+}
+export interface ConfidenceRecord {
+  basis: 'uncalibrated_model_self_report' | 'unverified_heuristic' | 'unknown';
+  validationStatus: 'unvalidated';
+  modelSelfReport?: number | string;
+}
+export interface ProfileProvenance {
+  schemaVersion: 1;
+  runId: string;
+  origin: 'live_model' | 'static_recipe' | 'local_heuristic' | 'legacy_unknown';
+  engineVersion: string;
+  startedAt: string;
+  completedAt: string;
+  requestedModel?: string;
+  returnedModelVersion?: string;
+  inputs: InputUse[];
+  failure?: GenerationFailure;
+  confidence: ConfidenceRecord;
+}
+export interface GenerationProvenance extends Omit<ProfileProvenance, 'origin'> {
+  origin: 'live_model' | 'heuristic_fallback' | 'validation_recipe' | 'local_baseline' | 'legacy_unknown';
+  completionStatus: 'complete' | 'degraded' | 'unknown';
+  profileRunId?: string;
+  postprocessing: string[];
+}
+export interface NormalizedToneResult extends ToneResult { provenance: GenerationProvenance }
+export interface NormalizedToneProfileResult extends ToneProfileResult { provenance: ProfileProvenance }
 
 export type AT5GearGroup =
   | "amp"
