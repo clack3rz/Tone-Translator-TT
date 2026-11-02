@@ -1,4 +1,4 @@
-import { GenerationError, classifyFailure, errorEnvelope, withDeadline } from './src/services/generationFailure';
+import { GenerationError, classifyFailure, errorEnvelope, failureHttpStatus, withDeadline } from './src/services/generationFailure';
 import express from 'express';
 import http from 'http';
 import path from 'path';
@@ -61,7 +61,7 @@ async function startServer() {
       res.json({ text: response.text || '', execution: { requestedModel: model, returnedModelVersion: response.modelVersion } });
     } catch (err: any) {
       const envelope = errorEnvelope(err, 'generation');
-      const status = envelope.failure.httpStatus ?? (envelope.failure.category === 'timeout' ? 504 : 502);
+      const status = failureHttpStatus(envelope.failure);
       res.status(status >= 400 && status <= 599 ? status : 502).json(envelope);
     }
   });
@@ -92,7 +92,7 @@ async function startServer() {
       res.json({ ...parsed, execution: { requestedModel: 'gemini-3.8-flash', returnedModelVersion: response.modelVersion } });
     } catch (err: any) {
       const envelope = errorEnvelope(err, 'profile');
-      const status = envelope.failure.httpStatus ?? (envelope.failure.category === 'timeout' ? 504 : 502);
+      const status = failureHttpStatus(envelope.failure);
       res.status(status >= 400 && status <= 599 ? status : 502).json(envelope);
     }
   });
@@ -129,7 +129,7 @@ async function startServer() {
       res.json({ ...parsed, execution: { requestedModel: 'gemini-3.8-flash', returnedModelVersion: response.modelVersion } });
     } catch (err: any) {
       const envelope = errorEnvelope(err, 'generation');
-      const status = envelope.failure.httpStatus ?? (envelope.failure.category === 'timeout' ? 504 : 502);
+      const status = failureHttpStatus(envelope.failure);
       res.status(status >= 400 && status <= 599 ? status : 502).json(envelope);
     }
   });

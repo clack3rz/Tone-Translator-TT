@@ -2,7 +2,7 @@ import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
 import {buildToneProfile} from '../services/toneProfileBuilder';
 import {translateTone} from '../services/geminiService';
-import {requestModel,GenerationError} from '../services/generationFailure';
+import {requestModel,GenerationError,errorEnvelope,failureHttpStatus,classifyFailure} from '../services/generationFailure';
 import {liveEvidencePreflight} from '../services/generationProvenance';
 const originalFetch=globalThis.fetch;
 const originalWindow=globalThis.window;
@@ -132,3 +132,59 @@ test('P1-08 abort during each actual retry wait prevents another request',async(
 });
 
 
+
+// Uses the same serializer and status mapper as all three server endpoint catches.
+function providerResponse(error: unknown, stage: 'profile' | 'generation') {
+  const envelope = errorEnvelope(error, stage);
+  return response(envelope, failureHttpStatus(envelope.failure));
+}
+test('P1 boundary: symbolic auth/permission terminate profile and generation despite contradictory prose', async()=>{
+  for (const stage of ['profile','generation'] as const) for (const code of ['UNAUTHENTICATED','PERMISSION_DENIED']) {
+    let calls=0;
+    globalThis.fetch=async(url)=>{
+      calls++;
+      if(stage==='generation' && String(url).includes('tone-profile')) return response(profile);
+      return providerResponse({error:{code},message:'429 RESOURCE_EXHAUSTED timeout secret-token'},stage);
+    };
+    await assert.rejects(translateTone('boundary fixture'),(e:any)=>{
+      assert.equal(e.failure.category,code==='UNAUTHENTICATED'?'authentication':'permission');
+      assert.equal(e.failure.stage,stage);assert.equal(e.failure.providerCode,code);
+      assert.equal(e.failure.attemptCount,1);assert.equal(e.failure.message.includes('secret-token'),false);
+      return true;
+    });
+    assert.equal(calls,stage==='profile'?1:2);
+  }
+});
+test('P1 boundary: symbolic exhaustion retries three times before explicitly degraded output',async(t)=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  try {
+    for(const stage of ['profile','generation'] as const){
+      let failedCalls=0;
+      globalThis.fetch=async(url)=>{
+        const isProfile=String(url).includes('tone-profile');
+        if(isProfile===(stage==='profile')) {failedCalls++;return providerResponse({status:'RESOURCE_EXHAUSTED',message:'401 PERMISSION_DENIED secret'},stage);}
+        return response(isProfile?profile:{text:JSON.stringify(chain)});
+      };
+      const settled=translateTone('boundary fixture').then(v=>v,e=>{throw e;});
+      const flush=async()=>{for(let n=0;n<100;n++)await Promise.resolve();};
+      await flush();assert.equal(failedCalls,1);
+      t.mock.timers.tick(1499);await flush();assert.equal(failedCalls,1);
+      t.mock.timers.tick(1);await flush();assert.equal(failedCalls,2);
+      t.mock.timers.tick(3000);await flush();const result=await settled;
+      assert.equal(failedCalls,3);assert.equal(result.provenance.completionStatus,'degraded');
+      const failure=stage==='profile'?result.tone_profile_result!.provenance!.failure!:result.provenance.failure!;
+      assert.equal(failure.category,'rate_limit');assert.equal(failure.providerCode,'RESOURCE_EXHAUSTED');
+      assert.equal(failure.stage,stage);assert.equal(failure.attemptCount,3);
+      assert.deepEqual(failure.retryHistory.map(r=>r.delayMs),[1500,3000]);
+      if(stage==='generation')assert.equal(result.provenance.origin,'heuristic_fallback');
+    }
+  }finally{t.mock.timers.reset();}
+});
+test('P1 boundary: structured conflicts stay terminal and abort remains cancellation',()=>{
+  for(const error of [{httpStatus:502,status:'UNAUTHENTICATED'}, {httpStatus:429,error:{status:'PERMISSION_DENIED'}}, {httpStatus:401,status:'RESOURCE_EXHAUSTED'}]){
+    const failure=classifyFailure(error,'generation');
+    assert.ok(['authentication','permission'].includes(failure.category));
+    assert.ok([401,403].includes(failureHttpStatus(failure)));
+  }
+  assert.equal(classifyFailure({name:'AbortError',status:429},'generation').category,'cancelled');
+});
