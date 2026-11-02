@@ -153,6 +153,8 @@ export interface ConfidenceRecord {
   modelSelfReport?: number | string;
 }
 export interface ProfileProvenance {
+  attemptCount?: number;
+  retryHistory?: GenerationFailure['retryHistory'];
   schemaVersion: 1;
   runId: string;
   origin: 'live_model' | 'static_recipe' | 'local_heuristic' | 'legacy_unknown';

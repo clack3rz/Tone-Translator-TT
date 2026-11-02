@@ -12,6 +12,7 @@ const failure: z.ZodType<any> = z.lazy(() => z.object({
 }));
 const input = z.object({ input:z.enum(['text','targetAudio','currentAudio','preset','youtubeUrl']),supplied:z.boolean(),submittedToModel:z.boolean(),consumedByLocalRules:z.boolean(),usedIndirectlyThroughProfile:z.boolean(),omissionReason:z.string().optional(),reference:z.string().optional() });
 const common = {
+  attemptCount:z.number().int().min(0).max(3).optional(),retryHistory:z.array(z.object({attempt:z.number().int(),category,delayMs:z.number().min(0)})).max(2).optional(),
   schemaVersion:z.literal(1),runId:z.string().min(1),engineVersion:z.string().min(1),startedAt:z.string().datetime(),completedAt:z.string().datetime(),
   requestedModel:z.string().optional(),returnedModelVersion:z.string().optional(),inputs:z.array(input),failure:failure.optional(),
   confidence:z.object({basis:z.enum(['uncalibrated_model_self_report','unverified_heuristic','unknown']),validationStatus:z.literal('unvalidated'),modelSelfReport:z.union([z.number().finite(),z.string()]).optional()}),

@@ -1,3 +1,4 @@
+import { GenerationError, classifyFailure, errorEnvelope, withDeadline } from './src/services/generationFailure';
 import express from 'express';
 import http from 'http';
 import path from 'path';
@@ -52,21 +53,16 @@ async function startServer() {
   app.post('/api/gemini/generate', async (req, res) => {
     try {
       const { contents, model = 'gemini-3.8-flash', config } = req.body;
-      const response = await ai.models.generateContent({
+      const response = await withDeadline(async deadlineSignal => ai.models.generateContent({
         model,
         contents,
-        config,
-      });
-      res.json({ text: response.text || '' });
+        config: { ...config, abortSignal: deadlineSignal },
+      }), undefined, 25000);
+      res.json({ text: response.text || '', execution: { requestedModel: model, returnedModelVersion: response.modelVersion } });
     } catch (err: any) {
-      console.error('[server] Gemini generate error:', err);
-      const isRateLimit = err?.message?.includes('429') || err?.status === 'RESOURCE_EXHAUSTED';
-      const isTimeout = err?.message?.includes('Timeout') || err?.name === 'TimeoutError';
-      const status = isRateLimit ? 429 : isTimeout ? 504 : 500;
-      res.status(status).json({
-        error: err?.message || 'Failed to generate content',
-        status: isRateLimit ? 'RESOURCE_EXHAUSTED' : undefined,
-      });
+      const envelope = errorEnvelope(err, 'generation');
+      const status = envelope.failure.httpStatus ?? (envelope.failure.category === 'timeout' ? 504 : 502);
+      res.status(status >= 400 && status <= 599 ? status : 502).json(envelope);
     }
   });
 
@@ -86,17 +82,18 @@ async function startServer() {
           }
         });
       }
-      const response = await ai.models.generateContent({
+      const response = await withDeadline(async deadlineSignal => ai.models.generateContent({
         model: 'gemini-3.8-flash',
         contents: [{ role: 'user', parts }],
-        config: { responseMimeType: 'application/json' },
-      });
-      const parsed = JSON.parse(response.text || '{}');
-      res.json(parsed);
+        config: { responseMimeType: 'application/json', abortSignal: deadlineSignal },
+      }), undefined, 25000);
+      let parsed: any;
+      try { parsed = JSON.parse(response.text || ''); } catch (error) { throw new GenerationError(classifyFailure(error, 'response_decode')); }
+      res.json({ ...parsed, execution: { requestedModel: 'gemini-3.8-flash', returnedModelVersion: response.modelVersion } });
     } catch (err: any) {
-      console.error('[server] tone-profile error:', err);
-      const isRateLimit = err?.message?.includes('429') || err?.status === 'RESOURCE_EXHAUSTED';
-      res.status(isRateLimit ? 429 : 500).json({ error: err?.message || 'Failed to build tone profile' });
+      const envelope = errorEnvelope(err, 'profile');
+      const status = envelope.failure.httpStatus ?? (envelope.failure.category === 'timeout' ? 504 : 502);
+      res.status(status >= 400 && status <= 599 ? status : 502).json(envelope);
     }
   });
 
@@ -122,22 +119,18 @@ async function startServer() {
       if (userPreset) {
         parts.push({ text: `User Preset: ${JSON.stringify(userPreset)}` });
       }
-      const response = await ai.models.generateContent({
+      const response = await withDeadline(async deadlineSignal => ai.models.generateContent({
         model: 'gemini-3.8-flash',
         contents: [{ role: 'user', parts }],
-        config: { responseMimeType: 'application/json' },
-      });
-      const parsed = JSON.parse(response.text || '{}');
-      res.json(parsed);
+        config: { responseMimeType: 'application/json', abortSignal: deadlineSignal },
+      }), undefined, 25000);
+      let parsed: any;
+      try { parsed = JSON.parse(response.text || ''); } catch (error) { throw new GenerationError(classifyFailure(error, 'response_decode')); }
+      res.json({ ...parsed, execution: { requestedModel: 'gemini-3.8-flash', returnedModelVersion: response.modelVersion } });
     } catch (err: any) {
-      console.error('[server] translate-tone error:', err);
-      const isRateLimit = err?.message?.includes('429') || err?.status === 'RESOURCE_EXHAUSTED';
-      const isTimeout = err?.message?.includes('Timeout') || err?.name === 'TimeoutError';
-      const status = isRateLimit ? 429 : isTimeout ? 504 : 500;
-      res.status(status).json({
-        error: err?.message || 'Failed to translate tone',
-        status: isRateLimit ? 'RESOURCE_EXHAUSTED' : undefined,
-      });
+      const envelope = errorEnvelope(err, 'generation');
+      const status = envelope.failure.httpStatus ?? (envelope.failure.category === 'timeout' ? 504 : 502);
+      res.status(status >= 400 && status <= 599 ? status : 502).json(envelope);
     }
   });
 

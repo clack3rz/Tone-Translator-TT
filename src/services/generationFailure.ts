@@ -11,7 +11,7 @@ const codes: Record<string, FailureCategory> = {
   PERMISSION_DENIED: 'permission', DEADLINE_EXCEEDED: 'timeout', UNAVAILABLE: 'unavailable',
 };
 export function classifyFailure(error: unknown, stage: FailureStage, attemptCount = 1): GenerationFailure {
-  if (error instanceof GenerationError) return { ...error.failure, attemptCount };
+  if (error instanceof GenerationError) return { ...error.failure, stage: ['profile','generation'].includes(error.failure.stage) ? stage : error.failure.stage, attemptCount };
   const e = error as any;
   const status = [e?.httpStatus, e?.status, e?.code, e?.error?.code].find(v => typeof v === 'number');
   const code = [e?.status, e?.code, e?.error?.status].find(v => typeof v === 'string' && codes[v]);
@@ -78,6 +78,9 @@ export async function requestModel(endpoint: string, payload: unknown, stage: 'p
           // HTTP status is observed. Only allow bounded server stages to identify decode defects.
           const serverStage = data.schemaVersion === 1 && ['response_decode', 'response_validation', 'postprocess'].includes(data.failure?.stage) ? data.failure.stage : stage;
           if (serverStage !== stage) fail(serverStage, new Error());
+          if (data.schemaVersion === 1 && data.failure?.category === 'unknown' && response.status >= 500) {
+            throw new GenerationError(classifyFailure({}, stage, attempt));
+          }
           throw new GenerationError(classifyFailure({ httpStatus: response.status, status: data.status }, stage, attempt));
         }
         return data;
