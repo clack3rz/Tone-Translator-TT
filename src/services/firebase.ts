@@ -1,22 +1,18 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { initializeFirestore, getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+/// <reference types="vite/client" />
 
-const app = initializeApp(firebaseConfig);
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, getDocFromServer } from 'firebase/firestore';
+import { initializeFirebase } from './initializeFirebase';
 
-// Initialize Firestore with the provisioned database ID and enable experimentalForceLongPolling
-// with standard HTTP requests (useFetchStreams: false) to prevent WebChannel streaming handshake
-// timeouts in browser iframes and proxied preview environments.
-initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  ...({ useFetchStreams: false } as Record<string, unknown>),
-}, firebaseConfig.firestoreDatabaseId);
+// Vite exposes only explicitly public inputs. Node callers use the same explicit
+// selection without inferring it from NODE_ENV.
+const env = import.meta.env ?? process.env;
+export const { auth, db } = initializeFirebase(
+  env.VITE_APP_ENV,
+  env.VITE_DEV_FIREBASE_APP_ID,
+  env.VITE_DEV_FIREBASE_API_KEY,
+);
 
-// Export db instance as mandated by Firebase skill.
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-
-export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async () => {
