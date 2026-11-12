@@ -2,16 +2,10 @@
 
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, getDocFromServer } from 'firebase/firestore';
+import firebaseClientConfig from '../config/firebaseClientConfig';
 import { initializeFirebase } from './initializeFirebase';
 
-// Vite exposes only explicitly public inputs. Node callers use the same explicit
-// selection without inferring it from NODE_ENV.
-const env = import.meta.env ?? process.env;
-export const { auth, db } = initializeFirebase(
-  env.VITE_APP_ENV,
-  env.VITE_DEV_FIREBASE_APP_ID,
-  env.VITE_DEV_FIREBASE_API_KEY,
-);
+export const { auth, db } = initializeFirebase(firebaseClientConfig);
 
 export const googleProvider = new GoogleAuthProvider();
 

@@ -1,8 +1,11 @@
 import type { FailureCategory, FailureStage, GenerationFailure } from '../types';
 
 export class GenerationError extends Error {
-  constructor(public readonly failure: GenerationFailure) {
+  readonly failure: GenerationFailure;
+
+  constructor(failure: GenerationFailure) {
     super(failure.message);
+    this.failure = failure;
     this.name = failure.category === 'cancelled' ? 'AbortError' : 'GenerationError';
   }
 }

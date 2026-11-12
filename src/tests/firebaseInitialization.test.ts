@@ -3,14 +3,15 @@ import { test } from 'node:test';
 import { deleteApp, getApps } from 'firebase/app';
 import { getFirestore, terminate } from 'firebase/firestore';
 import productionConfig from '../../firebase-applet-config.json';
+import { selectFirebaseClientConfig } from '../config/selectFirebaseClientConfig';
 import { EnvironmentConfigurationError } from '../config/environment';
 import { initializeFirebase } from '../services/initializeFirebase';
 
-const devFixtureAppId = '1:481224650201:web:fixture-not-a-registered-app';
+const devFixtureAppId = '1:481224650201:web:bce622e1892d9872567dc8';
 const devFixtureApiKey = 'fixture-public-web-key';
 
 test('initializes DEV Auth and explicitly selects default Firestore', async (t) => {
-  const { auth, db } = initializeFirebase('development', devFixtureAppId, devFixtureApiKey);
+  const { auth, db } = initializeFirebase(selectFirebaseClientConfig({ VITE_APP_ENV: 'development', VITE_DEV_FIREBASE_API_KEY: devFixtureApiKey }));
   t.after(async () => {
     await terminate(db);
     await deleteApp(auth.app);
@@ -22,7 +23,7 @@ test('initializes DEV Auth and explicitly selects default Firestore', async (t) 
 });
 
 test('initializes PROD Auth and selects the existing named Firestore', async (t) => {
-  const { auth, db } = initializeFirebase('production', undefined, undefined);
+  const { auth, db } = initializeFirebase(selectFirebaseClientConfig({ VITE_APP_ENV: 'production' }));
   t.after(async () => {
     await terminate(db);
     await deleteApp(auth.app);
@@ -34,19 +35,19 @@ test('initializes PROD Auth and selects the existing named Firestore', async (t)
 
 test('rejects missing DEV identifiers and PROD identifiers in DEV before SDK initialization', () => {
   for (const [appId, apiKey] of [
-    [undefined, devFixtureApiKey],
+    ['', devFixtureApiKey],
     [devFixtureAppId, undefined],
     [productionConfig.appId, devFixtureApiKey],
     [devFixtureAppId, productionConfig.apiKey],
   ]) {
-    assert.throws(() => initializeFirebase('development', appId, apiKey), EnvironmentConfigurationError);
+    assert.throws(() => selectFirebaseClientConfig({ VITE_APP_ENV: 'development', VITE_DEV_FIREBASE_APP_ID: appId, VITE_DEV_FIREBASE_API_KEY: apiKey }), EnvironmentConfigurationError);
     assert.equal(getApps().length, 0);
   }
 });
 
 test('rejects missing and unknown environment selection before SDK initialization', () => {
   for (const appEnvironment of [undefined, '', 'staging']) {
-    assert.throws(() => initializeFirebase(appEnvironment, undefined, undefined), EnvironmentConfigurationError);
+    assert.throws(() => selectFirebaseClientConfig({ VITE_APP_ENV: appEnvironment }), EnvironmentConfigurationError);
     assert.equal(getApps().length, 0);
   }
 });

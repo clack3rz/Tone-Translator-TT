@@ -1,25 +1,25 @@
-import { GenerationError, classifyFailure, errorEnvelope, failureHttpStatus, withDeadline } from './src/services/generationFailure';
+import { validateServerEnvironment } from './src/config/serverEnvironment.ts';
+import { GenerationError, classifyFailure, errorEnvelope, failureHttpStatus, withDeadline } from './src/services/generationFailure.ts';
 import express from 'express';
 import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { WebSocketServer, WebSocket } from 'ws';
-import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
+import { GoogleGenAI, Modality, type LiveServerMessage } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    },
-  },
-});
-
 async function startServer() {
+  const { appEnvironment, apiKey } = validateServerEnvironment(process.env);
+  const ai = new GoogleGenAI({
+    apiKey,
+    vertexai: false,
+    httpOptions: {
+      headers: { 'User-Agent': 'aistudio-build' },
+    },
+  });
   const app = express();
   const PORT = parseInt(process.env.PORT || '3000', 10);
   const HOST = '0.0.0.0';
@@ -40,7 +40,7 @@ async function startServer() {
   // Endpoint to download the full project source code archive
   app.get('/api/export-source', (_req, res) => {
     const zipPath = path.resolve(__dirname, 'public/tone-translator-source.zip');
-    if (fs.existsSync(zipPath)) {
+    if (appEnvironment === 'production' && fs.existsSync(zipPath)) {
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', 'attachment; filename="tone-translator-source.zip"');
       res.sendFile(zipPath);
@@ -155,12 +155,12 @@ async function startServer() {
       }
       res.write(`data: [DONE]\n\n`);
       res.end();
-    } catch (err: any) {
-      console.error('[server] Gemini stream error:', err);
+    } catch {
+      console.error('[server] Gemini stream failed');
       if (!res.headersSent) {
-        res.status(500).json({ error: err?.message || 'Streaming failed' });
+        res.status(500).json({ error: 'Streaming failed' });
       } else {
-        res.write(`data: ${JSON.stringify({ error: err?.message || 'Stream error' })}\n\n`);
+        res.write(`data: ${JSON.stringify({ error: 'Stream error' })}\n\n`);
         res.end();
       }
     }
@@ -169,41 +169,23 @@ async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (isProduction) {
-    let hasDistIndex = fs.existsSync(path.join(distDir, 'index.html'));
-    if (!hasDistIndex) {
-      console.warn('[server] dist/index.html not found in production. Attempting vite build...');
-      try {
-        const { execSync } = await import('child_process');
-        execSync('npx vite build', { stdio: 'inherit' });
-        hasDistIndex = fs.existsSync(path.join(distDir, 'index.html'));
-      } catch (buildErr) {
-        console.error('[server] Automatic build failed:', buildErr);
-      }
+    const indexPath = path.join(distDir, 'index.html');
+    if (!fs.existsSync(indexPath)) {
+      console.warn('[server] dist/index.html missing. Building browser assets...');
+      const { build } = await import('vite');
+      await build({ root: __dirname });
     }
-
-    if (hasDistIndex || fs.existsSync(distDir)) {
-      // Serve static files from production build directory
-      app.use(express.static(distDir));
-
-      // Fallback all SPA routes to index.html with guaranteed 200 OK
-      app.use((_req, res) => {
-        const indexPath = path.join(distDir, 'index.html');
-        if (fs.existsSync(indexPath)) {
-          res.sendFile(indexPath);
-        } else {
-          const rootIndex = path.resolve(__dirname, 'index.html');
-          if (fs.existsSync(rootIndex)) {
-            res.sendFile(rootIndex);
-          } else {
-            res.status(200).send('<!doctype html><html><head><title>Tone Translator (Guitar)</title></head><body><div id="root"></div></body></html>');
-          }
-        }
-      });
+    const index = fs.readFileSync(indexPath, 'utf8');
+    if (!index.includes(`<meta name="tt-app-environment" content="${appEnvironment}">`)) {
+      throw new Error('Browser build does not match APP_ENV. Rebuild with the matching VITE_APP_ENV.');
     }
+    app.use(express.static(distDir));
+    app.use((_req, res) => res.sendFile(indexPath));
   } else {
     // In dev mode, mount Vite in middleware mode
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
+      root: __dirname,
       server: {
         middlewareMode: true,
         hmr: false,
@@ -244,10 +226,10 @@ async function startServer() {
               clientWs.close();
             }
           },
-          onerror: (err) => {
-            console.error('[server] Gemini Live session error:', err);
+          onerror: () => {
+            console.error('[server] Gemini Live session failed');
             if (clientWs.readyState === WebSocket.OPEN) {
-              clientWs.send(JSON.stringify({ error: err?.message || 'Live session error' }));
+              clientWs.send(JSON.stringify({ error: 'Live session error' }));
             }
           },
         },
@@ -271,10 +253,10 @@ async function startServer() {
           session.close();
         } catch (_) {}
       });
-    } catch (err: any) {
-      console.error('[server] Failed to connect to Gemini Live:', err);
+    } catch {
+      console.error('[server] Failed to connect to Gemini Live');
       if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(JSON.stringify({ error: err?.message || 'Failed to initialize Live API session' }));
+        clientWs.send(JSON.stringify({ error: 'Failed to initialize Live API session' }));
         clientWs.close();
       }
     }
