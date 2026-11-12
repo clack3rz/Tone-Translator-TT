@@ -1,12 +1,17 @@
-/// <reference types="vite/client" />
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import firebaseConfig from '../../firebase-applet-config.json';
 
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, getDocFromServer } from 'firebase/firestore';
-import firebaseClientConfig from '../config/firebaseClientConfig';
-import { initializeFirebase } from './initializeFirebase';
+const app = initializeApp(firebaseConfig);
 
-export const { auth, db } = initializeFirebase(firebaseClientConfig);
+// Initialize Firestore with the provisioned database ID and enable experimentalAutoDetectLongPolling
+// to guarantee seamless connectivity across sandboxed browser iframes and proxied preview environments.
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+}, firebaseConfig.firestoreDatabaseId);
 
+export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async () => {
@@ -17,6 +22,16 @@ export const signInWithGoogle = async () => {
     console.error("Error signing in with Google", error);
     throw error;
   }
+};
+
+/**
+ * Returns a valid Firebase ID token for the currently authenticated user,
+ * or null if no user is signed in.
+ */
+export const getAuthIdToken = async (forceRefresh = false): Promise<string | null> => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return null;
+  return await currentUser.getIdToken(forceRefresh);
 };
 
 // Validate connection to Firestore as mandated by documentation with progressive retries
