@@ -62,7 +62,7 @@ test('build selects one Firebase target and excludes server secrets from DEV out
     assert.equal(prod.status, 0, prod.output);
     const prodIndex = readFileSync(join(outDir, 'index.html'), 'utf8');
     assert.ok(prodIndex.includes('<meta name="tt-app-environment" content="production">'));
-    assert.ok(readdirSync(outDir).includes('tone-translator-source.zip'));
+    assert.ok(!readdirSync(outDir, { recursive: true }).some(name => name.endsWith('.zip')));
     const prodAssets = readdirSync(join(outDir, 'assets'))
       .filter(name => name.endsWith('.js'))
       .map(name => readFileSync(join(outDir, 'assets', name), 'utf8')).join('\n');

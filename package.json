@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test": "tsx --test --test-force-exit src/tests/*.test.ts"
+    "test": "tsx --experimental-test-module-mocks --test --test-force-exit src/tests/*.test.ts"
   },
   "dependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",

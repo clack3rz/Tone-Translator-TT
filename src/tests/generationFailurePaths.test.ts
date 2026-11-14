@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {buildToneProfile} from '../services/toneProfileBuilder';
 import {translateTone} from '../services/geminiService';
 import {requestModel,GenerationError,errorEnvelope,failureHttpStatus,classifyFailure} from '../services/generationFailure';
-import {liveEvidencePreflight} from '../services/generationProvenance';
+import {exportProvenance,liveEvidencePreflight} from '../services/generationProvenance';
 const originalFetch=globalThis.fetch;
 const originalWindow=globalThis.window;
 let profile:any;
@@ -11,9 +11,9 @@ before(async()=>{delete (globalThis as any).window;profile=await buildToneProfil
 after(()=>{globalThis.fetch=originalFetch;if(originalWindow===undefined) delete (globalThis as any).window;else globalThis.window=originalWindow;});
 const chain={signal_chain:[{type:'amp',name:'Brit 8000',settings:{'Pre Amp':4}}],confidence:91,provenance:{origin:'forged'}};
 const response=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
-function mockGeneration(value:any,status=200,profileStatus=200){
+function mockGeneration(value:any,status=200,profileStatus=200,profileResponse=profile){
   const calls:any[]=[];
-  globalThis.fetch=async(url,options)=>{calls.push({url,payload:JSON.parse(String(options?.body))});return String(url).includes('tone-profile')?response(profile,profileStatus):response(value,status);};
+  globalThis.fetch=async(url,options)=>{calls.push({url,payload:JSON.parse(String(options?.body))});return String(url).includes('tone-profile')?response(profileResponse,profileStatus):response(value,status);};
   return calls;
 }
 test('P1-01 live records, model execution metadata, observed inputs override model claims',async()=>{
@@ -71,6 +71,83 @@ test('P1-06, P1-07 payment degrades; auth/permission terminate; network/timeout/
     assert.equal(calls.length,2);
   }
 });
+for (const [prompt, style, amp, cab, pedal] of [
+  ['clean jazz', 'jazz', "'65 Twin Reverb", '2x12 Open Vintage', 'Chorus'],
+  ['fingerstyle bass', 'bass', 'Bass Amp 500', '4x10+TW Bass', null],
+  ['vintage classic rock', 'classic rock', 'British Lead S100', '4x12 Brit 8000', null],
+  ['Texas blues', 'blues', "'65 Twin Reverb", '2x12 Open Vintage', 'Tube Vintage OD'],
+  ['Pantera thrash', 'heavy metal', 'Darrell 100', '4x12 Brit 8000', 'OverScream'],
+] as const) {
+  test(`payment fallback restores the baseline rig for ${prompt}`, async () => {
+    mockGeneration({}, 402, 200, { ...profile, tone_profile: { ...profile.tone_profile, style: [style] } });
+    const result = await translateTone(prompt);
+    const pedals = result.signal_chain.filter(element => element.type === 'pedal');
+    assert.equal(result.signal_chain.find(element => element.type === 'amp')?.name, amp);
+    assert.equal(result.signal_chain.find(element => element.type === 'cab')?.name, cab);
+    if (pedal) assert.ok(pedals.some(element => element.name === pedal));
+    else assert.deepEqual(pedals, []);
+    assert.equal(result.provenance.origin, 'heuristic_fallback');
+    assert.equal(result.provenance.completionStatus, 'degraded');
+    assert.equal(result.provenance.failure?.category, 'payment');
+    assert.deepEqual(result.provenance.confidence, {
+      basis: 'unverified_heuristic',
+      validationStatus: 'unvalidated',
+      modelSelfReport: undefined,
+    });
+    assert.equal(result.confidence, undefined);
+    assert.match(result.notice ?? '', /Unverified heuristic/);
+  });
+}
+
+test('generation network and exhausted rate limit preserve the style and failure', async () => {
+  for (const category of ['network', 'rate_limit']) {
+    let attempts = 0;
+    globalThis.fetch = async url => {
+      if (String(url).includes('tone-profile')) return response({ ...profile, tone_profile: { ...profile.tone_profile, style: ['jazz'] } });
+      attempts++;
+      if (category === 'network') throw new TypeError('Failed to fetch');
+      return response({}, 429);
+    };
+    const result = await translateTone('clean jazz');
+    assert.equal(result.signal_chain.find(element => element.type === 'amp')?.name, "'65 Twin Reverb");
+    assert.equal(result.provenance.origin, 'heuristic_fallback');
+    assert.equal(result.provenance.failure?.category, category);
+    assert.equal(attempts, category === 'rate_limit' ? 3 : 1);
+  }
+});
+
+test('generation ledger separates confirmed delivery, unknown delivery and local rig inputs', async () => {
+  const audio = { base64: 'Zml4dHVyZQ==', mimeType: 'audio/wav' };
+  const inputs = ['text', 'targetAudio', 'preset', 'youtubeUrl'];
+  for (const outcome of ['confirmed', 'payment', 'network'] as const) {
+    const calls = mockGeneration(outcome === 'confirmed' ? { text: JSON.stringify(chain) } : {}, outcome === 'payment' ? 402 : 200);
+    if (outcome === 'network') {
+      const fetchFixture = globalThis.fetch;
+      globalThis.fetch = async (url, options) => {
+        const reply = await fetchFixture(url, options);
+        if (String(url).endsWith('/generate')) throw new TypeError('Failed to fetch');
+        return reply;
+      };
+    }
+    const result = await translateTone('clean jazz', audio, audio, { metadata: { presetName: 'fixture' } }, undefined, 'https://example.test/video');
+    const provenance = exportProvenance(result).generation;
+    assert.equal(calls.length, 2);
+    assert.equal(provenance.failure?.category, outcome === 'confirmed' ? undefined : outcome);
+    for (const entry of provenance.inputs) {
+      const included = inputs.includes(entry.input);
+      assert.equal(entry.submittedToModel, included && outcome === 'confirmed');
+      assert.equal(entry.consumedByLocalRules, entry.input === 'text' && outcome !== 'confirmed');
+      assert.equal(/delivery to Gemini is unknown/.test(entry.omissionReason ?? ''), included && outcome !== 'confirmed');
+    }
+    if (outcome !== 'confirmed') {
+      assert.equal(provenance.origin, 'heuristic_fallback');
+      assert.equal(provenance.completionStatus, 'degraded');
+      assert.equal(provenance.confidence.validationStatus, 'unvalidated');
+      assert.equal(liveEvidencePreflight(result).status, 'excluded');
+    }
+  }
+});
+
 test('P1-08 cancellation during profile/generation fetch wins late response',async()=>{
   for(const stage of ['tone-profile','generate']){
     let resolve:any;const controller=new AbortController();
@@ -187,4 +264,46 @@ test('P1 boundary: structured conflicts stay terminal and abort remains cancella
     assert.ok([401,403].includes(failureHttpStatus(failure)));
   }
   assert.equal(classifyFailure({name:'AbortError',status:429},'generation').category,'cancelled');
+});
+
+test('certificate lookup failure terminates generation with a live or static profile, while Gemini 503 degrades', async () => {
+  for (const [prompt, expectedRequests] of [['unmatched fixture', 2], ['AC/DC', 1]] as const) {
+    const denied = mockGeneration({ error: 'Authentication temporarily unavailable', code: 'CERTIFICATES_UNAVAILABLE' }, 503);
+    await assert.rejects(translateTone(prompt, undefined, undefined, undefined, undefined, undefined, false), (error: unknown) => {
+      assert.ok(error instanceof GenerationError);
+      assert.equal(error.failure.stage, 'generation');
+      assert.equal(error.failure.category, 'authentication');
+      assert.equal(error.failure.providerCode, 'CERTIFICATES_UNAVAILABLE');
+      assert.equal(error.failure.httpStatus, 503);
+      return true;
+    });
+    assert.equal(denied.length, expectedRequests);
+
+    const unavailable = mockGeneration({ status: 'UNAVAILABLE' }, 503);
+    const result = await translateTone(prompt, undefined, undefined, undefined, undefined, undefined, false);
+    assert.equal(result.provenance.origin, 'heuristic_fallback');
+    assert.equal(result.provenance.failure?.category, 'unavailable');
+    assert.equal(result.tone_profile_result?.provenance?.origin, expectedRequests === 1 ? 'static_recipe' : 'live_model');
+    assert.equal(unavailable.length, expectedRequests);
+  }
+});
+
+test('terminal generation decode failure keeps malformed provider text and parse exceptions out of the console', async (t) => {
+  const sentinel = 'SENSITIVE_PROVIDER_SENTINEL';
+  const consoleMethods = (['error', 'warn', 'log', 'info', 'debug'] as const)
+    .map(method => t.mock.method(console, method, () => {}));
+  mockGeneration({ text: '{"value":' + sentinel + '}' });
+
+  await assert.rejects(translateTone('AC/DC', undefined, undefined, undefined, undefined, undefined, false), (error: unknown) => {
+    assert.ok(error instanceof GenerationError);
+    assert.equal(error.failure.stage, 'response_decode');
+    assert.equal(error.failure.category, 'decode');
+    assert.equal(error.message, 'Tone request failed (response_decode/decode).');
+    return true;
+  });
+
+  const logged = consoleMethods.flatMap(method => method.mock.calls.map(call =>
+    call.arguments.map(argument => JSON.stringify(argument, (_key, value) =>
+      value instanceof Error ? value.stack : value)).join(' ')));
+  assert.doesNotMatch(logged.join('\n'), /SENSITIVE_PROVIDER_SENTINEL|SyntaxError|rawPreview/);
 });

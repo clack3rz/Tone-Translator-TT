@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { cpSync, existsSync } from 'node:fs';
 import { defineConfig, loadEnv } from 'vite';
 import { selectFirebaseClientConfig } from './src/config/selectFirebaseClientConfig';
 
@@ -14,10 +15,19 @@ export default defineConfig(({ mode }) => {
     // Only the selected Firebase configuration is made available to the browser.
     envPrefix: [],
     // The legacy source archive in public/ includes the PROD configuration.
-    publicDir: isDevTarget ? false : 'public',
+    publicDir: false,
     plugins: [
       react(),
       tailwindcss(),
+      {
+        name: 'tone-translator-public-assets',
+        apply: 'build',
+        writeBundle(output) {
+          if (isDevTarget || !output.dir) return;
+          const assets = path.resolve(__dirname, 'public/assets');
+          if (existsSync(assets)) cpSync(assets, path.resolve(output.dir, 'assets'), { recursive: true });
+        },
+      },
       {
         name: 'tone-translator-firebase-config',
         enforce: 'pre',

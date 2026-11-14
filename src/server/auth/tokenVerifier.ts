@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { createPublicKey, verify as cryptoVerify } from 'crypto';
 
 export interface VerifiedTokenPayload {
@@ -8,7 +8,7 @@ export interface VerifiedTokenPayload {
   iss: string;
   iat: number;
   exp: number;
-  auth_time?: number;
+  auth_time: number;
   email?: string;
   email_verified?: boolean;
   name?: string;
@@ -33,6 +33,7 @@ const CLOCK_SKEW_DEFAULT = 60; // 60 seconds clock skew tolerance
 // In-memory cache for Google public x509 certificates
 let cachedCerts: Record<string, string> | null = null;
 let certsExpiryTime = 0;
+let cachedCertsUrl: string | undefined;
 
 /**
  * Resolves the expected Firebase project ID for server-side verification.
@@ -40,22 +41,19 @@ let certsExpiryTime = 0;
  * PROD: 'gen-lang-client-0299754092'
  */
 export function resolveServerProjectId(override?: string): string {
-  if (override && override.trim()) {
-    return override.trim();
+  const env = process.env.APP_ENV;
+  const expected = override ?? (env === 'development' ? 'tone-translator-dev'
+    : env === 'production' ? 'gen-lang-client-0299754092' : undefined);
+  if (!expected || !/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(expected) ||
+      (!override && process.env.FIREBASE_PROJECT_ID !== undefined && process.env.FIREBASE_PROJECT_ID !== expected)) {
+    throw new Error('Invalid Firebase server project configuration');
   }
-  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PROJECT_ID.trim()) {
-    return process.env.FIREBASE_PROJECT_ID.trim();
-  }
-  const appEnv = process.env.APP_ENV || (process.env.NODE_ENV === 'production' ? 'production' : 'development');
-  if (appEnv === 'production') {
-    return 'gen-lang-client-0299754092';
-  }
-  return 'tone-translator-dev';
+  return expected;
 }
 
 /**
  * Fetches Google's public certificates used to sign Firebase ID tokens.
- * Caches certificates according to Cache-Control max-age or 1 hour fallback.
+ * Reuses certificates only for the freshness lifetime specified by Google.
  */
 export async function getGooglePublicCerts(customCerts?: Record<string, string>, certsUrl = GOOGLE_CERTS_URL): Promise<Record<string, string>> {
   if (customCerts && Object.keys(customCerts).length > 0) {
@@ -63,13 +61,14 @@ export async function getGooglePublicCerts(customCerts?: Record<string, string>,
   }
 
   const now = Date.now();
-  if (cachedCerts && now < certsExpiryTime) {
+  if (cachedCerts && cachedCertsUrl === certsUrl && now < certsExpiryTime) {
     return cachedCerts;
   }
 
   try {
     const res = await fetch(certsUrl, {
       headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(4500),
     });
 
     if (!res.ok) {
@@ -77,25 +76,25 @@ export async function getGooglePublicCerts(customCerts?: Record<string, string>,
     }
 
     const data = (await res.json()) as Record<string, string>;
-    if (!data || typeof data !== 'object') {
+    if (!data || typeof data !== 'object' || Array.isArray(data) ||
+        !Object.values(data).length || Object.values(data).some(value => typeof value !== 'string')) {
       throw new Error('Invalid certificate response format from Google');
     }
 
     // Determine cache expiration from Cache-Control header
     const cacheControl = res.headers.get('cache-control') || '';
-    const maxAgeMatch = cacheControl.match(/max-age=(\d+)/i);
-    const maxAgeSec = maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : 3600;
+    const maxAgeMatch = cacheControl.match(/(?:^|,)\s*max-age=(\d+)(?:\s*,|$)/i);
+    const age = Number(res.headers.get('age') ?? '0');
+    const maxAgeSec = /(?:^|,)\s*(?:no-cache|no-store)\b/i.test(cacheControl)
+      ? 0 : Math.max(0, Number(maxAgeMatch?.[1] ?? 0) - age);
 
     cachedCerts = data;
+    cachedCertsUrl = certsUrl;
     certsExpiryTime = now + (maxAgeSec * 1000);
 
     return data;
-  } catch (err: any) {
-    if (cachedCerts) {
-      // Graceful fallback to stale cache on network glitch
-      return cachedCerts;
-    }
-    throw new Error(`Unable to fetch Google Auth certificates: ${err?.message || String(err)}`);
+  } catch {
+    throw new AuthVerificationError('Signing certificates unavailable', 'CERTIFICATES_UNAVAILABLE', 503);
   }
 }
 
@@ -152,11 +151,11 @@ export async function verifyFirebaseIdToken(
     throw new AuthVerificationError('Invalid token payload encoding', 'INVALID_PAYLOAD', 401);
   }
 
-  if (header.alg !== 'RS256') {
+  if (header?.alg !== 'RS256') {
     throw new AuthVerificationError(`Unsupported algorithm: ${header.alg}. Expected RS256.`, 'UNSUPPORTED_ALGORITHM', 401);
   }
 
-  if (!header.kid) {
+  if (typeof header.kid !== 'string' || !header.kid) {
     throw new AuthVerificationError('Token header missing key identifier (kid)', 'MISSING_KID', 401);
   }
 
@@ -165,7 +164,7 @@ export async function verifyFirebaseIdToken(
   const nowSec = Math.floor(Date.now() / 1000);
 
   // 1. Audience check (Audience must match expected Firebase project ID)
-  if (payload.aud !== expectedProjectId) {
+  if (payload?.aud !== expectedProjectId) {
     throw new AuthVerificationError(
       `Token audience '${payload.aud}' does not match expected project '${expectedProjectId}'`,
       'WRONG_PROJECT',
@@ -184,29 +183,33 @@ export async function verifyFirebaseIdToken(
   }
 
   // 3. Subject check (Subject must be a non-empty string UID)
-  if (!payload.sub || typeof payload.sub !== 'string' || payload.sub.trim() === '') {
+  if (!payload.sub || typeof payload.sub !== 'string' || payload.sub.trim() === '' || payload.sub.length > 128) {
     throw new AuthVerificationError('Token sub (UID) is missing or invalid', 'INVALID_SUB', 401);
   }
 
   // 4. Expiration check
-  if (typeof payload.exp !== 'number' || isNaN(payload.exp)) {
+  if (!Number.isSafeInteger(payload.exp)) {
     throw new AuthVerificationError('Token exp is missing or non-numeric', 'INVALID_EXP', 401);
   }
-  if (payload.exp + clockSkew < nowSec) {
+  if (payload.exp <= nowSec) {
     throw new AuthVerificationError('Token has expired', 'TOKEN_EXPIRED', 401);
   }
 
   // 5. Issued-at check
-  if (typeof payload.iat !== 'number' || isNaN(payload.iat)) {
+  if (!Number.isSafeInteger(payload.iat)) {
     throw new AuthVerificationError('Token iat is missing or non-numeric', 'INVALID_IAT', 401);
   }
   if (payload.iat - clockSkew > nowSec) {
     throw new AuthVerificationError('Token was issued in the future', 'TOKEN_ISSUED_FUTURE', 401);
   }
 
+  if (!Number.isSafeInteger(payload.auth_time) || payload.auth_time <= 0 || payload.auth_time - clockSkew > nowSec) {
+    throw new AuthVerificationError('Invalid authentication time', 'INVALID_AUTH_TIME', 401);
+  }
+
   // 6. Cryptographic signature check against Google public certs
   const certs = await getGooglePublicCerts(options.customCerts, options.certsUrl);
-  const certPem = certs[header.kid];
+  const certPem = Object.hasOwn(certs, header.kid) ? certs[header.kid] : undefined;
 
   if (!certPem) {
     throw new AuthVerificationError(`No public certificate found matching token kid: ${header.kid}`, 'UNKNOWN_KID', 401);
@@ -228,6 +231,9 @@ export async function verifyFirebaseIdToken(
     throw new AuthVerificationError(`Signature verification error: ${sigErr?.message || String(sigErr)}`, 'INVALID_SIGNATURE', 401);
   }
 
+  if (payload.exp <= Math.floor(Date.now() / 1000)) {
+    throw new AuthVerificationError('Token has expired', 'TOKEN_EXPIRED', 401);
+  }
   return {
     ...payload,
     uid: payload.sub,
@@ -279,7 +285,7 @@ export function createAuthMiddleware(options: TokenVerifierOptions = {}) {
       const statusCode = err instanceof AuthVerificationError ? err.statusCode : 401;
       const errorCode = err instanceof AuthVerificationError ? err.code : 'UNAUTHORIZED';
       res.status(statusCode).json({
-        error: err.message || 'Unauthorized: Token verification failed',
+        error: statusCode === 503 ? 'Authentication temporarily unavailable' : 'Unauthorized: Token verification failed',
         code: errorCode,
       });
     }

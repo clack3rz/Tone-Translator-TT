@@ -8,7 +8,7 @@
  * - Truncated JSON structures with unclosed quotes, brackets, or braces
  */
 
-export function cleanAndParseJson<T = any>(rawInput: string): T {
+export function cleanAndParseJson<T = any>(rawInput: string, options: { redactErrors?: boolean } = {}): T {
   if (!rawInput || typeof rawInput !== 'string') {
     throw new Error('Empty or non-string response received from AI');
   }
@@ -145,6 +145,7 @@ export function cleanAndParseJson<T = any>(rawInput: string): T {
       try {
         return JSON.parse(repaired) as T;
       } catch (finalError) {
+        if (options.redactErrors) throw new Error('Failed to parse AI response');
         console.error('Robust JSON parsing failed on AI response:', {
           initialError,
           secondError,

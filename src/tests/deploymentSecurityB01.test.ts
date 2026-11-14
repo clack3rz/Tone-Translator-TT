@@ -1,3 +1,6 @@
+import { once } from 'node:events';
+import { attachLiveHandler } from '../server/liveHandler';
+import { denySourceExport } from '../server/sourceExport';
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'http';
@@ -8,8 +11,6 @@ import {
   verifyFirebaseIdToken,
   createAuthMiddleware,
   resolveServerProjectId,
-  AuthVerificationError,
-  VerifiedTokenPayload,
   clearCertCache
 } from '../server/auth/tokenVerifier';
 
@@ -83,6 +84,10 @@ describe('Stage 3B — Focused Deployment Security & Endpoint Protection', () =>
   let testServer: http.Server;
   let testServerPort: number;
   let wss: WebSocketServer;
+  let upstreamConnections = 0;
+  const upstreamClosures: number[] = [];
+  let audioFrames = 0;
+  let connectGate: Promise<void> | undefined;
 
   before(async () => {
     clearCertCache();
@@ -112,69 +117,21 @@ describe('Stage 3B — Focused Deployment Security & Endpoint Protection', () =>
       res.status(200).json({ status: 'profile generated' });
     });
 
-    // Protected diagnostic / export-source route
-    app.get('/api/export-source', devAuthMiddleware, (req, res) => {
-      const user = (req as any).user;
-      const isDeployed = process.env.NODE_ENV === 'production' || !!process.env.APP_ENV;
-      if (isDeployed && user?.email !== 'cclackerz@gmail.com') {
-        res.status(403).json({ error: 'Source archive export is disabled in deployed environments', code: 'FORBIDDEN' });
-        return;
-      }
-      res.status(200).json({ archive: 'source.zip ready' });
-    });
+    app.get('/api/export-source', denySourceExport);
 
     testServer = http.createServer(app);
     wss = new WebSocketServer({ server: testServer, path: '/live' });
 
-    wss.on('connection', (clientWs: WebSocket) => {
-      let authenticated = false;
-
-      const authTimeout = setTimeout(() => {
-        if (!authenticated && clientWs.readyState === WebSocket.OPEN) {
-          clientWs.send(JSON.stringify({ error: 'Authentication timeout: Valid Firebase ID token required.' }));
-          clientWs.close(4401, 'Unauthorized');
-        }
-      }, 500);
-
-      clientWs.on('message', async (data) => {
-        try {
-          const parsed = JSON.parse(data.toString());
-          if (!authenticated) {
-            const token = parsed.token || parsed.auth;
-            if (token) {
-              try {
-                const user = await verifyFirebaseIdToken(token, {
-                  expectedProjectId: DEV_PROJECT_ID,
-                  customCerts: mockCerts,
-                });
-                authenticated = true;
-                clearTimeout(authTimeout);
-                clientWs.send(JSON.stringify({ type: 'authenticated', uid: user.uid }));
-                return;
-              } catch (err: any) {
-                clientWs.send(JSON.stringify({ error: err.message || 'Authentication failed' }));
-                clientWs.close(4401, 'Unauthorized');
-                return;
-              }
-            }
-
-            clientWs.send(JSON.stringify({ error: 'Unauthenticated: Initial authentication message required.' }));
-            clientWs.close(4401, 'Unauthorized');
-            return;
-          }
-
-          if (parsed.audio) {
-            clientWs.send(JSON.stringify({ receivedAudio: true, bytes: parsed.audio.length }));
-          }
-        } catch {
-          clientWs.close(4400, 'Bad Request');
-        }
-      });
-
-      clientWs.on('close', () => {
-        clearTimeout(authTimeout);
-      });
-    });
+    attachLiveHandler(wss, {
+      connect: async () => {
+        const connectionId = ++upstreamConnections;
+        if (connectGate) await connectGate;
+        return {
+          sendRealtimeInput: () => { audioFrames++; },
+          close: () => { upstreamClosures.push(connectionId); },
+        };
+      },
+    }, { expectedProjectId: DEV_PROJECT_ID, customCerts: mockCerts });
 
     await new Promise<void>((resolve) => {
       testServer.listen(0, '127.0.0.1', () => {
@@ -238,7 +195,7 @@ describe('Stage 3B — Focused Deployment Security & Endpoint Protection', () =>
   // 4. Expired Token
   it('SEC-04: Rejects expired tokens with 401 TOKEN_EXPIRED', async () => {
     const expiredToken = createTestJwt({
-      exp: Math.floor(Date.now() / 1000) - 120, // Expired 2 minutes ago
+      exp: Math.floor(Date.now() / 1000) - 1,
     });
 
     const res = await fetch(`http://127.0.0.1:${testServerPort}/api/gemini/generate`, {
@@ -339,27 +296,12 @@ describe('Stage 3B — Focused Deployment Security & Endpoint Protection', () =>
   });
 
   // 9. Sensitive Diagnostic Route /api/export-source Protection
-  it('SEC-09: Rejects unauthenticated access to /api/export-source with 401', async () => {
-    const res = await fetch(`http://127.0.0.1:${testServerPort}/api/export-source`);
-    assert.equal(res.status, 401);
-  });
-
-  it('SEC-10: Rejects non-admin users from /api/export-source in deployed mode with 403', async () => {
-    process.env.APP_ENV = 'development';
-    try {
-      const nonAdminToken = createTestJwt({
-        email: 'regular-user@example.com',
-      });
-
-      const res = await fetch(`http://127.0.0.1:${testServerPort}/api/export-source`, {
-        headers: { Authorization: `Bearer ${nonAdminToken}` },
-      });
-
-      assert.equal(res.status, 403);
-      const body = await res.json();
-      assert.equal(body.code, 'FORBIDDEN');
-    } finally {
-      delete process.env.APP_ENV;
+  it('denies source export both anonymously and with the former admin identity', async () => {
+    const adminToken = createTestJwt({ email: 'cclackerz@gmail.com' });
+    for (const headers of [{}, { Authorization: `Bearer ${adminToken}` }]) {
+      const response = await fetch(`http://127.0.0.1:${testServerPort}/api/export-source`, { headers });
+      assert.equal(response.status, 403);
+      assert.equal((await response.json()).code, 'FORBIDDEN');
     }
   });
 
@@ -445,8 +387,10 @@ describe('Stage 3B — Focused Deployment Security & Endpoint Protection', () =>
     ws.send(JSON.stringify({ audio: 'UklGRiQAAABXQVZFZm10IBAAAAABAAEA' }));
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    assert.ok(messages.some(m => m.receivedAudio === true));
+    assert.equal(audioFrames, 1);
+    const closed = once(ws, 'close');
     ws.close();
+    await closed;
   });
 
   // 14. Preservation of Public Endpoints
@@ -457,21 +401,92 @@ describe('Stage 3B — Focused Deployment Security & Endpoint Protection', () =>
     assert.equal(body.status, 'ok');
   });
 
-  // 15. Server Project Resolution Logic
-  it('SEC-16: Server resolves tone-translator-dev by default or APP_ENV=development', () => {
-    delete process.env.FIREBASE_PROJECT_ID;
-    delete process.env.APP_ENV;
-    delete process.env.NODE_ENV;
+  it('requires explicit server environment and rejects a mismatched project', () => {
+    const previous = process.env.APP_ENV;
+    const project = process.env.FIREBASE_PROJECT_ID;
+    try {
+      delete process.env.APP_ENV;
+      delete process.env.FIREBASE_PROJECT_ID;
+      assert.throws(() => resolveServerProjectId());
+      process.env.APP_ENV = 'development';
+      assert.equal(resolveServerProjectId(), DEV_PROJECT_ID);
+      process.env.FIREBASE_PROJECT_ID = PROD_PROJECT_ID;
+      assert.throws(() => resolveServerProjectId());
+      process.env.APP_ENV = 'production';
+      assert.equal(resolveServerProjectId(), PROD_PROJECT_ID);
+    } finally {
+      if (previous === undefined) delete process.env.APP_ENV;
+      else process.env.APP_ENV = previous;
+      if (project === undefined) delete process.env.FIREBASE_PROJECT_ID;
+      else process.env.FIREBASE_PROJECT_ID = project;
+    }
+  });
 
-    assert.equal(resolveServerProjectId(), 'tone-translator-dev');
+  it('fails closed when an expired certificate cache cannot refresh', async t => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+    t.after(() => { globalThis.fetch = originalFetch; clearCertCache(); });
+    globalThis.fetch = async () => ++calls === 1
+      ? Response.json(mockCerts, { headers: { 'Cache-Control': 'max-age=0' } })
+      : new Response(null, { status: 503 });
+    const options = { expectedProjectId: DEV_PROJECT_ID };
+    const token = createTestJwt();
+    await verifyFirebaseIdToken(token, options);
+    await assert.rejects(verifyFirebaseIdToken(token, options), { code: 'CERTIFICATES_UNAVAILABLE' });
+  });
 
-    process.env.APP_ENV = 'production';
-    assert.equal(resolveServerProjectId(), 'gen-lang-client-0299754092');
+  it('accepts a valid upgrade bearer token through the same Live handler', { timeout: 5000 }, async () => {
+    const ws = new WebSocket(`ws://127.0.0.1:${testServerPort}/live`, {
+      headers: { Authorization: `Bearer ${createTestJwt()}` },
+    });
+    try {
+      const [data] = await once(ws, 'message');
+      assert.equal(JSON.parse(String(data)).type, 'authenticated');
+    } finally {
+      const closed = once(ws, 'close');
+      ws.close();
+      await closed;
+    }
+  });
 
-    process.env.FIREBASE_PROJECT_ID = 'custom-dev-project';
-    assert.equal(resolveServerProjectId(), 'custom-dev-project');
+  it('closes the upstream session at token expiry', { timeout: 5000 }, async () => {
+    const connectionId = upstreamConnections + 1;
+    const ws = new WebSocket(`ws://127.0.0.1:${testServerPort}/live`);
+    const closed = once(ws, 'close');
+    await once(ws, 'open');
+    const ready = once(ws, 'message');
+    ws.send(JSON.stringify({ token: createTestJwt({ exp: Math.floor(Date.now() / 1000) + 2 }) }));
+    assert.equal(JSON.parse(String((await ready)[0])).type, 'authenticated');
+    assert.equal((await closed)[0], 4401);
+    assert.equal(upstreamClosures.filter(id => id === connectionId).length, 1);
+  });
 
-    delete process.env.FIREBASE_PROJECT_ID;
-    delete process.env.APP_ENV;
+  it('closes a late upstream session after the client disconnects', { timeout: 5000 }, async () => {
+    const connectionId = upstreamConnections + 1;
+    const connections = upstreamConnections;
+    let release!: () => void;
+    connectGate = new Promise(resolve => { release = resolve; });
+    const ws = new WebSocket(`ws://127.0.0.1:${testServerPort}/live`);
+    try {
+      await once(ws, 'open');
+      const token = createTestJwt();
+      ws.send(JSON.stringify({ token }));
+      ws.send(JSON.stringify({ token }));
+      for (let check = 0; check < 100 && upstreamConnections === connections; check++) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.equal(upstreamConnections, connections + 1);
+      const closed = once(ws, 'close');
+      ws.close();
+      await closed;
+      assert.equal(upstreamConnections, connections + 1);
+      release();
+      await new Promise(resolve => setImmediate(resolve));
+      assert.equal(upstreamClosures.filter(id => id === connectionId).length, 1);
+    } finally {
+      release();
+      connectGate = undefined;
+      ws.terminate();
+    }
   });
 });

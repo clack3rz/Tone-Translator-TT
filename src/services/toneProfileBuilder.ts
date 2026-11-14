@@ -1,5 +1,6 @@
-import { ToneProfileResult } from "../types";
-import { getAuthIdToken } from "./firebase";
+import { identity, inputLedger, MODEL } from './generationProvenance';
+import { requestModel, checkCancelled, canDegrade, classifyFailure, GenerationError, fail } from './generationFailure';
+import { ToneProfileResult, NormalizedToneProfileResult, ProfileProvenance } from "../types";
 
 /**
  * Builds a structured Tone Profile JSON from a text-based request.
@@ -10,33 +11,35 @@ export async function buildToneProfile(
   textPrompt: string,
   targetAudio?: { base64: string; mimeType: string },
   signal?: AbortSignal
-): Promise<ToneProfileResult> {
+): Promise<NormalizedToneProfileResult> {
+  checkCancelled(signal);
+  const run = identity();
+  const stamp = (result: ToneProfileResult, origin: ProfileProvenance['origin'], failure?: ProfileProvenance['failure'], execution?: any): NormalizedToneProfileResult => {
+    checkCancelled(signal);
+    return {...result, provenance: {...run, completedAt:new Date().toISOString(), origin,attemptCount:execution?.attempts??failure?.attemptCount??0,retryHistory:execution?.retryHistory??failure?.retryHistory??[],
+      requestedModel:origin==='live_model'?MODEL:undefined, returnedModelVersion:typeof execution?.returnedModelVersion==='string'?execution.returnedModelVersion:undefined,
+      inputs:inputLedger({text:!!textPrompt,targetAudio:!!targetAudio},origin==='live_model'), failure,
+      confidence:{basis:origin==='live_model'?'uncalibrated_model_self_report':'unverified_heuristic',validationStatus:'unvalidated',modelSelfReport:origin==='live_model'?result.tone_profile?.confidence:undefined}}};
+  };
   const lowerPrompt = textPrompt.toLowerCase().trim();
 
   // Try local deterministic recipes first for instant validation response
   const matchingRecipeResult = checkStaticToneProfileRecipes(lowerPrompt);
   if (matchingRecipeResult) {
-    return matchingRecipeResult;
+    return stamp(matchingRecipeResult, 'static_recipe');
   }
 
   // When running in the browser, call the server-side Gemini endpoint
   if (typeof window !== 'undefined') {
     try {
-      const idToken = await getAuthIdToken().catch(() => null);
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (idToken) {
-        headers['Authorization'] = `Bearer ${idToken}`;
-      }
+      const {data:parsed,attempts,retryHistory} = await requestModel('/api/gemini/tone-profile', {textPrompt,targetAudio}, 'profile', signal);
+      if (!parsed.tone_profile || !parsed.initial_family_guidance || !parsed.classification_reasoning || !Array.isArray(parsed.warnings) || typeof parsed.tone_profile !== 'object' || Array.isArray(parsed.tone_profile)) fail('response_validation', new Error());
+      const requiredStrings=['input_summary','artist','song','album','player','era','role','distortion_type','low_end','midrange','highs','attack','dynamics','effects_profile','room','width','production_style','confidence'];
+      const guidance=['amp_family_likely','amp_family_avoid','cab_family_likely','speaker_family_likely','mic_strategy_likely','effects_likely','effects_avoid'];
+      const reasoning=['style_reasoning','era_reasoning','role_reasoning','gain_reasoning','effects_reasoning','family_reasoning'];
+      if(requiredStrings.some(k=>typeof parsed.tone_profile[k]!=='string') || !['string','number'].includes(typeof parsed.tone_profile.gain_level) || !(typeof parsed.tone_profile.style==='string'||Array.isArray(parsed.tone_profile.style)) || guidance.some(k=>!Array.isArray(parsed.initial_family_guidance[k])||parsed.initial_family_guidance[k].some((v:unknown)=>typeof v!=='string')) || reasoning.some(k=>typeof parsed.classification_reasoning[k]!=='string') || parsed.warnings.some((v:unknown)=>typeof v!=='string')) fail('response_validation',new Error());
 
-      const response = await fetch('/api/gemini/tone-profile', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ textPrompt, targetAudio }),
-        signal,
-      });
-
-      if (response.ok) {
-        const parsed = (await response.json()) as ToneProfileResult;
+      {
         if (parsed && parsed.tone_profile) {
           if (typeof parsed.tone_profile.style === 'string') {
             parsed.tone_profile.style = [parsed.tone_profile.style];
@@ -84,17 +87,17 @@ export async function buildToneProfile(
           parsed.tone_profile.width_estimate = undefined;
           parsed.tone_profile.noise_fizz_estimate = undefined;
         }
-        return parsed;
+        return stamp(parsed, 'live_model', undefined, {...parsed.execution,attempts,retryHistory});
       }
-    } catch (err: any) {
-      if (err.name === 'AbortError' || signal?.aborted) {
-        throw err;
-      }
-      console.warn("Server tone-profile endpoint unavailable, using local deterministic fallback:", err);
+    } catch (error) {
+      checkCancelled(signal);
+      const failure=classifyFailure(error,'profile');
+      if(!canDegrade(failure)) throw new GenerationError(failure);
+      try { return stamp(createLocalDeterministicToneProfile(textPrompt),'local_heuristic',failure); }
+      catch(error) { const terminal=classifyFailure(error,'postprocess');throw new GenerationError({...terminal,cause:failure}); }
     }
   }
-
-  return createLocalDeterministicToneProfile(textPrompt);
+  return stamp(createLocalDeterministicToneProfile(textPrompt),'local_heuristic');
 }
 
 
@@ -382,7 +385,7 @@ function createLocalDeterministicToneProfile(textPrompt: string): ToneProfileRes
       style_reasoning: "Identified style and dynamic priorities using deterministic parser heuristic regexes.",
       era_reasoning: "Assessed vintage or modern timeline details based on tone keywords matching era signatures.",
       role_reasoning: "Classified signal chain role context matching rhythm, lead, clean or bass requests.",
-      gain_reasoning: "Calibrated target distortion staging, pick dynamics headroom and drive levels.",
+      gain_reasoning: "Unverified heuristic suggestion for target distortion staging, pick dynamics headroom and drive levels.",
       effects_reasoning: "Mapped wet/dry structure and modulation requests based on explicit filter keys.",
       family_reasoning: "Identified hardware family mappings prioritizing vintage rock, high gain metal, or low-end bass combos."
     },

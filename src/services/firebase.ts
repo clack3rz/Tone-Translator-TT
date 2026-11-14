@@ -1,17 +1,12 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+/// <reference types="vite/client" />
 
-const app = initializeApp(firebaseConfig);
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, getDocFromServer } from 'firebase/firestore';
+import firebaseClientConfig from '../config/firebaseClientConfig';
+import { initializeFirebase } from './initializeFirebase';
 
-// Initialize Firestore with the provisioned database ID and enable experimentalAutoDetectLongPolling
-// to guarantee seamless connectivity across sandboxed browser iframes and proxied preview environments.
-export const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true,
-}, firebaseConfig.firestoreDatabaseId);
+export const { auth, db } = initializeFirebase(firebaseClientConfig);
 
-export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async () => {

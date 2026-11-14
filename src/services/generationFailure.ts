@@ -1,3 +1,4 @@
+import { firebaseRequestHeaders } from './firebaseRequestHeaders.ts';
 import type { FailureCategory, FailureStage, GenerationFailure } from '../types';
 
 export class GenerationError extends Error {
@@ -11,6 +12,7 @@ export class GenerationError extends Error {
 }
 const codes: Record<string, FailureCategory> = {
   RESOURCE_EXHAUSTED: 'rate_limit', PAYMENT_REQUIRED: 'payment', UNAUTHENTICATED: 'authentication',
+  CERTIFICATES_UNAVAILABLE: 'authentication',
   PERMISSION_DENIED: 'permission', DEADLINE_EXCEEDED: 'timeout', UNAVAILABLE: 'unavailable',
 };
 export function classifyFailure(error: unknown, stage: FailureStage, attemptCount?: number): GenerationFailure {
@@ -18,12 +20,13 @@ export function classifyFailure(error: unknown, stage: FailureStage, attemptCoun
   const e = error as any;
   const status = [e?.httpStatus, e?.status, e?.code, e?.error?.code].find(v => typeof v === 'number' && Number.isInteger(v) && v >= 400 && v <= 599);
   const structuredCodes = [e?.status, e?.code, e?.error?.status, e?.error?.code].filter(v => typeof v === 'string' && codes[v]);
-  const code = structuredCodes.find(v => ['UNAUTHENTICATED', 'PERMISSION_DENIED'].includes(v)) ?? structuredCodes[0];
+  const code = structuredCodes.find(v => v === 'CERTIFICATES_UNAVAILABLE') ?? structuredCodes.find(v => ['UNAUTHENTICATED', 'PERMISSION_DENIED'].includes(v)) ?? structuredCodes[0];
   let category: FailureCategory = 'unknown';
   if (stage === 'postprocess') category = 'postprocess';
   else if (stage === 'response_decode') category = 'decode';
   else if (stage === 'response_validation') category = 'validation';
   else if (e?.name === 'AbortError') category = 'cancelled';
+  else if (code === 'CERTIFICATES_UNAVAILABLE') category = 'authentication';
   else if (status === 401 || status === 403) category = status === 401 ? 'authentication' : 'permission';
   else if (code) category = codes[code];
   else if (typeof status === 'number') {
@@ -74,17 +77,25 @@ export async function withDeadline<T>(operation: (signal: AbortSignal) => Promis
 }
 
 /** Shared policy for profile and generation; decode failures never become availability fallback. */
-export async function requestModel(endpoint: string, payload: unknown, stage: 'profile' | 'generation', signal?: AbortSignal): Promise<{ data: any; attempts: number; retryHistory: GenerationFailure['retryHistory'] }> {
+export async function requestModel(endpoint: string, payload: unknown, stage: 'profile' | 'generation', signal?: AbortSignal, onDispatch?: () => void): Promise<{ data: any; attempts: number; retryHistory: GenerationFailure['retryHistory'] }> {
   const retryHistory: GenerationFailure['retryHistory'] = [];
   for (let attempt = 1; attempt <= 3; attempt++) {
     checkCancelled(signal);
     try {
       const data = await withDeadline(async requestSignal => {
-        const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: requestSignal });
+        const headers = await firebaseRequestHeaders();
+        const body = JSON.stringify(payload);
+        checkCancelled(requestSignal);
+        onDispatch?.();
+        const response = await fetch(endpoint, { method: 'POST', headers, body, signal: requestSignal });
         let data: any;
         try { data = await response.json(); } catch (e) { fail('response_decode', e); }
         if (!data || typeof data !== 'object' || Array.isArray(data)) fail('response_decode', new Error());
         if (!response.ok) {
+          // The Firebase guard reports certificate failures before dispatching to Gemini.
+          if (data.code === 'CERTIFICATES_UNAVAILABLE') {
+            throw new GenerationError(classifyFailure({ httpStatus: response.status, code: data.code }, stage, attempt));
+          }
           // HTTP status is observed. Only allow bounded server stages to identify decode defects.
           const serverStage = data.schemaVersion === 1 && ['response_decode', 'response_validation', 'postprocess'].includes(data.failure?.stage) ? data.failure.stage : stage;
           if (serverStage !== stage) fail(serverStage, new Error());

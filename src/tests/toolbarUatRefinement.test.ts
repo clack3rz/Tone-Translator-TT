@@ -25,6 +25,15 @@ describe("Sound Engineer Phase 1A.4a — UAT UI Refinement", () => {
   // Test 1: Shadow control is visible in secondary toolbar
   // Test 2: Old large bottom Shadow panel is no longer rendered
   describe("1. Header & Secondary Toolbar Layout Architecture (Req 1, 2)", () => {
+    it("renders a dismissible global error alert alongside generation provenance", () => {
+      const appSource = fs.readFileSync(path.resolve(process.cwd(), "src/App.tsx"), "utf-8");
+      const alert = appSource.match(/\{error && \([\s\S]*?<\/motion\.aside>/)?.[0] ?? "";
+      assert.match(alert, /role="alert"/);
+      assert.match(alert, /\{error\}/);
+      assert.match(alert, /<button[\s\S]*?onClick=\{\(\) => setError\(null\)\}[\s\S]*?aria-label="Dismiss error"/);
+      assert.match(appSource, /aria-label="Generation provenance"/);
+    });
+
     it("App.tsx renders persistent WorkspaceToolbar directly under main header", () => {
       const appSource = fs.readFileSync(path.resolve(process.cwd(), "src/App.tsx"), "utf-8");
 

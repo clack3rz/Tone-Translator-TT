@@ -22,12 +22,17 @@ const profileSchema=z.object({...common,origin:z.enum(['live_model','static_reci
 const generationSchema=z.object({...common,origin:z.enum(['live_model','heuristic_fallback','validation_recipe','local_baseline','legacy_unknown']),completionStatus:z.enum(['complete','degraded','unknown']),profileRunId:z.string().optional(),postprocessing:z.array(z.string())}).refine(completeIdentity);
 export function identity() { return {schemaVersion:1 as const,runId:crypto.randomUUID(),engineVersion:ENGINE_VERSION,startedAt:new Date().toISOString(),completedAt:new Date().toISOString()}; }
 const legacyIdentity = {schemaVersion:1 as const,runId:'legacy-unknown',engineVersion:'unknown',startedAt:null,completedAt:null};
-export function inputLedger(supplied: Partial<Record<InputUse['input'], boolean>>, live:boolean, profile?:ProfileProvenance):InputUse[] {
+export function inputLedger(supplied: Partial<Record<InputUse['input'], boolean>>, live:boolean, profile?:ProfileProvenance, deliveryUnknown = false):InputUse[] {
   return (['text','targetAudio','currentAudio','preset','youtubeUrl'] as const).map(input => {
     const present=!!supplied[input];
     const indirect=present && !!profile?.inputs.some(i=>i.input===input && (i.submittedToModel||i.consumedByLocalRules));
+    // The existing boolean records confirmed submission. Keep uncertainty in the v1 explanation.
+    const deliveryNote = present && deliveryUnknown && input !== 'currentAudio'
+      ? 'Generation request attempted; delivery to Gemini is unknown.'
+      : '';
+    const omissionReason = !present?'Not supplied':input==='currentAudio'?'Recording is not included in the generation payload':input==='youtubeUrl'?(live?'URL submitted as text only; no audio retrieved':'Raw URL is not consumed by local rules'):input==='preset'?(live?'Serialized parsed preset context only; original bytes are not analysed':'Raw preset is not consumed by local rules'):!live&&input==='targetAudio'?'Raw reference audio is not consumed by local rules':'';
     return {input,supplied:present,submittedToModel:present&&live&&input!=='currentAudio',consumedByLocalRules:present&&!live&&input==='text',usedIndirectlyThroughProfile:indirect,
-      omissionReason:!present?'Not supplied':input==='currentAudio'?'Recording is not included in the generation payload':input==='youtubeUrl'?(live?'URL submitted as text only; no audio retrieved':'Raw URL is not consumed by local rules'):input==='preset'?(live?'Serialized parsed preset context only; original bytes are not analysed':'Raw preset is not consumed by local rules'):!live&&input==='targetAudio'?'Raw reference audio is not consumed by local rules':undefined};
+      omissionReason: [deliveryNote, omissionReason].filter(Boolean).join(' ') || undefined};
   });
 }
 export function normalizeProfile(value:ToneProfileResult):NormalizedToneProfileResult {

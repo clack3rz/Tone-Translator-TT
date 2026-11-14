@@ -1,24 +1,53 @@
-import { describe, it, beforeEach, after } from 'node:test';
+import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
-import { gearProfileService } from '../services/gearProfileService';
-import { at5DatabaseService } from '../services/at5DatabaseService';
-import {
+import * as firestore from 'firebase/firestore';
+
+const micPath = 'mic_placement_mappings';
+const virPath = 'system_calibrations/vir_reference';
+const virPositions = { test: { X: 1, Y: 2 } };
+const reads = new Map<string, number>();
+
+function recordRead(path: string) {
+  reads.set(path, (reads.get(path) ?? 0) + 1);
+}
+
+mock.module('firebase/firestore', {
+  namedExports: {
+    ...firestore,
+    collection: (_db: unknown, path: string) => path,
+    doc: (_db: unknown, ...segments: string[]) => segments.join('/'),
+    getDocs: async (path: string) => {
+      recordRead(path);
+      return {
+        docs: path === micPath ? [{ id: 'test-mic', data: () => ({ id: 'test-profile' }) }] : []
+      };
+    },
+    getDoc: async (path: string) => {
+      recordRead(path);
+      assert.strictEqual(path, virPath);
+      return { exists: () => true, data: () => ({ positions: virPositions }) };
+    }
+  }
+});
+mock.module(new URL('../services/firebase.ts', import.meta.url), {
+  namedExports: { db: {}, auth: { currentUser: null } }
+});
+
+const { gearProfileService } = await import('../services/gearProfileService');
+const { at5DatabaseService } = await import('../services/at5DatabaseService');
+const {
   refreshCoreParameterMappings,
   refreshDbMicPlacementMappings,
   refreshVIRCalibration,
   ensureMicPlacementDataLoaded,
   getDbParameterMappings,
   getDbMicPlacementMappings
-} from '../services/at5ParameterManifest';
+} = await import('../services/at5ParameterManifest');
 
 describe('Gear Profile Loading & Caching Performance', () => {
   beforeEach(() => {
+    reads.clear();
     gearProfileService.clearCache();
-  });
-
-  after(() => {
-    // Ensure Node terminates cleanly without hanging on Firestore background socket listeners
-    setTimeout(() => process.exit(0), 100);
   });
 
   it('first getGearProfiles call populates cache and returns profiles', async () => {
@@ -90,22 +119,29 @@ describe('Gear Profile Loading & Caching Performance', () => {
   });
 
   it('at5DatabaseService caching and in-flight deduplication work for mic placement and VIR overrides', async () => {
-    // Both should serve from cache when warmed
-    const t0 = performance.now();
-    const [mics1, vir1] = await Promise.all([
+    const [mics, joinedMics, vir, joinedVir] = await Promise.all([
+      at5DatabaseService.getMicPlacementMappings(true),
+      at5DatabaseService.getMicPlacementMappings(true),
+      at5DatabaseService.getVIRReferenceOverrides(true),
+      at5DatabaseService.getVIRReferenceOverrides(true)
+    ]);
+
+    assert.strictEqual(joinedMics, mics);
+    assert.strictEqual(joinedVir, vir);
+    assert.strictEqual(mics[0].firestoreDocumentPath, micPath + '/test-mic');
+    assert.deepStrictEqual(vir.positions, virPositions);
+
+    const start = performance.now();
+    const [cachedMics, cachedVir] = await Promise.all([
       at5DatabaseService.getMicPlacementMappings(),
       at5DatabaseService.getVIRReferenceOverrides()
     ]);
-    const duration1 = performance.now() - t0;
+    const duration = performance.now() - start;
 
-    const t1 = performance.now();
-    const [mics2, vir2] = await Promise.all([
-      at5DatabaseService.getMicPlacementMappings(),
-      at5DatabaseService.getVIRReferenceOverrides()
-    ]);
-    const duration2 = performance.now() - t1;
-
-    assert.deepStrictEqual(mics1, mics2);
-    assert.ok(duration2 < 50, `Cached mic and VIR fetch took ${duration2.toFixed(2)}ms, expected < 50ms`);
+    assert.strictEqual(cachedMics, mics);
+    assert.strictEqual(cachedVir, vir);
+    assert.strictEqual(reads.get(micPath), 1);
+    assert.strictEqual(reads.get(virPath), 1);
+    assert.ok(duration < 50, `Cached mic and VIR fetch took ${duration.toFixed(2)}ms, expected < 50ms`);
   });
 });
